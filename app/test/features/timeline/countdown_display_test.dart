@@ -1,0 +1,44 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:happening/features/timeline/countdown_display.dart';
+
+void main() {
+  Widget wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
+
+  group('CountdownDisplay', () {
+    testWidgets('shows minutes when < 1 hour remaining', (tester) async {
+      await tester.pumpWidget(wrap(
+        const CountdownDisplay(remaining: Duration(minutes: 38)),
+      ));
+      expect(find.text('38 min'), findsOneWidget);
+    });
+
+    testWidgets('shows hours and minutes when >= 1 hour', (tester) async {
+      await tester.pumpWidget(wrap(
+        const CountdownDisplay(remaining: Duration(hours: 1, minutes: 12)),
+      ));
+      expect(find.text('1 h 12 min'), findsOneWidget);
+    });
+
+    testWidgets('shows "now" when duration is zero', (tester) async {
+      await tester.pumpWidget(wrap(
+        const CountdownDisplay(remaining: Duration.zero),
+      ));
+      expect(find.text('now'), findsOneWidget);
+    });
+
+    testWidgets('shows "now" for negative duration', (tester) async {
+      await tester.pumpWidget(wrap(
+        const CountdownDisplay(remaining: Duration(minutes: -5)),
+      ));
+      expect(find.text('now'), findsOneWidget);
+    });
+
+    testWidgets('shows seconds when < 1 minute', (tester) async {
+      await tester.pumpWidget(wrap(
+        const CountdownDisplay(remaining: Duration(seconds: 45)),
+      ));
+      expect(find.text('45s'), findsOneWidget);
+    });
+  });
+}

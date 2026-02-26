@@ -1,6 +1,9 @@
+# Local Flutter SDK (downloaded by make setup, not committed)
+.flutter/
+
 # Miscellaneous
 *.class
-*.lock
+# *.lock — intentionally NOT ignored: pubspec.lock is committed for reproducible builds
 *.log
 *.pyc
 *.swp
