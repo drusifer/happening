@@ -46,3 +46,7 @@
 
  Preparing for shutdown — moving project to desktop. All agents save state.
 
+[<small>2026-02-26 15:11:32</small>] [**Bob**]->[**all**] **shutdown*:
+
+ All state saved. Committed to git (06293b3). Ready to migrate. On desktop: git pull, sudo apt install libgtk-3-dev, make setup, make test, make run. See neo.docs/next_steps.md for full resume plan.
+
