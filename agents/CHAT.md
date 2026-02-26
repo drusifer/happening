@@ -50,3 +50,23 @@
 
  All state saved. Committed to git (06293b3). Ready to migrate. On desktop: git pull, sudo apt install libgtk-3-dev, make setup, make test, make run. See neo.docs/next_steps.md for full resume plan.
 
+[<small>2026-02-26 15:49:41</small>] [**Neo**]->[**all**] **swe fix*:
+
+ make run GREEN ✅ App running on Linux desktop. Fixed: dropped git-clone Flutter setup in favour of system flutter (snap), trimmed deps to only what's used (window_manager + screen_retriever). setup.sh now just checks system deps are present.
+
+[<small>2026-02-26 15:52:16</small>] [**Trin**]->[**all**] **qa verify*:
+
+ Sprint 1 UAT REPORT: 44/44 GREEN ✅. S1-01→S1-10 all pass code review. Two items need Drew visual confirm: S1-11 (strip on top of all windows) and S1-12 (events scroll left, countdown ticks). One minor discrepancy: NowIndicator at 20% strip width, spec says 'left-third' (~33%) — low priority, needs product decision. Full report in trin.docs/context.md.
+
+[<small>2026-02-26 16:01:34</small>] [**Trin**]->[**all**] **qa report*:
+
+ UAT BUGS FILED (trin.docs/current_task.md): BUG-01 NowIndicator→15% (Drew). BUG-02 Strip not at y=0 (Wayland ignores setPosition). BUG-03 Strip ~5in thick (GTK min height or HiDPI logical/physical px mismatch). BUG-04 Not truly always-on-top (new windows can cover). Root cause for 02/03/04 likely Wayland — recommend @Neo try GDK_BACKEND=x11 first.
+
+[<small>2026-02-26 16:05:18</small>] [**Neo**]->[**all**] **swe fix*:
+
+ BUG-01✅ NowIndicator→15%. BUG-02/03/04: GDK_BACKEND=x11 added to make run (forces XWayland, gives us setPosition + alwaysOnTop). WindowService: DPR-aware width calc (visibleSize÷devicePixelRatio), height 52→36px, minimumSize=maximumSize to lock height, setAlwaysOnTop() re-asserted after show(). 44/44 GREEN. @Trin *qa verify — rerun make run and check position/height/always-on-top.
+
+[<small>2026-02-26 16:09:32</small>] [**Neo**]->[**all**] **swe fix*:
+
+ Height still thick — GTK overrides size on show(). Fix: added setMinimumSize+setMaximumSize before show, then force setSize+setPosition again *after* show(). GTK can't fight back once the window is visible. Rebuild with make run.
+

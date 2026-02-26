@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
-const double _kStripHeightLogical = 52.0;
+const double _kStripHeightLogical = 36.0;
 
 /// Configures the app window as an always-on-top frameless strip.
 class WindowService {
@@ -11,11 +11,18 @@ class WindowService {
     await windowManager.ensureInitialized();
 
     final display = await screenRetriever.getPrimaryDisplay();
-    final screenWidth = display.visibleSize?.width ?? 1920.0;
+
+    // screen_retriever returns physical pixels on Linux HiDPI displays.
+    // Divide by devicePixelRatio to get logical pixels for window_manager.
+    final dpr = display.scaleFactor?.toDouble() ?? 1.0;
+    final screenWidth = (display.visibleSize?.width ?? 1920.0) / dpr;
+    final size = Size(screenWidth, _kStripHeightLogical);
 
     await windowManager.waitUntilReadyToShow(
       WindowOptions(
-        size: Size(screenWidth, _kStripHeightLogical),
+        size: size,
+        minimumSize: size,
+        maximumSize: size,
         backgroundColor: const Color(0x00000000),
         skipTaskbar: true,
         titleBarStyle: TitleBarStyle.hidden,
@@ -23,10 +30,14 @@ class WindowService {
         windowButtonVisibility: false,
       ),
       () async {
-        await windowManager.setPosition(Offset.zero);
         await windowManager.setResizable(false);
+        await windowManager.setMinimumSize(size);
+        await windowManager.setMaximumSize(size);
         await windowManager.show();
-        await windowManager.focus();
+        // GTK may resize on show — force again after.
+        await windowManager.setSize(size);
+        await windowManager.setPosition(Offset.zero);
+        await windowManager.setAlwaysOnTop(true);
       },
     );
   }

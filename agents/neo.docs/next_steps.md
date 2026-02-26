@@ -1,12 +1,11 @@
 # Next Steps — Resume Here
 
-## On new machine (Ubuntu desktop):
-1. `sudo apt install libgtk-3-dev` — should install cleanly (no RPi pkg conflicts)
-2. `make setup` — re-clones Flutter SDK to .flutter/ (or reuses if migrated)
-3. `make test` — confirm 44/44 GREEN on new machine
-4. `make run` — first visual smoke test of the strip with mock events
+## Setup (new machine):
+- `sudo snap install flutter --classic`
+- `sudo apt install clang cmake ninja-build pkg-config libgtk-3-dev lld`
+- `make setup && make test && make run`
 
-## Then Sprint 2:
+## Sprint 2:
 - S2-03: AuthService (Google OAuth loopback redirect)
 - S2-04: TokenStore (flutter_secure_storage)
 - S2-05: CalendarService (Google Calendar API v3, skip all-day events)
