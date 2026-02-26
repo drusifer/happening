@@ -20,8 +20,8 @@
 | S1-08 | Implement `EventBlock` — colored chip with title + start time | Neo | `[x]` |
 | S1-09 | Implement `CountdownDisplay` — "38 min" T-minus label between Now and next event | Neo | `[x]` |
 | S1-10 | Implement `CelebrationWidget` — end-of-day state (no more events today) | Neo | `[x]` |
-| S1-11 | Trin: verify strip appears on top of all windows — `make run` smoke test | Trin | `[ ]` |
-| S1-12 | Trin: verify mock events scroll left in real time and countdown ticks | Trin | `[ ]` |
+| S1-11 | Trin: verify strip appears on top of all windows — `make run` smoke test | Trin | `[x]` |
+| S1-12 | Trin: verify mock events scroll left in real time and countdown ticks | Trin | `[x]` |
 
 **Sprint 1 Definition of Done**: App launches, strip is always-on-top, mock events animate left, countdown ticks every second.
 
@@ -32,9 +32,9 @@
 
 | ID | Task | Owner | Status |
 |---|---|---|---|
-| S2-01 | Implement `VideoLinkExtractor` — priority chain: hangoutLink → conferenceData → location regex → description regex | Neo | `[ ]` |
-| S2-02 | Implement `CalendarEvent` model (immutable, includes `videoCallUrl`) | Neo | `[ ]` |
-| S2-03 | Implement `AuthService` — Google OAuth loopback redirect flow | Neo | `[ ]` |
+| S2-01 | Implement `VideoLinkExtractor` — priority chain: hangoutLink → conferenceData → location regex → description regex | Neo | `[x]` |
+| S2-02 | Implement `CalendarEvent` model (immutable, includes `videoCallUrl`) | Neo | `[x]` |
+| S2-03 | Implement `AuthService` — Google OAuth loopback redirect flow | Neo | `[/]` |
 | S2-04 | Implement `TokenStore` — flutter_secure_storage wrapper (store/retrieve/clear tokens) | Neo | `[ ]` |
 | S2-05 | Implement `CalendarService` — fetch today's events via Google Calendar API v3 (skip all-day events) | Neo | `[ ]` |
 | S2-06 | Implement `EventRepository` — cache, dedup, sort events | Neo | `[ ]` |

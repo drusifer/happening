@@ -5,6 +5,9 @@
 **Date**: 2026-02-26
 **Status**: Approved
 
+## TL;DR
+A stateless-first Flutter desktop app that uses a 1fps `StreamBuilder` to drive a `CustomPainter` timeline. Key hacks for Linux include disabling GTK Header Bars and manual DPR-aware logical sizing to achieve a stable 30px window height.
+
 ---
 
 ## 1. Overview
@@ -110,29 +113,40 @@ happening/
 ```dart
 // main.dart — before runApp
 await windowManager.ensureInitialized();
-final screen = await screenRetriever.getPrimaryDisplay();
-final dpr = screen.scaleFactor ?? 1.0;
-final stripHeightLogical = 52.0; // logical pixels — Flutter scales for DPI
+final display = await screenRetriever.getPrimaryDisplay();
+
+// DPR-aware logical sizing (Critical for Linux HiDPI)
+final dpr = display.scaleFactor?.toDouble() ?? 1.0;
+final logicalWidth = (display.visibleSize?.width ?? 1920.0) / dpr;
+final logicalHeight = 30.0 / dpr; // 30.0 physical pixels
+final size = Size(logicalWidth, logicalHeight);
 
 await windowManager.waitUntilReadyToShow(
   WindowOptions(
-    size: Size(screen.visibleSize!.width, stripHeightLogical),
-    backgroundColor: Colors.transparent,
+    size: size,
+    minimumSize: size,
+    maximumSize: size,
+    backgroundColor: const Color(0x00000000),
     skipTaskbar: true,
     titleBarStyle: TitleBarStyle.hidden,
     alwaysOnTop: true,
   ),
   () async {
-    await windowManager.setPosition(Offset(0, 0));
+    await windowManager.setResizable(false);
+    await windowManager.setMinimumSize(size);
+    await windowManager.setMaximumSize(size);
     await windowManager.show();
+    await windowManager.setSize(size);
+    await windowManager.setPosition(Offset.zero);
+    await windowManager.setAlwaysOnTop(true);
   },
 );
 ```
 
 **Notes**:
-- Flutter works in **logical pixels** — DPI scaling is automatic. No manual DPI math needed.
-- `skipTaskbar: true` — keeps it out of the taskbar/dock
-- `TitleBarStyle.hidden` — frameless window
+- **DPR Scaling**: On Linux, `screen_retriever` returns physical pixels. We must divide by DPR to provide a valid logical `Size` to `window_manager`.
+- **GTK Header Bar (Linux)**: Must be disabled in `my_application.cc` (`use_header_bar = FALSE`) to allow heights < 50px.
+- **Wayland (Linux)**: `GDK_BACKEND=x11` is required to ensure `alwaysOnTop` and `setPosition` are respected by modern compositors.
 - Platform-specific entitlements required on macOS (`com.apple.security.network.client`)
 
 ---
