@@ -5,6 +5,9 @@
 **Date**: 2026-02-26
 **Status**: Approved — Ready for Architecture & Sprint Planning
 
+## TL;DR
+A persistent, horizontal timeline strip for desktop that solves "time blindness" by showing today's events flowing toward a fixed "Now" indicator. Key features: Google Calendar sync, real-time animation, always-on-top visibility, and a countdown to the next event.
+
 ---
 
 ## 1. Problem Statement
