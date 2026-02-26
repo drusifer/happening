@@ -6,7 +6,7 @@ import 'package:happening/features/timeline/countdown_display.dart';
 import 'package:happening/features/timeline/timeline_layout.dart';
 import 'package:happening/features/timeline/timeline_painter.dart';
 
-const double _kNowIndicatorFraction = 0.2; // 20% from left edge
+const double _kNowIndicatorFraction = 0.15; // 15% from left edge
 
 /// Root timeline widget. Stateless — driven by [clockService] stream.
 class TimelineStrip extends StatefulWidget {

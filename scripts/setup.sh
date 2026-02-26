@@ -1,35 +1,49 @@
 #!/usr/bin/env bash
-# Bootstrap Flutter SDK into .flutter/ — runs on Linux (x64 + arm64), macOS, Windows (WSL).
-# Called by `make setup`. Safe to run multiple times.
+# Verify Flutter and Linux desktop build dependencies are installed.
+# Called by `make setup`. Does NOT install anything — tells you what's missing.
 set -euo pipefail
 
-FLUTTER_DIR=".flutter/flutter"
-FLUTTER_BIN=".flutter/flutter/bin/flutter"
+ERRORS=()
 
-# ── already installed? ───────────────────────────────────────────────────────
-if [[ -x "$FLUTTER_BIN" ]]; then
-  echo "✓ Flutter already at $FLUTTER_DIR"
-  exit 0
+# ── Flutter ───────────────────────────────────────────────────────────────────
+if ! command -v flutter &>/dev/null; then
+  ERRORS+=("flutter: not found — install via: sudo snap install flutter --classic")
+else
+  echo "✓ flutter $(flutter --version --machine 2>/dev/null | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d["frameworkVersion"])' 2>/dev/null || flutter --version | head -1 | awk '{print $2}')"
 fi
 
-# ── clone Flutter stable ─────────────────────────────────────────────────────
-echo "⬇ Cloning Flutter stable channel into $FLUTTER_DIR ..."
-mkdir -p .flutter
-git clone \
-  https://github.com/flutter/flutter.git \
-  --depth 1 \
-  --branch stable \
-  "$FLUTTER_DIR"
+# ── Linux desktop build deps ──────────────────────────────────────────────────
+# C++ compiler, build system, package detection, GTK windowing, linker, secure storage plugin
+APT_PKGS=(clang cmake ninja-build pkg-config libgtk-3-dev lld)
+APT_NOTES=(
+  "C++ compiler for the Linux runner"
+  "build system for the Linux runner"
+  "cmake build backend"
+  "cmake package detection"
+  "Flutter Linux GTK 3 windowing"
+  "LLVM linker (Dart AOT requires lld)"
+)
 
-export PATH="$(pwd)/$FLUTTER_DIR/bin:$PATH"
+for i in "${!APT_PKGS[@]}"; do
+  pkg="${APT_PKGS[$i]}"
+  if dpkg -s "$pkg" &>/dev/null; then
+    echo "✓ $pkg — ${APT_NOTES[$i]}"
+  else
+    ERRORS+=("$pkg (${APT_NOTES[$i]})")
+  fi
+done
 
-# ── precache host platform artifacts ─────────────────────────────────────────
-echo "⬇ Precaching platform artifacts ..."
-case "$(uname -s)" in
-  Linux)  flutter precache --linux ;;
-  Darwin) flutter precache --macos ;;
-  *)      flutter precache ;;
-esac
+# ── Report ────────────────────────────────────────────────────────────────────
+if [[ ${#ERRORS[@]} -gt 0 ]]; then
+  echo ""
+  echo "✗ Missing dependencies:"
+  for e in "${ERRORS[@]}"; do
+    echo "  • $e"
+  done
+  echo ""
+  echo "Quick fix: sudo apt install clang cmake ninja-build pkg-config libgtk-3-dev lld"
+  exit 1
+fi
 
 echo ""
-echo "✓ Flutter ready: $(flutter --version | head -1)"
+echo "✓ All dependencies present"
