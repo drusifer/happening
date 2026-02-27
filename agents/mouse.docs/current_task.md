@@ -1,12 +1,11 @@
 # Current Task
 
-## Task: Sprint Planning — 3 Sprints
-**Status**: Complete ✅
-**Output**: task.md
+## Sprint 3 & 4 Planning
+**Status**: DONE ✅
 
-- [x] Sprint 1: Foundation & Shell (12 tasks)
-- [x] Sprint 2: Google Calendar Integration (13 tasks)
-- [x] Sprint 3: Polish & Ship (8 tasks)
-- [x] Backlog: 9 V2+ items
-- [x] All tasks assigned (Neo / Trin / Oracle)
-- [x] DoD defined per sprint
+### Done
+- [x] Incorporate Morpheus's refactoring recommendations into Sprint 3.
+- [x] Reorganize Task Board: Sprint 3 (Refactor & Polish), Sprint 4 (Platform & Release).
+- [x] Assign refactoring tasks (S3-R01 to S3-R04) to Neo.
+- [x] Mark S4-04 (README/User Guide) as [x] done.
+- [x] Consolidate team feedback on REFACTORING_REPORT.md.

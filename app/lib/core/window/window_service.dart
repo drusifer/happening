@@ -1,3 +1,13 @@
+/// Window configuration and lifecycle service.
+///
+/// TLDR:
+/// Overview: Sets up the frameless, always-on-top strip at the screen top.
+/// Problem: Need to ensure the window spans the primary display and stays on top across platforms.
+/// Solution: Uses window_manager and screen_retriever with DPR-aware logical sizing.
+/// Breaking Changes: No.
+///
+/// ---------------------------------------------------------------------------
+
 import 'package:flutter/widgets.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
@@ -13,10 +23,10 @@ class WindowService {
     final display = await screenRetriever.getPrimaryDisplay();
     final dpr = display.scaleFactor?.toDouble() ?? 1.0;
 
-    // Calculate logical pixels: physical_pixels / dpr
-    // We want the strip to be exactly 30 physical pixels tall.
+    // window_manager on Linux (GTK) takes logical pixels; GTK applies the
+    // system scale factor itself. Use logical units directly.
     final logicalWidth = (display.visibleSize?.width ?? 1920.0) / dpr;
-    final logicalHeight = 30.0 / dpr;
+    final logicalHeight = _kStripHeightLogical;
     
     final size = Size(logicalWidth, logicalHeight);
 

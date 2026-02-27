@@ -1,3 +1,13 @@
+/// Interactive event chip for the timeline strip.
+///
+/// TLDR:
+/// Overview: A rectangular block representing an event's duration and title.
+/// Problem: Need a visual representation of calendar events on the strip.
+/// Solution: Implements a colored Container with title text and hover detection.
+/// Breaking Changes: No.
+///
+/// ---------------------------------------------------------------------------
+
 import 'package:flutter/material.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 
