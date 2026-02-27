@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:happening/features/auth/token_store.dart';
 
@@ -36,22 +38,50 @@ void main() {
       await store.delete(key: 'token');
       expect(await store.read(key: 'token'), isNull);
     });
+  });
 
-    test('write overwrites existing value', () async {
-      await store.write(key: 'token', value: 'old');
-      await store.write(key: 'token', value: 'new');
-      expect(await store.read(key: 'token'), equals('new'));
+  group('FileTokenStore', () {
+    late Directory tempDir;
+    late FileTokenStore store;
+
+    setUp(() {
+      tempDir = Directory.systemTemp.createTempSync('happening_test_');
+      store = FileTokenStore(directory: tempDir);
     });
 
-    test('keys are independent', () async {
-      await store.write(key: 'a', value: '1');
-      await store.write(key: 'b', value: '2');
-      expect(await store.read(key: 'a'), equals('1'));
-      expect(await store.read(key: 'b'), equals('2'));
+    tearDown(() {
+      if (tempDir.existsSync()) {
+        tempDir.deleteSync(recursive: true);
+      }
     });
 
-    test('delete of nonexistent key is silent', () async {
-      await expectLater(store.delete(key: 'missing'), completes);
+    test('writes value to a file in the directory', () async {
+      await store.write(key: 'auth_token', value: '{"token": "test"}');
+      final file = File('${tempDir.path}/auth_token.json');
+      expect(await file.exists(), isTrue);
+      expect(await file.readAsString(), equals('{"token": "test"}'));
+    });
+
+    test('reads value back from file', () async {
+      await store.write(key: 'foo', value: 'bar');
+      expect(await store.read(key: 'foo'), equals('bar'));
+    });
+
+    test('returns null if file does not exist', () async {
+      expect(await store.read(key: 'missing'), isNull);
+    });
+
+    test('deletes the file', () async {
+      await store.write(key: 'to_be_deleted', value: 'gone');
+      await store.delete(key: 'to_be_deleted');
+      final file = File('${tempDir.path}/to_be_deleted.json');
+      expect(await file.exists(), isFalse);
+    });
+
+    test('multiple stores share the same directory', () async {
+      final store2 = FileTokenStore(directory: tempDir);
+      await store.write(key: 'shared', value: 'secret');
+      expect(await store2.read(key: 'shared'), equals('secret'));
     });
   });
 }

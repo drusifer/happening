@@ -10,13 +10,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:happening/core/time/clock_service.dart';
+import 'package:happening/core/window/window_service.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/timeline/celebration_widget.dart';
 import 'package:happening/features/timeline/countdown_display.dart';
 import 'package:happening/features/timeline/hover_detail_overlay.dart';
 import 'package:happening/features/timeline/timeline_layout.dart';
 import 'package:happening/features/timeline/timeline_painter.dart';
-import 'package:window_manager/window_manager.dart';
 
 const double _kNowIndicatorFraction = 0.10; // 10% from left edge
 const double _kCollapsedHeight = 30.0;
@@ -42,6 +42,7 @@ class TimelineStrip extends StatefulWidget {
 }
 
 class _TimelineStripState extends State<TimelineStrip> {
+  final _windowService = WindowService();
   CalendarEvent? _hoveredEvent;
 
   // Updated each build — used by mouse handlers.
@@ -49,48 +50,26 @@ class _TimelineStripState extends State<TimelineStrip> {
   double _stripWidth = 0;
   DateTime _now = DateTime.now();
 
-  // ── Window resize ────────────────────────────────────────────────────────
-
-  Future<void> _setWindowHeight(double height) async {
-    try {
-      final w = _stripWidth;
-      await windowManager.setMinimumSize(Size(w, height));
-      await windowManager.setMaximumSize(Size(w, height));
-      await windowManager.setSize(Size(w, height));
-    } catch (_) {
-      // No-op in test environments.
-    }
-  }
-
-  // ── Hit testing ──────────────────────────────────────────────────────────
-
-  CalendarEvent? _eventAtX(double mouseX) {
-    final layout = _layout;
-    if (layout == null) return null;
-    for (final event in widget.events) {
-      final x = layout.xForTime(event.startTime, _now);
-      final endX = layout.xForTime(event.endTime, _now);
-      final w = (endX - x).clamp(3.0, double.infinity);
-      if (mouseX >= x && mouseX <= x + w) return event;
-    }
-    return null;
-  }
-
   // ── Mouse handlers ───────────────────────────────────────────────────────
 
   void _onMouseMove(PointerEvent details) {
     // Ignore moves inside the card area — keep current hover state so buttons remain clickable.
     if (details.localPosition.dy >= _kCollapsedHeight) return;
-    final hit = _eventAtX(details.localPosition.dx);
+    final hit = _layout?.eventAtX(details.localPosition.dx, widget.events, _now);
     if (hit?.id == _hoveredEvent?.id) return;
     setState(() => _hoveredEvent = hit);
-    _setWindowHeight(hit != null ? _kExpandedHeight : _kCollapsedHeight);
+
+    if (hit != null) {
+      _windowService.expand();
+    } else {
+      _windowService.collapse();
+    }
   }
 
   void _onMouseExit(PointerEvent _) {
     if (_hoveredEvent == null) return;
     setState(() => _hoveredEvent = null);
-    _setWindowHeight(_kCollapsedHeight);
+    _windowService.collapse();
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────

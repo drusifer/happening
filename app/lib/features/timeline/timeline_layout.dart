@@ -8,6 +8,8 @@
 ///
 /// ---------------------------------------------------------------------------
 
+import 'package:happening/features/calendar/calendar_event.dart';
+
 /// Pure math for positioning events on the timeline strip.
 ///
 /// All inputs in logical pixels and [DateTime]. No Flutter dependency.
@@ -34,6 +36,17 @@ class TimelineLayout {
     final reference = now ?? DateTime.now();
     final secondsFromNow = time.difference(reference).inSeconds.toDouble();
     return nowIndicatorX + secondsFromNow * pixelsPerSecond;
+  }
+
+  /// Returns the [CalendarEvent] at the given [mouseX] position, or null if none.
+  CalendarEvent? eventAtX(double mouseX, List<CalendarEvent> events, DateTime now) {
+    for (final event in events) {
+      final x = xForTime(event.startTime, now);
+      final endX = xForTime(event.endTime, now);
+      final w = (endX - x).clamp(3.0, double.infinity);
+      if (mouseX >= x && mouseX <= x + w) return event;
+    }
+    return null;
   }
 
   /// Duration remaining until [eventTime], clamped to zero if already past.
