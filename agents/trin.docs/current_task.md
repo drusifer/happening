@@ -13,9 +13,9 @@
 - **Severity**: HIGH — core feature broken
 
 ## BUG-03: Strip way too thick (~5 inches)
-- **Symptom**: Strip is many inches tall, should be a thin bar (~52 logical px)
+- **Symptom**: Strip is many inches tall, should be a thin bar (~30 logical px)
 - **Root cause candidates**:
-  - GTK enforces a minimum window height > 52px on this compositor
+  - GTK enforces a minimum window height > 30px on this compositor
   - `screen_retriever.visibleSize` may return physical pixels on this HiDPI display, but `window_manager` Size is in logical pixels → mismatch
 - **Severity**: HIGH — unusable
 

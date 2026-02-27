@@ -1,3 +1,13 @@
+/// CustomPainter for the timeline strip.
+///
+/// TLDR:
+/// Overview: Low-level canvas painting of events and indicators.
+/// Problem: Need a custom layout that can smoothly animate at 1Hz.
+/// Solution: Paints rectangles, labels, and the NowIndicator based on TimelineLayout.
+/// Breaking Changes: No.
+///
+/// ---------------------------------------------------------------------------
+
 import 'package:flutter/material.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/timeline/timeline_layout.dart';

@@ -1,3 +1,13 @@
+/// Visual marker for the current moment.
+///
+/// TLDR:
+/// Overview: A red vertical line that marks "Now" on the timeline strip.
+/// Problem: Need a clear reference point for the user's current time.
+/// Solution: Implements a CustomPainter with a red line and a triangle cap.
+/// Breaking Changes: No.
+///
+/// ---------------------------------------------------------------------------
+
 import 'package:flutter/material.dart';
 
 /// Fixed vertical marker that represents the current moment on the strip.

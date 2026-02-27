@@ -94,6 +94,12 @@ A **narrow, persistent, horizontal bar** anchored to the top of the screen (all 
 | F-12 | **Mobile Support** | Flutter iOS/Android — strip appears as a widget or notification bar |
 | F-13 | **Day Boundary Handling** | Celebratory state when no more events today; shows first event tomorrow |
 | F-14 | **Hover Detail & Links** | On hover: show full truncated title, link to calendar event, and video call URL (Meet/Zoom/Teams) if present |
+| F-20 | **Settings & Refresh Controls** | On hover, reveal gear icon (settings) and refresh button on right side of strip |
+| F-21 | **Font/Size Settings** | Configurable event label text size (small/medium/large); persisted to disk |
+| F-22 | **Logout / Re-authenticate** | Settings option to clear stored tokens and return to sign-in state (account switching) |
+| F-23 | **Tick Marks** | Adaptive hour/minute tick marks along the strip; hour ticks labeled, density scales with available pixel space |
+| F-24 | **Event Start Time Labels** | Show HH:mm at the left edge of each event block; suppressed when block is too narrow or labels would overlap |
+| F-25 | **In-Meeting Countdown Mode** | When now indicator is inside an active event, countdown shows time until END of current event in amber; normal mode (white) shows time until NEXT event starts |
 
 ### V3 (Nice to Have)
 

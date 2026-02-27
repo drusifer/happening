@@ -1,3 +1,13 @@
+/// Pure-logic timeline geometry calculations.
+///
+/// TLDR:
+/// Overview: Calculates X positions for times based on logical pixels.
+/// Problem: Need consistent, testable positioning logic without a Flutter dependency.
+/// Solution: Implements a stateless class to handle time-to-pixel mapping.
+/// Breaking Changes: No.
+///
+/// ---------------------------------------------------------------------------
+
 /// Pure math for positioning events on the timeline strip.
 ///
 /// All inputs in logical pixels and [DateTime]. No Flutter dependency.

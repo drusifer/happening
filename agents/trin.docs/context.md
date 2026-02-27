@@ -10,7 +10,7 @@
 |----|--------|-------|
 | S1-01 | ✅ | Flutter project created, Linux confirmed running |
 | S1-02 | ✅ | pubspec trimmed to only actual deps (window_manager, screen_retriever) |
-| S1-03 | ✅ | alwaysOnTop, frameless, 52px, Offset.zero — all verified in code |
+| S1-03 | ✅ | alwaysOnTop, frameless, 30px, Offset.zero — all verified in code |
 | S1-04 | ✅ | HappeningApp StatefulWidget, mock events, clock wired |
 | S1-05 | ✅ | ClockService 1s tick — confirmed by tests |
 | S1-06 | ✅ | TimelineStrip StreamBuilder + CustomPainter — clock-driven redraws |

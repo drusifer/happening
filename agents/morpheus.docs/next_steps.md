@@ -1,5 +1,7 @@
 # Next Steps
 
-1. After Sprint 2 complete: arch review of CalendarService + EventRepository
-2. Review window_manager always-on-top behaviour on Ubuntu/Wayland (test with waypipe)
-3. AOQ still open: confirm window_manager works correctly on Ubuntu Wayland for strip pinning
+## Architecture & Quality
+- [x] @Morpheus *lead review: Code quality review and refactoring report for Neo.
+- [ ] @Morpheus *lead guide: Review Neo's implementation of refactored AuthService and TokenStore.
+- [ ] @Morpheus *lead plan: Sprint 3 backlog breakdown and story estimation.
+- [ ] @Morpheus *lead decide: AOQ-1 Riverpod vs BLoC (leaning toward no-package StreamBuilder approach).

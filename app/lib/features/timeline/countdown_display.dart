@@ -1,3 +1,13 @@
+/// Time-until-next-event countdown text.
+///
+/// TLDR:
+/// Overview: Formats the duration remaining until the next event starts.
+/// Problem: Need a glanceable "T-minus" timer that changes color based on urgency.
+/// Solution: Displays duration as "X h Y min" or "now", with orange/red warnings.
+/// Breaking Changes: No.
+///
+/// ---------------------------------------------------------------------------
+
 import 'package:flutter/material.dart';
 
 /// Shows time remaining until the next calendar event.

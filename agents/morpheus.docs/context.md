@@ -8,7 +8,7 @@
 - Flutter desktop (macOS, Windows, Linux)
 - window_manager package for always-on-top frameless window
 - Flutter logical pixels = DPI-adaptive automatically (no manual DPI math)
-- Strip height: 52px logical
+- Strip height: 30px logical
 - STATELESS-FIRST: StreamBuilder<DateTime> + single root StatefulWidget, NO Riverpod/BLoC
 - CustomPainter for proportional timeline layout (richer interface)
 - Real-time: 1fps clock tick (Stream.periodic 1s)

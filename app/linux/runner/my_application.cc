@@ -3,6 +3,7 @@
 #include <flutter_linux/flutter_linux.h>
 #ifdef GDK_WINDOWING_X11
 #include <gdk/gdkx.h>
+#include <X11/Xatom.h>
 #endif
 
 #include "flutter/generated_plugin_registrant.h"
@@ -14,9 +15,48 @@ struct _MyApplication {
 
 G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
 
+// Sets _NET_WM_STRUT_PARTIAL so the WM reserves 30px at the top of the
+// screen and won't tile or maximise other windows behind the strip.
+static void set_x11_strut(GtkWindow* window) {
+#ifdef GDK_WINDOWING_X11
+  GdkDisplay* display = gdk_display_get_default();
+  if (!GDK_IS_X11_DISPLAY(display)) return;
+
+  GdkWindow* gdk_window = gtk_widget_get_window(GTK_WIDGET(window));
+  if (!gdk_window) return;
+
+  Display* xdisplay = GDK_DISPLAY_XDISPLAY(display);
+  Window xwindow = GDK_WINDOW_XID(gdk_window);
+
+  GdkMonitor* monitor = gdk_display_get_primary_monitor(display);
+  GdkRectangle geo;
+  gdk_monitor_get_geometry(monitor, &geo);
+
+  // _NET_WM_STRUT_PARTIAL: left, right, top, bottom,
+  //   left_y0, left_y1, right_y0, right_y1,
+  //   top_x0,  top_x1,  bottom_x0, bottom_x1
+  long strut[12] = {
+      0, 0, 30, 0,
+      0, 0, 0,  0,
+      geo.x, geo.x + geo.width - 1, 0, 0};
+
+  Atom strut_atom = XInternAtom(xdisplay, "_NET_WM_STRUT_PARTIAL", False);
+  XChangeProperty(xdisplay, xwindow, strut_atom, XA_CARDINAL, 32,
+                  PropModeReplace, (unsigned char*)strut, 12);
+
+  // Tell the WM this window IS the panel — place it at y=0, not below the strut.
+  Atom wm_type = XInternAtom(xdisplay, "_NET_WM_WINDOW_TYPE", False);
+  Atom wm_type_dock = XInternAtom(xdisplay, "_NET_WM_WINDOW_TYPE_DOCK", False);
+  XChangeProperty(xdisplay, xwindow, wm_type, XA_ATOM, 32,
+                  PropModeReplace, (unsigned char*)&wm_type_dock, 1);
+#endif
+}
+
 // Called when first Flutter frame received.
 static void first_frame_cb(MyApplication* self, FlView* view) {
-  gtk_widget_show(gtk_widget_get_toplevel(GTK_WIDGET(view)));
+  GtkWidget* toplevel = gtk_widget_get_toplevel(GTK_WIDGET(view));
+  gtk_widget_show(toplevel);
+  set_x11_strut(GTK_WINDOW(toplevel));
 }
 
 // Implements GApplication::activate.

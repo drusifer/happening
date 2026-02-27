@@ -1,3 +1,13 @@
+/// Video call URL extraction service.
+///
+/// TLDR:
+/// Overview: Finds Meet, Zoom, and Teams links in calendar event fields.
+/// Problem: Meeting links are often hidden in different parts of the event metadata.
+/// Solution: Implements a priority chain (hangoutLink → conferenceData → regex) for extraction.
+/// Breaking Changes: No.
+///
+/// ---------------------------------------------------------------------------
+
 /// Extracts a video call URL from Google Calendar event fields.
 ///
 /// Priority chain (first match wins):

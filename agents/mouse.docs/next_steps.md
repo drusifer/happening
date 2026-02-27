@@ -1,7 +1,7 @@
 # Next Steps
 
-## On resume:
-1. `make test` — confirm 44/44 GREEN on new machine
-2. `make run` — Trin smoke test S1-11 + S1-12 (strip visible, mock events animate)
-3. Mark S1-11, S1-12 done if smoke test passes → Sprint 1 DONE
-4. Begin Sprint 2 — @Neo *swe impl S2-03 AuthService
+## Sprint 3 Execution (Refactor & Polish)
+- [x] @Mouse *sm plan: Incorporate refactoring tasks into Sprint 3.
+- [ ] @Mouse *sm status: Monitor Neo's progress on S3-R01 through S3-R04.
+- [ ] @Mouse *sm status: Coordinate with Trin on S2-10 to S2-13 (remaining Sprint 2 verification).
+- [ ] @Mouse *sm blocked: Identify any impediments during the refactoring phase.
