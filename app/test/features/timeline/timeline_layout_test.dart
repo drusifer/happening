@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/timeline/timeline_layout.dart';
 
 void main() {
@@ -83,6 +85,48 @@ void main() {
     test('isVisible returns false for event before window start', () {
       final beforeWindow = now.subtract(const Duration(hours: 2));
       expect(layout.isVisible(beforeWindow), isFalse);
+    });
+
+    // ── Hit Testing (S3-R02) ──────────────────────────────────────────────
+    group('eventAtX', () {
+      final event1 = CalendarEvent(
+        id: '1',
+        title: 'Meeting 1',
+        startTime: DateTime(2026, 2, 26, 11, 0), // 1 hour in future
+        endTime: DateTime(2026, 2, 26, 12, 0),   // 2 hours in future
+        color: Colors.blue,
+        calendarEventUrl: null,
+        videoCallUrl: null,
+      );
+
+      test('returns event when mouse is in the middle of it', () {
+        final x = layout.xForTime(DateTime(2026, 2, 26, 11, 30), now);
+        expect(layout.eventAtX(x, [event1], now), equals(event1));
+      });
+
+      test('returns event when mouse is at the very start edge', () {
+        final x = layout.xForTime(event1.startTime, now);
+        expect(layout.eventAtX(x, [event1], now), equals(event1));
+      });
+
+      test('returns event when mouse is at the very end edge', () {
+        final x = layout.xForTime(event1.endTime, now);
+        expect(layout.eventAtX(x, [event1], now), equals(event1));
+      });
+
+      test('returns null when mouse is before the event', () {
+        final x = layout.xForTime(event1.startTime.subtract(const Duration(seconds: 1)), now);
+        expect(layout.eventAtX(x, [event1], now), isNull);
+      });
+
+      test('returns null when mouse is after the event', () {
+        final x = layout.xForTime(event1.endTime.add(const Duration(seconds: 1)), now);
+        expect(layout.eventAtX(x, [event1], now), isNull);
+      });
+
+      test('returns null when list is empty', () {
+        expect(layout.eventAtX(100.0, [], now), isNull);
+      });
     });
   });
 }

@@ -1,9 +1,9 @@
 /// Root application widget and auth coordinator.
 ///
 /// TLDR:
-/// Overview: Manages authentication state, token persistence, and the polling loop.
-/// Problem: Need a central place to coordinate OAuth, GCal fetching, and the UI strip.
-/// Solution: Implements HappeningApp StatefulWidget with file-based token storage and 5-min polling.
+/// Overview: Manages high-level app state (Auth, Calendar) and root UI switching.
+/// Problem: Root widget was handling too many responsibilities (OAuth, file IO, polling).
+/// Solution: Refactored to delegate to AuthService and CalendarController.
 /// Breaking Changes: No.
 ///
 /// ---------------------------------------------------------------------------
@@ -16,13 +16,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:googleapis_auth/auth_io.dart';
-import 'package:http/http.dart' as http;
-import 'package:url_launcher/url_launcher.dart';
 
 import 'core/time/clock_service.dart';
+import 'features/auth/auth_service.dart';
+import 'features/auth/token_store.dart';
+import 'features/calendar/calendar_controller.dart';
 import 'features/calendar/calendar_event.dart';
 import 'features/calendar/calendar_service.dart';
-import 'features/calendar/event_repository.dart';
 import 'features/timeline/timeline_strip.dart';
 
 // ---------------------------------------------------------------------------
@@ -46,87 +46,44 @@ class HappeningApp extends StatefulWidget {
 
 class _HappeningAppState extends State<HappeningApp> {
   final _clock = ClockService();
+  
+  late final AuthService _auth;
+  CalendarController? _calendar;
 
   _AuthState _authState = _AuthState.loading;
-  List<CalendarEvent> _events = const [];
-  EventRepository? _repo;
-  Timer? _pollTimer;
 
   // ── Lifecycle ────────────────────────────────────────────────────────────
 
   @override
   void initState() {
     super.initState();
-    _tryRestoreAuth();
+    _initServices();
   }
 
   @override
   void dispose() {
-    _pollTimer?.cancel();
+    _calendar?.dispose();
     super.dispose();
   }
 
-  // ── Token persistence ─────────────────────────────────────────────────────
+  // ── Initialization ───────────────────────────────────────────────────────
 
-  Future<File> _tokensFile() async {
+  Future<void> _initServices() async {
     final home = Platform.environment['HOME'] ?? '';
-    final dir = Directory('$home/.config/happening');
-    if (!await dir.exists()) await dir.create(recursive: true);
-    return File('${dir.path}/tokens.json');
-  }
+    final tokenStore = FileTokenStore(directory: Directory('$home/.config/happening'));
+    
+    final clientId = await _loadClientId();
+    _auth = GoogleAuthService(
+      clientId: clientId,
+      scopes: _scopes,
+      tokenStore: tokenStore,
+    );
 
-  Future<AccessCredentials?> _loadCredentials() async {
-    try {
-      final file = await _tokensFile();
-      if (!await file.exists()) return null;
-      final json = jsonDecode(await file.readAsString()) as Map<String, dynamic>;
-      final at = json['accessToken'] as Map<String, dynamic>;
-      return AccessCredentials(
-        AccessToken(
-          at['type'] as String,
-          at['data'] as String,
-          DateTime.parse(at['expiry'] as String).toUtc(),
-        ),
-        json['refreshToken'] as String?,
-        List<String>.from(json['scopes'] as List),
-      );
-    } catch (_) {
-      return null;
+    if (await _auth.tryRestore()) {
+      _startCalendar();
+    } else {
+      if (mounted) setState(() => _authState = _AuthState.unauthenticated);
     }
-  }
-
-  Future<void> _saveCredentials(AccessCredentials creds) async {
-    try {
-      final file = await _tokensFile();
-      await file.writeAsString(jsonEncode({
-        'accessToken': {
-          'type': creds.accessToken.type,
-          'data': creds.accessToken.data,
-          'expiry': creds.accessToken.expiry.toIso8601String(),
-        },
-        'refreshToken': creds.refreshToken,
-        'scopes': creds.scopes,
-      }));
-    } catch (_) {}
-  }
-
-  // ── Auth flow ────────────────────────────────────────────────────────────
-
-  /// On startup: try to restore saved credentials before showing the sign-in prompt.
-  Future<void> _tryRestoreAuth() async {
-    final saved = await _loadCredentials();
-    if (saved != null) {
-      try {
-        final clientId = await _loadClientId();
-        final client = autoRefreshingClient(clientId, saved, http.Client());
-        client.credentialUpdates.listen(_saveCredentials);
-        await _startCalendar(client);
-        return;
-      } catch (_) {
-        // Saved credentials invalid or expired — fall through to sign-in.
-      }
-    }
-    if (mounted) setState(() => _authState = _AuthState.unauthenticated);
   }
 
   /// Loads OAuth client credentials from the bundled asset file.
@@ -140,52 +97,22 @@ class _HappeningAppState extends State<HappeningApp> {
     );
   }
 
-  /// Opens the system browser for Google OAuth, captures the loopback redirect,
-  /// and bootstraps the calendar service.
+  // ── Actions ──────────────────────────────────────────────────────────────
+
   Future<void> _signIn() async {
-    try {
-      final clientId = await _loadClientId();
-      final client = await clientViaUserConsent(
-        clientId,
-        _scopes,
-        (url) => launchUrl(
-          Uri.parse(url),
-          mode: LaunchMode.externalApplication,
-        ),
-      );
-      await _saveCredentials(client.credentials);
-      client.credentialUpdates.listen(_saveCredentials);
-      await _startCalendar(client);
-    } catch (e) {
-      // Sign-in cancelled or failed — stay on auth gate.
-      if (mounted) setState(() => _authState = _AuthState.unauthenticated);
+    if (await _auth.signIn()) {
+      _startCalendar();
     }
   }
 
-  // ── Calendar bootstrap ───────────────────────────────────────────────────
-
-  Future<void> _startCalendar(AutoRefreshingAuthClient client) async {
-    _repo = EventRepository(
-      GoogleCalendarService(gcal.CalendarApi(client)),
+  void _startCalendar() {
+    _calendar?.dispose();
+    _calendar = CalendarController(
+      GoogleCalendarService(gcal.CalendarApi(_auth.client!)),
     );
-
+    _calendar!.start();
+    
     if (mounted) setState(() => _authState = _AuthState.authenticated);
-
-    await _fetchEvents();
-
-    _pollTimer = Timer.periodic(
-      const Duration(minutes: 5),
-      (_) => _fetchEvents(),
-    );
-  }
-
-  Future<void> _fetchEvents() async {
-    try {
-      final events = await _repo!.getEvents();
-      if (mounted) setState(() => _events = events);
-    } catch (_) {
-      // Keep stale cache on transient network errors.
-    }
   }
 
   // ── Build ────────────────────────────────────────────────────────────────
@@ -200,9 +127,15 @@ class _HappeningAppState extends State<HappeningApp> {
         body: switch (_authState) {
           _AuthState.loading => const SizedBox.shrink(),
           _AuthState.unauthenticated => _SignInStrip(onTap: _signIn),
-          _AuthState.authenticated => TimelineStrip(
-              events: _events,
-              clockService: _clock,
+          _AuthState.authenticated => StreamBuilder<List<CalendarEvent>>(
+              stream: _calendar!.events,
+              initialData: const [],
+              builder: (context, snapshot) {
+                return TimelineStrip(
+                  events: snapshot.data!,
+                  clockService: _clock,
+                );
+              },
             ),
         },
       ),
