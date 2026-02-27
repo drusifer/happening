@@ -1,13 +1,14 @@
 # Next Steps — Resume Here
 
-## Sprint 2:
-- S2-03: AuthService (Google OAuth loopback redirect)
-- S2-04: TokenStore (flutter_secure_storage)
-- S2-05: CalendarService (Google Calendar API v3, skip all-day events)
-- S2-06: EventRepository (cache + dedup)
-- S2-07: Wire into HappeningApp, replace mock events
-- S2-08: 5-min polling Timer
-- S2-09: First-launch auth gate
+## Sprint 3 Refactor (Morpheus Review)
+- [ ] S3-Refactor-01: Extract `FileTokenStore` and `GoogleAuthService` (Decouple `app.dart`)
+- [ ] S3-Refactor-02: Move hit-testing logic from `TimelineStrip` to `TimelineLayout`
+- [ ] S3-Refactor-03: Add `expand()` and `collapse()` methods to `WindowService`
+- [ ] S3-Refactor-04: Decouple polling loop from `HappeningApp` root state
 
-## BUG-03 Cleanup:
-- [ ] @Oracle *ora record technical decision for Linux window height fixes in `docs/DECISIONS.md`.
+## Sprint 3 Features
+- [ ] S3-01 Hover detail overlay (F-14) — show event title/time on mouse hover
+- [ ] S3-02 macOS platform config
+- [ ] S3-03 Windows build verify
+- [ ] S3-04 Linux snap/deb packaging
+- [ ] S3-05 Open source release prep

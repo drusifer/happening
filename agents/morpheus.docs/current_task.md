@@ -1,19 +1,10 @@
 # Current Task
 
-## Task: ARCH v0.1 — System Architecture Review
-**Status**: Complete ✅
-**Output**: docs/ARCH.md
+## Code Quality Review & Refactoring Strategy
+**Status**: DONE ✅
 
-- [x] Project structure (feature-first layout)
-- [x] Key packages with rationale
-- [x] Window strategy (always-on-top, frameless, DPI handling)
-- [x] Real-time animation approach (1fps tick, computed pixel offset)
-- [x] Data flow diagram
-- [x] CalendarEvent data model (incl. videoCallUrl)
-- [x] OAuth desktop flow
-- [x] Platform-specific notes (macOS entitlements, Linux Wayland caveat)
-- [x] 4 open architectural questions with recommendations
-
-## Awaiting
-- Drew sign-off on AOQs (esp. AOQ-1 Riverpod vs BLoC)
-- Mouse sprint planning (can proceed in parallel)
+### Done
+- [x] Code Quality Review of Sprint 2 implementation.
+- [x] Identify code smells (God Object, logic leakage, dependency on Concrete classes).
+- [x] Formulate refactoring strategy (AuthService, TokenStore, WindowService enhancements).
+- [x] Author `agents/morpheus.docs/REFACTORING_REPORT.md` with recommendations for Neo.
