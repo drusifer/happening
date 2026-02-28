@@ -1,12 +1,12 @@
-/// Event data repository and cache.
-///
-/// TLDR:
-/// Overview: Manages the lifecycle and deduplication of calendar event data.
-/// Problem: Need to prevent redundant API calls and handle duplicates.
-/// Solution: Implements a 5-minute cache and ID-based deduplication for the CalendarService.
-/// Breaking Changes: No.
-///
-/// ---------------------------------------------------------------------------
+// Event data repository and cache.
+//
+// TLDR:
+// Overview: Manages the lifecycle and deduplication of calendar event data.
+// Problem: Need to prevent redundant API calls and handle duplicates.
+// Solution: Implements a 5-minute cache and ID-based deduplication for the CalendarService.
+// Breaking Changes: No.
+//
+// ---------------------------------------------------------------------------
 
 import 'calendar_event.dart';
 import 'calendar_service.dart';

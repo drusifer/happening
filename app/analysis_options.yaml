@@ -1,8 +1,66 @@
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  plugins:
+    - dart_code_linter
+  errors:
+    # Dead Code & Performance
+    unused_element: error
+    unused_field: error
+    unused_local_variable: error
+    unused_import: error
+    dead_code: error
+
+dart_code_linter:
+  metrics:
+    cyclomatic-complexity: 20
+    maximum-nesting-level: 5
+    number-of-parameters: 6
+    source-lines-of-code: 120
+  metrics-exclude:
+    - test/**
+  rules:
+    - no-boolean-literal-compare
+    - no-empty-block
+    - prefer-conditional-expressions
+    - no-equal-then-else
+
 linter:
   rules:
+    # Basic Style
     - prefer_const_constructors
     - prefer_final_fields
     - avoid_print
     - always_declare_return_types
+    - directives_ordering
+    - sized_box_for_whitespace
+
+    # Dead Code
+    - cancel_subscriptions
+    - close_sinks
+    - comment_references
+    - no_logic_in_create_state
+    - test_types_in_equals
+    - throw_in_finally
+    - unnecessary_brace_in_string_interps
+    - unnecessary_const
+    - unnecessary_getters_setters
+    - unnecessary_new
+    - unnecessary_null_aware_assignments
+    - unnecessary_null_in_if_null_operators
+    - unnecessary_overrides
+    - unnecessary_parenthesis
+    - unnecessary_statements
+    - unnecessary_this
+
+    # Security & Best Practices
+    - avoid_slow_async_io
+    - avoid_type_to_string
+    - avoid_web_libraries_in_flutter
+    - discarded_futures
+    - hash_and_equals
+    - literal_only_boolean_expressions
+    - no_duplicate_case_values
+    - secure_pubspec_urls
+    - type_init_formals
+    - valid_regexps

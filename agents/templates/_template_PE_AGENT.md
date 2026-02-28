@@ -48,7 +48,7 @@ All agents (including this one) must adhere to these core principles:
    - `What have we tried for <problem>?`
    - `What's in LESSONS.md about <issue>?`
 3. Read error logs carefully
-4. Verify environment (venv, paths, imports)
+4. Verify environment (paths, imports)
 5. Plan based on Oracle's knowledge + logs
 6. ONE retry with new approach
 7. If THAT fails: Log in LESSONS.md and escalate

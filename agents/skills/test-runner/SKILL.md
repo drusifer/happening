@@ -20,17 +20,17 @@ Runs the complete test suite with pytest.
 
 ### Run Specific Test File
 ```bash
-source .venv/bin/activate && pytest tests/unit/test_store.py -v
+pytest tests/unit/test_store.py -v
 ```
 
 ### Run Tests Matching Pattern
 ```bash
-source .venv/bin/activate && pytest -k "test_pattern" -v
+pytest -k "test_pattern" -v
 ```
 
 ### Run with Coverage
 ```bash
-source .venv/bin/activate && pytest --cov=via tests/ -v
+pytest --cov tests/ -v
 ```
 
 ## Quick Reference
@@ -38,10 +38,10 @@ source .venv/bin/activate && pytest --cov=via tests/ -v
 | Action | Command |
 |--------|---------|
 | All tests | `make test` |
-| Unit tests only | `source .venv/bin/activate && pytest tests/unit/ -v` |
-| Integration tests | `source .venv/bin/activate && pytest tests/integration/ -v` |
-| Single file | `source .venv/bin/activate && pytest tests/unit/test_X.py -v` |
-| By pattern | `source .venv/bin/activate && pytest -k "pattern" -v` |
+| Unit tests only | `pytest tests/unit/ -v` |
+| Integration tests | `pytest tests/integration/ -v` |
+| Single file | `pytest tests/unit/test_X.py -v` |
+| By pattern | `pytest -k "pattern" -v` |
 | Verbose output | Add `-v` or `-vv` flag |
 | Stop on first fail | Add `-x` flag |
 

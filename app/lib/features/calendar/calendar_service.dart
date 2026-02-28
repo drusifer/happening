@@ -1,16 +1,15 @@
-/// Google Calendar API service.
-///
-/// TLDR:
-/// Overview: Fetches and parses today's events from the Google Calendar API.
-/// Problem: Need to retrieve data from Google's servers and convert to internal models.
-/// Solution: Implements GoogleCalendarService using the googleapis package.
-/// Breaking Changes: No.
-///
-/// ---------------------------------------------------------------------------
+// Google Calendar API service.
+//
+// TLDR:
+// Overview: Fetches and parses today's events from the Google Calendar API.
+// Problem: Need to retrieve data from Google's servers and convert to internal models.
+// Solution: Implements GoogleCalendarService using the googleapis package.
+// Breaking Changes: No.
+//
+// ---------------------------------------------------------------------------
 
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 
@@ -45,8 +44,8 @@ class GoogleCalendarService implements CalendarService {
         .toList();
   }
 
-  /// Converts a Google Calendar API [Event] to a [CalendarEvent].
-  /// Only call this on events that have a [start.dateTime] (not all-day).
+  /// Converts a Google Calendar API `Event` to a `CalendarEvent`.
+  /// Only call this on events that have a `start.dateTime` (not all-day).
   static CalendarEvent fromApiEvent(gcal.Event e) {
     // Log raw API payload — copy from debug console to build test fixtures.
     debugPrint('[CalendarAPI] ${jsonEncode(e.toJson())}');

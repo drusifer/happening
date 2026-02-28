@@ -1,12 +1,12 @@
-/// Detailed event info card for hover states.
-///
-/// TLDR:
-/// Overview: A card that shows full title, times, and meeting/calendar links.
-/// Problem: The 30px strip is too small to show full event details or buttons.
-/// Solution: Displays a shadow-boxed card that expands into the newly-resized window area.
-/// Breaking Changes: No.
-///
-/// ---------------------------------------------------------------------------
+// Detailed event info card for hover states.
+//
+// TLDR:
+// Overview: A card that shows full title, times, and meeting/calendar links.
+// Problem: The 30px strip is too small to show full event details or buttons.
+// Solution: Displays a shadow-boxed card that expands into the newly-resized window area.
+// Breaking Changes: No.
+//
+// ---------------------------------------------------------------------------
 
 import 'package:flutter/material.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
@@ -30,13 +30,14 @@ class HoverDetailOverlay extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: 260),
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
         decoration: BoxDecoration(
-          color: event.color.withOpacity(0.95),
+          color: event.color.withValues(alpha: 0.95),
           borderRadius: const BorderRadius.only(
             bottomLeft: Radius.circular(6),
             bottomRight: Radius.circular(6),
           ),
           boxShadow: const [
-            BoxShadow(color: Colors.black45, blurRadius: 8, offset: Offset(0, 4)),
+            BoxShadow(
+                color: Colors.black45, blurRadius: 8, offset: Offset(0, 4)),
           ],
         ),
         child: Column(
@@ -56,14 +57,16 @@ class HoverDetailOverlay extends StatelessWidget {
               '${_fmt(event.startTime)} – ${_fmt(event.endTime)}',
               style: const TextStyle(color: Colors.white70, fontSize: 10),
             ),
-            if (event.calendarEventUrl != null || event.videoCallUrl != null) ...[
+            if (event.calendarEventUrl != null ||
+                event.videoCallUrl != null) ...[
               const SizedBox(height: 7),
               Wrap(
                 spacing: 6,
                 runSpacing: 4,
                 children: [
                   if (event.calendarEventUrl != null)
-                    _LinkButton(label: 'Open in Cal', url: event.calendarEventUrl!),
+                    _LinkButton(
+                        label: 'Open in Cal', url: event.calendarEventUrl!),
                   if (event.videoCallUrl != null)
                     _LinkButton(
                       label: 'Join Meeting',
@@ -94,7 +97,8 @@ class _LinkButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
+      onTap: () =>
+          launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(

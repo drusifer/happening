@@ -30,8 +30,8 @@ void main() {
 
     testWidgets('shows Join Meeting button when videoCallUrl present',
         (tester) async {
-      await tester.pumpWidget(_wrap(
-          HoverDetailOverlay(event: _event(videoCallUrl: 'https://meet.google.com/abc'))));
+      await tester.pumpWidget(_wrap(HoverDetailOverlay(
+          event: _event(videoCallUrl: 'https://meet.google.com/abc'))));
       expect(find.text('Join Meeting'), findsOneWidget);
     });
 
@@ -43,8 +43,8 @@ void main() {
 
     testWidgets('shows Open in Cal button when calendarEventUrl present',
         (tester) async {
-      await tester.pumpWidget(_wrap(
-          HoverDetailOverlay(event: _event(calendarEventUrl: 'https://calendar.google.com/e/1'))));
+      await tester.pumpWidget(_wrap(HoverDetailOverlay(
+          event: _event(calendarEventUrl: 'https://calendar.google.com/e/1'))));
       expect(find.text('Open in Cal'), findsOneWidget);
     });
 

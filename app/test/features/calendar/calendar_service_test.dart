@@ -65,8 +65,7 @@ void main() {
         startDateTimeIso: '2026-02-26T10:00:00',
         endDateTimeIso: '2026-02-26T10:30:00',
       );
-      expect(
-          GoogleCalendarService.fromApiEvent(apiEvent).title, '(No title)');
+      expect(GoogleCalendarService.fromApiEvent(apiEvent).title, '(No title)');
     });
 
     test('uses fallback title for empty summary', () {
@@ -75,8 +74,7 @@ void main() {
         startDateTimeIso: '2026-02-26T10:00:00',
         endDateTimeIso: '2026-02-26T10:30:00',
       );
-      expect(
-          GoogleCalendarService.fromApiEvent(apiEvent).title, '(No title)');
+      expect(GoogleCalendarService.fromApiEvent(apiEvent).title, '(No title)');
     });
 
     test('extracts hangoutLink as videoCallUrl', () {
@@ -95,8 +93,7 @@ void main() {
         endDateTimeIso: '2026-02-26T10:30:00',
         location: 'Conference Room B',
       );
-      expect(
-          GoogleCalendarService.fromApiEvent(apiEvent).videoCallUrl, isNull);
+      expect(GoogleCalendarService.fromApiEvent(apiEvent).videoCallUrl, isNull);
     });
 
     test('all-day event has null start.dateTime (filter marker)', () {
@@ -109,7 +106,9 @@ void main() {
       expect(allDay.start?.dateTime, isNull);
     });
 
-    test('event color defaults to blue (Sprint 3: F-09 will parse calendar color)', () {
+    test(
+        'event color defaults to blue (Sprint 3: F-09 will parse calendar color)',
+        () {
       final apiEvent = _makeEvent(
         startDateTimeIso: '2026-02-26T10:00:00',
         endDateTimeIso: '2026-02-26T10:30:00',

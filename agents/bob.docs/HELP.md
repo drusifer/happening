@@ -163,7 +163,7 @@ Type `*help` anytime to see this reference. The Bob System is a single AI that s
    - What have we tried for this problem?
    - What lessons have we learned about this issue?
 3. Read error logs carefully
-4. Verify environment (venv, paths, imports)
+4. Verify environment (paths, imports)
 5. Plan based on Oracle's knowledge + logs
 6. ONE retry with new approach
 7. If THAT fails: Document the lesson learned and escalate

@@ -15,17 +15,17 @@ This skill provides code quality analysis tools for Python projects. Use these c
 | Check | Command |
 |-------|---------|
 | All quality checks | `make lint` (if available) |
-| Style (PEP-8) | `source .venv/bin/activate && pylint via/` |
-| Type checking | `source .venv/bin/activate && mypy via/` |
-| Dead code | `source .venv/bin/activate && vulture via/` |
-| Complexity | `source .venv/bin/activate && radon cc via/ -a` |
-| Duplication | `source .venv/bin/activate && pylint --disable=all --enable=duplicate-code via/` |
+| Style (PEP-8) | `pylint .` |
+| Type checking | `mypy .` |
+| Dead code | `vulture .` |
+| Complexity | `radon cc . -a` |
+| Duplication | `pylint --disable=all --enable=duplicate-code .` |
 
 ## Commands
 
 ### Style & Conventions (pylint)
 ```bash
-source .venv/bin/activate && pylint via/
+pylint .
 ```
 Checks PEP-8 compliance, code smells, and common errors.
 
@@ -36,7 +36,7 @@ Checks PEP-8 compliance, code smells, and common errors.
 
 ### Type Checking (mypy)
 ```bash
-source .venv/bin/activate && mypy via/
+mypy .
 ```
 Static type analysis using type hints.
 
@@ -46,7 +46,7 @@ Static type analysis using type hints.
 
 ### Dead Code Detection (vulture)
 ```bash
-source .venv/bin/activate && vulture via/
+vulture .
 ```
 Finds unused code (functions, variables, imports).
 
@@ -57,10 +57,10 @@ Finds unused code (functions, variables, imports).
 ### Complexity Analysis (radon)
 ```bash
 # Cyclomatic complexity
-source .venv/bin/activate && radon cc via/ -a -s
+radon cc . -a -s
 
 # Maintainability index
-source .venv/bin/activate && radon mi via/ -s
+radon mi . -s
 ```
 
 **Complexity grades:**
@@ -73,14 +73,14 @@ source .venv/bin/activate && radon mi via/ -s
 
 ### Duplication Detection
 ```bash
-source .venv/bin/activate && pylint --disable=all --enable=duplicate-code via/
+pylint --disable=all --enable=duplicate-code .
 ```
 
 ## Installation
 
 If tools are missing, install them:
 ```bash
-source .venv/bin/activate && pip install pylint mypy vulture radon
+pip install pylint mypy vulture radon
 ```
 
 ## Workflow
