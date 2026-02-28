@@ -58,7 +58,7 @@ void main() {
     test('writes value to a file in the directory', () async {
       await store.write(key: 'auth_token', value: '{"token": "test"}');
       final file = File('${tempDir.path}/auth_token.json');
-      expect(await file.exists(), isTrue);
+      expect(file.existsSync(), isTrue);
       expect(await file.readAsString(), equals('{"token": "test"}'));
     });
 
@@ -75,7 +75,7 @@ void main() {
       await store.write(key: 'to_be_deleted', value: 'gone');
       await store.delete(key: 'to_be_deleted');
       final file = File('${tempDir.path}/to_be_deleted.json');
-      expect(await file.exists(), isFalse);
+      expect(file.existsSync(), isFalse);
     });
 
     test('multiple stores share the same directory', () async {

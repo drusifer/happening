@@ -55,20 +55,20 @@
 
 | ID | Task | Owner | Status |
 |---|---|---|---|
-| S3-R01 | Extract `FileTokenStore` and `GoogleAuthService` (Decouple `app.dart`) | Neo | `[ ]` |
-| S3-R02 | Move hit-testing logic from `TimelineStrip` to `TimelineLayout` | Neo | `[ ]` |
-| S3-R03 | Add `expand()` and `collapse()` methods to `WindowService` | Neo | `[ ]` |
-| S3-R04 | Decouple polling loop from `HappeningApp` root state | Neo | `[ ]` |
+| S3-R01 | Extract `FileTokenStore` and `GoogleAuthService` (Decouple `app.dart`) | Neo | `[x]` |
+| S3-R02 | Move hit-testing logic from `TimelineStrip` to `TimelineLayout` | Neo | `[x]` |
+| S3-R03 | Add `expand()` and `collapse()` methods to `WindowService` | Neo | `[x]` |
+| S3-R04 | Decouple polling loop from `HappeningApp` root state | Neo | `[x]` |
 | S3-01 | Implement `HoverDetailOverlay` — full title + GCal link + video call button on hover (F-14) | Neo | `[x]` |
-| S3-09 | Implement hover-reveal controls — gear icon + refresh button appear on strip hover (F-20) | Neo | `[ ]` |
-| S3-10 | Implement `SettingsPanel` popup — opens below strip from gear icon; font/size picker + logout button (F-21, F-22) | Neo | `[ ]` |
-| S3-11 | Implement logout flow — clear `~/.config/happening/tokens.json`, return to `_AuthState.unauthenticated` (F-22) | Neo | `[ ]` |
-| S3-12 | Implement font size setting — small/medium/large, persisted to `~/.config/happening/settings.json` (F-21) | Neo | `[ ]` |
+| S3-09 | Implement hover-reveal controls — gear icon + refresh button appear on strip hover (F-20) | Neo | `[x]` |
+| S3-10 | Implement `SettingsPanel` popup — opens below strip from gear icon; font/size picker + logout button (F-21, F-22) | Neo | `[x]` |
+| S3-11 | Implement logout flow — clear `~/.config/happening/tokens.json`, return to `_AuthState.unauthenticated` (F-22) | Neo | `[x]` |
+| S3-12 | Implement font size setting — small/medium/large, persisted to `~/.config/happening/settings.json` (F-21) | Neo | `[x]` |
 | S3-13 | Trin: verify settings panel opens/closes, font changes apply live, logout returns to sign-in strip | Trin | `[ ]` |
-| S3-14 | Implement adaptive tick marks — hour ticks (labeled) + 15-min ticks (unlabeled); density driven by `pixelsPerHour` threshold (F-23) | Neo | `[ ]` |
-| S3-15 | Implement event start time labels — HH:mm at left edge of event block; suppress if block < 45px or label within 35px of adjacent label (F-24) | Neo | `[ ]` |
+| S3-14 | Implement adaptive tick marks — hour ticks (labeled) + 15-min ticks (unlabeled); density driven by `pixelsPerHour` threshold (F-23) | Neo | `[x]` |
+| S3-15 | Implement event start time labels — HH:mm at left edge of event block; suppress if block < 45px or label within 35px of adjacent label (F-24) | Neo | `[x]` |
 | S3-16 | Trin: verify tick marks render correctly at narrow/wide windows; verify no overlapping labels | Trin | `[ ]` |
-| S3-17 | Implement in-meeting countdown mode — detect active event, pass `CountdownMode` to `CountdownDisplay`; amber color for `untilEnd`, white for `untilNext` (F-25) | Neo | `[ ]` |
+| S3-17 | Implement in-meeting countdown mode — detect active event, pass `CountdownMode` to `CountdownDisplay`; amber color for `untilEnd`, white for `untilNext` (F-25) | Neo | `[x]` |
 | S3-18 | Trin: verify countdown switches modes correctly — idle→meeting→idle; verify amber/white distinction | Trin | `[ ]` |
 
 **Sprint 3 Definition of Done**: Code refactored into decoupled services, all interaction logic unit-tested, hover features complete.

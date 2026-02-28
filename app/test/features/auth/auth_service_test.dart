@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:googleapis_auth/auth_io.dart';
 import 'package:happening/features/auth/auth_service.dart';
 import 'package:happening/features/auth/token_store.dart';
-import 'package:googleapis_auth/auth_io.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
@@ -90,10 +90,13 @@ void main() {
       expect(await service.tryRestore(), isFalse);
     });
 
-    test('tryRestore returns true and sets client when valid tokens exist', () async {
-      final credsJson = '{"accessToken":{"type":"Bearer","data":"token","expiry":"2026-12-31T00:00:00Z"},"refreshToken":"refresh","scopes":["scope"]}';
-      when(mockStore.read(key: 'google_credentials')).thenAnswer((_) async => credsJson);
-      
+    test('tryRestore returns true and sets client when valid tokens exist',
+        () async {
+      const credsJson =
+          '{"accessToken":{"type":"Bearer","data":"token","expiry":"2026-12-31T00:00:00Z"},"refreshToken":"refresh","scopes":["scope"]}';
+      when(mockStore.read(key: 'google_credentials'))
+          .thenAnswer((_) async => credsJson);
+
       expect(await service.tryRestore(), isTrue);
       expect(service.isSignedIn, isTrue);
       expect(service.client, isNotNull);

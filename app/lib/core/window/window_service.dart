@@ -3,11 +3,11 @@ import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
 const double _kStripHeightLogical = 30.0;
-const double _kExpandedHeightLogical = 115.0;
+const double _kExpandedHeightLogical = 200.0;
 
-/// Window configuration and lifecycle service.
-///
-/// TLDR:
+// Window configuration and lifecycle service.
+//
+// TLDR:
 /// Overview: Sets up the frameless, always-on-top strip at the screen top.
 /// Problem: Need to ensure the window spans the primary display and stays on top across platforms.
 /// Solution: Uses window_manager and screen_retriever with DPR-aware logical sizing.

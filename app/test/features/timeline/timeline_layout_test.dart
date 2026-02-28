@@ -93,7 +93,7 @@ void main() {
         id: '1',
         title: 'Meeting 1',
         startTime: DateTime(2026, 2, 26, 11, 0), // 1 hour in future
-        endTime: DateTime(2026, 2, 26, 12, 0),   // 2 hours in future
+        endTime: DateTime(2026, 2, 26, 12, 0), // 2 hours in future
         color: Colors.blue,
         calendarEventUrl: null,
         videoCallUrl: null,
@@ -115,17 +115,52 @@ void main() {
       });
 
       test('returns null when mouse is before the event', () {
-        final x = layout.xForTime(event1.startTime.subtract(const Duration(seconds: 1)), now);
+        final x = layout.xForTime(
+            event1.startTime.subtract(const Duration(seconds: 1)), now);
         expect(layout.eventAtX(x, [event1], now), isNull);
       });
 
       test('returns null when mouse is after the event', () {
-        final x = layout.xForTime(event1.endTime.add(const Duration(seconds: 1)), now);
+        final x = layout.xForTime(
+            event1.endTime.add(const Duration(seconds: 1)), now);
         expect(layout.eventAtX(x, [event1], now), isNull);
       });
 
       test('returns null when list is empty', () {
         expect(layout.eventAtX(100.0, [], now), isNull);
+      });
+    });
+
+    // ── In-Meeting Detection (S3-17) ──────────────────────────────────────
+    group('activeEvent', () {
+      final event1 = CalendarEvent(
+        id: '1',
+        title: 'Meeting 1',
+        startTime: DateTime(2026, 2, 26, 10, 30), // 30 min in future
+        endTime: DateTime(2026, 2, 26, 11, 30),
+        color: Colors.blue,
+        calendarEventUrl: null,
+        videoCallUrl: null,
+      );
+
+      test('returns null if no event is active right now', () {
+        expect(layout.activeEvent([], now), isNull);
+        expect(layout.activeEvent([event1], now), isNull);
+      });
+
+      test('returns event if current time is within its bounds', () {
+        final activeNow = DateTime(2026, 2, 26, 10, 45);
+        expect(layout.activeEvent([event1], activeNow), equals(event1));
+      });
+
+      test('returns event if current time is exactly at start', () {
+        final activeNow = DateTime(2026, 2, 26, 10, 30);
+        expect(layout.activeEvent([event1], activeNow), equals(event1));
+      });
+
+      test('returns null if current time is exactly at end (exclusive)', () {
+        final activeNow = DateTime(2026, 2, 26, 11, 30);
+        expect(layout.activeEvent([event1], activeNow), isNull);
       });
     });
   });

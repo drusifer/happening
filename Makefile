@@ -50,12 +50,28 @@ build-windows: $(PUB_STAMP)
 	cd $(APP_DIR) && $(FLUTTER) build windows --release
 
 # ── Quality ──────────────────────────────────────────────────────────────────
-.PHONY: format analyze
+.PHONY: format analyze lint lint-style lint-metrics lint-format
 format: $(PUB_STAMP)
-	cd $(APP_DIR) && $(FLUTTER) format lib/ test/
+	cd $(APP_DIR) && dart format lib/ test/
 
 analyze: $(PUB_STAMP)
 	cd $(APP_DIR) && $(FLUTTER) analyze
+
+# Comprehensive linting (Style + Complexity + Duplication + Formatting)
+lint: lint-style lint-metrics lint-format
+
+# Basic Flutter analyzer (Style) - Fatal on errors and warnings
+lint-style: $(PUB_STAMP)
+	cd $(APP_DIR) && $(FLUTTER) analyze --fatal-warnings
+
+# Complexity and Duplication metrics
+lint-metrics: $(PUB_STAMP)
+	cd $(APP_DIR) && $(FLUTTER) pub run dart_code_linter:metrics check-unused-files lib
+	cd $(APP_DIR) && $(FLUTTER) pub run dart_code_linter:metrics analyze lib --fatal-style --fatal-performance --fatal-warnings
+
+# Formatting check (non-modifying)
+lint-format: $(PUB_STAMP)
+	cd $(APP_DIR) && dart format --output=none --set-exit-if-changed lib/ test/
 
 # ── Clean ────────────────────────────────────────────────────────────────────
 .PHONY: clean
@@ -74,4 +90,8 @@ help:
 	@echo "  make build-macos  Release build for macOS"
 	@echo "  make format       Format all Dart source"
 	@echo "  make analyze      Run Dart analyzer"
+	@echo "  make lint         Run all lint checks (style, metrics, format)"
+	@echo "  make lint-style   Run Flutter analyzer with fatal flags"
+	@echo "  make lint-metrics Run complexity and performance metrics"
+	@echo "  make lint-format  Check if code is correctly formatted"
 	@echo "  make clean        Remove build artifacts"

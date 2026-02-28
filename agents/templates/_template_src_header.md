@@ -8,6 +8,5 @@ TLDR:
 $Id$
 License: GPL-3.0
 Author: Drew Gutstein
-Repository: https://github.com/drusifer/via
 """
 
