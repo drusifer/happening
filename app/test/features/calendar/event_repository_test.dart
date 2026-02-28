@@ -39,7 +39,8 @@ void main() {
       expect(service.callCount, equals(1));
     });
 
-    test('second call within cache window uses cache (no extra fetch)', () async {
+    test('second call within cache window uses cache (no extra fetch)',
+        () async {
       final service = _FakeCalendarService([_event('a')]);
       final repo = EventRepository(service);
 

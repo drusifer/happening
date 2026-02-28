@@ -1,12 +1,12 @@
-/// Root application widget and auth coordinator.
-///
-/// TLDR:
-/// Overview: Manages high-level app state (Auth, Calendar) and root UI switching.
-/// Problem: Root widget was handling too many responsibilities (OAuth, file IO, polling).
-/// Solution: Refactored to delegate to AuthService and CalendarController.
-/// Breaking Changes: No.
-///
-/// ---------------------------------------------------------------------------
+// Root application widget and auth coordinator.
+//
+// TLDR:
+// Overview: Manages high-level app state (Auth, Calendar) and root UI switching.
+// Problem: Root widget was handling too many responsibilities (OAuth, file IO, polling).
+// Solution: Refactored to delegate to AuthService and CalendarController.
+// Breaking Changes: No.
+//
+// ---------------------------------------------------------------------------
 
 import 'dart:async';
 import 'dart:convert';
@@ -17,6 +17,7 @@ import 'package:flutter/services.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:googleapis_auth/auth_io.dart';
 
+import 'core/settings/settings_service.dart';
 import 'core/time/clock_service.dart';
 import 'features/auth/auth_service.dart';
 import 'features/auth/token_store.dart';
@@ -46,7 +47,8 @@ class HappeningApp extends StatefulWidget {
 
 class _HappeningAppState extends State<HappeningApp> {
   final _clock = ClockService();
-  
+  late final SettingsService _settings;
+
   late final AuthService _auth;
   CalendarController? _calendar;
 
@@ -57,12 +59,13 @@ class _HappeningAppState extends State<HappeningApp> {
   @override
   void initState() {
     super.initState();
-    _initServices();
+    unawaited(_initServices());
   }
 
   @override
   void dispose() {
     _calendar?.dispose();
+    _settings.dispose();
     super.dispose();
   }
 
@@ -70,8 +73,13 @@ class _HappeningAppState extends State<HappeningApp> {
 
   Future<void> _initServices() async {
     final home = Platform.environment['HOME'] ?? '';
-    final tokenStore = FileTokenStore(directory: Directory('$home/.config/happening'));
-    
+    final dir = Directory('$home/.config/happening');
+
+    _settings = SettingsService(directory: dir);
+    await _settings.load();
+
+    final tokenStore = FileTokenStore(directory: dir);
+
     final clientId = await _loadClientId();
     _auth = GoogleAuthService(
       clientId: clientId,
@@ -111,8 +119,15 @@ class _HappeningAppState extends State<HappeningApp> {
       GoogleCalendarService(gcal.CalendarApi(_auth.client!)),
     );
     _calendar!.start();
-    
+
     if (mounted) setState(() => _authState = _AuthState.authenticated);
+  }
+
+  Future<void> _signOut() async {
+    await _auth.signOut();
+    _calendar?.dispose();
+    _calendar = null;
+    if (mounted) setState(() => _authState = _AuthState.unauthenticated);
   }
 
   // ── Build ────────────────────────────────────────────────────────────────
@@ -124,20 +139,29 @@ class _HappeningAppState extends State<HappeningApp> {
       theme: ThemeData.dark(),
       home: Scaffold(
         backgroundColor: Colors.transparent,
-        body: switch (_authState) {
-          _AuthState.loading => const SizedBox.shrink(),
-          _AuthState.unauthenticated => _SignInStrip(onTap: _signIn),
-          _AuthState.authenticated => StreamBuilder<List<CalendarEvent>>(
-              stream: _calendar!.events,
-              initialData: const [],
-              builder: (context, snapshot) {
-                return TimelineStrip(
-                  events: snapshot.data!,
-                  clockService: _clock,
-                );
-              },
-            ),
-        },
+        body: StreamBuilder<AppSettings>(
+          stream: _settings.settings,
+          initialData: _settings.current,
+          builder: (context, settingsSnapshot) {
+            return switch (_authState) {
+              _AuthState.loading => const SizedBox.shrink(),
+              _AuthState.unauthenticated => _SignInStrip(onTap: _signIn),
+              _AuthState.authenticated => StreamBuilder<List<CalendarEvent>>(
+                  stream: _calendar!.events,
+                  initialData: const [],
+                  builder: (context, eventSnapshot) {
+                    return TimelineStrip(
+                      events: eventSnapshot.data!,
+                      clockService: _clock,
+                      calendarController: _calendar!,
+                      settingsService: _settings,
+                      onSignOut: _signOut,
+                    );
+                  },
+                ),
+            };
+          },
+        ),
       ),
     );
   }

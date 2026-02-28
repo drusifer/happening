@@ -1,7 +1,6 @@
 # Next Steps
 
-## Sprint 3 Execution (Refactor & Polish)
-- [x] @Mouse *sm plan: Incorporate refactoring tasks into Sprint 3.
-- [ ] @Mouse *sm status: Monitor Neo's progress on S3-R01 through S3-R04.
-- [ ] @Mouse *sm status: Coordinate with Trin on S2-10 to S2-13 (remaining Sprint 2 verification).
-- [ ] @Mouse *sm blocked: Identify any impediments during the refactoring phase.
+- [ ] Clarify "done already" comment with @Drew.
+- [ ] Coordinate S2-10/11 QA with live credentials.
+- [ ] Monitor Neo's implementation of S3 features.
+- [ ] Ensure Trin has latest builds for verification.

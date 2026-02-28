@@ -43,7 +43,8 @@ void main() {
 
     test('initialize sets up the window with logical pixels', () async {
       // Mock waitUntilReadyToShow to execute the callback
-      when(mockWM.waitUntilReadyToShow(any, any)).thenAnswer((invocation) async {
+      when(mockWM.waitUntilReadyToShow(any, any))
+          .thenAnswer((invocation) async {
         final callback = invocation.positionalArguments[1] as Function;
         await callback();
       });
@@ -51,7 +52,7 @@ void main() {
       await service.initialize();
 
       verify(mockWM.ensureInitialized()).called(1);
-      
+
       // logicalWidth = 3840 / 2.0 = 1920.0
       const expectedSize = Size(1920.0, 30.0);
       // setMinimumSize(30) called: 1 (callback)
@@ -62,37 +63,40 @@ void main() {
     });
 
     test('expand resizes the window to expanded height', () async {
-      when(mockWM.waitUntilReadyToShow(any, any)).thenAnswer((invocation) async {
+      when(mockWM.waitUntilReadyToShow(any, any))
+          .thenAnswer((invocation) async {
         final callback = invocation.positionalArguments[1] as Function;
         await callback();
       });
 
       // First initialize to set _lastWidth
       await service.initialize();
-      
+
       await service.expand();
 
-      const expandedSize = Size(1920.0, 115.0);
+      const expandedSize = Size(1920.0, 200.0);
       verify(mockWM.setMinimumSize(expandedSize)).called(1);
       verify(mockWM.setMaximumSize(expandedSize)).called(1);
       verify(mockWM.setSize(expandedSize)).called(1);
     });
 
     test('collapse resizes the window back to strip height', () async {
-      when(mockWM.waitUntilReadyToShow(any, any)).thenAnswer((invocation) async {
+      when(mockWM.waitUntilReadyToShow(any, any))
+          .thenAnswer((invocation) async {
         final callback = invocation.positionalArguments[1] as Function;
         await callback();
       });
 
       // First initialize to set _lastWidth
       await service.initialize();
-      
+
       await service.collapse();
 
       const collapsedSize = Size(1920.0, 30.0);
       // setMinimumSize(30) called: 1 (callback), 1 (explicit collapse) = 2
       verify(mockWM.setMinimumSize(collapsedSize)).called(2);
-      verify(mockWM.setMaximumSize(collapsedSize)).called(2); // callback, collapse
+      verify(mockWM.setMaximumSize(collapsedSize))
+          .called(2); // callback, collapse
       verify(mockWM.setSize(collapsedSize)).called(2); // callback, collapse
     });
   });

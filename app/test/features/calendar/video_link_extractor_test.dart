@@ -71,7 +71,8 @@ void main() {
         VideoLinkExtractor.extract(
           hangoutLink: null,
           conferenceEntryPoints: null,
-          location: 'https://teams.microsoft.com/l/meetup-join/19%3Aabc/context',
+          location:
+              'https://teams.microsoft.com/l/meetup-join/19%3Aabc/context',
           description: null,
         ),
         equals('https://teams.microsoft.com/l/meetup-join/19%3Aabc/context'),
@@ -85,7 +86,8 @@ void main() {
           hangoutLink: null,
           conferenceEntryPoints: null,
           location: 'Conference Room A',
-          description: 'Join us on Zoom:\nhttps://zoom.us/j/112233445\nPasscode: 1234',
+          description:
+              'Join us on Zoom:\nhttps://zoom.us/j/112233445\nPasscode: 1234',
         ),
         equals('https://zoom.us/j/112233445'),
       );

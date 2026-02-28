@@ -40,5 +40,40 @@ void main() {
       ));
       expect(find.text('45s'), findsOneWidget);
     });
+
+    testWidgets('uses white color for untilNext mode (> 5 min)',
+        (tester) async {
+      await tester.pumpWidget(wrap(
+        const CountdownDisplay(
+          remaining: Duration(minutes: 10),
+          mode: CountdownMode.untilNext,
+        ),
+      ));
+      final text = tester.widget<Text>(find.byType(Text));
+      expect(text.style?.color, Colors.white70);
+    });
+
+    testWidgets('uses orange color for untilNext mode (< 5 min)',
+        (tester) async {
+      await tester.pumpWidget(wrap(
+        const CountdownDisplay(
+          remaining: Duration(minutes: 3),
+          mode: CountdownMode.untilNext,
+        ),
+      ));
+      final text = tester.widget<Text>(find.byType(Text));
+      expect(text.style?.color, Colors.orange);
+    });
+
+    testWidgets('uses amber color for untilEnd mode', (tester) async {
+      await tester.pumpWidget(wrap(
+        const CountdownDisplay(
+          remaining: Duration(minutes: 20),
+          mode: CountdownMode.untilEnd,
+        ),
+      ));
+      final text = tester.widget<Text>(find.byType(Text));
+      expect(text.style?.color, const Color(0xFFFFC107)); // Amber
+    });
   });
 }

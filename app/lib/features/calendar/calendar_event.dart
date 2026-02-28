@@ -1,12 +1,12 @@
-/// Immutable calendar event model.
-///
-/// TLDR:
-/// Overview: Represents a single event from Google Calendar.
-/// Problem: Need a type-safe, internal representation of events for the UI and logic.
-/// Solution: Defines the CalendarEvent class with start/end times, URLs, and state helpers.
-/// Breaking Changes: No.
-///
-/// ---------------------------------------------------------------------------
+// Immutable calendar event model.
+//
+// TLDR:
+// Overview: Represents a single event from Google Calendar.
+// Problem: Need a type-safe, internal representation of events for the UI and logic.
+// Solution: Defines the CalendarEvent class with start/end times, URLs, and state helpers.
+// Breaking Changes: No.
+//
+// ---------------------------------------------------------------------------
 
 import 'package:flutter/material.dart';
 

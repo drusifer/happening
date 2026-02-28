@@ -1,12 +1,12 @@
-/// Pure-logic timeline geometry calculations.
-///
-/// TLDR:
-/// Overview: Calculates X positions for times based on logical pixels.
-/// Problem: Need consistent, testable positioning logic without a Flutter dependency.
-/// Solution: Implements a stateless class to handle time-to-pixel mapping.
-/// Breaking Changes: No.
-///
-/// ---------------------------------------------------------------------------
+// Pure-logic timeline geometry calculations.
+//
+// TLDR:
+// Overview: Calculates X positions for times based on logical pixels.
+// Problem: Need consistent, testable positioning logic without a Flutter dependency.
+// Solution: Implements a stateless class to handle time-to-pixel mapping.
+// Breaking Changes: No.
+//
+// ---------------------------------------------------------------------------
 
 import 'package:happening/features/calendar/calendar_event.dart';
 
@@ -39,12 +39,23 @@ class TimelineLayout {
   }
 
   /// Returns the [CalendarEvent] at the given [mouseX] position, or null if none.
-  CalendarEvent? eventAtX(double mouseX, List<CalendarEvent> events, DateTime now) {
+  CalendarEvent? eventAtX(
+      double mouseX, List<CalendarEvent> events, DateTime now) {
     for (final event in events) {
       final x = xForTime(event.startTime, now);
       final endX = xForTime(event.endTime, now);
       final w = (endX - x).clamp(3.0, double.infinity);
       if (mouseX >= x && mouseX <= x + w) return event;
+    }
+    return null;
+  }
+
+  /// Returns the first event that is currently active (startTime <= now < endTime).
+  CalendarEvent? activeEvent(List<CalendarEvent> events, DateTime now) {
+    for (final event in events) {
+      if (!event.startTime.isAfter(now) && event.endTime.isAfter(now)) {
+        return event;
+      }
     }
     return null;
   }

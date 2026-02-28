@@ -1,6 +1,5 @@
 # Next Steps
 
-1. Get Drew's sign-off on PRD v0.1 (resolve open questions OQ-1 through OQ-5)
-2. @Mouse *sm plan — break PRD into epics + sprint 1 tasks
-3. @Morpheus *arch review — system architecture for Flutter desktop + Google OAuth
-4. Once OQ-2 resolved: update PRD with all-day event handling approach
+- Monitor Neo's progress on S3-09 (Hover controls).
+- Define acceptance criteria for Settings Panel (F-21/F-22).
+- Coordinate with Trin for S3-13, S3-16, S3-18 verification.

@@ -1,12 +1,12 @@
-/// Manages the calendar event polling loop and event stream.
-///
-/// TLDR:
-/// Overview: A controller that periodically fetches events and exposes them via a Stream.
-/// Problem: Need to decouple the polling logic from the UI.
-/// Solution: Implements a StreamController with a 5-minute Timer loop.
-/// Breaking Changes: No.
-///
-/// ---------------------------------------------------------------------------
+// Manages the calendar event polling loop and event stream.
+//
+// TLDR:
+// Overview: A controller that periodically fetches events and exposes them via a Stream.
+// Problem: Need to decouple the polling logic from the UI.
+// Solution: Implements a StreamController with a 5-minute Timer loop.
+// Breaking Changes: No.
+//
+// ---------------------------------------------------------------------------
 
 import 'dart:async';
 
@@ -26,11 +26,11 @@ class CalendarController {
 
   /// Starts the polling loop.
   void start() {
-    _fetch();
+    unawaited(_fetch());
     _pollTimer?.cancel();
     _pollTimer = Timer.periodic(
       const Duration(minutes: 5),
-      (_) => _fetch(),
+      (_) => unawaited(_fetch()),
     );
   }
 
@@ -40,9 +40,12 @@ class CalendarController {
     _pollTimer = null;
   }
 
-  Future<void> _fetch() async {
+  /// Manually triggers a refresh of the calendar events, bypassing the cache.
+  Future<void> refresh() => _fetch(forceRefresh: true);
+
+  Future<void> _fetch({bool forceRefresh = false}) async {
     try {
-      final events = await _repo.getEvents();
+      final events = await _repo.getEvents(forceRefresh: forceRefresh);
       _eventsController.add(events);
     } catch (_) {
       // Stream keeps its last emitted value if fetch fails.
@@ -51,6 +54,6 @@ class CalendarController {
 
   void dispose() {
     stop();
-    _eventsController.close();
+    unawaited(_eventsController.close());
   }
 }

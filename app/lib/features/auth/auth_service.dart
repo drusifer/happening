@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:googleapis_auth/auth_io.dart';
@@ -6,7 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'token_store.dart';
 
-/// Abstract authentication service interface.
+// Abstract authentication service interface.
 ///
 /// TLDR:
 /// Overview: Defines the required methods for any auth implementation.
@@ -90,7 +91,8 @@ class GoogleAuthService implements AuthService {
   }
 
   void _onCredentialsChanged(AccessCredentials creds) {
-    _tokenStore.write(key: 'google_credentials', value: _encode(creds));
+    unawaited(
+        _tokenStore.write(key: 'google_credentials', value: _encode(creds)));
   }
 
   String _encode(AccessCredentials creds) {

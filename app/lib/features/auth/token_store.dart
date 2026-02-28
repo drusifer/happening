@@ -1,14 +1,13 @@
-/// Abstract token storage interface.
-///
-/// TLDR:
-/// Overview: Defines how auth tokens should be persisted on disk.
-/// Problem: Need to swap between insecure and secure storage based on platform capabilities.
-/// Solution: Declares the TokenStore abstract class (implementation currently in app.dart).
-/// Breaking Changes: No.
-///
-/// ---------------------------------------------------------------------------
+// Abstract token storage interface.
+//
+// TLDR:
+// Overview: Defines how auth tokens should be persisted on disk.
+// Problem: Need to swap between insecure and secure storage based on platform capabilities.
+// Solution: Declares the TokenStore abstract class (implementation currently in app.dart).
+// Breaking Changes: No.
+//
+// ---------------------------------------------------------------------------
 
-import 'dart:convert';
 import 'dart:io';
 
 /// Abstract token storage interface.
@@ -34,7 +33,7 @@ class FileTokenStore implements TokenStore {
   final Directory _dir;
 
   Future<File> _file(String key) async {
-    if (!await _dir.exists()) await _dir.create(recursive: true);
+    if (!_dir.existsSync()) await _dir.create(recursive: true);
     return File('${_dir.path}/$key.json');
   }
 
@@ -47,14 +46,14 @@ class FileTokenStore implements TokenStore {
   @override
   Future<String?> read({required String key}) async {
     final file = await _file(key);
-    if (!await file.exists()) return null;
+    if (!file.existsSync()) return null;
     return file.readAsString();
   }
 
   @override
   Future<void> delete({required String key}) async {
     final file = await _file(key);
-    if (await file.exists()) await file.delete();
+    if (file.existsSync()) await file.delete();
   }
 }
 
