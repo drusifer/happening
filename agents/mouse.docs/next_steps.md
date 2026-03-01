@@ -1,6 +1,5 @@
 # Next Steps
 
-- [ ] Clarify "done already" comment with @Drew.
-- [ ] Coordinate S2-10/11 QA with live credentials.
-- [ ] Monitor Neo's implementation of S3 features.
-- [ ] Ensure Trin has latest builds for verification.
+- [ ] Mouse: Prepare Sprint 5 task board.
+- [ ] Cypher: Finalize Sprint 5 User Stories.
+- [ ] Morpheus: Define Sprint 5 Architecture (Themes/Multi-calendar).

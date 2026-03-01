@@ -131,6 +131,148 @@ void main() {
       });
     });
 
+    // ── S4-19: Gap Labels ─────────────────────────────────────────────────
+    group('gapsBetween', () {
+      CalendarEvent _evt(String id, int startHour, int endHour) => CalendarEvent(
+            id: id,
+            title: id,
+            startTime: DateTime(2026, 2, 26, startHour),
+            endTime: DateTime(2026, 2, 26, endHour),
+            color: Colors.blue,
+            calendarEventUrl: null,
+            videoCallUrl: null,
+          );
+
+      test('returns empty when no events', () {
+        expect(layout.gapsBetween([], now), isEmpty);
+      });
+
+      test('returns empty when single event', () {
+        expect(layout.gapsBetween([_evt('a', 11, 12)], now), isEmpty);
+      });
+
+      test('returns gap between two events with enough pixel space', () {
+        // Event A: 11:00–12:00, Event B: 13:00–14:00 → 1hr gap
+        final gaps =
+            layout.gapsBetween([_evt('a', 11, 12), _evt('b', 13, 14)], now);
+        expect(gaps, hasLength(1));
+        expect(gaps.first.minutes, equals(60));
+        // centerX should be between xForTime(12:00) and xForTime(13:00)
+        final gapStart = layout.xForTime(DateTime(2026, 2, 26, 12), now);
+        final gapEnd = layout.xForTime(DateTime(2026, 2, 26, 13), now);
+        expect(gaps.first.centerX,
+            closeTo((gapStart + gapEnd) / 2, 0.1));
+      });
+
+      test('suppresses gap narrower than minPx', () {
+        // Events only 5 min apart — gap will be very narrow in pixels
+        final close = [
+          _evt('a', 11, 12),
+          CalendarEvent(
+            id: 'b',
+            title: 'b',
+            startTime: DateTime(2026, 2, 26, 12, 5),
+            endTime: DateTime(2026, 2, 26, 13),
+            color: Colors.blue,
+            calendarEventUrl: null,
+            videoCallUrl: null,
+          ),
+        ];
+        expect(layout.gapsBetween(close, now), isEmpty);
+      });
+
+      test('no gap when events are back-to-back', () {
+        final backToBack = [_evt('a', 11, 12), _evt('b', 12, 13)];
+        expect(layout.gapsBetween(backToBack, now), isEmpty);
+      });
+
+      test('returns two gaps for three spaced events', () {
+        final gaps = layout.gapsBetween(
+            [_evt('a', 10, 11), _evt('b', 12, 13), _evt('c', 14, 15)], now);
+        expect(gaps, hasLength(2));
+      });
+    });
+
+    // ── Tick pixel positions (drives _paintTicks in painter) ─────────────
+    group('tick pixel positions', () {
+      test('9am tick is off-screen left when windowStart is 09:15', () {
+        final now2 = DateTime(2026, 2, 26, 10, 15, 0);
+        final l = TimelineLayout(
+          stripWidth: 1200.0,
+          nowIndicatorX: 120.0,
+          windowStart: now2.subtract(const Duration(hours: 1)), // 09:15
+          windowEnd: now2.add(const Duration(hours: 8)),
+        );
+        final nineAm = DateTime(2026, 2, 26, 9, 0, 0);
+        // 75 min before now → ≈166px left of nowIndicatorX → off-screen
+        expect(l.xForTime(nineAm, now2), lessThan(0.0));
+        expect(l.isVisible(nineAm), isFalse); // both agree: not visible
+      });
+
+      test('10am tick is on-screen (left of now-line) when windowStart is 09:15', () {
+        final now2 = DateTime(2026, 2, 26, 10, 15, 0);
+        final l = TimelineLayout(
+          stripWidth: 1200.0,
+          nowIndicatorX: 120.0,
+          windowStart: now2.subtract(const Duration(hours: 1)),
+          windowEnd: now2.add(const Duration(hours: 8)),
+        );
+        final tenAm = DateTime(2026, 2, 26, 10, 0, 0);
+        final x = l.xForTime(tenAm, now2);
+        // 15 min before now → ≈33px left of nowIndicatorX → on-screen
+        expect(x, greaterThan(0.0));
+        expect(x, lessThan(120.0)); // left of now-line
+        expect(l.isVisible(tenAm), isTrue);
+      });
+
+      test('windowStart maps to negative x: on-screen range exceeds window', () {
+        // With 10% nowIndicatorX and 1/9 past fraction, windowStart x ≈ -13px.
+        // This means a tick just before windowStart is off-screen — both
+        // isVisible and pixel-bounds checks agree for these typical values.
+        final now2 = DateTime(2026, 2, 26, 10, 0, 0);
+        final l = TimelineLayout(
+          stripWidth: 1200.0,
+          nowIndicatorX: 120.0,
+          windowStart: now2.subtract(const Duration(hours: 1)),
+          windowEnd: now2.add(const Duration(hours: 8)),
+        );
+        // windowStart is at x = 120 - 3600*(1200/32400) ≈ -13.3px
+        expect(l.xForTime(l.windowStart, now2), lessThan(0.0));
+        // windowEnd is at x = 120 + 28800*(1200/32400) ≈ 1186.7px
+        expect(l.xForTime(l.windowEnd, now2), lessThan(l.stripWidth));
+      });
+
+      test('18:00 tick is on-screen for default 9-hour window', () {
+        final now2 = DateTime(2026, 2, 26, 10, 0, 0);
+        final l = TimelineLayout(
+          stripWidth: 1200.0,
+          nowIndicatorX: 120.0,
+          windowStart: now2.subtract(const Duration(hours: 1)),
+          windowEnd: now2.add(const Duration(hours: 8)), // windowEnd = 18:00
+        );
+        final tick18 = DateTime(2026, 2, 26, 18, 0, 0);
+        final x = l.xForTime(tick18, now2);
+        expect(x, inInclusiveRange(0.0, 1200.0));
+        expect(l.isVisible(tick18), isTrue); // 18:00 == windowEnd
+      });
+
+      test('all hour ticks 10:00–17:00 are on-screen for default window', () {
+        final now2 = DateTime(2026, 2, 26, 10, 0, 0);
+        final l = TimelineLayout(
+          stripWidth: 1200.0,
+          nowIndicatorX: 120.0,
+          windowStart: now2.subtract(const Duration(hours: 1)),
+          windowEnd: now2.add(const Duration(hours: 8)),
+        );
+        for (var h = 10; h <= 17; h++) {
+          final tick = DateTime(2026, 2, 26, h, 0, 0);
+          final x = l.xForTime(tick, now2);
+          expect(x, inInclusiveRange(0.0, 1200.0),
+              reason: '${h}am tick at x=$x should be on-screen');
+        }
+      });
+    });
+
     // ── In-Meeting Detection (S3-17) ──────────────────────────────────────
     group('activeEvent', () {
       final event1 = CalendarEvent(

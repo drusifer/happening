@@ -1,14 +1,12 @@
 # Current Task
 
-## Sprint 3: Polish & UX Tracking
-**Status**: 35% complete (5/14 tasks)
+## Sprint 4: Linux Release
+**Status**: COMPLETE ✅
 
-### Done (Sprint 3)
-- [x] S3-R01 to S3-R04 (Refactor)
-- [x] S3-01 (Hover Detail Overlay)
+### Done
+- [x] Group A, B, C, D, E, F complete.
+- [x] v0.1.0 Tagged.
+- [x] Task board final sync.
 
-### To-do (Sprint 3)
-- [ ] S3-09 to S3-12 (Settings, Logout, Font Scaling)
-- [ ] S3-14 to S3-15 (Tick Marks, Start Labels)
-- [ ] S3-17 (In-meeting Countdown)
-- [ ] S3-13, 16, 18 (Trin verification)
+### Next
+- [ ] Sprint 5 Planning.

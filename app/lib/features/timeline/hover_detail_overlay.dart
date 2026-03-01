@@ -15,9 +15,10 @@ import 'package:url_launcher/url_launcher.dart';
 /// Card that expands downward from an event block on hover.
 /// Rendered via OverlayEntry so it escapes the 30px strip bounds.
 class HoverDetailOverlay extends StatelessWidget {
-  const HoverDetailOverlay({super.key, required this.event});
+  const HoverDetailOverlay({super.key, required this.event, this.width = 260});
 
   final CalendarEvent event;
+  final double width;
 
   static String _fmt(DateTime t) =>
       '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
@@ -27,7 +28,7 @@ class HoverDetailOverlay extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 260),
+        width: width,
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
         decoration: BoxDecoration(
           color: event.color.withValues(alpha: 0.95),

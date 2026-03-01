@@ -38,6 +38,10 @@ test: $(PUB_STAMP)
 test-watch: $(PUB_STAMP)
 	cd $(APP_DIR) && $(FLUTTER) test --coverage --watch
 
+.PHONY: integration-test
+integration-test: $(PUB_STAMP)
+	cd $(APP_DIR) && PATH="$(LLVM_BIN):$$PATH" GDK_BACKEND=x11 XAUTHORITY=$$(ls /run/user/$$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1) $(FLUTTER) test integration_test/ -d linux
+
 # ── Build ────────────────────────────────────────────────────────────────────
 .PHONY: build-linux build-macos build-windows
 build-linux: $(PUB_STAMP)
@@ -73,6 +77,11 @@ lint-metrics: $(PUB_STAMP)
 lint-format: $(PUB_STAMP)
 	cd $(APP_DIR) && dart format --output=none --set-exit-if-changed lib/ test/
 
+# ── TLDR ─────────────────────────────────────────────────────────────────────
+.PHONY: tldr
+tldr:
+	@rgrep "TLDR" app/lib -B2 -A6 --include="*.dart"
+
 # ── Clean ────────────────────────────────────────────────────────────────────
 .PHONY: clean
 clean:
@@ -86,6 +95,7 @@ help:
 	@echo "  make setup        Check system deps + fetch pub deps"
 	@echo "  make run          Run app on Linux desktop"
 	@echo "  make test         Run all tests with coverage"
+	@echo "  make integration-test  Run integration tests on Linux desktop"
 	@echo "  make build-linux  Release build for Linux"
 	@echo "  make build-macos  Release build for macOS"
 	@echo "  make format       Format all Dart source"
@@ -94,4 +104,5 @@ help:
 	@echo "  make lint-style   Run Flutter analyzer with fatal flags"
 	@echo "  make lint-metrics Run complexity and performance metrics"
 	@echo "  make lint-format  Check if code is correctly formatted"
+	@echo "  make tldr         Print TLDR header map of all lib source files"
 	@echo "  make clean        Remove build artifacts"

@@ -1,6 +1,5 @@
 # Next Steps
 
-## Sprint 4 Quality Assurance
-- [ ] Monitor lint metrics during Sprint 4 implementation.
-- [ ] Enforce `make lint` as a pre-commit requirement.
-- [ ] Continue platform-specific UAT (macOS, Windows, Wayland).
+- [ ] Neo: Tag v0.1.0 release on GitHub.
+- [ ] Trin: Plan test coverage for Themes and Multi-calendar support.
+- [ ] Cypher: Sign off on Sprint 5 acceptance criteria.
