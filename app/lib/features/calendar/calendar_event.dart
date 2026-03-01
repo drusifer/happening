@@ -10,7 +10,7 @@
 
 import 'package:flutter/material.dart';
 
-/// Immutable representation of a single Google Calendar event.
+/// Immutable representation of a single Google Calendar event or task.
 @immutable
 class CalendarEvent {
   const CalendarEvent({
@@ -21,6 +21,7 @@ class CalendarEvent {
     required this.color,
     required this.calendarEventUrl,
     required this.videoCallUrl,
+    this.isTask = false,
   });
 
   final String id;
@@ -30,6 +31,8 @@ class CalendarEvent {
   final Color color;
   final String? calendarEventUrl;
   final String? videoCallUrl;
+  /// True when this item comes from the Google Calendar Tasks feed.
+  final bool isTask;
 
   Duration get duration => endTime.difference(startTime);
 
@@ -45,6 +48,7 @@ class CalendarEvent {
     Color? color,
     String? calendarEventUrl,
     String? videoCallUrl,
+    bool? isTask,
   }) =>
       CalendarEvent(
         id: id ?? this.id,
@@ -54,6 +58,7 @@ class CalendarEvent {
         color: color ?? this.color,
         calendarEventUrl: calendarEventUrl ?? this.calendarEventUrl,
         videoCallUrl: videoCallUrl ?? this.videoCallUrl,
+        isTask: isTask ?? this.isTask,
       );
 
   @override
@@ -65,5 +70,5 @@ class CalendarEvent {
 
   @override
   String toString() =>
-      'CalendarEvent(id: $id, title: $title, start: $startTime)';
+      'CalendarEvent(id: $id, title: $title, start: $startTime, isTask: $isTask)';
 }

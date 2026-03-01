@@ -77,8 +77,7 @@ class SettingsService {
       if (!_file.parent.existsSync()) {
         await _file.parent.create(recursive: true);
       }
-      // ignore: discarded_futures
-      unawaited(_file.writeAsString(jsonEncode(_current.toJson())));
+      await _file.writeAsString(jsonEncode(_current.toJson()));
     } catch (_) {
       // Error saving settings — not fatal, current session stays updated.
     }

@@ -1,5 +1,5 @@
 # Next Steps
 
-- Monitor Neo's progress on S3-09 (Hover controls).
-- Define acceptance criteria for Settings Panel (F-21/F-22).
-- Coordinate with Trin for S3-13, S3-16, S3-18 verification.
+- [ ] Neo: Tag v0.1.0 release on GitHub.
+- [ ] Cypher: Finalize Sprint 5 stories (Themes, Tasks, Multi-calendar).
+- [ ] Mouse: Update task board for Sprint 5.

@@ -15,6 +15,7 @@ gcal.Event _makeEvent({
   String? hangoutLink,
   String? location,
   String? description,
+  String? colorId,
 }) {
   final e = gcal.Event()
     ..id = id
@@ -22,7 +23,8 @@ gcal.Event _makeEvent({
     ..htmlLink = htmlLink
     ..hangoutLink = hangoutLink
     ..location = location
-    ..description = description;
+    ..description = description
+    ..colorId = colorId;
 
   e.start = gcal.EventDateTime()
     ..dateTime =
@@ -106,12 +108,53 @@ void main() {
       expect(allDay.start?.dateTime, isNull);
     });
 
-    test(
-        'event color defaults to blue (Sprint 3: F-09 will parse calendar color)',
-        () {
+    // ── S4-18: Event color from API colorId ──────────────────────────────
+
+    test('no colorId defaults to Colors.blue', () {
       final apiEvent = _makeEvent(
         startDateTimeIso: '2026-02-26T10:00:00',
         endDateTimeIso: '2026-02-26T10:30:00',
+      );
+      expect(GoogleCalendarService.fromApiEvent(apiEvent).color,
+          equals(Colors.blue));
+    });
+
+    test('colorId "1" → Lavender (#A4BDFC)', () {
+      final apiEvent = _makeEvent(
+        startDateTimeIso: '2026-02-26T10:00:00',
+        endDateTimeIso: '2026-02-26T10:30:00',
+        colorId: '1',
+      );
+      expect(GoogleCalendarService.fromApiEvent(apiEvent).color,
+          equals(const Color(0xFFA4BDFC)));
+    });
+
+    test('colorId "7" → Peacock (#46D6DB)', () {
+      final apiEvent = _makeEvent(
+        startDateTimeIso: '2026-02-26T10:00:00',
+        endDateTimeIso: '2026-02-26T10:30:00',
+        colorId: '7',
+      );
+      expect(GoogleCalendarService.fromApiEvent(apiEvent).color,
+          equals(const Color(0xFF46D6DB)));
+    });
+
+    test('colorId "11" → Tomato (#DC2127)', () {
+      // GCal classic palette + verified live: Drew 2026-02-28.
+      final apiEvent = _makeEvent(
+        startDateTimeIso: '2026-02-26T10:00:00',
+        endDateTimeIso: '2026-02-26T10:30:00',
+        colorId: '11',
+      );
+      expect(GoogleCalendarService.fromApiEvent(apiEvent).color,
+          equals(const Color(0xFFDC2127)));
+    });
+
+    test('unknown colorId falls back to Colors.blue', () {
+      final apiEvent = _makeEvent(
+        startDateTimeIso: '2026-02-26T10:00:00',
+        endDateTimeIso: '2026-02-26T10:30:00',
+        colorId: '99',
       );
       expect(GoogleCalendarService.fromApiEvent(apiEvent).color,
           equals(Colors.blue));

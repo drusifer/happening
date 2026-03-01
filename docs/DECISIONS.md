@@ -25,3 +25,20 @@ To achieve a thin, stable strip height on Linux, we must bypass several OS-level
 -   The window is now correctly sized to 30px.
 -   The C++ runner is no longer a "vanilla" Flutter template; it contains platform-specific hacks.
 -   `GDK_BACKEND=x11` is required to ensure `alwaysOnTop` and `setPosition` work reliably on modern Wayland compositors.
+
+## DEC-002: Hover Card Alignment and Sizing
+**Date**: 2026-03-01
+**Status**: Decided
+**Authors**: Neo (SWE), Morpheus (Lead), Trin (QA)
+
+### Context
+User feedback indicated that centered hover cards felt "detached" from the event block they described. For long or active events, the card could appear far from the mouse or the visual start of the event.
+
+### Decision
+1.  **Left-Alignment**: The hover card MUST align its left edge with the left edge of the visible portion of the event block.
+2.  **Dynamic Width**: The card MUST be at least as wide as the visible portion of the event block, but no less than 260px (default width) to accommodate its content.
+
+### Consequences
+-   The card feels visually "attached" to the event.
+-   The `_cardLeft` logic in `TimelineStrip` must be updated to use the visible start of the event.
+-   `HoverDetailOverlay` must accept a `minWidth` parameter.

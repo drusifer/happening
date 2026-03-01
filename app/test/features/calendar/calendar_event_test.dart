@@ -77,5 +77,42 @@ void main() {
       expect(updated.id, equals(event.id));
       expect(updated.startTime, equals(event.startTime));
     });
+
+    // ── S4-16: isTask ─────────────────────────────────────────────────────────
+
+    test('isTask defaults to false for regular events', () {
+      expect(event.isTask, isFalse);
+    });
+
+    test('isTask can be set to true via constructor', () {
+      final task = CalendarEvent(
+        id: 'task-1',
+        title: 'Review PR',
+        startTime: start,
+        endTime: end,
+        color: Colors.green,
+        calendarEventUrl: null,
+        videoCallUrl: null,
+        isTask: true,
+      );
+      expect(task.isTask, isTrue);
+    });
+
+    test('copyWith preserves isTask when not overridden', () {
+      final task = event.copyWith(isTask: true);
+      final copy = task.copyWith(title: 'Same task, new title');
+      expect(copy.isTask, isTrue);
+    });
+
+    test('copyWith can toggle isTask', () {
+      final task = event.copyWith(isTask: true);
+      final demoted = task.copyWith(isTask: false);
+      expect(demoted.isTask, isFalse);
+    });
+
+    test('toString includes isTask', () {
+      final task = event.copyWith(isTask: true);
+      expect(task.toString(), contains('isTask: true'));
+    });
   });
 }

@@ -69,4 +69,30 @@ class TimelineLayout {
   /// Whether [time] falls within the visible window.
   bool isVisible(DateTime time) =>
       !time.isBefore(windowStart) && !time.isAfter(windowEnd);
+
+  /// Returns the centerX and gap duration (minutes) for each gap between
+  /// adjacent events that is at least [minPx] pixels wide. (S4-19)
+  List<({double centerX, int minutes})> gapsBetween(
+    List<CalendarEvent> events,
+    DateTime now, {
+    double minPx = 40,
+  }) {
+    if (events.length < 2) return const [];
+    final sorted = [...events]
+      ..sort((a, b) => a.startTime.compareTo(b.startTime));
+    final result = <({double centerX, int minutes})>[];
+    for (var i = 0; i < sorted.length - 1; i++) {
+      final a = sorted[i];
+      final b = sorted[i + 1];
+      if (!b.startTime.isAfter(a.endTime)) continue;
+      final gapStart = xForTime(a.endTime, now);
+      final gapEnd = xForTime(b.startTime, now);
+      if (gapEnd - gapStart < minPx) continue;
+      result.add((
+        centerX: (gapStart + gapEnd) / 2,
+        minutes: b.startTime.difference(a.endTime).inMinutes,
+      ));
+    }
+    return result;
+  }
 }
