@@ -1,23 +1,13 @@
 # Morpheus Context
 
-## Project: Happening
-- PRD v0.2 approved (docs/PRD.md)
-- ARCH v0.1 drafted (docs/ARCH.md)
+## Sprint 4: Visual QA & Regression Closure — 2026-03-01
+- PROBLEM: BUG-14 (missing ticks) passed unit tests but failed live on March 1st.
+- ROOT CAUSE: Every unit test used 10:00 AM (mid-day). The logic `windowEnd.day > windowStart.day` failed at Midnight (00:00) and at Month boundaries (Mar 1st vs Feb 28th).
+- SOLUTION: Neo implemented a robust `while` loop for ticks.
+- REGRESSION GUARD: Trin added a "Midnight/Month Crossing" integration test that specifically mocks the Feb 28 -> Mar 1 boundary.
+- UX FIX: Reverted hover card logic to "Fixed Center" (stable UX) as per user feedback.
+- OVERALL STATUS: 181/181 unit/widget + 18/18 integration GREEN.
 
-## Key Architectural Decisions (ALL APPROVED 2026-02-26)
-- Flutter desktop (macOS, Windows, Linux)
-- window_manager package for always-on-top frameless window
-- Flutter logical pixels = DPI-adaptive automatically (no manual DPI math)
-- Strip height: 30px logical
-- STATELESS-FIRST: StreamBuilder<DateTime> + single root StatefulWidget, NO Riverpod/BLoC
-- CustomPainter for proportional timeline layout (richer interface)
-- Real-time: 1fps clock tick (Stream.periodic 1s)
-- Pixel offset formula: eventX = nowIndicatorX - (event.startTime - now).inSeconds * pixelsPerSecond
-- Default time window: 1hr past, 8hr future (9hr total)
-- OAuth: loopback redirect via google_sign_in package
-- Video call URL: flexible priority chain — hangoutLink → conferenceData → location regex → description regex
-
-## Key Packages
-- window_manager, screen_retriever, google_sign_in, googleapis,
-  extension_google_sign_in_as_googleapis_auth, flutter_secure_storage,
-  url_launcher, intl (no Riverpod needed)
+## Decisions
+- Always use while/iterator for temporal windows (don't assume same-day).
+- Anchoring hover cards to mouse X is a "clever but wrong" UX for this application. Stick to stable event-centered layouts.

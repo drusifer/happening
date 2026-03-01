@@ -37,6 +37,7 @@ class TimelineStrip extends StatefulWidget {
     required this.onSignOut,
     this.windowPast = const Duration(hours: 1),
     this.windowFuture = const Duration(hours: 8),
+    this.windowService,
   });
 
   final List<CalendarEvent> events;
@@ -46,27 +47,52 @@ class TimelineStrip extends StatefulWidget {
   final VoidCallback onSignOut;
   final Duration windowPast;
   final Duration windowFuture;
+  /// Injectable for testing; defaults to [WindowService()] at runtime.
+  final WindowService? windowService;
 
   @override
   State<TimelineStrip> createState() => _TimelineStripState();
 }
 
 class _TimelineStripState extends State<TimelineStrip> {
-  final _windowService = WindowService();
+  late final WindowService _windowService;
+  bool _isExpanded = false;
   CalendarEvent? _hoveredEvent;
+  double? _hoverX;
   bool _isHoveringStrip = false;
   bool _isSettingsOpen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _windowService = widget.windowService ?? WindowService();
+  }
 
   // Updated each build — used by mouse handlers.
   TimelineLayout? _layout;
   DateTime _now = DateTime.now();
 
-  // ── Mouse handlers ───────────────────────────────────────────────────────
+  // ── Window expand/collapse guards ─────────────────────────────────────────
+
+  Future<void> _expand() async {
+    if (_isExpanded) return;
+    _isExpanded = true;
+    await _windowService.expand();
+  }
+
+  Future<void> _collapse() async {
+    if (!_isExpanded) return;
+    _isExpanded = false;
+    await _windowService.collapse();
+  }
 
   // ── Mouse handlers ───────────────────────────────────────────────────────
 
   void _onMouseMove(PointerEvent details) {
-    setState(() => _isHoveringStrip = true);
+    setState(() {
+      _isHoveringStrip = true;
+      _hoverX = details.localPosition.dx;
+    });
 
     // Ignore moves inside the card area — keep current hover state so buttons remain clickable.
     if (details.localPosition.dy >= _kCollapsedHeight) {
@@ -79,9 +105,9 @@ class _TimelineStripState extends State<TimelineStrip> {
     setState(() => _hoveredEvent = hit);
 
     if (hit != null || _isSettingsOpen) {
-      unawaited(_windowService.expand());
+      unawaited(_expand());
     } else {
-      unawaited(_windowService.collapse());
+      unawaited(_collapse());
     }
   }
 
@@ -89,9 +115,10 @@ class _TimelineStripState extends State<TimelineStrip> {
     setState(() {
       _isHoveringStrip = false;
       _hoveredEvent = null;
+      _hoverX = null;
       _isSettingsOpen = false;
     });
-    unawaited(_windowService.collapse());
+    unawaited(_collapse());
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────
@@ -102,15 +129,32 @@ class _TimelineStripState extends State<TimelineStrip> {
   }
 
   double _cardLeft(double screenWidth) {
-    const cardWidth = 260.0;
     final layout = _layout;
     final event = _hoveredEvent;
     if (layout == null || event == null) return 4.0;
-    final eventX = layout.xForTime(event.startTime, _now);
-    final eventEndX = layout.xForTime(event.endTime, _now);
-    final eventCenterX = (eventX + eventEndX) / 2;
-    return (eventCenterX - cardWidth / 2)
-        .clamp(4.0, screenWidth - cardWidth - 4);
+
+    // Left-align card to the visible start of the event block (DEC-002)
+    final visibleStart =
+        layout.xForTime(event.startTime, _now).clamp(0.0, screenWidth);
+    
+    // Clamp to screen edges (4px padding)
+    return visibleStart.clamp(4.0, screenWidth - 4.0);
+  }
+
+  double _cardWidth(double screenWidth) {
+    const minCardWidth = 260.0;
+    final layout = _layout;
+    final event = _hoveredEvent;
+    if (layout == null || event == null) return minCardWidth;
+
+    final visibleStart =
+        layout.xForTime(event.startTime, _now).clamp(0.0, screenWidth);
+    final visibleEnd =
+        layout.xForTime(event.endTime, _now).clamp(0.0, screenWidth);
+    final eventWidth = (visibleEnd - visibleStart).abs();
+
+    // Card width matches event block width, but is at least 260px (DEC-002).
+    return eventWidth.clamp(minCardWidth, double.infinity);
   }
 
   void _toggleSettings() {
@@ -119,9 +163,9 @@ class _TimelineStripState extends State<TimelineStrip> {
       _hoveredEvent = null;
     });
     if (_isSettingsOpen) {
-      unawaited(_windowService.expand());
+      unawaited(_expand());
     } else {
-      unawaited(_windowService.collapse());
+      unawaited(_collapse());
     }
   }
 
@@ -192,9 +236,9 @@ class _TimelineStripState extends State<TimelineStrip> {
                       ),
                     ),
 
-                    // Countdown label — left of the now indicator
+                    // Countdown label — right of the now indicator (S4-20/CR-02)
                     Positioned(
-                      right: stripWidth - nowIndicatorX + 8,
+                      left: nowIndicatorX + 8,
                       top: 0,
                       height: _kCollapsedHeight,
                       child: Center(
@@ -233,7 +277,10 @@ class _TimelineStripState extends State<TimelineStrip> {
                     Positioned(
                       top: _kCollapsedHeight,
                       left: _cardLeft(stripWidth),
-                      child: HoverDetailOverlay(event: _hoveredEvent!),
+                      child: HoverDetailOverlay(
+                        event: _hoveredEvent!,
+                        width: _cardWidth(stripWidth),
+                      ),
                     ),
 
                   // S3-10: Settings Panel

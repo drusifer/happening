@@ -184,6 +184,127 @@ void main() {
       expect(event.videoCallUrl, 'https://meet.google.com/kdj-gcqz-wti');
     });
 
+    // ── S4-16: isTask flag ────────────────────────────────────────────────────
+
+    // ── BUG repro: tasks appear in primary calendar as eventType=focusTime ────
+    // Real fixture from Drew 2026-02-28. The @tasks fetch was never needed —
+    // tasks are already in the primary feed with eventType=="focusTime".
+
+    // ── BUG: colorId ordering wrong (Drew 2026-02-28) ────────────────────────
+    // Live API data: "stuff color tomato" has colorId=11 → must be red (#D50000)
+    //                "Green" has colorId=2 → must be green (#33B679)
+    // Correct GCal mapping: 1=Lavender, 2=Sage, 3=Grape, 4=Flamingo, 5=Banana,
+    //   6=Tangerine, 7=Peacock, 8=Blueberry, 9=Basil, 10=Graphite, 11=Tomato
+
+    test('colorId 11 → Tomato (#DC2127)', () {
+      // GCal classic palette. Drew 2026-02-28: selecting Tomato yields colorId 11.
+      final event = GoogleCalendarService.fromApiEvent(gcal.Event.fromJson({
+        'id': '61ij4d1n6him4bb46lij8b9k6hh34bb2coqj4b9ocos68e316li32c9gcc',
+        'summary': 'stuff color tomato',
+        'start': {'dateTime': '2026-02-28T04:45:00.000Z'},
+        'end': {'dateTime': '2026-02-28T05:45:00.000Z'},
+        'eventType': 'default',
+        'colorId': '11',
+        'htmlLink': 'https://www.google.com/calendar/event?eid=abc',
+      }));
+      expect(event.color, const Color(0xFFDC2127),
+          reason: 'colorId 11 = Tomato');
+    });
+
+    test('colorId 2 → Sage (#7AE7BF)', () {
+      // Drew 2026-02-28: "Green" event has colorId 2.
+      final event = GoogleCalendarService.fromApiEvent(gcal.Event.fromJson({
+        'id': '0nn53tfkku7o14d808b7kapt0c',
+        'summary': 'Green',
+        'start': {'dateTime': '2026-02-28T07:30:00.000Z'},
+        'end': {'dateTime': '2026-02-28T08:30:00.000Z'},
+        'eventType': 'default',
+        'colorId': '2',
+        'htmlLink': 'https://www.google.com/calendar/event?eid=abc',
+      }));
+      expect(event.color, const Color(0xFF7AE7BF),
+          reason: 'colorId 2 = Sage');
+    });
+
+    test('colorId 10 → Basil (#51B749)', () {
+      // Drew 2026-02-28: "fiver green" event has colorId 10.
+      final event = GoogleCalendarService.fromApiEvent(gcal.Event.fromJson({
+        'id': '65i32c9ic5i3gb9lc4r3eb9k6gp32bb164omcbb470o6ap9g65j68cr664',
+        'summary': 'fiver green',
+        'start': {'dateTime': '2026-03-01T02:45:00.000Z'},
+        'end': {'dateTime': '2026-03-01T02:50:00.000Z'},
+        'eventType': 'default',
+        'colorId': '10',
+        'htmlLink': 'https://www.google.com/calendar/event?eid=abc',
+      }));
+      expect(event.color, const Color(0xFF51B749),
+          reason: 'colorId 10 = Basil (green)');
+    });
+
+    test('upcoming task — eventType:focusTime sets isTask:true', () {
+      final event = GoogleCalendarService.fromApiEvent(gcal.Event.fromJson({
+        'id': '3oeba561jrn5f2m6utrjvcj4n0',
+        'summary': 'upcoming task',
+        'start': {
+          'dateTime': '2026-02-28T06:00:00.000Z',
+          'timeZone': 'America/New_York',
+        },
+        'end': {
+          'dateTime': '2026-02-28T07:00:00.000Z',
+          'timeZone': 'America/New_York',
+        },
+        'eventType': 'focusTime',
+        'focusTimeProperties': {'autoDeclineMode': 'declineNone'},
+        'htmlLink':
+            'https://www.google.com/calendar/event?eid=M29lYmE1NjFqcm41ZjJtNnV0cmp2Y2o0bjAgZHJ1c2lmZXJAbQ',
+        'description':
+            'Changes made to the title, description, or attachments will not be saved. To make edits, please go to: https://tasks.google.com/task/V_jIpYwDILwTFP7D',
+        'transparency': 'transparent',
+        'visibility': 'private',
+        'status': 'confirmed',
+      }));
+      expect(event.isTask, isTrue);
+      expect(event.title, 'upcoming task');
+    });
+
+    test('regular event — eventType:default keeps isTask:false', () {
+      final event = GoogleCalendarService.fromApiEvent(gcal.Event.fromJson({
+        'id': '61ij4d1n6him4bb46lij8b9k6hh34bb2coqj4b9ocos68e316li32c9gcc',
+        'summary': 'stuff color tomato',
+        'start': {'dateTime': '2026-02-28T04:45:00.000Z'},
+        'end': {'dateTime': '2026-02-28T05:45:00.000Z'},
+        'eventType': 'default',
+        'colorId': '11',
+        'htmlLink': 'https://www.google.com/calendar/event?eid=abc',
+      }));
+      expect(event.isTask, isFalse);
+    });
+
+    test('fromApiEvent — isTask defaults to false for regular event', () {
+      final event = GoogleCalendarService.fromApiEvent(gcal.Event.fromJson({
+        'id': 'evt-regular',
+        'summary': 'Stand-up',
+        'start': {'dateTime': '2026-02-28T14:00:00.000Z'},
+        'end': {'dateTime': '2026-02-28T14:30:00.000Z'},
+        'htmlLink': 'https://www.google.com/calendar/event?eid=abc',
+      }));
+      expect(event.isTask, isFalse);
+    });
+
+    test('fromApiEvent — isTask:true when called with isTask flag', () {
+      final event = GoogleCalendarService.fromApiEvent(
+        gcal.Event.fromJson({
+          'id': 'task-1',
+          'summary': 'Review PR',
+          'start': {'dateTime': '2026-02-28T15:00:00.000Z'},
+          'end': {'dateTime': '2026-02-28T15:30:00.000Z'},
+          'htmlLink': 'https://www.google.com/calendar/event?eid=xyz',
+        }),
+        isTask: true,
+      );
+      expect(event.isTask, isTrue);
+    });
+
     test('dinner — conferenceData entryPoint fallback also resolves Meet URL',
         () {
       // Same event but without hangoutLink — verifies the conferenceData path.
