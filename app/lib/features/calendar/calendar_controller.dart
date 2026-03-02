@@ -10,18 +10,24 @@
 
 import 'dart:async';
 
+import '../../core/settings/settings_service.dart';
 import 'calendar_event.dart';
 import 'calendar_service.dart';
 import 'event_repository.dart';
 
 class CalendarController {
-  CalendarController(CalendarService service)
-      : _repo = EventRepository(service);
+  CalendarController(CalendarService service, {SettingsService? settingsService})
+      : _service = service,
+        _settingsService = settingsService,
+        _repo = EventRepository(service);
 
+  final CalendarService _service;
+  final SettingsService? _settingsService;
   final EventRepository _repo;
   final _eventsController = StreamController<List<CalendarEvent>>.broadcast();
   Timer? _pollTimer;
 
+  CalendarService get service => _service;
   Stream<List<CalendarEvent>> get events => _eventsController.stream;
 
   /// Starts the polling loop.
@@ -45,11 +51,30 @@ class CalendarController {
 
   Future<void> _fetch({bool forceRefresh = false}) async {
     try {
-      final events = await _repo.getEvents(forceRefresh: forceRefresh);
-      _eventsController.add(events);
+      final selectedIds = _settingsService?.current.selectedCalendarIds ?? const [];
+      
+      // Always include 'primary' to ensure we get account-wide @tasks.
+      final Set<String> idsToFetch = {
+        'primary',
+        ...selectedIds,
+      };
+
+      final List<List<CalendarEvent>> results = await Future.wait(
+        idsToFetch.map((id) => _service.fetchEvents(id))
+      );
+
+      final allEvents = results.expand((e) => e).toList();
+      final deduped = _dedup(allEvents);
+      
+      _eventsController.add(deduped);
     } catch (_) {
       // Stream keeps its last emitted value if fetch fails.
     }
+  }
+
+  static List<CalendarEvent> _dedup(List<CalendarEvent> events) {
+    final seen = <String>{};
+    return events.where((e) => seen.add(e.id)).toList();
   }
 
   void dispose() {

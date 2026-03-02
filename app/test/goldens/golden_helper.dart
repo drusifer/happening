@@ -11,6 +11,8 @@ Future<void> pumpTimelinePainter(
   double width = 1200.0,
   double height = 30.0,
   String? hoveredEventId,
+  Set<String> collidingIds = const {},
+  Color countdownColor = Colors.white,
   double fontSize = 11.0,
 }) async {
   // Fix the surface size for pixel-perfect comparison.
@@ -30,7 +32,13 @@ Future<void> pumpTimelinePainter(
               windowStart: now.subtract(const Duration(hours: 1)),
               windowEnd: now.add(const Duration(hours: 8)),
               hoveredEventId: hoveredEventId,
+              collidingIds: collidingIds,
+              countdownColor: countdownColor,
               fontSize: fontSize,
+              backgroundColor: const Color(0xFF1A1A2E),
+              pastOverlayColor: Colors.black26,
+              nowLineColor: Colors.redAccent,
+              tickColor: Colors.white70,
             ),
           ),
         ),

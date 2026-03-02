@@ -1,12 +1,12 @@
 # ARCH: Happening — System Architecture
 
-**Version**: 0.2
+**Version**: 0.3
 **Author**: Morpheus (Tech Lead)
-**Date**: 2026-02-26
+**Date**: 2026-03-01
 **Status**: Approved
 
 ## TL;DR
-A stateless-first Flutter desktop app that uses a 1fps `StreamBuilder` to drive a `CustomPainter` timeline. Key hacks for Linux include disabling GTK Header Bars and manual DPR-aware logical sizing to achieve a stable 30px window height.
+A stateless-first Flutter desktop app using a 1fps `StreamBuilder` to drive a `CustomPainter` timeline. Refactored into a decoupled Service/Controller/Repository pattern. v0.1.0 shipped on Linux; v0.2.0 (Themes, Multi-Calendar) in progress.
 
 ---
 
@@ -23,21 +23,20 @@ Happening is a Flutter desktop application that renders a persistent, always-on-
 │                    Flutter App (Desktop)                    │
 │                                                             │
 │  ┌──────────────┐   ┌──────────────┐   ┌────────────────┐   │
-│  │  Window      │   │  UI Layer    │   │  Feature Layer │   │
-│  │  Manager     │   │  (Widgets)   │   │  (BLoC/River)  │   │
+│  │  Window      │   │  UI Layer    │   │  Controller    │   │
+│  │  Manager     │   │  (Widgets)   │   │     Layer      │   │
 │  │              │   │              │   │                │   │
-│  │ always-on-top│   │ TimelineStrip│   │ CalendarNotif. │   │
-│  │ DPI-adaptive │   │ EventBlock   │   │ AuthNotifier   │   │
-│  │ frameless    │   │ NowIndicator │   │ TimeNotifier   │   │
+│  │ always-on-top│   │ TimelineStrip│   │ CalController  │   │
+│  │ DPI-adaptive │   │ SettingsPanel│   │ ClockService   │   │
+│  │ expand/coll. │   │ HoverOverlay │   │ WindowService  │   │
 │  └──────────────┘   └──────────────┘   └────────────────┘   │
 │                                               │             │
 │  ┌────────────────────────────────────────────┼──────────┐  │
-│  │                 Service Layer              │          │  │
+│  │                 Data Layer                 │          │  │
 │  │                                            ▼          │  │
 │  │  ┌──────────────┐   ┌──────────────────────────────┐  │  │
 │  │  │ AuthService   │  │     CalendarService          │  │  │
-│  │  │ google_sign_in│  │  googleapis (REST API v3)    │  │  │
-│  │  │ secure_storage│  │5-min polling + manual refresh│  │  │
+│  │  │ TokenStore    │  │     EventRepository          │  │  │
 │  │  └──────────────┘   └──────────────────────────────┘  │  │
 │  └───────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
@@ -51,41 +50,41 @@ Happening is a Flutter desktop application that renders a persistent, always-on-
 happening/
 ├── lib/
 │   ├── main.dart                    # Entry point, window setup
-│   ├── app.dart                     # MaterialApp, theme, router
+│   ├── app.dart                     # MaterialApp, AppSettings wiring
 │   │
 │   ├── core/
 │   │   ├── window/
-│   │   │   └── window_service.dart  # always-on-top, DPI, positioning
+│   │   │   └── window_service.dart  # always-on-top, expand/collapse
 │   │   ├── time/
 │   │   │   └── clock_service.dart   # Stream<DateTime> ticker (1s intervals)
-│   │   └── theme/
-│   │       └── app_theme.dart       # light/dark, strip colors
+│   │   └── settings/
+│   │       └── settings_service.dart # AppSettings, themes, persistence
 │   │
 │   ├── features/
 │   │   ├── auth/
-│   │   │   ├── auth_service.dart    # Google OAuth flow
-│   │   │   ├── token_store.dart     # flutter_secure_storage wrapper
-│   │   │   └── auth_notifier.dart   # Riverpod notifier for auth state
+│   │   │   ├── auth_service.dart    # Google OAuth loopback flow
+│   │   │   └── token_store.dart     # file-based token persistence
 │   │   │
 │   │   ├── calendar/
-│   │   │   ├── calendar_service.dart      # Google Calendar API v3 calls
-│   │   │   ├── calendar_event.dart        # Event data model (immutable)
-│   │   │   ├── event_repository.dart      # Cache + polling orchestration
-│   │   │   └── calendar_notifier.dart     # Riverpod notifier for events
+│   │   │   ├── calendar_service.dart      # REST API v3 fetchers
+│   │   │   ├── calendar_controller.dart   # Polling + multi-cal fan-out
+│   │   │   ├── calendar_event.dart        # Unified event + task model
+│   │   │   ├── event_repository.dart      # In-memory cache + dedup
+│   │   │   └── video_link_extractor.dart  # meet/zoom/teams regex
 │   │   │
 │   │   └── timeline/
-│   │       ├── timeline_strip.dart        # Root widget — full strip layout
-│   │       ├── timeline_painter.dart      # CustomPainter for proportional layout
-│   │       ├── now_indicator.dart         # Fixed "now" marker widget
-│   │       ├── event_block.dart           # Single event chip (color, title, time)
-│   │       ├── countdown_display.dart     # "38 min" T-minus widget
-│   │       ├── celebration_widget.dart    # End-of-day celebratory state
-│   │       └── hover_detail_overlay.dart  # Hover card: full title + links
+│   │       ├── timeline_strip.dart        # Root strip widget
+│   │       ├── timeline_painter.dart      # High-perf CustomPainter
+│   │       ├── timeline_layout.dart       # Hit-testing, DPR scaling
+│   │       ├── countdown_display.dart     # untilEnd/untilNext countdown
+│   │       ├── celebration_widget.dart    # "All done!" state
+│   │       ├── settings_panel.dart        # Hover-revealed gear menu
+│   │       └── hover_detail_overlay.dart  # Expanded event card
 │   │
-│   └── providers.dart               # All Riverpod provider declarations
+│   └── fixtures/ (test/)             # Real API JSON payloads
 │
 ├── pubspec.yaml
-└── ...platform folders (macos/, windows/, linux/)
+└── ...platform folders (linux/, macos/)
 ```
 
 ---
@@ -178,25 +177,35 @@ The `TimelineStrip` widget is a `StatelessWidget` wrapping a `StreamBuilder<Date
 
 ### State Architecture — Stateless-First
 
-No external state management library (no Riverpod, no BLoC). Instead:
+Happening uses a "top-down" state model driven by two long-lived streams. No external state management library (Riverpod, BLoC) is used.
 
+```dart
+// app.dart — Simplified
+class HappeningApp extends StatefulWidget {
+  // Holds SettingsService and AuthService
+}
+
+// ... in _HappeningAppState:
+StreamBuilder<AppSettings>(
+  stream: _settings.settings,
+  builder: (context, settings) {
+    return MaterialApp(
+      theme: _resolveTheme(settings.data),
+      home: StreamBuilder<List<CalendarEvent>>(
+        stream: _calendarController.events,
+        builder: (context, events) {
+          return TimelineStrip(events: events.data);
+        },
+      ),
+    );
+  }
+)
 ```
-AppState (single StatefulWidget at root)
-  ├── authState: AuthState (unauthenticated / authenticated / error)
-  ├── events: List<CalendarEvent>  ← updated by 5-min Timer
-  └── clockStream: Stream<DateTime>  ← drives strip redraws
 
-TimelineStrip (StatelessWidget)
-  └── StreamBuilder<DateTime>(stream: clockStream)
-        └── CustomPainter(events: events, now: snapshot.data)
-```
-
-- **Auth state** and **event list** live in one root `StatefulWidget` (`HappeningApp`)
-- **Clock stream** drives continuous strip redraws via `StreamBuilder` — pure functional transform of `(events, now) → pixels`
-- All child widgets are `StatelessWidget` — they receive data, they don't manage it
-- Polling: `Timer.periodic(5min, fetchEvents)` in root `initState`
-
-This is the right level of complexity for this app. Simple, debuggable, no library overhead.
+1. **Global Streams**: `SettingsService` and `CalendarController` expose broadcast streams that drive the UI rebuilds.
+2. **MaterialApp Wiring**: `AppSettings` determines the `ThemeData` (Dark/Light/System) and the strip's logical height.
+3. **Timeline Wiring**: The clock stream (1fps) drives the `CustomPainter` to redraw the timeline relative to `now`.
+4. **Decoupled Logic**: Services are pure Dart; they are initialized in `main` or `HappeningApp` and passed via constructor injection.
 
 ---
 
@@ -204,21 +213,21 @@ This is the right level of complexity for this app. Simple, debuggable, no libra
 
 ```
 Google Calendar API
-        │ poll every 5 min
+        │ 
         ▼
- CalendarService.fetchTodayEvents()
-        │
+ CalendarService.fetchEvents(calendarId)
+        │ 
         ▼
  EventRepository (cache + dedup)
-        │
+        │ 
         ▼
- CalendarNotifier (Riverpod AsyncNotifier)
-        │ ref.watch
+ CalendarController (polling timer + multi-cal wait)
+        │ stream
         ▼
- TimelineStrip widget
-        │ + ClockService tick
+ TimelineStrip (StatelessWidget)
+        │ + ClockService tick (1fps)
         ▼
- Computed layout → rendered strip
+ CustomPainter layout → rendered strip
 ```
 
 ### Event Data Model
@@ -230,9 +239,12 @@ class CalendarEvent {
   final String title;
   final DateTime startTime;
   final DateTime endTime;
-  final Color color;               // from calendar color
-  final String? calendarEventUrl;  // link to GCal event
-  final String? videoCallUrl;      // first video call URL found
+  final Color color;
+  final String? calendarEventUrl;
+  final String? videoCallUrl;
+  final bool isTask;               # True for focusTime/tasks feed
+  final String calendarId;         # Original calendar source
+  final bool isCompleted;          # Render green if true
 }
 ```
 

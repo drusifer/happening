@@ -1,14 +1,17 @@
 # Current Task
 
-## Sprint 4: Visual Regression & Release — 2026-03-01
-**Status**: Group F (Golden/Visual) COMPLETE ✅
+## Sprint 5: Fresh Start v0.2.0 — 2026-03-01
+**Status**: Group F - macOS PLATFORM (Final)
+
+### Todo
+- [ ] @Neo *swe impl S5-F1: macOS entitlements (network, URL scheme)
+- [ ] @Neo *swe impl S5-F2: macOS Info.plist OAuth registration
+- [ ] @Neo *swe build macOS build smoke test (if possible)
+- [ ] @Trin *qa test verify Group F (S5-F4)
 
 ### Done
-- [x] BUG-14 FIX: Robust day-crossing tick logic (while loop)
-- [x] BUG-13 FIX: Revert hover card to stable event-centered anchoring
-- [x] S4-34: Midnight/Month Crossing regression test (integration)
-- [x] S4-32/33: Golden UAT sign-off (with high visibility ticks)
-
-### Next
-- [ ] S4-03: Linux smoke test (Wayland/X11) and GDK_BACKEND documentation
-- [ ] S4-07: v0.1.0 tag
+- [x] Group A FOUNDATION COMPLETE ✅
+- [x] Group B SETTINGS UI COMPLETE ✅
+- [x] Group C MULTI-CALENDAR COMPLETE ✅
+- [x] Group D PAINTER VISUALS COMPLETE ✅
+- [x] Group E INTERACTION COMPLETE ✅

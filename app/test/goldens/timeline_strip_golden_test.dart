@@ -31,7 +31,7 @@ class _FakeWindowService extends WindowService {
   Future<void> expand() async {}
 
   @override
-  Future<void> collapse() async {}
+  Future<void> collapse({double? height}) async {}
 }
 
 class _FakeClock extends ClockService {
@@ -48,6 +48,12 @@ class _FakeSettings extends SettingsService {
 }
 
 class _FakeCalendarService implements CalendarService {
+  @override
+  Future<List<CalendarMeta>> fetchCalendarList() async => [];
+
+  @override
+  Future<List<CalendarEvent>> fetchEvents(String calendarId) async => [];
+
   @override
   Future<List<CalendarEvent>> fetchTodayEvents() async => [];
 }
@@ -78,6 +84,7 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
+        showSemanticsDebugger: false,
         debugShowCheckedModeBanner: false,
         theme: ThemeData.dark(),
         home: Scaffold(
@@ -120,5 +127,62 @@ void main() {
     );
 
     await gesture.removePointer();
+  });
+
+  testWidgets('S5-E4: persistent card on tap and HTML stripping',
+      (tester) async {
+    final now = DateTime(2026, 3, 1, 10, 0, 0);
+    final event = CalendarEvent(
+      id: 'e1',
+      title: 'HTML Event',
+      description: '<b>Bold</b> and <i>Italic</i> description with <a href="#">Link</a>',
+      startTime: now.add(const Duration(minutes: 10)),
+      endTime: now.add(const Duration(minutes: 40)),
+      color: Colors.blue,
+      calendarEventUrl: null,
+      videoCallUrl: null,
+    );
+
+    final clock = _FakeClock(now);
+    final settings = _FakeSettings();
+    final controller = CalendarController(_FakeCalendarService());
+    final windowService = _FakeWindowService();
+
+    await tester.binding.setSurfaceSize(const Size(1200, 300));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        showSemanticsDebugger: false,
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData.dark(),
+        home: Scaffold(
+          body: TimelineStrip(
+            events: [event],
+            clockService: clock,
+            calendarController: controller,
+            settingsService: settings,
+            onSignOut: () {},
+            windowService: windowService,
+          ),
+        ),
+      ),
+    );
+
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
+    // 1. Tap the event block (manual coordinate to bypass semantics issues)
+    await tester.tapAt(const Offset(160, 15));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
+    // 2. Move mouse away (simulated by not having a hover state)
+    // The card should still be visible because it was tapped.
+    expect(find.text('Bold and Italic description with Link'), findsOneWidget);
+
+    await expectLater(
+      find.byType(TimelineStrip),
+      matchesGoldenFile('goldens/persistent_tap_card.png'),
+    );
   });
 }

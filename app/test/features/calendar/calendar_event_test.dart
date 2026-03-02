@@ -114,5 +114,83 @@ void main() {
       final task = event.copyWith(isTask: true);
       expect(task.toString(), contains('isTask: true'));
     });
+
+    // ── Sprint 5: Model Expansion ───────────────────────────────────────────
+
+    test('expansion fields have correct defaults', () {
+      expect(event.calendarId, equals('primary'));
+      expect(event.calendarName, equals('Primary'));
+      expect(event.description, isNull);
+      expect(event.isCompleted, isFalse);
+    });
+
+    test('copyWith updates expansion fields', () {
+      final updated = event.copyWith(
+        calendarId: 'work-cal',
+        calendarName: 'Work',
+        description: 'Meeting notes here',
+        isCompleted: true,
+      );
+      expect(updated.calendarId, equals('work-cal'));
+      expect(updated.calendarName, equals('Work'));
+      expect(updated.description, equals('Meeting notes here'));
+      expect(updated.isCompleted, isTrue);
+    });
+
+    test('copyWith preserves expansion fields when not overridden', () {
+      final custom = event.copyWith(calendarId: 'custom-cal', isCompleted: true);
+      final copy = custom.copyWith(title: 'New Title');
+      expect(copy.calendarId, equals('custom-cal'));
+      expect(copy.isCompleted, isTrue);
+      expect(copy.title, equals('New Title'));
+    });
+  });
+
+  group('detectCollisions', () {
+    final now = DateTime(2026, 3, 1, 10, 0);
+
+    CalendarEvent _ev(String id, DateTime start, DateTime end) => CalendarEvent(
+          id: id,
+          title: id,
+          startTime: start,
+          endTime: end,
+          color: Colors.blue,
+          calendarEventUrl: null,
+          videoCallUrl: null,
+        );
+
+    test('returns empty set for empty list', () {
+      expect(detectCollisions([]), isEmpty);
+    });
+
+    test('returns empty set for non-overlapping events', () {
+      final e1 = _ev('e1', now, now.add(const Duration(minutes: 30)));
+      final e2 = _ev('e2', now.add(const Duration(minutes: 31)),
+          now.add(const Duration(minutes: 60)));
+      expect(detectCollisions([e1, e2]), isEmpty);
+    });
+
+    test('returns both IDs for overlapping events', () {
+      final e1 = _ev('e1', now, now.add(const Duration(minutes: 30)));
+      final e2 = _ev('e2', now.add(const Duration(minutes: 15)),
+          now.add(const Duration(minutes: 45)));
+      expect(detectCollisions([e1, e2]), equals({'e1', 'e2'}));
+    });
+
+    test('returns all IDs for triple overlap', () {
+      final e1 = _ev('e1', now, now.add(const Duration(minutes: 30)));
+      final e2 = _ev('e2', now.add(const Duration(minutes: 15)),
+          now.add(const Duration(minutes: 45)));
+      final e3 = _ev('e3', now.add(const Duration(minutes: 20)),
+          now.add(const Duration(minutes: 25)));
+      expect(detectCollisions([e1, e2, e3]), equals({'e1', 'e2', 'e3'}));
+    });
+
+    test('back-to-back events do NOT collide', () {
+      final e1 = _ev('e1', now, now.add(const Duration(minutes: 30)));
+      final e2 = _ev('e2', now.add(const Duration(minutes: 30)),
+          now.add(const Duration(minutes: 60)));
+      expect(detectCollisions([e1, e2]), isEmpty);
+    });
   });
 }

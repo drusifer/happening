@@ -22,6 +22,10 @@ class CalendarEvent {
     required this.calendarEventUrl,
     required this.videoCallUrl,
     this.isTask = false,
+    this.calendarId = 'primary',
+    this.calendarName = 'Primary',
+    this.description,
+    this.isCompleted = false,
   });
 
   final String id;
@@ -33,6 +37,14 @@ class CalendarEvent {
   final String? videoCallUrl;
   /// True when this item comes from the Google Calendar Tasks feed.
   final bool isTask;
+  /// The source calendar this event belongs to.
+  final String calendarId;
+  /// The display name of the source calendar.
+  final String calendarName;
+  /// Full HTML description (will be stripped during display).
+  final String? description;
+  /// True for completed tasks.
+  final bool isCompleted;
 
   Duration get duration => endTime.difference(startTime);
 
@@ -49,6 +61,10 @@ class CalendarEvent {
     String? calendarEventUrl,
     String? videoCallUrl,
     bool? isTask,
+    String? calendarId,
+    String? calendarName,
+    String? description,
+    bool? isCompleted,
   }) =>
       CalendarEvent(
         id: id ?? this.id,
@@ -59,6 +75,10 @@ class CalendarEvent {
         calendarEventUrl: calendarEventUrl ?? this.calendarEventUrl,
         videoCallUrl: videoCallUrl ?? this.videoCallUrl,
         isTask: isTask ?? this.isTask,
+        calendarId: calendarId ?? this.calendarId,
+        calendarName: calendarName ?? this.calendarName,
+        description: description ?? this.description,
+        isCompleted: isCompleted ?? this.isCompleted,
       );
 
   @override
@@ -71,4 +91,25 @@ class CalendarEvent {
   @override
   String toString() =>
       'CalendarEvent(id: $id, title: $title, start: $startTime, isTask: $isTask)';
+}
+
+/// Identifies events that overlap in time (S5-D1).
+/// Returns a set of event IDs that are in conflict.
+Set<String> detectCollisions(List<CalendarEvent> events) {
+  final collidingIds = <String>{};
+
+  for (var i = 0; i < events.length; i++) {
+    for (var j = i + 1; j < events.length; j++) {
+      final a = events[i];
+      final b = events[j];
+
+      // Overlap condition: (StartA < EndB) AND (EndA > StartB)
+      if (a.startTime.isBefore(b.endTime) && a.endTime.isAfter(b.startTime)) {
+        collidingIds.add(a.id);
+        collidingIds.add(b.id);
+      }
+    }
+  }
+
+  return collidingIds;
 }

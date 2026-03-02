@@ -39,15 +39,26 @@ class TimelineLayout {
   }
 
   /// Returns the [CalendarEvent] at the given [mouseX] position, or null if none.
+  /// If multiple events overlap at this point, the one with the shortest duration wins.
   CalendarEvent? eventAtX(
       double mouseX, List<CalendarEvent> events, DateTime now) {
+    CalendarEvent? bestHit;
+    Duration? minDuration;
+
     for (final event in events) {
       final x = xForTime(event.startTime, now);
       final endX = xForTime(event.endTime, now);
       final w = (endX - x).clamp(3.0, double.infinity);
-      if (mouseX >= x && mouseX <= x + w) return event;
+
+      if (mouseX >= x && mouseX <= x + w) {
+        final duration = event.endTime.difference(event.startTime);
+        if (minDuration == null || duration < minDuration) {
+          bestHit = event;
+          minDuration = duration;
+        }
+      }
     }
-    return null;
+    return bestHit;
   }
 
   /// Returns the first event that is currently active (startTime <= now < endTime).

@@ -1,6 +1,10 @@
 // Hermetic integration tests for CalendarController (S4-12).
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/features/calendar/calendar_controller.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/calendar/calendar_service.dart';
@@ -11,6 +15,14 @@ class _FakeCalendarService implements CalendarService {
   List<CalendarEvent> mockEvents = [];
   bool shouldThrow = false;
   int fetchCalls = 0;
+
+  @override
+  Future<List<CalendarMeta>> fetchCalendarList() async => [];
+
+  @override
+  Future<List<CalendarEvent>> fetchEvents(String calendarId) async {
+    return fetchTodayEvents();
+  }
 
   @override
   Future<List<CalendarEvent>> fetchTodayEvents() async {
@@ -163,6 +175,27 @@ void main() {
       controller.dispose();
       await Future<void>.delayed(Duration.zero);
       expect(streamClosed, isTrue);
+    });
+
+    test('always includes primary in fetch list', () async {
+      // Logic check: if we have 0 selected, it should call fetch once (for primary).
+      await controller.refresh();
+      expect(fakeService.fetchCalls, 1);
+    });
+
+    test('fetches primary AND selected secondary calendars', () async {
+      // Mock SettingsService with a secondary calendar
+      final tmp = Directory.systemTemp.createTempSync();
+      final settingsSvc = SettingsService(directory: tmp);
+      await settingsSvc.load();
+      await settingsSvc.update(const AppSettings(selectedCalendarIds: ['secondary']));
+      
+      final controller2 = CalendarController(fakeService, settingsService: settingsSvc);
+      addTearDown(controller2.dispose);
+      
+      await controller2.refresh();
+      // Should fetch 'primary' (Set default) and 'secondary' (selected)
+      expect(fakeService.fetchCalls, 2); 
     });
   });
 }

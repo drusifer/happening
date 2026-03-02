@@ -23,15 +23,27 @@ class HoverDetailOverlay extends StatelessWidget {
   static String _fmt(DateTime t) =>
       '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
 
+  String _stripHtml(String html) {
+    return html
+        .replaceAll(RegExp(r'<[^>]*>|&nbsp;'), ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final cleanDescription = event.description != null ? _stripHtml(event.description!) : null;
+    final truncatedDescription = cleanDescription != null && cleanDescription.length > 200
+        ? '${cleanDescription.substring(0, 197)}...'
+        : cleanDescription;
+
     return Material(
       color: Colors.transparent,
       child: Container(
         width: width,
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
         decoration: BoxDecoration(
-          color: event.color.withValues(alpha: 0.95),
+          color: event.color.withOpacity(0.95),
           borderRadius: const BorderRadius.only(
             bottomLeft: Radius.circular(6),
             bottomRight: Radius.circular(6),
@@ -45,22 +57,57 @@ class HoverDetailOverlay extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (event.isTask)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 2),
+                child: Text(
+                  'TASK: ${event.calendarName.toUpperCase()}',
+                  style: const TextStyle(
+                    color: Colors.white60,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.only(bottom: 2),
+                child: Text(
+                  event.calendarName.toUpperCase(),
+                  style: const TextStyle(
+                    color: Colors.white60,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
             Text(
               event.title,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 2),
             Text(
               '${_fmt(event.startTime)} – ${_fmt(event.endTime)}',
-              style: const TextStyle(color: Colors.white70, fontSize: 10),
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
             ),
+            if (!event.isTask && truncatedDescription != null && truncatedDescription.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                truncatedDescription,
+                style: const TextStyle(color: Colors.white, fontSize: 12, height: 1.3),
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
             if (event.calendarEventUrl != null ||
                 event.videoCallUrl != null) ...[
-              const SizedBox(height: 7),
+              const SizedBox(height: 12),
               Wrap(
                 spacing: 6,
                 runSpacing: 4,
@@ -101,7 +148,7 @@ class _LinkButton extends StatelessWidget {
       onTap: () =>
           launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
           color: highlight ? Colors.white24 : Colors.white12,
           borderRadius: BorderRadius.circular(4),
@@ -111,7 +158,7 @@ class _LinkButton extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: const TextStyle(color: Colors.white, fontSize: 10),
+          style: const TextStyle(color: Colors.white, fontSize: 12),
         ),
       ),
     );
