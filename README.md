@@ -13,10 +13,12 @@ Happening is a persistent, always-on-top horizontal timeline strip that reads yo
 
 ---
 
-## Project Status: Sprint 3 (In Progress)
+## Project Status: Sprint 5 (Completed)
 - [x] **Sprint 1**: Foundation & Shell (Always-on-top window, mock timeline)
 - [x] **Sprint 2**: Google Calendar Integration (OAuth flow, real event fetching, polling)
-- [ ] **Sprint 3**: Polish & Ship (Hover details, settings, platform optimization)
+- [x] **Sprint 3**: Refactor & Polish (Hover details, settings, platform optimization)
+- [x] **Sprint 4**: Linux Release + Test Pyramid (v0.1.0 shipped 🚀)
+- [x] **Sprint 5**: v0.2.0 Features (Multi-Calendar, Themes, Visual Polish, macOS)
 
 ---
 

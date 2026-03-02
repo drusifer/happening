@@ -1,17 +1,10 @@
 # Current Task
 
-## Documentation Grooming & Content Expansion
+## Documentation Grooming & Sync
 **Status**: DONE ✅
 
 ### Done
-- [x] Create `docs/DECISIONS.md`
-- [x] Record DEC-001 (Linux Window Height Fix)
-- [x] Update `docs/ARCH.md` with DPR-aware window sizing hacks.
-- [x] Synchronize ARCH with actual implementation in `window_service.dart`.
-- [x] Update outdated 52px logical height references to 30px across all docs and agent context.
-- [x] Move `task.md` to `docs/task.md`.
-- [x] Move screenshot to `docs/assets/`.
-- [x] Add Table of Contents to `README.md`.
-- [x] Expand `README.md`: project status, prerequisites, getting started, building, and architecture.
-- [x] Create `USER_GUIDE.md`: end-user documentation for signing in and using the interface.
-- [x] Add TLDR headers to all 18 `.dart` files in `app/lib` using the "Technical/Feature" template.
+- [x] Update `README.md` to reflect Sprint 5 status and completed v0.1.0 release.
+- [x] Update `docs/ARCH.md` to Version 0.3, reflecting current refactored architecture and Sprint 5 data models.
+- [x] Verify TLDR headers across all 18 `.dart` files in `app/lib`.
+- [x] Synchronize `docs/task.md` with Sprint 5 progress.

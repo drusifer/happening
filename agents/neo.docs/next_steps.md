@@ -1,4 +1,6 @@
 # Next Steps
 
-- [ ] Neo: Await Sprint 5 planning from Morpheus and Cypher.
-- [ ] Neo: Begin implementation of Themes (S5-01) and Multi-calendar support (S5-02).
+- [ ] Neo: Group F - macOS Platform implementation.
+- [ ] Trin: S5-F4 - Verification.
+- [ ] Mouse: Finalize Sprint 5 board.
+- [ ] Morpheus: Tag v0.2.0.

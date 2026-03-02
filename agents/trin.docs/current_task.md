@@ -1,15 +1,16 @@
 # Current Task
 
-## Sprint 4: Visual QA Sign-off (S4-32 / S4-33)
+## Sprint 5: Group E Verification — 2026-03-01
 **Status**: COMPLETE ✅
 
-### Done
-- [x] Review Neo's BUG-13 fix (Left-aligned, wide cards)
-- [x] Review Neo's BUG-14 fix (Robust while loop + high visibility)
-- [x] GOLDEN UAT: All PNGs verified against PRD intent.
-- [x] S4-34: Added Midnight Crossing integration test.
-- [x] All 199 tests GREEN.
+### Todo
+- [x] S5-E4: Verify GestureDetector tap logic (manual coordinate test) ✅
+- [x] S5-E4: Verify HTML strip logic in HoverDetailOverlay (find.text match) ✅
+- [x] S5-E4: Verify Task card shows calendar/list name ✅
+- [x] S5-E4: Verify description truncation ✅
+- [x] Update goldens for Group E ✅
 
-### Next
-- [ ] Monitor v0.1.0 release tagging.
-- [ ] Prepare test strategy for Themes (Sprint 5).
+### Done
+- [x] Group A, B, C, D COMPLETE ✅
+- [x] Logic tests GREEN (78 passing) ✅
+- [x] Golden tests GREEN (5 passing) ✅

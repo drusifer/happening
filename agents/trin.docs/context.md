@@ -1,8 +1,11 @@
-# Trin QA Context
+# Trin Context
 
-## Sprint 4 Completion — 2026-03-01
-- FINAL VERIFICATION: Sprint 4 is functionally and visually sound.
-- FIXED: BUG-14 (Ticks) verified live after robust while-loop implementation.
-- FIXED: DEC-002 (Hover Cards) verified via S4-35 regression test + updated goldens.
-- STATUS: 181/181 unit/widget + 18/18 integration GREEN.
-- REPRODUCTION: Midnight/Month boundary (S4-34) now covered in CI.
+## Sprint 5: Fresh Start — 2026-03-01
+- Group A, B, C, D COMPLETE.
+- Starting Group E (Interaction: Click-to-Expand) verification. S5-E1/E2/E3/E4.
+- All previous S5 attempts REVERTED. Clean slate from v0.1.0.
+
+## QA Decisions
+- Every bug fix MUST have an empirical reproduction test (unit or integration).
+- S5-E4: Need to verify HTML stripping and description display.
+- Tap detection (S5-E1) requires widget testing with gesture simulation.

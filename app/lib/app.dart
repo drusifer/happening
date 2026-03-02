@@ -117,6 +117,7 @@ class _HappeningAppState extends State<HappeningApp> {
     _calendar?.dispose();
     _calendar = CalendarController(
       GoogleCalendarService(gcal.CalendarApi(_auth.client!)),
+      settingsService: _settings,
     );
     _calendar!.start();
 
@@ -132,20 +133,41 @@ class _HappeningAppState extends State<HappeningApp> {
 
   // ── Build ────────────────────────────────────────────────────────────────
 
+  ThemeData _resolveTheme(AppSettings settings) {
+    final brightness = switch (settings.theme) {
+      AppTheme.dark => Brightness.dark,
+      AppTheme.light => Brightness.light,
+      AppTheme.system =>
+        WidgetsBinding.instance.platformDispatcher.platformBrightness,
+    };
+
+    return ThemeData(
+      useMaterial3: true,
+      brightness: brightness,
+      colorSchemeSeed: Colors.blue,
+      scaffoldBackgroundColor:
+          brightness == Brightness.dark ? const Color(0xFF1A1A2E) : Colors.white,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark(),
-      home: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: StreamBuilder<AppSettings>(
-          stream: _settings.settings,
-          initialData: _settings.current,
-          builder: (context, settingsSnapshot) {
-            return switch (_authState) {
+    return StreamBuilder<AppSettings>(
+      stream: _settings.settings,
+      initialData: _settings.current,
+      builder: (context, settingsSnapshot) {
+        final settings = settingsSnapshot.data!;
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: _resolveTheme(settings),
+          home: Scaffold(
+            backgroundColor: Colors.transparent,
+            body: switch (_authState) {
               _AuthState.loading => const SizedBox.shrink(),
-              _AuthState.unauthenticated => _SignInStrip(onTap: _signIn),
+              _AuthState.unauthenticated => _SignInStrip(
+                  onTap: _signIn,
+                  settings: settings,
+                ),
               _AuthState.authenticated => StreamBuilder<List<CalendarEvent>>(
                   stream: _calendar!.events,
                   initialData: const [],
@@ -159,10 +181,10 @@ class _HappeningAppState extends State<HappeningApp> {
                     );
                   },
                 ),
-            };
-          },
-        ),
-      ),
+            },
+          ),
+        );
+      },
     );
   }
 }
@@ -172,8 +194,9 @@ class _HappeningAppState extends State<HappeningApp> {
 // ---------------------------------------------------------------------------
 
 class _SignInStrip extends StatelessWidget {
-  const _SignInStrip({required this.onTap});
+  const _SignInStrip({required this.onTap, required this.settings});
   final VoidCallback onTap;
+  final AppSettings settings;
 
   @override
   Widget build(BuildContext context) {
@@ -181,11 +204,14 @@ class _SignInStrip extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Container(
-        color: const Color(0xFF1A1A2E),
+        color: Theme.of(context).scaffoldBackgroundColor,
         alignment: Alignment.center,
-        child: const Text(
+        child: Text(
           'Tap to sign in with Google →',
-          style: TextStyle(color: Colors.white70, fontSize: 11),
+          style: TextStyle(
+            color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+            fontSize: settings.fontSize.px,
+          ),
         ),
       ),
     );

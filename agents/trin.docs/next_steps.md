@@ -1,5 +1,5 @@
 # Next Steps
 
-- [ ] Neo: Tag v0.1.0 release on GitHub.
-- [ ] Trin: Plan test coverage for Themes and Multi-calendar support.
-- [ ] Cypher: Sign off on Sprint 5 acceptance criteria.
+- [ ] Trin: Final full regression suite run for v0.2.0 (all unit + integration + golden).
+- [ ] Trin: Verification of Group F (macOS) once Neo is done.
+- [ ] Mouse: Prepare for v0.2.0 release.

@@ -36,15 +36,24 @@ The **Now Indicator** is a fixed vertical line (at the 10% mark from the left) t
 - Everything to the **left** of the line is the **past**.
 - Everything to the **right** of the line is the **future**.
 
-### Event Blocks
-Each calendar event appears as a **colored block**.
-- The length of the block represents the event's duration.
-- The gap between blocks represents the time between events.
-- Events slide from right to left as time passes.
+### Events & Tasks
+- **Event Blocks**: Each calendar event appears as a colored block. The length represents the duration, and the colors match your Google Calendar.
+- **Task Markers (◇)**: Calendar items marked as tasks (or "Focus Time" in some cases) appear as diamond-shaped markers on the timeline.
+
+### Tick Marks & Time
+The timeline features adaptive tick marks to help you keep track of the day:
+- **Hour Ticks**: Large markers with labels (e.g., "10am").
+- **30-Min Ticks**: Smaller markers with half-hour labels.
+- **15-Min Ticks**: Tiny markers for precise glanceable timing.
+
+### Gap Labels
+Gaps between events represent your free time. When a gap is large enough, Happening displays the duration (e.g., "45m") directly on the strip.
 
 ### Countdown Timer
-Located near the Now Indicator, the **Countdown** tells you exactly how much time remains until your next event starts.
-- **Example**: "38 min" means your next meeting starts in 38 minutes.
+Located to the right of the Now Indicator, the countdown keeps you informed of your next transition:
+- **White**: Time until your next event starts.
+- **Amber**: Time until your *current* meeting ends.
+- **Orange/Red**: Urgency signals when a transition is imminent (under 5 minutes).
 
 ### End of Day
 When you have no more events scheduled for the rest of today, Happening displays a **Celebration Message** (e.g., "All done for today! ✨").
@@ -53,18 +62,23 @@ When you have no more events scheduled for the rest of today, Happening displays
 
 ## 4. Interaction Features
 
-### Hover Details (v0.1+)
-Move your mouse over an event block to see more information:
-- **Title**: The full title of the event.
+### Hover Details
+Move your mouse over an event block or task to see more information:
+- **Title**: The full title of the item.
 - **Time**: The start and end time.
 - **Join Button**: If the event has a Google Meet, Zoom, or Teams link, a button will appear to join the call instantly.
 - **Calendar Link**: A button to open the event in your web browser.
 
-### Settings & Controls (Coming Soon)
-A gear icon will appear on the far right of the strip when you hover over it, allowing you to:
-- Adjust font sizes (Small, Medium, Large).
-- Log out and switch Google accounts.
-- Manually refresh the calendar.
+### Settings & Controls
+Hover over the far right of the strip to reveal the **Gear** and **Refresh** icons:
+- **Font Size**: Choose between Small, Medium, and Large text. The strip height will adjust automatically to match your preference.
+- **Manual Refresh**: Force a live sync with Google Calendar.
+- **Logout**: Clear your credentials and switch Google accounts.
+
+### Upcoming in v0.2.0 (In Progress)
+- **Multi-Calendar Support**: Select and display events from multiple Google Calendars.
+- **Themes**: Dark, Light, and System theme support.
+- **Collision Detection**: Visual indicators for overlapping events.
 
 ---
 
@@ -73,9 +87,9 @@ A gear icon will appear on the far right of the strip when you hover over it, al
 - **Strip is hidden**: Happening is designed to be "Always on Top," but some fullscreen applications (like games or certain video players) may override this.
 - **Events not showing**: 
   - Ensure you are signed into the correct Google account.
-  - Happening only shows events from your **Primary** calendar.
+  - Happening currently shows events from your **Primary** calendar (multi-calendar support is coming in v0.2.0).
   - Check that the event is scheduled for **today**.
-- **Window Positioning (Linux)**: On some Linux distributions using Wayland, the strip may appear in the center of the screen. We use an X11 bridge to fix this; if it persists, please contact support.
+- **Window Positioning (Linux)**: On some Linux distributions using Wayland, the strip may appear in the center of the screen. We use an X11 bridge to fix this; if it persists, ensure `GDK_BACKEND=x11` is set in your environment.
 
 ---
 

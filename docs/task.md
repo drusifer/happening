@@ -1,6 +1,6 @@
 # Happening — Task Board
 
-**Updated**: 2026-03-01 (S4-11/12/13/14 marked done per Trin chat verification; Group F Golden Tests added)
+**Updated**: 2026-03-01 (Sprint 5 board added by Mouse; v0.1.0 shipped)
 **SM**: Mouse
 
 ---
@@ -171,19 +171,76 @@
 
 ---
 
-## Backlog (V2+)
+---
 
-| ID | Feature | PRD Ref |
-|---|---|---|
-| B-01 | Multiple Google Calendars + color coding | F-09 |
-| B-02 | Configurable time window (F-11) | F-11 |
-| B-03 | Day boundary handling → show tomorrow's first event | F-13 |
-| B-04 | Mobile (Flutter iOS/Android) | F-12 |
-| B-05 | Collision detection (F-19) | F-19 |
-| B-06 | Snooze/Focus mode (F-15) | F-15 |
-| B-07 | Themes: light/dark/system (F-16) | F-16 |
-| B-08 | Sound/notification alerts (F-18) | F-18 |
-| B-09 | Multiple calendar providers (F-17) | F-17 |
+## Sprint 5 — v0.2.0: Multi-Calendar, Themes, Visual Polish, macOS
+*Goal: Richer UX — multi-calendar support, themes, configurable window, click-to-expand, visual polish, macOS support.*
+*Arch guidance: morpheus.docs/sprint5_arch_review.md | PM scope: cypher.docs/sprint5_assessment.md*
+
+### Group A — Data Model Foundation *(do FIRST — everything depends on this)*
+| ID | Task | Owner | Status |
+|---|---|---|---|
+| [x] S5-A1 | Expand `AppSettings`: add `AppTheme` enum (dark/light/system), `timeWindowHours` (int 8/12/24), `selectedCalendarIds` (List<String>); backward-compatible `fromJson` | Neo | `[x]` |
+| [x] S5-A2 | Expand `CalendarEvent`: add `calendarId` (String), `calendarName` (String), `description` (String?), `isCompleted` (bool); extend `copyWith` | Neo | `[x]` |
+| [x] S5-A3 | Unit tests: expanded `AppSettings` (toJson/fromJson round-trip, defaults, migration) + `CalendarEvent` new fields | Trin | `[x]` |
+
+### Group B — Settings UI & Theme Infrastructure
+| ID | Task | Owner | Status |
+|---|---|---|---|
+| [x] S5-B1 | Implement `AppTheme` wiring in `MaterialApp`: `StreamBuilder<AppSettings>` → rebuilds `ThemeData`; dark/light/system resolved to concrete Flutter `ThemeData` | Neo | `[x]` |
+| [x] S5-B2 | `SettingsPanel`: add theme picker (Dark / Light / System 3-way toggle) | Neo | `[x]` |
+| [x] S5-B3 | `SettingsPanel`: add time window picker (8h / 12h / 24h); wire to `TimelineLayout` | Neo | `[x]` |
+| [x] S5-B4 | Font sizes +2pt globally (bump `FontSize.px` values: small→11, medium→13, large→15); `WindowService` strip height scales with font setting | Neo | `[x]` |
+| [x] S5-B5 | Drop shadow on all text in `TimelinePainter` (event labels, tick labels, countdown) for legibility | Neo | `[x]` |
+| [x] S5-B6 | Inject resolved theme colors into `TimelinePainter` constructor (background, pastOverlay, nowLine, tickColor); no `Theme.of(context)` in painter | Neo | `[x]` |
+| [x] S5-B7 | Trin: verify theme toggle (all 3 modes), time window picker, font +2pt, strip resizes; update golden files | Trin | `[ ]` |
+
+### Group C — Multi-Calendar Data Layer
+| ID | Task | Owner | Status |
+|---|---|---|---|
+| [x] S5-C1 | `CalendarService`: add `fetchCalendarList()` → `List<CalendarMeta>` (id, name, colorHex); populate `calendarId`/`calendarName` on fetched events | Neo | `[ ]` |
+| [x] S5-C2 | `CalendarService.fetchEvents()`: accept `calendarId` param (default: primary) | Neo | `[ ]` |
+| [x] S5-C3 | `CalendarController`: fan-out parallel fetch (`Future.wait`) for each `selectedCalendarId`; merge + dedup via existing `EventRepository` | Neo | `[ ]` |
+| [x] S5-C4 | `SettingsPanel`: calendar selection list (fetch from `CalendarService`; toggle per calendar; persist `selectedCalendarIds` to `AppSettings`) | Neo | `[ ]` |
+| [x] S5-C5 | Trin: verify multi-calendar fetch (mock 2 calendars), color coding per calendar, selection persists across restart; integration tests with fixture data | Trin | `[ ]` |
+
+### Group D — Painter Visual Features
+| ID | Task | Owner | Status |
+|---|---|---|---|
+| [x] S5-D1 | Collision detection: pure function `Set<String> detectCollisions(List<CalendarEvent>)` — any two events whose time ranges overlap | Neo | `[ ]` |
+| [x] S5-D2 | `TimelinePainter`: draw red outline around colliding event windows; `collidingIds` passed as constructor param (stateless painter) | Neo | `[ ]` |
+| [x] S5-D3 | Completed tasks render green on strip (check `isCompleted` flag from `CalendarEvent`) | Neo | `[ ]` |
+| [x] S5-D4 | Time-till label — full spec: (1) uses font size setting, (2) positioned LEFT of now-line rendered on top of past events, (3) color interpolation white→red from 5min; rainbow HSV hue-cycle flash at ≤2min via `AnimationController` in `TimelineStrip` (painter stays stateless — receives resolved `Color`) | Neo | `[ ]` |
+| [x] S5-D5 | Time-till during event: right-aligned on active event block; counts down to event END | Neo | `[ ]` |
+| [x] S5-D6 | Trin: verify collision outlines, green tasks, time-till positioning + color progression + flash at 2min; update goldens | Trin | `[ ]` |
+
+### Group E — Interaction: Click-to-Expand
+| ID | Task | Owner | Status |
+|---|---|---|---|
+| [x] S5-E1 | `TimelineStrip`: add `GestureDetector` for tap; reuse hover hit-test logic to find tapped `CalendarEvent` | Neo | `[ ]` |
+| [x] S5-E2 | `HoverDetailOverlay`: add `description` field — HTML-stripped (regex), truncated at ~200 chars; no duplicate event title in card | Neo | `[ ]` |
+| [x] S5-E3 | Hover card for tasks: show `calendarName` / task list name + truncated `description`; for collision: show conflict note | Neo | `[ ]` |
+| [x] S5-E4 | Trin: verify tap opens card, description renders (no HTML tags), title not duplicated, task cards show list name | Trin | `[ ]` |
+
+### Group F — macOS Platform *(parallel track — Drew has Mac hardware)*
+| ID | Task | Owner | Status |
+|---|---|---|---|
+| [x] S5-F1 | macOS entitlements: `DebugProfile.entitlements` + `Release.entitlements` — com.apple.security.network.client, URL scheme for OAuth callback | Neo | `[ ]` |
+| [x] S5-F2 | Register OAuth callback URL scheme in `macos/Runner/Info.plist` | Neo | `[ ]` |
+| [x] S5-F3 | Build on macOS (`flutter build macos`); smoke test: strip top-anchored, always-on-top, OAuth login | Drew+Neo | `[ ]` |
+| [x] S5-F4 | Trin: macOS verification checklist — strip position, always-on-top, OAuth flow, real events display, hover, settings | Trin | `[ ]` |
+
+**Sprint 5 Definition of Done**: Themes shipped (dark/light/system), multi-calendar working with color coding, configurable time window, collision detection visual, completed tasks green, time-till color progression + flash, click-to-expand with clean descriptions, macOS smoke-tested, all tests GREEN, goldens updated, v0.2.0 tagged.
+
+---
+
+## Backlog (V3+)
+
+| ID | Feature | PRD Ref | Note |
+|---|---|---|---|
+| B-09 | Multiple calendar providers (Outlook, CalDAV) | F-17 | Too big for Sprint 5 |
+| B-10 | Multi-account (stackable instances) | F-09 ext | Future sprint |
+| B-11 | Windows support | S4-02 | No hardware |
 
 ---
 
