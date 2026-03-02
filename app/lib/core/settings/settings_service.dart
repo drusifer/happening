@@ -14,9 +14,9 @@ import 'dart:io';
 
 /// Supported font sizes for event labels.
 enum FontSize {
-  small(9),
-  medium(11),
-  large(13);
+  small(13),
+  medium(15),
+  large(17);
 
   const FontSize(this.px);
   final double px;
@@ -25,16 +25,45 @@ enum FontSize {
       .firstWhere((e) => e.name == val, orElse: () => FontSize.medium);
 }
 
+/// Supported application themes.
+enum AppTheme {
+  dark,
+  light,
+  system;
+
+  static AppTheme fromString(String val) => AppTheme.values
+      .firstWhere((e) => e.name == val, orElse: () => AppTheme.dark);
+}
+
 /// App-wide settings model.
 class AppSettings {
-  const AppSettings({this.fontSize = FontSize.medium});
+  const AppSettings({
+    this.fontSize = FontSize.medium,
+    this.theme = AppTheme.dark,
+    this.timeWindowHours = 8,
+    this.selectedCalendarIds = const [],
+  });
 
   final FontSize fontSize;
+  final AppTheme theme;
+  final int timeWindowHours;
+  final List<String> selectedCalendarIds;
 
-  Map<String, dynamic> toJson() => {'fontSize': fontSize.name};
+  Map<String, dynamic> toJson() => {
+        'fontSize': fontSize.name,
+        'theme': theme.name,
+        'timeWindowHours': timeWindowHours,
+        'selectedCalendarIds': selectedCalendarIds,
+      };
 
   factory AppSettings.fromJson(Map<String, dynamic> json) => AppSettings(
         fontSize: FontSize.fromString(json['fontSize'] as String? ?? 'medium'),
+        theme: AppTheme.fromString(json['theme'] as String? ?? 'dark'),
+        timeWindowHours: (json['timeWindowHours'] as num? ?? 8).toInt(),
+        selectedCalendarIds: (json['selectedCalendarIds'] as List<dynamic>?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            const [],
       );
 }
 

@@ -1,5 +1,5 @@
 # Next Steps
 
-- [ ] Mouse: Prepare Sprint 5 task board.
-- [ ] Cypher: Finalize Sprint 5 User Stories.
-- [ ] Morpheus: Define Sprint 5 Architecture (Themes/Multi-calendar).
+- [ ] Morpheus: Tag v0.2.0 release.
+- [ ] Cypher: Assess Sprint 5 velocity and plan Sprint 6.
+- [ ] Neo: Stand by for Sprint 6 kick-off.

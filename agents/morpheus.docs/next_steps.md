@@ -1,5 +1,6 @@
 # Next Steps
 
-- [ ] Neo: Finalize S4-03 (Linux/Wayland docs) and S4-07 (v0.1.0 tag).
-- [ ] Mouse: Monitor final release tasks.
-- [ ] Morpheus: Finalize PRD v0.3 / Sprint 5 planning.
+- [ ] Neo: S5-F1 through S5-F3 (macOS configuration).
+- [ ] Trin: S5-F4 (Verification).
+- [ ] Mouse: Prepare v0.2.0 release notes and update board.
+- [ ] Morpheus: Final sprint sign-off.

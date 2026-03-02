@@ -1,12 +1,18 @@
 # Current Task
 
-## Sprint 4: Linux Release
+## Sprint 5: Fresh Start v0.2.0 — 2026-03-01
 **Status**: COMPLETE ✅
 
-### Done
-- [x] Group A, B, C, D, E, F complete.
-- [x] v0.1.0 Tagged.
-- [x] Task board final sync.
+### Todo
+- [x] Finalize Sprint 5 board (docs/task.md) ✅
+- [x] Update README.md ✅
+- [x] All persona hand-offs verified ✅
+- [x] Final logic + golden regression check ✅
 
-### Next
-- [ ] Sprint 5 Planning.
+### Done
+- [x] Group A: Data Models ✅
+- [x] Group B: Settings & Themes ✅
+- [x] Group C: Multi-Calendar ✅
+- [x] Group D: Painter Visuals ✅
+- [x] Group E: Interaction ✅
+- [x] Group F: macOS Platform ✅

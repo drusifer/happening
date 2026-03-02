@@ -159,5 +159,73 @@ void main() {
       expect(GoogleCalendarService.fromApiEvent(apiEvent).color,
           equals(Colors.blue));
     });
+
+    // ── Sprint 5: Model Expansion ───────────────────────────────────────────
+
+    test('populates calendarId and calendarName', () {
+      final apiEvent = _makeEvent(
+        startDateTimeIso: '2026-02-26T10:00:00',
+        endDateTimeIso: '2026-02-26T10:30:00',
+      );
+      final event = GoogleCalendarService.fromApiEvent(
+        apiEvent,
+        calendarId: 'work-cal',
+        calendarName: 'Work',
+      );
+      expect(event.calendarId, equals('work-cal'));
+      expect(event.calendarName, equals('Work'));
+    });
+
+    test('maps description correctly', () {
+      final apiEvent = _makeEvent(
+        startDateTimeIso: '2026-02-26T10:00:00',
+        endDateTimeIso: '2026-02-26T10:30:00',
+        description: 'Meeting notes',
+      );
+      final event = GoogleCalendarService.fromApiEvent(apiEvent);
+      expect(event.description, equals('Meeting notes'));
+    });
+
+    test('maps status "completed" to isCompleted true', () {
+      final apiEvent = gcal.Event(
+        id: 'task-1',
+        summary: 'Done Task',
+        status: 'completed',
+        start: gcal.EventDateTime(dateTime: DateTime.parse('2026-02-26T10:00:00Z')),
+        end: gcal.EventDateTime(dateTime: DateTime.parse('2026-02-26T10:30:00Z')),
+      );
+      final event = GoogleCalendarService.fromApiEvent(apiEvent, isTask: true);
+      expect(event.isCompleted, isTrue);
+    });
+
+    test('handles missing end time by defaulting to start time', () {
+      final apiEvent = gcal.Event(
+        id: 'noend-1',
+        summary: 'No End',
+        start: gcal.EventDateTime(dateTime: DateTime.parse('2026-02-26T10:00:00Z')),
+      );
+      final event = GoogleCalendarService.fromApiEvent(apiEvent);
+      expect(event.endTime, equals(event.startTime));
+    });
+  });
+
+  group('CalendarMeta', () {
+    test('parses hex color correctly', () {
+      const meta = CalendarMeta(
+        id: 'c1',
+        summary: 'Personal',
+        colorHex: '#ff0000',
+      );
+      expect(meta.color, equals(const Color(0xFFFF0000)));
+    });
+
+    test('defaults to blue on null colorHex', () {
+      const meta = CalendarMeta(
+        id: 'c1',
+        summary: 'Personal',
+        colorHex: null,
+      );
+      expect(meta.color, equals(Colors.blue));
+    });
   });
 }

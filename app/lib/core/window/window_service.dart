@@ -2,8 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
-const double _kStripHeightLogical = 30.0;
-const double _kExpandedHeightLogical = 200.0;
+const double _kDefaultStripHeightLogical = 30.0;
+const double _kExpandedHeightLogical = 250.0;
 
 // Window configuration and lifecycle service.
 //
@@ -27,10 +27,12 @@ class WindowService {
   final ScreenRetriever _sr;
 
   static double _lastWidth = 1920.0;
+  static double _lastHeight = _kDefaultStripHeightLogical;
 
   /// Call once, before [runApp], to set up the window.
-  Future<void> initialize() async {
+  Future<void> initialize({double height = _kDefaultStripHeightLogical}) async {
     await _wm.ensureInitialized();
+    _lastHeight = height;
 
     final display = await _sr.getPrimaryDisplay();
     final dpr = display.scaleFactor?.toDouble() ?? 1.0;
@@ -38,7 +40,7 @@ class WindowService {
     // window_manager on Linux (GTK) takes logical pixels; GTK applies the
     // system scale factor itself. Use logical units directly.
     _lastWidth = (display.visibleSize?.width ?? 1920.0) / dpr;
-    final size = Size(_lastWidth, _kStripHeightLogical);
+    final size = Size(_lastWidth, _lastHeight);
 
     await _wm.waitUntilReadyToShow(
       WindowOptions(
@@ -72,8 +74,9 @@ class WindowService {
   }
 
   /// Collapses the window height back to the thin strip.
-  Future<void> collapse() async {
-    final size = Size(_lastWidth, _kStripHeightLogical);
+  Future<void> collapse({double? height}) async {
+    if (height != null) _lastHeight = height;
+    final size = Size(_lastWidth, _lastHeight);
     await _wm.setMinimumSize(size);
     await _wm.setMaximumSize(size);
     await _wm.setSize(size);

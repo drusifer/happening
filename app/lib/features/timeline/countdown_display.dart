@@ -27,20 +27,39 @@ class CountdownDisplay extends StatelessWidget {
     super.key,
     required this.remaining,
     this.mode = CountdownMode.untilNext,
+    this.color,
+    this.fontSize = 13.0,
   });
 
   final Duration remaining;
   final CountdownMode mode;
+  final Color? color;
+  final double fontSize;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      _format(remaining),
-      style: TextStyle(
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        color: _color(remaining, mode),
-        letterSpacing: 0.3,
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: theme.scaffoldBackgroundColor.withOpacity(0.8),
+        borderRadius: BorderRadius.circular(4),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 2,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Text(
+        _format(remaining),
+        style: TextStyle(
+          fontSize: fontSize,
+          fontWeight: FontWeight.w600,
+          color: color ?? _color(remaining, mode, theme),
+          letterSpacing: 0.3,
+        ),
       ),
     );
   }
@@ -52,10 +71,13 @@ class CountdownDisplay extends StatelessWidget {
     return '${d.inSeconds}s';
   }
 
-  static Color _color(Duration d, CountdownMode mode) {
-    if (mode == CountdownMode.untilEnd) return const Color(0xFFFFC107); // Amber
+  static Color _color(Duration d, CountdownMode mode, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
+    if (mode == CountdownMode.untilEnd) {
+      return isDark ? const Color(0xFFFFC107) : Colors.orange[800]!;
+    }
     if (d <= Duration.zero) return Colors.redAccent;
-    if (d.inMinutes < 5) return Colors.orange;
-    return Colors.white70;
+    if (d.inMinutes < 5) return isDark ? Colors.orange : Colors.orange[900]!;
+    return theme.textTheme.bodyMedium?.color ?? (isDark ? Colors.white70 : Colors.black87);
   }
 }
