@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:happening/core/util/logger.dart';
 
 // Window configuration and lifecycle service.
 //
@@ -84,18 +86,21 @@ class WindowService {
   /// Serialized: if a collapse is in flight the expand runs after it completes.
   Future<void> expand({double? height}) async {
     if (height != null) _expandedHeight = height;
-    if (_wantsExpanded) return;
+    unawaited(AppLogger.log('WindowService: expanding to  $height, $_expandedHeight'));
     _wantsExpanded = true;
-    await _enqueueResize();
+    //await _enqueueResize();
+    _doExpand();
   }
 
   /// Collapses the window back to the strip height.
   /// Idempotent and serialized — see [expand].
   Future<void> collapse({double? height}) async {
     if (height != null) _lastHeight = height;
-    if (!_wantsExpanded) return;
     _wantsExpanded = false;
-    await _enqueueResize();
+    unawaited(AppLogger.log('WindowService: collapsing to  $height, $_lastHeight'));
+    _doCollapse();
+
+    //await _enqueueResize();
   }
 
   /// Ensures at most one resize is in flight at a time.
