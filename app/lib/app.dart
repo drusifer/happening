@@ -78,14 +78,14 @@ class _HappeningAppState extends State<HappeningApp> {
   // ── Initialization ───────────────────────────────────────────────────────
 
   Future<void> _initServices() async {
-    await AppLogger.log('HappeningApp._initServices starting...');
+    await AppLogger.debug('HappeningApp._initServices starting...');
     try {
       final home = Platform.environment['HOME'] ?? '';
       final dir = Directory('$home/.config/happening');
 
       final tokenStore = FileTokenStore(directory: dir);
       final clientId = await _loadClientId();
-      await AppLogger.log('OAuth Client ID loaded.');
+      await AppLogger.debug('OAuth Client ID loaded.');
 
       _auth = GoogleAuthService(
         clientId: clientId,
@@ -93,17 +93,17 @@ class _HappeningAppState extends State<HappeningApp> {
         tokenStore: tokenStore,
       );
 
-      await AppLogger.log('AuthService initialized. Attempting restore...');
+      await AppLogger.debug('AuthService initialized. Attempting restore...');
       if (await _auth.tryRestore()) {
-        await AppLogger.log('Auth restored successfully.');
+        await AppLogger.debug('Auth restored successfully.');
         unawaited(_startCalendar());
       } else {
-        await AppLogger.log(
+        await AppLogger.debug(
             'Auth restore failed. Moving to unauthenticated state.');
         if (mounted) setState(() => _authState = _AuthState.unauthenticated);
       }
     } catch (e) {
-      await AppLogger.log('Service initialization FAILED: $e');
+      await AppLogger.debug('Service initialization FAILED: $e');
       if (mounted) setState(() => _authState = _AuthState.unauthenticated);
     }
   }
@@ -128,19 +128,19 @@ class _HappeningAppState extends State<HappeningApp> {
   }
 
   Future<void> _startCalendar() async {
-    await AppLogger.log('HappeningApp._startCalendar called.');
+    await AppLogger.debug('HappeningApp._startCalendar called.');
     _calendar?.dispose();
     _calendar = CalendarController(
       GoogleCalendarService(gcal.CalendarApi(_auth.client!)),
       settingsService: widget.settingsService,
     );
     unawaited(_calendar!.start());
-    await AppLogger.log('CalendarController started.');
+    await AppLogger.debug('CalendarController started.');
 
     if (mounted) {
       setState(() {
         _authState = _AuthState.authenticated;
-        unawaited(AppLogger.log('AuthState changed to: authenticated'));
+        unawaited(AppLogger.debug('AuthState changed to: authenticated'));
       });
     }
   }

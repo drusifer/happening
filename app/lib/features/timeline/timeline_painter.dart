@@ -58,8 +58,8 @@ class TimelinePainter extends CustomPainter {
 
     _paintBackground(canvas, size);
     _paintPastOverlay(canvas, size, layout);
+    _paintTicks(canvas, size, layout);
     _paintEvents(canvas, size, layout);
-    _paintTicks(canvas, size, layout); // After events so ticks aren't buried
     _paintNowIndicator(canvas, size);
   }
 
@@ -174,7 +174,7 @@ class TimelinePainter extends CustomPainter {
       // For tasks with no duration, we use a fixed minimum width for the block
       // but allow the title to render.
       final w =
-          (endX - x).abs().clamp(event.isTask ? 0.0 : 3.0, double.infinity);
+          (endX - x).abs().clamp(event.isTask ? 0.0 : 12.0, double.infinity);
 
       final isHovered = event.id == hoveredEventId;
       final isColliding = collidingIds.contains(event.id);
@@ -189,11 +189,18 @@ class TimelinePainter extends CustomPainter {
       color = color.withValues(alpha: targetOpacity);
 
       if (event.isTask) {
-        _paintTaskMarker(canvas, x, endX, top + blockHeight * 0.4, color);
+        // Pass endX = x for zero-duration tasks so the marker is always a
+        // single diamond regardless of floating-point pixel differences.
+        final taskEndX = event.endTime.isAfter(event.startTime) ? endX : x;
+        _paintTaskMarker(canvas, x, taskEndX, top + blockHeight * 0.4, color);
       } else {
         final rect = RRect.fromLTRBR(
             x, top, x + w, top + blockHeight, const Radius.circular(4));
-        canvas.drawRRect(rect, Paint()..color = color);
+        if (event.isFree) {
+          _paintHashFill(canvas, rect, color);
+        } else {
+          canvas.drawRRect(rect, Paint()..color = color);
+        }
 
         // S5-D2: Collision red outline (sections only)
         if (isColliding) {
@@ -243,7 +250,8 @@ class TimelinePainter extends CustomPainter {
 
         if (labelWidth > 10) {
           _paintEventLabel(
-              canvas, event.title, labelX, top, labelWidth, blockHeight);
+              canvas, event.title, labelX, top, labelWidth, blockHeight,
+              isTask: event.isTask);
         }
       }
     }
@@ -313,23 +321,31 @@ class TimelinePainter extends CustomPainter {
     double x,
     double top,
     double maxWidth,
-    double height,
-  ) {
-    // Event labels are always white text, so they always get a shadow for
-    // contrast against the event block color.
-    final shadow = Shadow(
-      blurRadius: 2.0,
-      color: Colors.black.withValues(alpha: 0.5),
-      offset: const Offset(0.5, 0.5),
-    );
+    double height, {
+    bool isTask = false,
+  }) {
+    // Tasks render beside the diamond on the bare background, so honour the
+    // background brightness. Regular event labels render on the coloured block
+    // and stay white with a shadow.
+    final isDarkBg = ThemeData.estimateBrightnessForColor(backgroundColor) ==
+        Brightness.dark;
+    final textColor =
+        isTask && !isDarkBg ? Colors.black87 : Colors.white;
+    final shadow = (!isTask || isDarkBg)
+        ? Shadow(
+            blurRadius: 2.0,
+            color: Colors.black.withValues(alpha: 0.5),
+            offset: const Offset(0.5, 0.5),
+          )
+        : null;
 
     final span = TextSpan(
       text: title,
       style: TextStyle(
-        color: Colors.white,
+        color: textColor,
         fontSize: fontSize,
         fontWeight: FontWeight.w500,
-        shadows: [shadow],
+        shadows: shadow != null ? [shadow] : null,
       ),
     );
     final painter = TextPainter(
@@ -344,7 +360,7 @@ class TimelinePainter extends CustomPainter {
   /// Renders a task as a diamond (◇) or two diamonds connected by a line if it has duration.
   void _paintTaskMarker(
       Canvas canvas, double x, double endX, double cy, Color color) {
-    final half = fontSize * 0.5;
+    final half = fontSize * 0.75;
     final diamondPath = Path();
 
     // Construct diamonds
@@ -361,34 +377,81 @@ class TimelinePainter extends CustomPainter {
     final hasDuration = endX > x + 0.1; // Small epsilon for float comparison
     if (hasDuration) addDiamond(endX);
 
-    final fillPaint = Paint()..color = color;
-    final outlinePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.4)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
+    const shadowOffset = Offset(1.5, 1.5);
+    final shadowPaint = Paint()..color = Colors.black.withValues(alpha: 0.45);
 
     // Draw the connecting line first (if duration) so diamonds overlap it
     if (hasDuration) {
-      final linePaint = Paint()
-        ..color = color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3.0;
-
-      canvas.drawLine(Offset(x, cy), Offset(endX, cy), linePaint);
-
-      // Outline for the line
-      final lineOutlinePaint = Paint()
-        ..color = Colors.white.withValues(alpha: 0.4)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 4.0; // 3px line + 1px total outline
-      // Wait, simple drawLine won't work well for composite outline.
-      // Let's just use a second slightly thicker line for the 'outline' behind it.
-      canvas.drawLine(Offset(x, cy), Offset(endX, cy), lineOutlinePaint);
-      canvas.drawLine(Offset(x, cy), Offset(endX, cy), linePaint);
+      // Drop shadow — offset line drawn behind
+      canvas.drawLine(
+        Offset(x, cy) + shadowOffset,
+        Offset(endX, cy) + shadowOffset,
+        Paint()
+          ..color = Colors.black.withValues(alpha: 0.45)
+          ..strokeWidth = 4.5,
+      );
+      // Line
+      canvas.drawLine(
+        Offset(x, cy),
+        Offset(endX, cy),
+        Paint()
+          ..color = color
+          ..strokeWidth = 4.5,
+      );
     }
 
-    canvas.drawPath(diamondPath, fillPaint);
-    canvas.drawPath(diamondPath, outlinePaint);
+    // Drop shadow — draw diamond shifted by offset
+    canvas.drawPath(
+      Path()..addPath(diamondPath, shadowOffset),
+      shadowPaint,
+    );
+    // Filled diamonds
+    canvas.drawPath(diamondPath, Paint()..color = color);
+    // Crisp white outline
+    canvas.drawPath(
+      diamondPath,
+      Paint()
+        ..color = Colors.white.withValues(alpha: 0.5)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
+  }
+
+  /// Fills [rrect] with a diagonal hatch pattern and a solid border.
+  /// Used for "Free" events to distinguish them from solid "Busy" blocks.
+  void _paintHashFill(Canvas canvas, RRect rrect, Color color) {
+    canvas.save();
+    canvas.clipRRect(rrect);
+
+    // Light background so the hatch has something to sit on.
+    canvas.drawRRect(rrect, Paint()..color = color.withValues(alpha: 0.25));
+
+    final r = rrect.outerRect;
+    final linePaint = Paint()
+      ..color = color.withValues(alpha: 0.75)
+      ..strokeWidth = 1.5;
+
+    const spacing = 5.0;
+    // Diagonal lines at 45° — extend range so corners are fully covered.
+    final extent = r.width + r.height;
+    for (var d = -r.height; d <= extent; d += spacing) {
+      canvas.drawLine(
+        Offset(r.left + d, r.top),
+        Offset(r.left + d + r.height, r.bottom),
+        linePaint,
+      );
+    }
+
+    canvas.restore();
+
+    // Solid border on top.
+    canvas.drawRRect(
+      rrect,
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3.0,
+    );
   }
 
   void _paintNowIndicator(Canvas canvas, Size size) {

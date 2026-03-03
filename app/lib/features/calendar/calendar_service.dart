@@ -8,6 +8,7 @@
 //
 // ---------------------------------------------------------------------------
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -15,6 +16,7 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 
+import '../../core/util/logger.dart';
 import 'calendar_event.dart';
 import 'video_link_extractor.dart';
 
@@ -88,7 +90,7 @@ class GoogleCalendarService implements CalendarService {
       calendarName = meta.summary;
     } catch (_) {}
 
-    final events = (response.items ?? [])
+    return (response.items ?? [])
         .where((e) => e.start?.dateTime != null)
         .map((e) => fromApiEvent(
               e,
@@ -96,30 +98,6 @@ class GoogleCalendarService implements CalendarService {
               calendarName: calendarName ?? 'Calendar',
             ))
         .toList();
-
-    // S5-FIX: Query separate @tasks feed for point-in-time tasks.
-    if (calendarId == 'primary') {
-      try {
-        final taskResponse = await _api.events.list(
-          '@tasks',
-          timeMin: start,
-          timeMax: end,
-          // NOTE: @tasks doesn't support eventTypes filter, returns all point tasks.
-        );
-        final tasks = (taskResponse.items ?? [])
-            .where((e) => e.start?.dateTime != null)
-            .map((e) => fromApiEvent(
-                  e,
-                  isTask: true,
-                  calendarId: 'tasks',
-                  calendarName: 'Tasks',
-                ))
-            .toList();
-        events.addAll(tasks);
-      } catch (_) {}
-    }
-
-    return events;
   }
 
   /// Appends [json] as one line to `test/fixtures/calendar_api_raw.jsonl`
@@ -132,7 +110,7 @@ class GoogleCalendarService implements CalendarService {
       file.parent.createSync(recursive: true);
       file.writeAsStringSync('${jsonEncode(json)}\n', mode: FileMode.append);
     } catch (e) {
-      debugPrint('[CalendarAPI] fixture log write failed: $e');
+      unawaited(AppLogger.warn('[CalendarAPI] fixture log write failed: $e'));
     }
   }
 
@@ -163,7 +141,7 @@ class GoogleCalendarService implements CalendarService {
     String calendarName = 'Primary',
   }) {
     // Log raw API payload — copy from debug console to build test fixtures.
-    debugPrint('[CalendarAPI] ${jsonEncode(e.toJson())}');
+    unawaited(AppLogger.debug('[CalendarAPI] ${jsonEncode(e.toJson())}'));
     // Tasks synced from Google Tasks appear in the primary calendar feed
     // with eventType=="focusTime" rather than from a separate @tasks feed.
     if (e.eventType == 'focusTime') isTask = true;
@@ -196,6 +174,7 @@ class GoogleCalendarService implements CalendarService {
       calendarName: calendarName,
       description: e.description,
       isCompleted: e.status == 'completed',
+      isFree: e.transparency == 'transparent',
     );
   }
 }
