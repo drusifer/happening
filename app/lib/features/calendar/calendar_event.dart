@@ -35,14 +35,19 @@ class CalendarEvent {
   final Color color;
   final String? calendarEventUrl;
   final String? videoCallUrl;
+
   /// True when this item comes from the Google Calendar Tasks feed.
   final bool isTask;
+
   /// The source calendar this event belongs to.
   final String calendarId;
+
   /// The display name of the source calendar.
   final String calendarName;
+
   /// Full HTML description (will be stripped during display).
   final String? description;
+
   /// True for completed tasks.
   final bool isCompleted;
 
@@ -91,6 +96,36 @@ class CalendarEvent {
   @override
   String toString() =>
       'CalendarEvent(id: $id, title: $title, start: $startTime, isTask: $isTask)';
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'startTime': startTime.toIso8601String(),
+        'endTime': endTime.toIso8601String(),
+        'color': color.value,
+        'calendarEventUrl': calendarEventUrl,
+        'videoCallUrl': videoCallUrl,
+        'isTask': isTask,
+        'calendarId': calendarId,
+        'calendarName': calendarName,
+        'description': description,
+        'isCompleted': isCompleted,
+      };
+
+  factory CalendarEvent.fromJson(Map<String, dynamic> json) => CalendarEvent(
+        id: json['id'] as String,
+        title: json['title'] as String,
+        startTime: DateTime.parse(json['startTime'] as String),
+        endTime: DateTime.parse(json['endTime'] as String),
+        color: Color(json['color'] as int),
+        calendarEventUrl: json['calendarEventUrl'] as String?,
+        videoCallUrl: json['videoCallUrl'] as String?,
+        isTask: json['isTask'] as bool? ?? false,
+        calendarId: json['calendarId'] as String? ?? 'primary',
+        calendarName: json['calendarName'] as String? ?? 'Primary',
+        description: json['description'] as String?,
+        isCompleted: json['isCompleted'] as bool? ?? false,
+      );
 }
 
 /// Identifies events that overlap in time (S5-D1).

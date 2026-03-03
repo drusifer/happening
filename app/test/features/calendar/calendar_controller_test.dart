@@ -98,7 +98,8 @@ void main() {
       expect(fakeService.fetchCalls, equals(1)); // cached after start
 
       await controller.refresh();
-      expect(fakeService.fetchCalls, equals(2)); // forceRefresh=true bypasses cache
+      expect(fakeService.fetchCalls,
+          equals(2)); // forceRefresh=true bypasses cache
     });
 
     test('refresh() emits updated event list on second call', () async {
@@ -128,7 +129,8 @@ void main() {
 
     // ── Error handling ────────────────────────────────────────────────────────
 
-    test('service error on start → stream does not emit', () async {
+    test('service error on start → stream emits empty list to unblock UI',
+        () async {
       fakeService.shouldThrow = true;
       final emitted = <List<CalendarEvent>>[];
       controller.events.listen(emitted.add);
@@ -136,7 +138,8 @@ void main() {
       controller.start();
       await Future<void>.delayed(Duration.zero);
 
-      expect(emitted, isEmpty);
+      expect(emitted, [[]]);
+      expect(controller.lastEvents, isEmpty);
     });
 
     test('service error on refresh → stream retains last value', () async {
@@ -188,14 +191,16 @@ void main() {
       final tmp = Directory.systemTemp.createTempSync();
       final settingsSvc = SettingsService(directory: tmp);
       await settingsSvc.load();
-      await settingsSvc.update(const AppSettings(selectedCalendarIds: ['secondary']));
-      
-      final controller2 = CalendarController(fakeService, settingsService: settingsSvc);
+      await settingsSvc
+          .update(const AppSettings(selectedCalendarIds: ['secondary']));
+
+      final controller2 =
+          CalendarController(fakeService, settingsService: settingsSvc);
       addTearDown(controller2.dispose);
-      
+
       await controller2.refresh();
       // Should fetch 'primary' (Set default) and 'secondary' (selected)
-      expect(fakeService.fetchCalls, 2); 
+      expect(fakeService.fetchCalls, 2);
     });
   });
 }

@@ -15,6 +15,32 @@ struct _MyApplication {
 
 G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
 
+// Reads fontSize from ~/.config/happening/settings.json.
+// Returns the pixel size: 13 (small), 15 (medium, default), 17 (large).
+static int get_reserved_height(void) {
+  const gchar* config_dir = g_get_user_config_dir();
+  g_autofree gchar* path =
+      g_build_filename(config_dir, "happening", "settings.json", NULL);
+  
+  const int og_height = 35;
+  int height = (og_height + 15) * 1.1 + 1; //default medium
+
+  g_autofree gchar* contents = NULL;
+  if (!g_file_get_contents(path, &contents, NULL, NULL)) {
+    return height;  // file absent or unreadable — use medium default
+  }
+
+  if (strstr(contents, "\"fontSize\":\"small\"") ||
+      strstr(contents, "\"fontSize\": \"small\"")) {
+    height = (og_height + 13) * 1.1 + 1; //default medium
+  }
+  if (strstr(contents, "\"fontSize\":\"large\"") ||
+      strstr(contents, "\"fontSize\": \"large\"")) {
+    height = (og_height + 17) * 1.1 + 1; //default large
+  }
+  return height;  
+}
+
 // Sets _NET_WM_STRUT_PARTIAL so the WM reserves 30px at the top of the
 // screen and won't tile or maximise other windows behind the strip.
 static void set_x11_strut(GtkWindow* window) {
@@ -35,9 +61,10 @@ static void set_x11_strut(GtkWindow* window) {
   // _NET_WM_STRUT_PARTIAL: left, right, top, bottom,
   //   left_y0, left_y1, right_y0, right_y1,
   //   top_x0,  top_x1,  bottom_x0, bottom_x1
+  const int height = get_reserved_height();
   long strut[12] = {
-      0, 0, 30, 0,
-      0, 0, 0,  0,
+      0, 0, height, 0,
+      0, 0, 0,      0,
       geo.x, geo.x + geo.width - 1, 0, 0};
 
   Atom strut_atom = XInternAtom(xdisplay, "_NET_WM_STRUT_PARTIAL", False);

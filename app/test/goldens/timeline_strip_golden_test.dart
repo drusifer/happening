@@ -27,16 +27,29 @@ class _FakeWindowService extends WindowService {
           screenRetriever: _FakeScreenRetriever(),
         );
 
-  @override
-  Future<void> expand() async {}
+  bool _wantsExpanded = false;
 
   @override
-  Future<void> collapse({double? height}) async {}
+  bool get isExpanded => _wantsExpanded;
+
+  @override
+  Future<void> expand({double? height}) async {
+    if (_wantsExpanded) return;
+    _wantsExpanded = true;
+  }
+
+  @override
+  Future<void> collapse({double? height}) async {
+    if (!_wantsExpanded) return;
+    _wantsExpanded = false;
+  }
 }
 
 class _FakeClock extends ClockService {
   _FakeClock(this.fixedTime);
   final DateTime fixedTime;
+  @override
+  DateTime get now => fixedTime;
   @override
   Stream<DateTime> get tick => Stream.value(fixedTime);
 }
@@ -68,7 +81,7 @@ void main() {
       id: 'e1',
       title: 'Long Meeting',
       startTime: now.subtract(const Duration(minutes: 90)), // before window
-      endTime: now.add(const Duration(minutes: 90)),
+      endTime: now.add(const Duration(hours: 3)), // endX ~570 > 500; covers x=300 and x=500
       color: Colors.red,
       calendarEventUrl: null,
       videoCallUrl: null,
@@ -102,8 +115,7 @@ void main() {
 
     await tester.pump();
 
-    final gesture =
-        await tester.createGesture(kind: PointerDeviceKind.mouse);
+    final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
     await gesture.addPointer(location: Offset.zero);
     await tester.pump();
 
@@ -135,7 +147,8 @@ void main() {
     final event = CalendarEvent(
       id: 'e1',
       title: 'HTML Event',
-      description: '<b>Bold</b> and <i>Italic</i> description with <a href="#">Link</a>',
+      description:
+          '<b>Bold</b> and <i>Italic</i> description with <a href="#">Link</a>',
       startTime: now.add(const Duration(minutes: 10)),
       endTime: now.add(const Duration(minutes: 40)),
       color: Colors.blue,
@@ -171,18 +184,24 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
 
-    // 1. Tap the event block (manual coordinate to bypass semantics issues)
-    await tester.tapAt(const Offset(160, 15));
+    final gesture =
+        await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await gesture.addPointer(location: Offset.zero);
+    await tester.pump();
+
+    // 1. Hover over the event block (x=160 hit task)
+    await gesture.moveTo(const Offset(160, 15));
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
 
-    // 2. Move mouse away (simulated by not having a hover state)
-    // The card should still be visible because it was tapped.
+    // The card should be visible because it is hovered.
     expect(find.text('Bold and Italic description with Link'), findsOneWidget);
 
     await expectLater(
       find.byType(TimelineStrip),
       matchesGoldenFile('goldens/persistent_tap_card.png'),
     );
+
+    await gesture.removePointer();
   });
 }

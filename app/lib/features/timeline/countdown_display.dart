@@ -29,26 +29,28 @@ class CountdownDisplay extends StatelessWidget {
     this.mode = CountdownMode.untilNext,
     this.color,
     this.fontSize = 13.0,
+    this.backgroundColor,
   });
 
   final Duration remaining;
   final CountdownMode mode;
   final Color? color;
   final double fontSize;
+  final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final bgBase = backgroundColor ?? theme.scaffoldBackgroundColor;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor.withOpacity(0.8),
+        color: bgBase.withValues(alpha: 0.92),
         borderRadius: BorderRadius.circular(4),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 2,
-            spreadRadius: 1,
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 3,
           ),
         ],
       ),
@@ -78,6 +80,7 @@ class CountdownDisplay extends StatelessWidget {
     }
     if (d <= Duration.zero) return Colors.redAccent;
     if (d.inMinutes < 5) return isDark ? Colors.orange : Colors.orange[900]!;
-    return theme.textTheme.bodyMedium?.color ?? (isDark ? Colors.white70 : Colors.black87);
+    return theme.textTheme.bodyMedium?.color ??
+        (isDark ? Colors.white70 : Colors.black87);
   }
 }

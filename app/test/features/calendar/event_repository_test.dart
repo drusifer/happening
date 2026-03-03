@@ -11,6 +11,13 @@ class _FakeCalendarService implements CalendarService {
   _FakeCalendarService(this.events);
 
   @override
+  Future<List<CalendarMeta>> fetchCalendarList() async => [];
+
+  @override
+  Future<List<CalendarEvent>> fetchEvents(String calendarId) async =>
+      fetchTodayEvents();
+
+  @override
   Future<List<CalendarEvent>> fetchTodayEvents() async {
     callCount++;
     return List.from(events);
