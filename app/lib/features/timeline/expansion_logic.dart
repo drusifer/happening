@@ -48,38 +48,48 @@ class EventBounds {
 class ExpansionLogic {
   /// Determines the intended [ExpansionState] based on coordinates and state.
   ///
-  /// [mouseX] Current horizontal mouse position.
-  /// [mouseY] Current vertical mouse position.
+  /// [details] Current pointer event, or null when called from a lifecycle change.
   /// [eventBounds] List of 2D pixel bounds for all visible events.
   /// [stripHeight] The height of the timeline strip (e.g., 30.0).
   /// [isSettingsOpen] Whether the settings panel is currently active.
+  /// [isAppFocused] Whether the app currently has desktop focus.
   static ExpansionState determineState({
-    required PointerEvent details,
+    PointerEvent? details,
     required List<EventBounds> eventBounds,
     required double stripHeight,
     required bool isSettingsOpen,
+    bool isAppFocused = true,
   }) {
-    
+    // 0. App focus — collapse immediately unless settings is open.
+    if (!isAppFocused) {
+      unawaited(AppLogger.debug('ExpansionLogic -> Collapsed (App Lost Focus)'));
+      return isSettingsOpen ? ExpansionState.expanded : ExpansionState.collapsed;
+    }
+
+    // No pointer event means this was a lifecycle-only call; settings drives it.
+    if (details == null) {
+      return isSettingsOpen ? ExpansionState.expanded : ExpansionState.collapsed;
+    }
+
     double mouseX = details.localPosition.dx;
     double mouseY = details.localPosition.dy;
-    unawaited(AppLogger.log('ExpansionLogic x=${mouseX.toStringAsFixed(1)} y=${mouseY.toStringAsFixed(1)} '
+    unawaited(AppLogger.debug('ExpansionLogic x=${mouseX.toStringAsFixed(1)} y=${mouseY.toStringAsFixed(1)} '
         'events=${eventBounds.length} settings=$isSettingsOpen'));
 
     if (details is PointerExitEvent) {
-    	unawaited(AppLogger.log('ExpansionLogic -> Collapsed (PonterExit) at x=${mouseX.toStringAsFixed(1)}, y=${mouseY.toStringAsFixed(1)}'));
-    	return ExpansionState.collapsed;
+      unawaited(AppLogger.debug('ExpansionLogic -> Collapsed (PointerExit) at x=${mouseX.toStringAsFixed(1)}, y=${mouseY.toStringAsFixed(1)}'));
+      return ExpansionState.collapsed;
     }
-
 
     // 1. Settings always forces expansion.
     if (isSettingsOpen) {
-      unawaited(AppLogger.log('ExpansionLogic -> Expanded (Settings Open)'));
+      unawaited(AppLogger.debug('ExpansionLogic -> Expanded (Settings Open)'));
       return ExpansionState.expanded;
     }
 
     // 2. Vertical Guard: If the mouse is above the strip, we are collapsed.
     if (mouseY < 0) {
-      unawaited(AppLogger.log('ExpansionLogic -> Collapsed (Above Strip: y=${mouseY.toStringAsFixed(1)})'));
+      unawaited(AppLogger.debug('ExpansionLogic -> Collapsed (Above Strip: y=${mouseY.toStringAsFixed(1)})'));
       return ExpansionState.collapsed;
     }
 
@@ -87,13 +97,13 @@ class ExpansionLogic {
     // the 2D rectangle of an event's interaction zone (Column + Card).
     for (final bounds in eventBounds) {
       if (bounds.contains(mouseX, mouseY)) {
-        unawaited(AppLogger.log('ExpansionLogic -> Expanded (Event Bounds hit at x=${mouseX.toStringAsFixed(1)}, y=${mouseY.toStringAsFixed(1)}) bounds=$bounds'));
+        unawaited(AppLogger.debug('ExpansionLogic -> Expanded (Event Bounds hit at x=${mouseX.toStringAsFixed(1)}, y=${mouseY.toStringAsFixed(1)}) bounds=$bounds'));
         return ExpansionState.expanded;
       }
     }
 
     // 4. Default: If not inside any event's interactive rectangle.
-    unawaited(AppLogger.log('ExpansionLogic -> Collapsed (Default) at x=${mouseX.toStringAsFixed(1)}, y=${mouseY.toStringAsFixed(1)}'));
+    unawaited(AppLogger.debug('ExpansionLogic -> Collapsed (Default) at x=${mouseX.toStringAsFixed(1)}, y=${mouseY.toStringAsFixed(1)}'));
     return ExpansionState.collapsed;
   }
 }

@@ -86,7 +86,7 @@ class WindowService {
   /// Serialized: if a collapse is in flight the expand runs after it completes.
   Future<void> expand({double? height}) async {
     if (height != null) _expandedHeight = height;
-    unawaited(AppLogger.log('WindowService: expanding to  $height, $_expandedHeight'));
+    unawaited(AppLogger.debug('WindowService: expanding to  $height, $_expandedHeight'));
     _wantsExpanded = true;
     //await _enqueueResize();
     _doExpand();
@@ -97,7 +97,7 @@ class WindowService {
   Future<void> collapse({double? height}) async {
     if (height != null) _lastHeight = height;
     _wantsExpanded = false;
-    unawaited(AppLogger.log('WindowService: collapsing to  $height, $_lastHeight'));
+    unawaited(AppLogger.debug('WindowService: collapsing to  $height, $_lastHeight'));
     _doCollapse();
 
     //await _enqueueResize();

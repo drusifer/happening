@@ -35,7 +35,7 @@ class CalendarController {
 
   /// Starts the polling loop.
   Future<void> start() async {
-    await AppLogger.log('CalendarController.start() called.');
+    await AppLogger.debug('CalendarController.start() called.');
     unawaited(_fetch());
     _pollTimer?.cancel();
     _pollTimer = Timer.periodic(
@@ -54,7 +54,7 @@ class CalendarController {
   Future<void> refresh() => _fetch(forceRefresh: true);
 
   Future<void> _fetch({bool forceRefresh = false}) async {
-    await AppLogger.log(
+    await AppLogger.debug(
         'CalendarController._fetch() started (forceRefresh: $forceRefresh)');
     try {
       final selectedIds =
@@ -65,28 +65,28 @@ class CalendarController {
         'primary',
         ...selectedIds,
       };
-      await AppLogger.log('Fetching calendars: $idsToFetch');
+      await AppLogger.debug('Fetching calendars: $idsToFetch');
 
       final List<List<CalendarEvent>> results =
           await Future.wait(idsToFetch.map((id) => _service.fetchEvents(id)));
 
       final allEvents = results.expand((e) => e).toList();
       final deduped = _dedup(allEvents);
-      await AppLogger.log(
+      await AppLogger.debug(
           'Fetch complete. Found ${allEvents.length} events (${deduped.length} deduped).');
 
       _lastEvents = deduped;
       _eventsController.add(deduped);
-      await AppLogger.log('Emitted events to stream.');
+      await AppLogger.debug('Emitted events to stream.');
     } catch (e) {
       // S5-FIX: If the first fetch fails, emit an empty list to unblock the UI.
       if (_lastEvents == null) {
-        await AppLogger.log(
+        await AppLogger.debug(
             'Initial fetch failed. Emitting empty list to unblock UI.');
         _lastEvents = [];
         _eventsController.add([]);
       }
-      await AppLogger.log('Fetch failed error: $e');
+      await AppLogger.debug('Fetch failed error: $e');
     }
   }
 
