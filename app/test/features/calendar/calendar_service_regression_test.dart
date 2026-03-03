@@ -222,8 +222,7 @@ void main() {
         'colorId': '2',
         'htmlLink': 'https://www.google.com/calendar/event?eid=abc',
       }));
-      expect(event.color, const Color(0xFF7AE7BF),
-          reason: 'colorId 2 = Sage');
+      expect(event.color, const Color(0xFF7AE7BF), reason: 'colorId 2 = Sage');
     });
 
     test('colorId 10 → Basil (#51B749)', () {

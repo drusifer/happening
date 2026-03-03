@@ -1,16 +1,14 @@
 # Current Task
 
-## Sprint 5: Group F — 2026-03-01
+## Sprint 5 Refinement (Post-v0.2.0)
 **Status**: IN PROGRESS
 
 ### Todo
-- [ ] S5-F1: macOS entitlements (DebugProfile.entitlements, Release.entitlements)
-- [ ] S5-F2: macOS Info.plist OAuth callback registration
-- [ ] S5-F3: macOS build check (compile only, as we are on Linux)
+- [/] Refine Hover Interaction (HOVER_FIX_PLAN.md).
+- [x] TDD `ExpansionLogic` class.
+- [ ] Refactor `TimelineStrip` to use `ExpansionLogic`.
+- [ ] Verify `TimelineStrip` behavior after refactor.
 
 ### Done
-- [x] Group A FOUNDATION COMPLETE ✅
-- [x] Group B SETTINGS UI COMPLETE ✅
-- [x] Group C MULTI-CALENDAR COMPLETE ✅
-- [x] Group D PAINTER VISUALS COMPLETE ✅
-- [x] Group E INTERACTION COMPLETE ✅
+- [x] Group A, B, C, D, E COMPLETE ✅
+- [x] ExpansionLogic implementation + tests (9/9) ✅

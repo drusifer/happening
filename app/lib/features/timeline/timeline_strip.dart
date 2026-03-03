@@ -3,7 +3,7 @@
 // TLDR:
 // Overview: A stateful widget that integrates the clock, the painter, and the window resizing logic.
 // Problem: Need to handle mouse hover and dynamically resize the window to show event details.
-// Solution: Uses a Stack with MouseRegion, StreamBuilder, and window_manager resizing.
+// Solution: Uses a Stack with MouseRegion and ExpansionLogic for state determination.
 // Breaking Changes: No.
 //
 // ---------------------------------------------------------------------------
@@ -11,14 +11,16 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/time/clock_service.dart';
+import 'package:happening/core/util/logger.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:happening/features/calendar/calendar_controller.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
-import 'package:happening/features/timeline/celebration_widget.dart';
 import 'package:happening/features/timeline/countdown_display.dart';
+import 'package:happening/features/timeline/expansion_logic.dart';
 import 'package:happening/features/timeline/hover_detail_overlay.dart';
 import 'package:happening/features/timeline/settings_panel.dart';
 import 'package:happening/features/timeline/timeline_layout.dart';
@@ -33,7 +35,8 @@ class TimelineStrip extends StatefulWidget {
     required this.calendarController,
     required this.settingsService,
     required this.onSignOut,
-    this.windowService,
+    required this.windowService,
+    this.enableAnimations = true,
   });
 
   final List<CalendarEvent> events;
@@ -41,30 +44,39 @@ class TimelineStrip extends StatefulWidget {
   final CalendarController calendarController;
   final SettingsService settingsService;
   final VoidCallback onSignOut;
-  /// Injectable for testing; defaults to [WindowService()] at runtime.
-  final WindowService? windowService;
+  final WindowService windowService;
+
+  /// Whether to run repeating animations. Disable in tests to allow pumpAndSettle.
+  final bool enableAnimations;
 
   @override
   State<TimelineStrip> createState() => _TimelineStripState();
 }
 
-class _TimelineStripState extends State<TimelineStrip> with SingleTickerProviderStateMixin {
+class _TimelineStripState extends State<TimelineStrip>
+    with SingleTickerProviderStateMixin {
   late final WindowService _windowService;
   late final AnimationController _flashController;
-  bool _isExpanded = false;
   CalendarEvent? _hoveredEvent;
-  double? _hoverX;
   bool _isHoveringStrip = false;
   bool _isSettingsOpen = false;
 
   @override
   void initState() {
     super.initState();
-    _windowService = widget.windowService ?? WindowService();
+    _windowService = widget.windowService;
     _flashController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 1),
-    )..repeat();
+    );
+    if (widget.enableAnimations) {
+      _flashController.repeat();
+    }
+
+    _updateHeights();
+    unawaited(AppLogger.log('TimelineStrip: Initializing collapsedHeight=$_collapsedHeight expandedHeight=$_expandedHeight'));
+    // ALWAYS call collapse on init to force initial state regardless of OS/service previous state.
+    unawaited(_windowService.collapse(height: _collapsedHeight));
   }
 
   @override
@@ -73,58 +85,83 @@ class _TimelineStripState extends State<TimelineStrip> with SingleTickerProvider
     super.dispose();
   }
 
-  // Updated each build — used by mouse handlers.
   TimelineLayout? _layout;
   DateTime _now = DateTime.now();
-  double _collapsedHeight = 30.0;
+  double _ogCollapsedHeight = 35.0;
+  double _ogExpandedHeight = 140.0;
+  double _collapsedHeight = 35.0;
+  double _expandedHeight = 160.0;
 
-  // ── Window expand/collapse guards ─────────────────────────────────────────
-
-  Future<void> _expand() async {
-    if (_isExpanded) return;
-    _isExpanded = true;
-    await _windowService.expand();
-  }
-
-  Future<void> _collapse() async {
-    if (!_isExpanded) return;
-    _isExpanded = false;
-    await _windowService.collapse(height: _collapsedHeight);
+  void _updateHeights() {
+    final settings = widget.settingsService.current;
+    final fontSize = settings.fontSize.px;
+    _collapsedHeight = _ogCollapsedHeight + fontSize * 1.1;
+    _expandedHeight = _ogExpandedHeight + fontSize * 3.2;
   }
 
   // ── Mouse handlers ───────────────────────────────────────────────────────
 
-  void _onMouseMove(PointerEvent details) {
-    setState(() {
-      _isHoveringStrip = true;
-      _hoverX = details.localPosition.dx;
-    });
+  void _handleMouse(PointerEvent details) {
+    final layout = _layout;
+    if (layout == null) return;
 
-    // Ignore moves inside the card area — keep current hover state so buttons remain clickable.
-    if (details.localPosition.dy >= _collapsedHeight) {
-      if (_hoveredEvent != null || _isSettingsOpen) return;
+    _updateHeights();
+
+    // 1. Expansion Logic
+    // Define interactive 2D bounds for each event:
+    // - X: full event width
+    // - Y: from top (0) down to hovercard depth (_expandedHeight)
+    final bounds = widget.events.map((e) {
+      final startX = layout.xForTime(e.startTime, _now);
+      final endX = layout.xForTime(e.endTime, _now);
+      return EventBounds(
+        left: startX,
+        right: endX,
+        top: 0,
+        bottom: _expandedHeight - 5, //-5 let's the mouse event trigger inside the window
+      );
+    }).toList();
+
+    final state = ExpansionLogic.determineState(
+      mouseX: details.localPosition.dx,
+      mouseY: details.localPosition.dy,
+      eventBounds: bounds,
+      stripHeight: _collapsedHeight,
+      isSettingsOpen: _isSettingsOpen,
+    );
+
+	
+    unawaited(AppLogger.log(''));
+
+    // 2. State Sync
+    final isOverStrip =
+        details is! PointerExitEvent && details.localPosition.dy < _collapsedHeight;
+    final hit = (state == ExpansionState.expanded)
+        ? layout.eventAtX(details.localPosition.dx, widget.events, _now)
+        : null;
+
+    if (isOverStrip != _isHoveringStrip || hit?.id != _hoveredEvent?.id) {
+      final elementName = hit?.title ?? (isOverStrip ? 'Strip' : 'Outside');
+      unawaited(AppLogger.log('${details.runtimeType}: $elementName'));
     }
 
-    final hit =
-        _layout?.eventAtX(details.localPosition.dx, widget.events, _now);
-    if (hit?.id == _hoveredEvent?.id) return;
-    setState(() => _hoveredEvent = hit);
+    setState(() {
+      _isHoveringStrip = isOverStrip;
+      _hoveredEvent = hit;
+    });
 
-    if (hit != null || _isSettingsOpen) {
-      unawaited(_expand());
+    // 3. Window Execution
+    if (state == ExpansionState.expanded) {
+      if (!_windowService.isExpanded) {
+        unawaited(AppLogger.log('TimelineStrip: Executing expand threshold=$_expandedHeight'));
+        unawaited(_windowService.expand(height: _expandedHeight));
+      }
     } else {
-      unawaited(_collapse());
+      if (_windowService.isExpanded) {
+        unawaited(AppLogger.log('TimelineStrip: Executing collapse height=$_collapsedHeight'));
+        unawaited(_windowService.collapse(height: _collapsedHeight));
+      }
     }
-  }
-
-  void _onMouseExit(PointerEvent _) {
-    setState(() {
-      _isHoveringStrip = false;
-      _hoveredEvent = null;
-      _hoverX = null;
-      _isSettingsOpen = false;
-    });
-    unawaited(_collapse());
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────
@@ -138,13 +175,9 @@ class _TimelineStripState extends State<TimelineStrip> with SingleTickerProvider
     final layout = _layout;
     final event = _hoveredEvent;
     if (layout == null || event == null) return 4.0;
-
-    // Left-align card to the visible start of the event block (DEC-002)
-    final visibleStart =
-        layout.xForTime(event.startTime, _now).clamp(0.0, screenWidth);
-    
-    // Clamp to screen edges (4px padding)
-    return visibleStart.clamp(4.0, screenWidth - 4.0);
+    final startX = layout.xForTime(event.startTime, _now);
+    final cardWidth = _cardWidth(screenWidth);
+    return startX.clamp(4.0, math.max(4.0, screenWidth - cardWidth - 4.0));
   }
 
   double _cardWidth(double screenWidth) {
@@ -152,15 +185,9 @@ class _TimelineStripState extends State<TimelineStrip> with SingleTickerProvider
     final layout = _layout;
     final event = _hoveredEvent;
     if (layout == null || event == null) return minCardWidth;
-
-    final visibleStart =
-        layout.xForTime(event.startTime, _now).clamp(0.0, screenWidth);
-    final visibleEnd =
-        layout.xForTime(event.endTime, _now).clamp(0.0, screenWidth);
-    final eventWidth = (visibleEnd - visibleStart).abs();
-
-    // Card width matches event block width, but is at least 260px (DEC-002).
-    return eventWidth.clamp(minCardWidth, double.infinity);
+    final startX = layout.xForTime(event.startTime, _now);
+    final endX = layout.xForTime(event.endTime, _now);
+    return (endX - startX).abs().clamp(minCardWidth, double.infinity);
   }
 
   void _toggleSettings() {
@@ -169,35 +196,25 @@ class _TimelineStripState extends State<TimelineStrip> with SingleTickerProvider
       _hoveredEvent = null;
     });
     if (_isSettingsOpen) {
-      unawaited(_expand());
+      if (!_windowService.isExpanded) {
+        unawaited(_windowService.expand(height: _expandedHeight));
+      }
     } else {
-      unawaited(_collapse());
+      if (_windowService.isExpanded) {
+        unawaited(_windowService.collapse(height: _collapsedHeight));
+      }
     }
   }
 
   Color _resolveCountdownColor(Duration remaining, Color base) {
     if (remaining <= Duration.zero) return Colors.red;
     if (remaining.inMinutes >= 5) return base;
-
-    if (remaining.inMinutes < 2) {
-      // Rainbow hue cycle
-      return HSVColor.fromAHSV(1.0, _flashController.value * 360, 0.7, 1.0).toColor();
+    if (remaining.inMinutes < 2 && widget.enableAnimations) {
+      return HSVColor.fromAHSV(1.0, _flashController.value * 360, 0.7, 1.0)
+          .toColor();
     }
-
-    // Interpolate base → red between 5 and 2 minutes
     final factor = (5 - (remaining.inMilliseconds / 60000)).clamp(0.0, 1.0);
     return Color.lerp(base, Colors.red, factor)!;
-  }
-
-  void _onTapDown(TapDownDetails details) {
-    final hit = _layout?.eventAtX(details.localPosition.dx, widget.events, _now);
-    if (hit != null) {
-      setState(() => _hoveredEvent = hit);
-      unawaited(_expand());
-    } else if (!_isSettingsOpen) {
-      setState(() => _hoveredEvent = null);
-      unawaited(_collapse());
-    }
   }
 
   // ── Build ────────────────────────────────────────────────────────────────
@@ -207,31 +224,14 @@ class _TimelineStripState extends State<TimelineStrip> with SingleTickerProvider
     final theme = Theme.of(context);
     final settings = widget.settingsService.current;
     final fontSize = settings.fontSize.px;
-    
-    // Scale vertical strip height padding: Small -> +16, Medium -> +20, Large -> +24
-    final padding = switch (settings.fontSize) {
-      FontSize.small => 16.0,
-      FontSize.medium => 20.0,
-      FontSize.large => 24.0,
-    };
-    _collapsedHeight = fontSize + padding;
-
-    const nowIndicatorFraction = 0.10; // 10% from left edge
-    const pastFraction = 0.125; // 12.5% of the total window is past
-
-    // S5-B3: Time window distribution
-    final totalWindow = Duration(hours: settings.timeWindowHours);
-    final windowPast = Duration(milliseconds: (totalWindow.inMilliseconds * pastFraction).toInt());
-    final windowFuture = totalWindow - windowPast;
-
-    final collidingIds = detectCollisions(widget.events);
+    _updateHeights();
 
     return StreamBuilder<DateTime>(
       stream: widget.clockService.tick,
-      initialData: DateTime.now(),
+      initialData: widget.clockService.now,
       builder: (context, snapshot) {
         final now = snapshot.data!;
-        final future = _futureEvents(now);
+        _now = now;
 
         return AnimatedBuilder(
           animation: _flashController,
@@ -239,27 +239,24 @@ class _TimelineStripState extends State<TimelineStrip> with SingleTickerProvider
             return LayoutBuilder(
               builder: (context, constraints) {
                 final stripWidth = constraints.maxWidth;
-                final nowIndicatorX = stripWidth * nowIndicatorFraction;
+                final nowIndicatorX = stripWidth * 0.10;
 
                 final layout = TimelineLayout(
                   stripWidth: stripWidth,
                   nowIndicatorX: nowIndicatorX,
-                  windowStart: now.subtract(windowPast),
-                  windowEnd: now.add(windowFuture),
+                  windowStart: now.subtract(Duration(
+                      milliseconds: (settings.timeWindowHours * 3600000 * 0.125).toInt())),
+                  windowEnd: now.add(Duration(
+                      milliseconds: (settings.timeWindowHours * 3600000 * 0.875).toInt())),
                 );
-
                 _layout = layout;
-                _now = now;
 
                 final active = layout.activeEvent(widget.events, now);
+                final future = _futureEvents(now);
                 final nextEvent = future.isNotEmpty ? future.first : null;
-
-                final mode = active != null
-                    ? CountdownMode.untilEnd
-                    : CountdownMode.untilNext;
+                final mode = active != null ? CountdownMode.untilEnd : CountdownMode.untilNext;
                 final countdown = nextEvent != null
-                    ? layout.countdownTo(
-                        active != null ? active.endTime : nextEvent.startTime, now)
+                    ? layout.countdownTo(active != null ? active.endTime : nextEvent.startTime, now)
                     : Duration.zero;
 
                 final baseColor = mode == CountdownMode.untilEnd
@@ -267,88 +264,80 @@ class _TimelineStripState extends State<TimelineStrip> with SingleTickerProvider
                     : theme.textTheme.bodyMedium?.color ?? Colors.white;
                 final countdownColor = _resolveCountdownColor(countdown, baseColor);
 
-                // S5-D4/D5: Urgency effects (scaling & shaking)
-                final remainingSeconds = countdown.inSeconds;
                 double countdownScale = 1.0;
                 Offset shakeOffset = Offset.zero;
-
-                if (remainingSeconds > 0) {
-                  if (remainingSeconds <= 120) {
-                    // Gradual scale from 1.0 at 2m to 1.3 at 0m
-                    countdownScale = 1.0 + (120 - remainingSeconds) / 120 * 0.3;
+                if (countdown.inSeconds > 0 && widget.enableAnimations) {
+                  if (countdown.inSeconds <= 120) {
+                    countdownScale = 1.0 + (120 - countdown.inSeconds) / 120 * 0.3;
                   }
-                  if (remainingSeconds <= 60) {
-                    // Shake at 1m: 4Hz oscillation, 2px amplitude
-                    final shakeX = math.sin(_flashController.value * 2 * math.pi * 4) * 2.0;
-                    shakeOffset = Offset(shakeX, 0);
+                  if (countdown.inSeconds <= 60) {
+                    shakeOffset = Offset(math.sin(_flashController.value * 8 * math.pi) * 2.0, 0);
                   }
                 }
 
+                final stripBackgroundColor =
+                    theme.brightness == Brightness.dark ? const Color(0xFF1A1A2E) : Colors.white;
+
                 return MouseRegion(
-                  onEnter: (_) => setState(() => _isHoveringStrip = true),
-                  onHover: _onMouseMove,
-                  onExit: _onMouseExit,
-                  child: GestureDetector(
-                    onTapDown: _onTapDown,
-                    behavior: HitTestBehavior.opaque,
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        // Content layer
-                      if (future.isEmpty)
-                        const Positioned.fill(child: CelebrationWidget())
-                      else ...[
-                        // Timeline canvas — dynamic height (S5-B4)
-                        Positioned(
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          height: _collapsedHeight,
-                          child: CustomPaint(
-                            painter: TimelinePainter(
-                              events: widget.events,
-                              now: now,
-                              nowIndicatorX: nowIndicatorX,
-                              windowStart: now.subtract(windowPast),
-                              windowEnd: now.add(windowFuture),
-                              hoveredEventId: _hoveredEvent?.id,
-                              collidingIds: collidingIds,
-                              countdownColor: countdownColor,
-                              fontSize: settings.fontSize.px,
-                              backgroundColor: theme.scaffoldBackgroundColor,
-                              pastOverlayColor: theme.brightness == Brightness.dark
-                                  ? Colors.black26
-                                  : Colors.black12,
-                                                        nowLineColor: theme.colorScheme.primary,
-                                                        tickColor: theme.textTheme.bodySmall?.color?.withOpacity(0.5) ?? Colors.grey,
-                                                      ),
-                              
+                  onEnter: _handleMouse,
+                  onHover: _handleMouse,
+                  onExit: _handleMouse,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: _collapsedHeight,
+                        child: Container(color: stripBackgroundColor),
+                      ),
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: _collapsedHeight,
+                        child: CustomPaint(
+                          painter: TimelinePainter(
+                            events: widget.events,
+                            now: now,
+                            nowIndicatorX: nowIndicatorX,
+                            windowStart: layout.windowStart,
+                            windowEnd: layout.windowEnd,
+                            hoveredEventId: _hoveredEvent?.id,
+                            collidingIds: detectCollisions(widget.events),
+                            countdownColor: countdownColor,
+                            fontSize: fontSize,
+                            backgroundColor: stripBackgroundColor,
+                            pastOverlayColor: theme.brightness == Brightness.dark
+                                ? Colors.black26
+                                : Colors.black12,
+                            nowLineColor: theme.colorScheme.primary,
+                            tickColor: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.5) ??
+                                Colors.grey,
                           ),
                         ),
-
-                        // Countdown label — Always left of the now line
-                        Positioned(
-                          right: stripWidth - nowIndicatorX + 4,
-                          top: 0,
-                          height: _collapsedHeight,
-                          child: Center(
-                            child: Transform.translate(
-                              offset: shakeOffset,
-                              child: Transform.scale(
-                                scale: countdownScale,
-                                child: CountdownDisplay(
-                                  remaining: countdown,
-                                  mode: mode,
-                                  color: countdownColor,
-                                  fontSize: settings.fontSize.px,
-                                ),
+                      ),
+                      Positioned(
+                        right: stripWidth - nowIndicatorX + 4,
+                        top: 0,
+                        height: _collapsedHeight,
+                        child: Center(
+                          child: Transform.translate(
+                            offset: shakeOffset,
+                            child: Transform.scale(
+                              scale: countdownScale,
+                              child: CountdownDisplay(
+                                remaining: countdown,
+                                mode: mode,
+                                color: countdownColor,
+                                fontSize: fontSize,
+                                backgroundColor: stripBackgroundColor,
                               ),
                             ),
                           ),
                         ),
-                      ],
-
-                      // S3-09: Hover-reveal controls (Gear + Refresh)
+                      ),
                       if (_isHoveringStrip)
                         Positioned(
                           left: 8,
@@ -360,19 +349,17 @@ class _TimelineStripState extends State<TimelineStrip> with SingleTickerProvider
                               _IconButton(
                                 icon: Icons.refresh,
                                 onTap: widget.calendarController.refresh,
-                                color: theme.iconTheme.color?.withOpacity(0.7) ?? Colors.white70,
+                                stripBackgroundColor: stripBackgroundColor,
                               ),
                               const SizedBox(width: 4),
                               _IconButton(
                                 icon: Icons.settings,
                                 onTap: _toggleSettings,
-                                color: theme.iconTheme.color?.withOpacity(0.7) ?? Colors.white70,
+                                stripBackgroundColor: stripBackgroundColor,
                               ),
                             ],
                           ),
                         ),
-
-                      // Hover detail card — visible when window is expanded
                       if (_hoveredEvent != null)
                         Positioned(
                           top: _collapsedHeight,
@@ -382,8 +369,14 @@ class _TimelineStripState extends State<TimelineStrip> with SingleTickerProvider
                             width: _cardWidth(stripWidth),
                           ),
                         ),
-
-                      // S3-10: Settings Panel
+                      if (_isSettingsOpen)
+                        Positioned.fill(
+                          child: GestureDetector(
+                            onTap: _toggleSettings,
+                            behavior: HitTestBehavior.opaque,
+                            child: Container(color: Colors.transparent),
+                          ),
+                        ),
                       if (_isSettingsOpen)
                         Positioned(
                           top: _collapsedHeight,
@@ -396,10 +389,9 @@ class _TimelineStripState extends State<TimelineStrip> with SingleTickerProvider
                         ),
                     ],
                   ),
-                ),
-              );
-            },
-          );
+                );
+              },
+            );
           },
         );
       },
@@ -408,32 +400,37 @@ class _TimelineStripState extends State<TimelineStrip> with SingleTickerProvider
 }
 
 class _IconButton extends StatelessWidget {
-  const _IconButton({required this.icon, required this.onTap, this.color});
+  const _IconButton({
+    required this.icon,
+    required this.onTap,
+    required this.stripBackgroundColor,
+  });
   final IconData icon;
   final VoidCallback onTap;
-  final Color? color;
+  final Color stripBackgroundColor;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: theme.scaffoldBackgroundColor.withOpacity(0.8),
+          color: stripBackgroundColor.withValues(alpha: 0.92),
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 2,
-              spreadRadius: 1,
+              color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 3,
             ),
           ],
         ),
         child: Icon(
           icon,
-          color: color ?? Colors.white70,
+          color: isDark ? Colors.white70 : Colors.black54,
           size: 16,
         ),
       ),

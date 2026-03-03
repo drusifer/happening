@@ -133,7 +133,8 @@ void main() {
 
     // ── S4-19: Gap Labels ─────────────────────────────────────────────────
     group('gapsBetween', () {
-      CalendarEvent _evt(String id, int startHour, int endHour) => CalendarEvent(
+      CalendarEvent _evt(String id, int startHour, int endHour) =>
+          CalendarEvent(
             id: id,
             title: id,
             startTime: DateTime(2026, 2, 26, startHour),
@@ -160,8 +161,7 @@ void main() {
         // centerX should be between xForTime(12:00) and xForTime(13:00)
         final gapStart = layout.xForTime(DateTime(2026, 2, 26, 12), now);
         final gapEnd = layout.xForTime(DateTime(2026, 2, 26, 13), now);
-        expect(gaps.first.centerX,
-            closeTo((gapStart + gapEnd) / 2, 0.1));
+        expect(gaps.first.centerX, closeTo((gapStart + gapEnd) / 2, 0.1));
       });
 
       test('suppresses gap narrower than minPx', () {
@@ -209,7 +209,9 @@ void main() {
         expect(l.isVisible(nineAm), isFalse); // both agree: not visible
       });
 
-      test('10am tick is on-screen (left of now-line) when windowStart is 09:15', () {
+      test(
+          '10am tick is on-screen (left of now-line) when windowStart is 09:15',
+          () {
         final now2 = DateTime(2026, 2, 26, 10, 15, 0);
         final l = TimelineLayout(
           stripWidth: 1200.0,
@@ -225,7 +227,8 @@ void main() {
         expect(l.isVisible(tenAm), isTrue);
       });
 
-      test('windowStart maps to negative x: on-screen range exceeds window', () {
+      test('windowStart maps to negative x: on-screen range exceeds window',
+          () {
         // With 10% nowIndicatorX and 1/9 past fraction, windowStart x ≈ -13px.
         // This means a tick just before windowStart is off-screen — both
         // isVisible and pixel-bounds checks agree for these typical values.

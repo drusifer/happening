@@ -32,10 +32,12 @@ class HoverDetailOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cleanDescription = event.description != null ? _stripHtml(event.description!) : null;
-    final truncatedDescription = cleanDescription != null && cleanDescription.length > 200
-        ? '${cleanDescription.substring(0, 197)}...'
-        : cleanDescription;
+    final cleanDescription =
+        event.description != null ? _stripHtml(event.description!) : null;
+    final truncatedDescription =
+        cleanDescription != null && cleanDescription.length > 200
+            ? '${cleanDescription.substring(0, 197)}...'
+            : cleanDescription;
 
     return Material(
       color: Colors.transparent,
@@ -43,7 +45,7 @@ class HoverDetailOverlay extends StatelessWidget {
         width: width,
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
         decoration: BoxDecoration(
-          color: event.color.withOpacity(0.95),
+          color: event.color.withValues(alpha: 0.95),
           borderRadius: const BorderRadius.only(
             bottomLeft: Radius.circular(6),
             bottomRight: Radius.circular(6),
@@ -96,11 +98,14 @@ class HoverDetailOverlay extends StatelessWidget {
               '${_fmt(event.startTime)} – ${_fmt(event.endTime)}',
               style: const TextStyle(color: Colors.white70, fontSize: 12),
             ),
-            if (!event.isTask && truncatedDescription != null && truncatedDescription.isNotEmpty) ...[
+            if (!event.isTask &&
+                truncatedDescription != null &&
+                truncatedDescription.isNotEmpty) ...[
               const SizedBox(height: 8),
               Text(
                 truncatedDescription,
-                style: const TextStyle(color: Colors.white, fontSize: 12, height: 1.3),
+                style: const TextStyle(
+                    color: Colors.white, fontSize: 12, height: 1.3),
                 maxLines: 4,
                 overflow: TextOverflow.ellipsis,
               ),

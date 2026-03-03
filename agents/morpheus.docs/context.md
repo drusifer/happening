@@ -1,11 +1,7 @@
 # Morpheus Context
 
-## Sprint 5: fresh start — 2026-03-01
-- All previous Sprint 5 attempts were REVERTED (broke app). Starting fresh from v0.1.0 baseline.
-- Group A FOUNDATION COMPLETE.
-- Group B SETTINGS UI COMPLETE.
-- Group C MULTI-CALENDAR DATA LAYER COMPLETE.
-- Group D PAINTER VISUALS COMPLETE.
-- Group E INTERACTION COMPLETE.
-- Group F macOS PLATFORM (Parallel) - Final phase.
-- ORDERING: A-E done. F is remaining.
+## Sprint 5: fresh start — 2026-03-02
+- Sprint 5 v0.2.0 shipped (Multi-cal, Themes, Collision, macOS).
+- HOVER_FIX_PLAN.md active: Stabilizing window expansion on Linux.
+- DECISION: Extracted `ExpansionBehavior` pure-logic interface to decouple hover state determination from the widget layer.
+- Pattern: Stateless calculation based on coordinates and simple flags. No dependencies on Flutter or domain classes.

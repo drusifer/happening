@@ -191,8 +191,10 @@ void main() {
         id: 'task-1',
         summary: 'Done Task',
         status: 'completed',
-        start: gcal.EventDateTime(dateTime: DateTime.parse('2026-02-26T10:00:00Z')),
-        end: gcal.EventDateTime(dateTime: DateTime.parse('2026-02-26T10:30:00Z')),
+        start: gcal.EventDateTime(
+            dateTime: DateTime.parse('2026-02-26T10:00:00Z')),
+        end: gcal.EventDateTime(
+            dateTime: DateTime.parse('2026-02-26T10:30:00Z')),
       );
       final event = GoogleCalendarService.fromApiEvent(apiEvent, isTask: true);
       expect(event.isCompleted, isTrue);
@@ -202,7 +204,8 @@ void main() {
       final apiEvent = gcal.Event(
         id: 'noend-1',
         summary: 'No End',
-        start: gcal.EventDateTime(dateTime: DateTime.parse('2026-02-26T10:00:00Z')),
+        start: gcal.EventDateTime(
+            dateTime: DateTime.parse('2026-02-26T10:00:00Z')),
       );
       final event = GoogleCalendarService.fromApiEvent(apiEvent);
       expect(event.endTime, equals(event.startTime));

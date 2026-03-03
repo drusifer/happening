@@ -42,3 +42,26 @@ User feedback indicated that centered hover cards felt "detached" from the event
 -   The card feels visually "attached" to the event.
 -   The `_cardLeft` logic in `TimelineStrip` must be updated to use the visible start of the event.
 -   `HoverDetailOverlay` must accept a `minWidth` parameter.
+
+## DEC-003: ExpansionBehavior Pure Logic Interface
+**Date**: 2026-03-02
+**Status**: Decided
+**Authors**: Morpheus (Lead), Neo (SWE)
+
+### Context
+Coordination between event hit-testing, mouse coordinates, and window expansion state in `TimelineStrip` was becoming complex and prone to race conditions (especially on Linux/GTK). We needed a way to deterministically calculate the "intended" state of the window (Expanded/Collapsed) without relying on asynchronous OS state or complex widget state flags.
+
+### Decision
+1.  **Pure Functional Interface**: Create a stateless `ExpansionBehavior` class (pure Dart) that calculates the `ExpansionState` (enum) based solely on coordinate inputs and a simple `isSettingsOpen` flag.
+2.  **Zero Dependencies**: The behavior logic must NOT depend on Flutter (`Size`, `Offset`, etc.), `CalendarEvent`, or `WindowService`. It uses primitive doubles and a simple `EventXBounds` data class.
+3.  **Coordinate-Based State**:
+    -   If `isSettingsOpen` is true -> `Expanded`.
+    -   If `mouseY >= stripHeight` (Interaction Zone) -> `Expanded`.
+    -   If `mouseX` hits an `EventXBounds` -> `Expanded`.
+    -   Otherwise -> `Collapsed`.
+4.  **Service Ownership**: `WindowService` remains the single source of truth for the *actual* OS window state, while the widget uses `ExpansionBehavior` to express its *intent*.
+
+### Consequences
+-   Hover logic is now 100% unit-testable without a Flutter environment.
+-   `TimelineStrip` is simplified; it merely feeds coordinates to the behavior and forwards the result to `WindowService`.
+-   Race conditions between mouse-enter/exit and async window resizing are eliminated by having a deterministic "intended" state.

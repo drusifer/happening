@@ -3,7 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:happening/features/timeline/countdown_display.dart';
 
 void main() {
-  Widget wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
+  Widget wrap(Widget child) => MaterialApp(
+        theme: ThemeData.dark(),
+        home: Scaffold(body: child),
+      );
 
   group('CountdownDisplay', () {
     testWidgets('shows minutes when < 1 hour remaining', (tester) async {
@@ -49,8 +52,9 @@ void main() {
           mode: CountdownMode.untilNext,
         ),
       ));
+      final theme = Theme.of(tester.element(find.byType(CountdownDisplay)));
       final text = tester.widget<Text>(find.byType(Text));
-      expect(text.style?.color, Colors.white70);
+      expect(text.style?.color, equals(theme.textTheme.bodyMedium?.color));
     });
 
     testWidgets('uses orange color for untilNext mode (< 5 min)',
@@ -61,8 +65,10 @@ void main() {
           mode: CountdownMode.untilNext,
         ),
       ));
+      final theme = Theme.of(tester.element(find.byType(CountdownDisplay)));
+      final isDark = theme.brightness == Brightness.dark;
       final text = tester.widget<Text>(find.byType(Text));
-      expect(text.style?.color, Colors.orange);
+      expect(text.style?.color, isDark ? Colors.orange : Colors.orange[900]);
     });
 
     testWidgets('uses amber color for untilEnd mode', (tester) async {
@@ -72,8 +78,11 @@ void main() {
           mode: CountdownMode.untilEnd,
         ),
       ));
+      final theme = Theme.of(tester.element(find.byType(CountdownDisplay)));
+      final isDark = theme.brightness == Brightness.dark;
       final text = tester.widget<Text>(find.byType(Text));
-      expect(text.style?.color, const Color(0xFFFFC107)); // Amber
+      expect(text.style?.color,
+          isDark ? const Color(0xFFFFC107) : Colors.orange[800]);
     });
   });
 }
