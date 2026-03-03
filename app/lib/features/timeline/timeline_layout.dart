@@ -38,6 +38,18 @@ class TimelineLayout {
     return nowIndicatorX + secondsFromNow * pixelsPerSecond;
   }
 
+  /// Minimum rendered width for any event, used for both hit-testing and
+  /// expansion bounds so the two are always in sync.
+  static const double kMinEventWidth = 12.0;
+
+  /// Returns the effective right-edge X for [event], applying [kMinEventWidth]
+  /// so short/zero-duration events are still tappable.
+  double effectiveEndX(CalendarEvent event, DateTime now) {
+    final x = xForTime(event.startTime, now);
+    final rawEndX = xForTime(event.endTime, now);
+    return rawEndX < x + kMinEventWidth ? x + kMinEventWidth : rawEndX;
+  }
+
   /// Returns the [CalendarEvent] at the given [mouseX] position, or null if none.
   /// If multiple events overlap at this point, the one with the shortest duration wins.
   CalendarEvent? eventAtX(
@@ -47,10 +59,9 @@ class TimelineLayout {
 
     for (final event in events) {
       final x = xForTime(event.startTime, now);
-      final endX = xForTime(event.endTime, now);
-      final w = (endX - x).clamp(3.0, double.infinity);
+      final endX = effectiveEndX(event, now); // consistent with EventBounds
 
-      if (mouseX >= x && mouseX <= x + w) {
+      if (mouseX >= x && mouseX <= endX) {
         final duration = event.endTime.difference(event.startTime);
         if (minDuration == null || duration < minDuration) {
           bestHit = event;

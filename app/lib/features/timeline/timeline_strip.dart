@@ -54,12 +54,13 @@ class TimelineStrip extends StatefulWidget {
 }
 
 class _TimelineStripState extends State<TimelineStrip>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late final WindowService _windowService;
   late final AnimationController _flashController;
   CalendarEvent? _hoveredEvent;
   bool _isHoveringStrip = false;
   bool _isSettingsOpen = false;
+  bool _isAppFocused = true;
 
   @override
   void initState() {
@@ -73,14 +74,16 @@ class _TimelineStripState extends State<TimelineStrip>
       _flashController.repeat();
     }
 
+    WidgetsBinding.instance.addObserver(this);
     _updateHeights();
-    unawaited(AppLogger.log('TimelineStrip: Initializing collapsedHeight=$_collapsedHeight expandedHeight=$_expandedHeight'));
+    unawaited(AppLogger.debug('TimelineStrip: Initializing collapsedHeight=$_collapsedHeight expandedHeight=$_expandedHeight'));
     // ALWAYS call collapse on init to force initial state regardless of OS/service previous state.
     unawaited(_windowService.collapse(height: _collapsedHeight));
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _flashController.dispose();
     super.dispose();
   }
@@ -99,6 +102,30 @@ class _TimelineStripState extends State<TimelineStrip>
     _expandedHeight = _ogExpandedHeight + fontSize * 4;
   }
 
+  // ── Focus / lifecycle handlers ────────────────────────────────────────────
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final focused = state != AppLifecycleState.inactive;
+    if (focused == _isAppFocused) return;
+    _isAppFocused = focused;
+
+    final expansionState = ExpansionLogic.determineState(
+      eventBounds: const [],
+      stripHeight: _collapsedHeight,
+      isSettingsOpen: _isSettingsOpen,
+      isAppFocused: _isAppFocused,
+    );
+
+    if (expansionState == ExpansionState.collapsed) {
+      setState(() {
+        _isHoveringStrip = false;
+        _hoveredEvent = null;
+      });
+      unawaited(_windowService.collapse(height: _collapsedHeight));
+    }
+  }
+
   // ── Mouse handlers ───────────────────────────────────────────────────────
 
   void _handleMouse(PointerEvent details) {
@@ -113,7 +140,7 @@ class _TimelineStripState extends State<TimelineStrip>
     // - Y: from top (0) down to hovercard depth (_expandedHeight)
     final bounds = widget.events.map((e) {
       final startX = layout.xForTime(e.startTime, _now);
-      final endX = layout.xForTime(e.endTime, _now);
+      final endX = layout.effectiveEndX(e, _now); // same padding as eventAtX
       return EventBounds(
         left: startX,
         right: endX,
@@ -127,10 +154,11 @@ class _TimelineStripState extends State<TimelineStrip>
       eventBounds: bounds,
       stripHeight: _collapsedHeight,
       isSettingsOpen: _isSettingsOpen,
+      isAppFocused: _isAppFocused,
     );
 
 	
-    unawaited(AppLogger.log(''));
+    unawaited(AppLogger.debug(''));
 
     // 2. State Sync
     final isOverStrip =
@@ -141,7 +169,7 @@ class _TimelineStripState extends State<TimelineStrip>
 
     if (isOverStrip != _isHoveringStrip || hit?.id != _hoveredEvent?.id) {
       final elementName = hit?.title ?? (isOverStrip ? 'Strip' : 'Outside');
-      unawaited(AppLogger.log('${details.runtimeType}: $elementName'));
+      unawaited(AppLogger.debug('${details.runtimeType}: $elementName'));
     }
 
     setState(() {
@@ -152,11 +180,11 @@ class _TimelineStripState extends State<TimelineStrip>
     // 3. Window Execution
     if (state == ExpansionState.expanded) {
       if (!_windowService.isExpanded) {
-        unawaited(AppLogger.log('TimelineStrip: Executing expand threshold=$_expandedHeight'));
+        unawaited(AppLogger.debug('TimelineStrip: Executing expand threshold=$_expandedHeight'));
         unawaited(_windowService.expand(height: _expandedHeight));
       }
     } else {
-      unawaited(AppLogger.log('TimelineStrip: Executing collapse height=$_collapsedHeight'));
+      unawaited(AppLogger.debug('TimelineStrip: Executing collapse height=$_collapsedHeight'));
       unawaited(_windowService.collapse(height: _collapsedHeight));
     }
   }
@@ -348,10 +376,10 @@ class _TimelineStripState extends State<TimelineStrip>
                       // right of now line when counting to an end.
                       Positioned(
                         left: mode == CountdownMode.untilEnd
-                            ? nowIndicatorX + 4
+                            ? nowIndicatorX + 8
                             : null,
                         right: mode == CountdownMode.untilNext
-                            ? stripWidth - nowIndicatorX + 4
+                            ? stripWidth - nowIndicatorX + 8
                             : null,
                         top: 0,
                         height: _collapsedHeight,
@@ -393,7 +421,7 @@ class _TimelineStripState extends State<TimelineStrip>
                             ],
                           ),
                         ),
-                      if (_hoveredEvent != null)
+                      if (_windowService.isExpanded && !_isSettingsOpen && _hoveredEvent != null)
                         Positioned(
                           top: _collapsedHeight,
                           left: _cardLeft(stripWidth),

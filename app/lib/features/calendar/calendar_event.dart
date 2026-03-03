@@ -26,6 +26,7 @@ class CalendarEvent {
     this.calendarName = 'Primary',
     this.description,
     this.isCompleted = false,
+    this.isFree = false,
   });
 
   final String id;
@@ -51,6 +52,9 @@ class CalendarEvent {
   /// True for completed tasks.
   final bool isCompleted;
 
+  /// True when the event is marked as "Free" (transparency = transparent).
+  final bool isFree;
+
   Duration get duration => endTime.difference(startTime);
 
   bool isNow(DateTime at) => at.isAfter(startTime) && at.isBefore(endTime);
@@ -70,6 +74,7 @@ class CalendarEvent {
     String? calendarName,
     String? description,
     bool? isCompleted,
+    bool? isFree,
   }) =>
       CalendarEvent(
         id: id ?? this.id,
@@ -84,6 +89,7 @@ class CalendarEvent {
         calendarName: calendarName ?? this.calendarName,
         description: description ?? this.description,
         isCompleted: isCompleted ?? this.isCompleted,
+        isFree: isFree ?? this.isFree,
       );
 
   @override
@@ -110,6 +116,7 @@ class CalendarEvent {
         'calendarName': calendarName,
         'description': description,
         'isCompleted': isCompleted,
+        'isFree': isFree,
       };
 
   factory CalendarEvent.fromJson(Map<String, dynamic> json) => CalendarEvent(
@@ -125,6 +132,7 @@ class CalendarEvent {
         calendarName: json['calendarName'] as String? ?? 'Primary',
         description: json['description'] as String?,
         isCompleted: json['isCompleted'] as bool? ?? false,
+        isFree: json['isFree'] as bool? ?? false,
       );
 }
 

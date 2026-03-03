@@ -23,12 +23,12 @@ void main() async {
   final home = Platform.environment['HOME'] ?? '';
   final dir = Directory('$home/.config/happening');
   await AppLogger.initialize(dir);
-  await AppLogger.log('Main entry point: WidgetsFlutterBinding initialized.');
+  await AppLogger.debug('Main entry point: WidgetsFlutterBinding initialized.');
 
   // 2. Load settings once at the root to determine initial UI state/size.
   final settingsSvc = SettingsService(directory: dir);
   await settingsSvc.load();
-  await AppLogger.log('Settings loaded.');
+  await AppLogger.debug('Settings loaded.');
 
   // 3. Determine initial window height from settings.
   final padding = switch (settingsSvc.current.fontSize) {
@@ -38,17 +38,17 @@ void main() async {
   };
   final initialHeight = settingsSvc.current.fontSize.px + padding;
   final expandedHeight = 160.0;
-  await AppLogger.log('Calculated initial window height: $initialHeight expanded: $expandedHeight');
+  await AppLogger.debug('Calculated initial window height: $initialHeight expanded: $expandedHeight');
 
   // 4. Initialize window management.
   final windowService = WindowService();
   await windowService.initialize(height: initialHeight, expandedHeight: expandedHeight);
-  await AppLogger.log('WindowService initialized.');
+  await AppLogger.debug('WindowService initialized.');
 
   // 5. Launch app with pre-loaded settings and window service.
   runApp(HappeningApp(
     settingsService: settingsSvc,
     windowService: windowService,
   ));
-  await AppLogger.log('runApp() executed.');
+  await AppLogger.debug('runApp() executed.');
 }
