@@ -97,7 +97,7 @@ class TimelinePainter extends CustomPainter {
       if (x >= 0 && x <= size.width) {
         // Hour ticks — full height so they aren't buried by events
         canvas.drawLine(
-            Offset(x, 0), Offset(x, size.height), tickPaint..strokeWidth = 1.5);
+            Offset(x, 0), Offset(x, size.height), tickPaint..strokeWidth = 2.0);
 
         // Hour label (e.g., "10am")
         if ((x - nowIndicatorX).abs() > suppressionThreshold) {
@@ -105,7 +105,7 @@ class TimelinePainter extends CustomPainter {
           final label =
               '${h % 12 == 0 ? 12 : h % 12}${h < 12 || h >= 24 ? 'am' : 'pm'}';
           _paintText(canvas, label, x + 4, 1,
-              fontSize: fontSize * 9 / 11, color: tickColor.withValues(alpha: 0.7));
+              fontSize: fontSize * 10 / 11, color: tickColor.withValues(alpha: 1.0));
         }
       }
 
@@ -118,7 +118,7 @@ class TimelinePainter extends CustomPainter {
               tickPaint..strokeWidth = 0.75);
           if ((tx - nowIndicatorX).abs() > suppressionThreshold * 0.6) {
             _paintText(canvas, ':30', tx + 2, 1,
-                fontSize: fontSize * 7 / 11, color: tickColor.withValues(alpha: 0.6));
+                fontSize: fontSize * 8 / 11, color: tickColor.withValues(alpha: 0.85));
           }
         }
       }
@@ -254,14 +254,14 @@ class TimelinePainter extends CustomPainter {
           ? '${gap.minutes ~/ 60}h${gap.minutes % 60 > 0 ? '${gap.minutes % 60}m' : ''}'
           : '${gap.minutes}m';
 
-      final labelFontSize = fontSize * 8 / 11;
+      final labelFontSize = fontSize * 9 / 11;
       _paintText(
         canvas,
         label,
         gap.centerX,
-        size.height - labelFontSize - 2.0,
+        size.height - labelFontSize - 12.0,
         fontSize: labelFontSize,
-        color: tickColor.withValues(alpha: 0.7),
+        color: tickColor.withValues(alpha: 1.0),
         centered: true,
       );
     }
@@ -392,23 +392,46 @@ class TimelinePainter extends CustomPainter {
   }
 
   void _paintNowIndicator(Canvas canvas, Size size) {
-    final linePaint = Paint()
-      ..color = nowLineColor
-      ..strokeWidth = 1.5;
-
+    // Shadow pass
     canvas.drawLine(
       Offset(nowIndicatorX, 0),
       Offset(nowIndicatorX, size.height),
-      linePaint,
+      Paint()
+        ..color = Colors.black.withValues(alpha: 0.45)
+        ..strokeWidth = 6.0
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3.0),
+    );
+
+    // Line
+    canvas.drawLine(
+      Offset(nowIndicatorX, 0),
+      Offset(nowIndicatorX, size.height),
+      Paint()
+        ..color = nowLineColor
+        ..strokeWidth = 2.5,
     );
 
     final triPaint = Paint()..color = nowLineColor;
-    final path = Path()
-      ..moveTo(nowIndicatorX - 5, 0)
-      ..lineTo(nowIndicatorX + 5, 0)
-      ..lineTo(nowIndicatorX, 7)
-      ..close();
-    canvas.drawPath(path, triPaint);
+
+    // Top triangle — points inward (downward)
+    canvas.drawPath(
+      Path()
+        ..moveTo(nowIndicatorX - 6, 0)
+        ..lineTo(nowIndicatorX + 6, 0)
+        ..lineTo(nowIndicatorX, 8)
+        ..close(),
+      triPaint,
+    );
+
+    // Bottom triangle — points inward (upward)
+    canvas.drawPath(
+      Path()
+        ..moveTo(nowIndicatorX - 6, size.height)
+        ..lineTo(nowIndicatorX + 6, size.height)
+        ..lineTo(nowIndicatorX, size.height - 8)
+        ..close(),
+      triPaint,
+    );
   }
 
   @override

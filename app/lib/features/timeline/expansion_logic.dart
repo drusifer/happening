@@ -10,6 +10,7 @@
 
 import 'dart:async';
 import 'package:happening/core/util/logger.dart';
+import 'package:flutter/gestures.dart';
 
 /// The intended state of the hover card/window.
 enum ExpansionState {
@@ -53,14 +54,22 @@ class ExpansionLogic {
   /// [stripHeight] The height of the timeline strip (e.g., 30.0).
   /// [isSettingsOpen] Whether the settings panel is currently active.
   static ExpansionState determineState({
-    required double mouseX,
-    required double mouseY,
+    required PointerEvent details,
     required List<EventBounds> eventBounds,
     required double stripHeight,
     required bool isSettingsOpen,
   }) {
+    
+    double mouseX = details.localPosition.dx;
+    double mouseY = details.localPosition.dy;
     unawaited(AppLogger.log('ExpansionLogic x=${mouseX.toStringAsFixed(1)} y=${mouseY.toStringAsFixed(1)} '
         'events=${eventBounds.length} settings=$isSettingsOpen'));
+
+    if (details is PointerExitEvent) {
+    	unawaited(AppLogger.log('ExpansionLogic -> Collapsed (PonterExit) at x=${mouseX.toStringAsFixed(1)}, y=${mouseY.toStringAsFixed(1)}'));
+    	return ExpansionState.collapsed;
+    }
+
 
     // 1. Settings always forces expansion.
     if (isSettingsOpen) {

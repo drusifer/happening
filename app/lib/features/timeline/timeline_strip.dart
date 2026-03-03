@@ -88,15 +88,15 @@ class _TimelineStripState extends State<TimelineStrip>
   TimelineLayout? _layout;
   DateTime _now = DateTime.now();
   double _ogCollapsedHeight = 35.0;
-  double _ogExpandedHeight = 140.0;
+  double _ogExpandedHeight = 190.0;
   double _collapsedHeight = 35.0;
-  double _expandedHeight = 160.0;
+  double _expandedHeight = 0;
 
   void _updateHeights() {
     final settings = widget.settingsService.current;
     final fontSize = settings.fontSize.px;
     _collapsedHeight = _ogCollapsedHeight + fontSize * 1.1;
-    _expandedHeight = _ogExpandedHeight + fontSize * 3.2;
+    _expandedHeight = _ogExpandedHeight + fontSize * 4;
   }
 
   // ── Mouse handlers ───────────────────────────────────────────────────────
@@ -118,13 +118,12 @@ class _TimelineStripState extends State<TimelineStrip>
         left: startX,
         right: endX,
         top: 0,
-        bottom: _expandedHeight - 5, //-5 let's the mouse event trigger inside the window
+        bottom: 175, // - this let's the mouse event trigger inside the window
       );
     }).toList();
 
     final state = ExpansionLogic.determineState(
-      mouseX: details.localPosition.dx,
-      mouseY: details.localPosition.dy,
+      details: details,
       eventBounds: bounds,
       stripHeight: _collapsedHeight,
       isSettingsOpen: _isSettingsOpen,
@@ -157,10 +156,8 @@ class _TimelineStripState extends State<TimelineStrip>
         unawaited(_windowService.expand(height: _expandedHeight));
       }
     } else {
-      if (_windowService.isExpanded) {
-        unawaited(AppLogger.log('TimelineStrip: Executing collapse height=$_collapsedHeight'));
-        unawaited(_windowService.collapse(height: _collapsedHeight));
-      }
+      unawaited(AppLogger.log('TimelineStrip: Executing collapse height=$_collapsedHeight'));
+      unawaited(_windowService.collapse(height: _collapsedHeight));
     }
   }
 
@@ -252,26 +249,55 @@ class _TimelineStripState extends State<TimelineStrip>
                 _layout = layout;
 
                 final active = layout.activeEvent(widget.events, now);
-                final future = _futureEvents(now);
-                final nextEvent = future.isNotEmpty ? future.first : null;
-                final mode = active != null ? CountdownMode.untilEnd : CountdownMode.untilNext;
-                final countdown = nextEvent != null
-                    ? layout.countdownTo(active != null ? active.endTime : nextEvent.startTime, now)
+                final mode = active != null
+                    ? CountdownMode.untilEnd
+                    : CountdownMode.untilNext;
+
+                // If in an event, find the nearest upcoming overlapping event.
+                final nextOverlap = active != null
+                    ? (widget.events
+                            .where((e) =>
+                                e.startTime.isAfter(now) &&
+                                e.startTime.isBefore(active.endTime))
+                            .toList()
+                          ..sort((a, b) => a.startTime.compareTo(b.startTime)))
+                        .firstOrNull
+                    : null;
+
+                // Priority: next overlap start → active event end → next event start
+                final nextToStart = (widget.events
+                        .where((e) => e.startTime.isAfter(now))
+                        .toList()
+                      ..sort((a, b) => a.startTime.compareTo(b.startTime)))
+                    .firstOrNull;
+                final DateTime? countdownTarget = active != null
+                    ? (nextOverlap?.startTime ?? active.endTime)
+                    : nextToStart?.startTime;
+                final countdown = countdownTarget != null
+                    ? layout.countdownTo(countdownTarget, now)
                     : Duration.zero;
 
                 final baseColor = mode == CountdownMode.untilEnd
-                    ? (theme.brightness == Brightness.dark ? Colors.amber : Colors.orange[800]!)
+                    ? (theme.brightness == Brightness.dark
+                        ? Colors.amber
+                        : Colors.orange[800]!)
                     : theme.textTheme.bodyMedium?.color ?? Colors.white;
-                final countdownColor = _resolveCountdownColor(countdown, baseColor);
+                final countdownColor =
+                    _resolveCountdownColor(countdown, baseColor);
 
                 double countdownScale = 1.0;
                 Offset shakeOffset = Offset.zero;
                 if (countdown.inSeconds > 0 && widget.enableAnimations) {
-                  if (countdown.inSeconds <= 120) {
-                    countdownScale = 1.0 + (120 - countdown.inSeconds) / 120 * 0.3;
+                  if (countdown.inSeconds <= 120 && countdown.inSeconds > 30) {
+                    countdownScale =
+                        1.0 + (120 - countdown.inSeconds) / 90.0 * 2.0;
+                  } else if (countdown.inSeconds <= 30) {
+                    countdownScale = 3.0;
                   }
                   if (countdown.inSeconds <= 60) {
-                    shakeOffset = Offset(math.sin(_flashController.value * 8 * math.pi) * 2.0, 0);
+                    shakeOffset = Offset(
+                        math.sin(_flashController.value * 8 * math.pi) * 2.0,
+                        0);
                   }
                 }
 
@@ -312,14 +338,21 @@ class _TimelineStripState extends State<TimelineStrip>
                             pastOverlayColor: theme.brightness == Brightness.dark
                                 ? Colors.black26
                                 : Colors.black12,
-                            nowLineColor: theme.colorScheme.primary,
-                            tickColor: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.5) ??
+                            nowLineColor: const Color(0xFFB71C1C),
+                            tickColor: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.75) ??
                                 Colors.grey,
                           ),
                         ),
                       ),
+                      // Sits left of now line when counting to a start,
+                      // right of now line when counting to an end.
                       Positioned(
-                        right: stripWidth - nowIndicatorX + 4,
+                        left: mode == CountdownMode.untilEnd
+                            ? nowIndicatorX + 4
+                            : null,
+                        right: mode == CountdownMode.untilNext
+                            ? stripWidth - nowIndicatorX + 4
+                            : null,
                         top: 0,
                         height: _collapsedHeight,
                         child: Center(
@@ -338,7 +371,7 @@ class _TimelineStripState extends State<TimelineStrip>
                           ),
                         ),
                       ),
-                      if (_isHoveringStrip)
+                      if (_isHoveringStrip || _isSettingsOpen)
                         Positioned(
                           left: 8,
                           top: 0,
