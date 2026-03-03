@@ -59,7 +59,7 @@ class TimelinePainter extends CustomPainter {
     _paintBackground(canvas, size);
     _paintPastOverlay(canvas, size, layout);
     _paintEvents(canvas, size, layout);
-    _paintTicks(canvas, size, layout);   // After events so ticks aren't buried
+    _paintTicks(canvas, size, layout); // After events so ticks aren't buried
     _paintNowIndicator(canvas, size);
   }
 
@@ -105,7 +105,7 @@ class TimelinePainter extends CustomPainter {
           final label =
               '${h % 12 == 0 ? 12 : h % 12}${h < 12 || h >= 24 ? 'am' : 'pm'}';
           _paintText(canvas, label, x + 4, 1,
-              fontSize: fontSize * 9 / 11, color: tickColor.withOpacity(0.7));
+              fontSize: fontSize * 9 / 11, color: tickColor.withValues(alpha: 0.7));
         }
       }
 
@@ -114,11 +114,11 @@ class TimelinePainter extends CustomPainter {
         final tickTime = current.add(const Duration(minutes: 30));
         final tx = layout.xForTime(tickTime, now);
         if (tx >= 0 && tx <= size.width) {
-          canvas.drawLine(
-              Offset(tx, 0), Offset(tx, size.height * 0.5), tickPaint..strokeWidth = 0.75);
+          canvas.drawLine(Offset(tx, 0), Offset(tx, size.height * 0.5),
+              tickPaint..strokeWidth = 0.75);
           if ((tx - nowIndicatorX).abs() > suppressionThreshold * 0.6) {
             _paintText(canvas, ':30', tx + 2, 1,
-                fontSize: fontSize * 7 / 11, color: tickColor.withOpacity(0.6));
+                fontSize: fontSize * 7 / 11, color: tickColor.withValues(alpha: 0.6));
           }
         }
       }
@@ -129,8 +129,8 @@ class TimelinePainter extends CustomPainter {
           final tickTime = current.add(Duration(minutes: m));
           final tx = layout.xForTime(tickTime, now);
           if (tx >= 0 && tx <= size.width) {
-            canvas.drawLine(
-                Offset(tx, 0), Offset(tx, size.height * 0.25), tickPaint..strokeWidth = 0.5);
+            canvas.drawLine(Offset(tx, 0), Offset(tx, size.height * 0.25),
+                tickPaint..strokeWidth = 0.5);
           }
         }
       }
@@ -157,7 +157,8 @@ class TimelinePainter extends CustomPainter {
     const top = 1.0;
 
     // Sort by duration descending: shorter events on top (paint last)
-    final renderList = [...events]..sort((a, b) => b.duration.compareTo(a.duration));
+    final renderList = [...events]
+      ..sort((a, b) => b.duration.compareTo(a.duration));
 
     for (final event in renderList) {
       // S5-FIX: Allow point-events (start == end) by ensuring we render if EITHER
@@ -169,22 +170,23 @@ class TimelinePainter extends CustomPainter {
 
       final x = layout.xForTime(event.startTime, now);
       final endX = layout.xForTime(event.endTime, now);
-      
-      // For tasks with no duration, we use a fixed minimum width for the block 
+
+      // For tasks with no duration, we use a fixed minimum width for the block
       // but allow the title to render.
-      final w = (endX - x).abs().clamp(event.isTask ? 0.0 : 3.0, double.infinity);
+      final w =
+          (endX - x).abs().clamp(event.isTask ? 0.0 : 3.0, double.infinity);
 
       final isHovered = event.id == hoveredEventId;
       final isColliding = collidingIds.contains(event.id);
-      
+
       // S5-D3: Completed tasks → green
-      Color color = event.isCompleted 
+      Color color = event.isCompleted
           ? const Color(0xFF51B749) // Basil Green
           : event.color;
-      
+
       // Overlapping events get 50% transparency (unless hovered)
       final double targetOpacity = isHovered ? 1.0 : (isColliding ? 0.5 : 0.82);
-      color = color.withOpacity(targetOpacity);
+      color = color.withValues(alpha: targetOpacity);
 
       if (event.isTask) {
         _paintTaskMarker(canvas, x, endX, top + blockHeight * 0.4, color);
@@ -227,15 +229,15 @@ class TimelinePainter extends CustomPainter {
       // Title label
       final hasDuration = event.endTime.isAfter(event.startTime);
       final titleThreshold = (fontSize / 15.0) * 36;
-      
+
       // Always try to show title for point-tasks (start == end),
       // otherwise use the duration-based width threshold.
       if (!hasDuration || w > titleThreshold) {
         final taskDiamondWidth = fontSize * 0.5;
         final labelX = event.isTask ? x + taskDiamondWidth + 4 : x + 4;
-        
+
         // Use full remaining strip width for point-tasks to prevent clipping.
-        final labelWidth = (!hasDuration && event.isTask) 
+        final labelWidth = (!hasDuration && event.isTask)
             ? size.width - labelX - 8
             : (event.isTask ? w - taskDiamondWidth - 8 : w - 8);
 
@@ -251,7 +253,7 @@ class TimelinePainter extends CustomPainter {
       final label = gap.minutes >= 60
           ? '${gap.minutes ~/ 60}h${gap.minutes % 60 > 0 ? '${gap.minutes % 60}m' : ''}'
           : '${gap.minutes}m';
-      
+
       final labelFontSize = fontSize * 8 / 11;
       _paintText(
         canvas,
@@ -259,7 +261,7 @@ class TimelinePainter extends CustomPainter {
         gap.centerX,
         size.height - labelFontSize - 2.0,
         fontSize: labelFontSize,
-        color: tickColor.withOpacity(0.7),
+        color: tickColor.withValues(alpha: 0.7),
         centered: true,
       );
     }
@@ -275,12 +277,13 @@ class TimelinePainter extends CustomPainter {
     bool centered = false,
   }) {
     // S5-B5: Shadows only on dark backgrounds to prevent blurriness in light mode.
-    final isDarkBg = ThemeData.estimateBrightnessForColor(backgroundColor) == Brightness.dark;
+    final isDarkBg = ThemeData.estimateBrightnessForColor(backgroundColor) ==
+        Brightness.dark;
     final List<Shadow>? shadows = isDarkBg
         ? [
             Shadow(
               blurRadius: 2.0,
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               offset: const Offset(0.5, 0.5),
             )
           ]
@@ -299,7 +302,7 @@ class TimelinePainter extends CustomPainter {
       text: span,
       textDirection: TextDirection.ltr,
     )..layout();
-    
+
     final finalX = centered ? x - painter.width / 2 : x;
     painter.paint(canvas, Offset(finalX, top));
   }
@@ -316,7 +319,7 @@ class TimelinePainter extends CustomPainter {
     // contrast against the event block color.
     final shadow = Shadow(
       blurRadius: 2.0,
-      color: Colors.black.withOpacity(0.5),
+      color: Colors.black.withValues(alpha: 0.5),
       offset: const Offset(0.5, 0.5),
     );
 
@@ -339,10 +342,11 @@ class TimelinePainter extends CustomPainter {
   }
 
   /// Renders a task as a diamond (◇) or two diamonds connected by a line if it has duration.
-  void _paintTaskMarker(Canvas canvas, double x, double endX, double cy, Color color) {
+  void _paintTaskMarker(
+      Canvas canvas, double x, double endX, double cy, Color color) {
     final half = fontSize * 0.5;
     final diamondPath = Path();
-    
+
     // Construct diamonds
     void addDiamond(double cx) {
       diamondPath.moveTo(cx, cy - half);
@@ -359,7 +363,7 @@ class TimelinePainter extends CustomPainter {
 
     final fillPaint = Paint()..color = color;
     final outlinePaint = Paint()
-      ..color = Colors.white.withOpacity(0.4)
+      ..color = Colors.white.withValues(alpha: 0.4)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.0;
 
@@ -369,12 +373,12 @@ class TimelinePainter extends CustomPainter {
         ..color = color
         ..style = PaintingStyle.stroke
         ..strokeWidth = 3.0;
-      
+
       canvas.drawLine(Offset(x, cy), Offset(endX, cy), linePaint);
-      
+
       // Outline for the line
       final lineOutlinePaint = Paint()
-        ..color = Colors.white.withOpacity(0.4)
+        ..color = Colors.white.withValues(alpha: 0.4)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 4.0; // 3px line + 1px total outline
       // Wait, simple drawLine won't work well for composite outline.
@@ -423,105 +427,105 @@ class TimelinePainter extends CustomPainter {
   /// integration test fails.
   @override
   SemanticsBuilderCallback get semanticsBuilder => (Size size) {
-    final layout = TimelineLayout(
-      stripWidth: size.width,
-      nowIndicatorX: nowIndicatorX,
-      windowStart: windowStart,
-      windowEnd: windowEnd,
-    );
+        final layout = TimelineLayout(
+          stripWidth: size.width,
+          nowIndicatorX: nowIndicatorX,
+          windowStart: windowStart,
+          windowEnd: windowEnd,
+        );
 
-    final nodes = <CustomPainterSemantics>[];
-    final blockHeight = size.height - 2;
-    const top = 1.0;
+        final nodes = <CustomPainterSemantics>[];
+        final blockHeight = size.height - 2;
+        const top = 1.0;
 
-    // ── Hour ticks + sub-ticks ─────────────────────────────────────────────
-    // Pixel-bounds check — mirrors _paintTicks so both regress together.
-    final pixelsPerHour = layout.pixelsPerSecond * 3600;
-    var current = DateTime(
-      windowStart.year,
-      windowStart.month,
-      windowStart.day,
-      windowStart.hour,
-    );
+        // ── Hour ticks + sub-ticks ─────────────────────────────────────────────
+        // Pixel-bounds check — mirrors _paintTicks so both regress together.
+        final pixelsPerHour = layout.pixelsPerSecond * 3600;
+        var current = DateTime(
+          windowStart.year,
+          windowStart.month,
+          windowStart.day,
+          windowStart.hour,
+        );
 
-    while (!current.isAfter(windowEnd)) {
-      final x = layout.xForTime(current, now);
-      if (x >= 0 && x <= size.width) {
-        final h = current.hour;
-        final label =
-            '${h % 12 == 0 ? 12 : h % 12}${h < 12 || h >= 24 ? 'am' : 'pm'}';
+        while (!current.isAfter(windowEnd)) {
+          final x = layout.xForTime(current, now);
+          if (x >= 0 && x <= size.width) {
+            final h = current.hour;
+            final label =
+                '${h % 12 == 0 ? 12 : h % 12}${h < 12 || h >= 24 ? 'am' : 'pm'}';
+            nodes.add(CustomPainterSemantics(
+              rect: Rect.fromLTWH(x - 1, 0, 2, size.height),
+              properties: SemanticsProperties(
+                  label: 'tick-$label', textDirection: TextDirection.ltr),
+            ));
+          }
+
+          // 30-min sub-ticks — only emitted when pixelsPerHour >= 80, mirroring
+          // the paint condition exactly so a threshold regression breaks both.
+          if (pixelsPerHour >= 80) {
+            final tickTime = current.add(const Duration(minutes: 30));
+            final tx = layout.xForTime(tickTime, now);
+            if (tx >= 0 && tx <= size.width) {
+              final hh = current.hour.toString().padLeft(2, '0');
+              nodes.add(CustomPainterSemantics(
+                rect: Rect.fromLTWH(tx - 1, 0, 2, 15),
+                properties: SemanticsProperties(
+                    label: 'subtick-$hh:30', textDirection: TextDirection.ltr),
+              ));
+            }
+          }
+          current = current.add(const Duration(hours: 1));
+        }
+
+        // ── Now indicator ──────────────────────────────────────────────────────
         nodes.add(CustomPainterSemantics(
-          rect: Rect.fromLTWH(x - 1, 0, 2, size.height),
+          rect: Rect.fromLTWH(nowIndicatorX - 1, 0, 2, size.height),
           properties: SemanticsProperties(
-              label: 'tick-$label', textDirection: TextDirection.ltr),
+              label: 'now-indicator', textDirection: TextDirection.ltr),
         ));
-      }
 
-      // 30-min sub-ticks — only emitted when pixelsPerHour >= 80, mirroring
-      // the paint condition exactly so a threshold regression breaks both.
-      if (pixelsPerHour >= 80) {
-        final tickTime = current.add(const Duration(minutes: 30));
-        final tx = layout.xForTime(tickTime, now);
-        if (tx >= 0 && tx <= size.width) {
-          final hh = current.hour.toString().padLeft(2, '0');
+        // ── Events and tasks ───────────────────────────────────────────────────
+        for (final event in events) {
+          if (!layout.isVisible(event.startTime) &&
+              !layout.isVisible(event.endTime)) continue;
+          final x = layout.xForTime(event.startTime, now);
+          final endX = layout.xForTime(event.endTime, now);
+          final w = (endX - x).clamp(3.0, double.infinity);
+
+          if (event.isTask) {
+            // Task: ◇ diamond — label distinguishes it from regular event blocks.
+            final cy = top + blockHeight * 0.4;
+            final taskWidth = (endX - x).abs().clamp(12.0, double.infinity);
+            nodes.add(CustomPainterSemantics(
+              rect: Rect.fromLTWH(x - 6, cy - 6, taskWidth, 12),
+              properties: SemanticsProperties(
+                  label: 'task: ${event.title}',
+                  textDirection: TextDirection.ltr),
+            ));
+          } else {
+            nodes.add(CustomPainterSemantics(
+              rect: Rect.fromLTWH(x, top, w, blockHeight),
+              properties: SemanticsProperties(
+                  label: 'event: ${event.title}',
+                  textDirection: TextDirection.ltr),
+            ));
+          }
+        }
+
+        // ── Gap duration labels ────────────────────────────────────────────────
+        // Mirrors _paintEvents gap loop — label format must match paint output.
+        for (final gap in layout.gapsBetween(events, now)) {
+          final label = gap.minutes >= 60
+              ? '${gap.minutes ~/ 60}h${gap.minutes % 60 > 0 ? '${gap.minutes % 60}m' : ''}'
+              : '${gap.minutes}m';
           nodes.add(CustomPainterSemantics(
-            rect: Rect.fromLTWH(tx - 1, 0, 2, 15),
+            rect: Rect.fromLTWH(gap.centerX - 20, 0, 40, size.height),
             properties: SemanticsProperties(
-                label: 'subtick-$hh:30', textDirection: TextDirection.ltr),
+                label: 'gap: $label', textDirection: TextDirection.ltr),
           ));
         }
-      }
-      current = current.add(const Duration(hours: 1));
-    }
 
-    // ── Now indicator ──────────────────────────────────────────────────────
-    nodes.add(CustomPainterSemantics(
-      rect: Rect.fromLTWH(nowIndicatorX - 1, 0, 2, size.height),
-      properties: SemanticsProperties(
-          label: 'now-indicator', textDirection: TextDirection.ltr),
-    ));
-
-    // ── Events and tasks ───────────────────────────────────────────────────
-    for (final event in events) {
-      if (!layout.isVisible(event.startTime) &&
-          !layout.isVisible(event.endTime)) continue;
-      final x = layout.xForTime(event.startTime, now);
-      final endX = layout.xForTime(event.endTime, now);
-      final w = (endX - x).clamp(3.0, double.infinity);
-
-      if (event.isTask) {
-        // Task: ◇ diamond — label distinguishes it from regular event blocks.
-        final cy = top + blockHeight * 0.4;
-        final taskWidth = (endX - x).abs().clamp(12.0, double.infinity);
-        nodes.add(CustomPainterSemantics(
-          rect: Rect.fromLTWH(x - 6, cy - 6, taskWidth, 12),
-          properties: SemanticsProperties(
-              label: 'task: ${event.title}',
-              textDirection: TextDirection.ltr),
-        ));
-      } else {
-        nodes.add(CustomPainterSemantics(
-          rect: Rect.fromLTWH(x, top, w, blockHeight),
-          properties: SemanticsProperties(
-              label: 'event: ${event.title}',
-              textDirection: TextDirection.ltr),
-        ));
-      }
-    }
-
-    // ── Gap duration labels ────────────────────────────────────────────────
-    // Mirrors _paintEvents gap loop — label format must match paint output.
-    for (final gap in layout.gapsBetween(events, now)) {
-      final label = gap.minutes >= 60
-          ? '${gap.minutes ~/ 60}h${gap.minutes % 60 > 0 ? '${gap.minutes % 60}m' : ''}'
-          : '${gap.minutes}m';
-      nodes.add(CustomPainterSemantics(
-        rect: Rect.fromLTWH(gap.centerX - 20, 0, 40, size.height),
-        properties: SemanticsProperties(
-            label: 'gap: $label', textDirection: TextDirection.ltr),
-      ));
-    }
-
-    return nodes;
-  };
+        return nodes;
+      };
 }

@@ -1,6 +1,6 @@
 # Next Steps
 
-- [ ] Neo: S5-F1 through S5-F3 (macOS configuration).
-- [ ] Trin: S5-F4 (Verification).
-- [ ] Mouse: Prepare v0.2.0 release notes and update board.
-- [ ] Morpheus: Final sprint sign-off.
+- @Neo *swe impl Refactor `TimelineStrip._onMouseMove` using the `ExpansionBehavior` mapping and state determination logic in `EXPANSION_BEHAVIOR.md`.
+- @Trin *qa unit test `ExpansionBehavior` in `test/features/timeline/expansion_behavior_test.dart`.
+- Finalize Sprint 5 release v0.2.0.
+- @Mouse *sm status update.

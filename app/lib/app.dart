@@ -19,12 +19,14 @@ import 'package:googleapis_auth/auth_io.dart';
 
 import 'core/settings/settings_service.dart';
 import 'core/time/clock_service.dart';
+import 'core/util/logger.dart';
 import 'features/auth/auth_service.dart';
 import 'features/auth/token_store.dart';
 import 'features/calendar/calendar_controller.dart';
 import 'features/calendar/calendar_event.dart';
 import 'features/calendar/calendar_service.dart';
 import 'features/timeline/timeline_strip.dart';
+import 'core/window/window_service.dart';
 
 // ---------------------------------------------------------------------------
 // Auth state
@@ -39,7 +41,14 @@ const _scopes = ['https://www.googleapis.com/auth/calendar.readonly'];
 // ---------------------------------------------------------------------------
 
 class HappeningApp extends StatefulWidget {
-  const HappeningApp({super.key});
+  const HappeningApp({
+    super.key,
+    required this.settingsService,
+    required this.windowService,
+  });
+
+  final SettingsService settingsService;
+  final WindowService windowService;
 
   @override
   State<HappeningApp> createState() => _HappeningAppState();
@@ -47,8 +56,6 @@ class HappeningApp extends StatefulWidget {
 
 class _HappeningAppState extends State<HappeningApp> {
   final _clock = ClockService();
-  late final SettingsService _settings;
-
   late final AuthService _auth;
   CalendarController? _calendar;
 
@@ -65,31 +72,38 @@ class _HappeningAppState extends State<HappeningApp> {
   @override
   void dispose() {
     _calendar?.dispose();
-    _settings.dispose();
     super.dispose();
   }
 
   // ── Initialization ───────────────────────────────────────────────────────
 
   Future<void> _initServices() async {
-    final home = Platform.environment['HOME'] ?? '';
-    final dir = Directory('$home/.config/happening');
+    await AppLogger.log('HappeningApp._initServices starting...');
+    try {
+      final home = Platform.environment['HOME'] ?? '';
+      final dir = Directory('$home/.config/happening');
 
-    _settings = SettingsService(directory: dir);
-    await _settings.load();
+      final tokenStore = FileTokenStore(directory: dir);
+      final clientId = await _loadClientId();
+      await AppLogger.log('OAuth Client ID loaded.');
 
-    final tokenStore = FileTokenStore(directory: dir);
+      _auth = GoogleAuthService(
+        clientId: clientId,
+        scopes: _scopes,
+        tokenStore: tokenStore,
+      );
 
-    final clientId = await _loadClientId();
-    _auth = GoogleAuthService(
-      clientId: clientId,
-      scopes: _scopes,
-      tokenStore: tokenStore,
-    );
-
-    if (await _auth.tryRestore()) {
-      _startCalendar();
-    } else {
+      await AppLogger.log('AuthService initialized. Attempting restore...');
+      if (await _auth.tryRestore()) {
+        await AppLogger.log('Auth restored successfully.');
+        unawaited(_startCalendar());
+      } else {
+        await AppLogger.log(
+            'Auth restore failed. Moving to unauthenticated state.');
+        if (mounted) setState(() => _authState = _AuthState.unauthenticated);
+      }
+    } catch (e) {
+      await AppLogger.log('Service initialization FAILED: $e');
       if (mounted) setState(() => _authState = _AuthState.unauthenticated);
     }
   }
@@ -109,19 +123,26 @@ class _HappeningAppState extends State<HappeningApp> {
 
   Future<void> _signIn() async {
     if (await _auth.signIn()) {
-      _startCalendar();
+      unawaited(_startCalendar());
     }
   }
 
-  void _startCalendar() {
+  Future<void> _startCalendar() async {
+    await AppLogger.log('HappeningApp._startCalendar called.');
     _calendar?.dispose();
     _calendar = CalendarController(
       GoogleCalendarService(gcal.CalendarApi(_auth.client!)),
-      settingsService: _settings,
+      settingsService: widget.settingsService,
     );
-    _calendar!.start();
+    unawaited(_calendar!.start());
+    await AppLogger.log('CalendarController started.');
 
-    if (mounted) setState(() => _authState = _AuthState.authenticated);
+    if (mounted) {
+      setState(() {
+        _authState = _AuthState.authenticated;
+        unawaited(AppLogger.log('AuthState changed to: authenticated'));
+      });
+    }
   }
 
   Future<void> _signOut() async {
@@ -145,38 +166,51 @@ class _HappeningAppState extends State<HappeningApp> {
       useMaterial3: true,
       brightness: brightness,
       colorSchemeSeed: Colors.blue,
-      scaffoldBackgroundColor:
-          brightness == Brightness.dark ? const Color(0xFF1A1A2E) : Colors.white,
+      scaffoldBackgroundColor: Colors.transparent,
+      canvasColor: Colors.transparent,
+      cardColor: Colors.transparent,
+      dialogBackgroundColor: Colors.transparent,
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<AppSettings>(
-      stream: _settings.settings,
-      initialData: _settings.current,
+      stream: widget.settingsService.settings,
+      initialData: widget.settingsService.current,
       builder: (context, settingsSnapshot) {
         final settings = settingsSnapshot.data!;
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           theme: _resolveTheme(settings),
+          builder: (context, child) => Material(
+            type: MaterialType.transparency,
+            child: child,
+          ),
           home: Scaffold(
             backgroundColor: Colors.transparent,
             body: switch (_authState) {
-              _AuthState.loading => const SizedBox.shrink(),
+              _AuthState.loading => SizedBox(
+                  height: settings.fontSize.px + 20,
+                ),
               _AuthState.unauthenticated => _SignInStrip(
                   onTap: _signIn,
                   settings: settings,
                 ),
               _AuthState.authenticated => StreamBuilder<List<CalendarEvent>>(
                   stream: _calendar!.events,
-                  initialData: const [],
+                  initialData: _calendar!.lastEvents,
                   builder: (context, eventSnapshot) {
+                    final events = eventSnapshot.data;
+                    if (events == null) {
+                      return _LoadingStrip(settings: settings);
+                    }
                     return TimelineStrip(
-                      events: eventSnapshot.data!,
+                      events: events,
                       clockService: _clock,
                       calendarController: _calendar!,
-                      settingsService: _settings,
+                      settingsService: widget.settingsService,
+                      windowService: widget.windowService,
                       onSignOut: _signOut,
                     );
                   },
@@ -185,6 +219,36 @@ class _HappeningAppState extends State<HappeningApp> {
           ),
         );
       },
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// S5-FIX: Loading state strip
+// ---------------------------------------------------------------------------
+
+class _LoadingStrip extends StatelessWidget {
+  const _LoadingStrip({required this.settings});
+  final AppSettings settings;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
+      alignment: Alignment.center,
+      child: Text(
+        'Fetching calendar...',
+        style: TextStyle(
+          color: Theme.of(context)
+              .textTheme
+              .bodyMedium
+              ?.color
+              ?.withValues(alpha: 0.5),
+          fontSize: settings.fontSize.px,
+          fontStyle: FontStyle.italic,
+        ),
+      ),
     );
   }
 }
@@ -200,16 +264,21 @@ class _SignInStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Container(
-        color: Theme.of(context).scaffoldBackgroundColor,
+        color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
         alignment: Alignment.center,
         child: Text(
           'Tap to sign in with Google →',
           style: TextStyle(
-            color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+            color: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.color
+                ?.withValues(alpha: 0.7),
             fontSize: settings.fontSize.px,
           ),
         ),

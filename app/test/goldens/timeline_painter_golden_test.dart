@@ -4,8 +4,9 @@ import 'package:happening/features/calendar/calendar_event.dart';
 import 'golden_helper.dart';
 
 void main() {
-  testWidgets('S4-30: ticks are visible over event blocks (paint order)', (tester) async {
-    // 10:00 AM. 
+  testWidgets('S4-30: ticks are visible over event blocks (paint order)',
+      (tester) async {
+    // 10:00 AM.
     // Tick for 10am will be at nowIndicatorX.
     // Tick for 11am will be to the right.
     final now = DateTime(2026, 3, 1, 10, 0, 0);

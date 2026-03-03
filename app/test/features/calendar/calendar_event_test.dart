@@ -138,7 +138,8 @@ void main() {
     });
 
     test('copyWith preserves expansion fields when not overridden', () {
-      final custom = event.copyWith(calendarId: 'custom-cal', isCompleted: true);
+      final custom =
+          event.copyWith(calendarId: 'custom-cal', isCompleted: true);
       final copy = custom.copyWith(title: 'New Title');
       expect(copy.calendarId, equals('custom-cal'));
       expect(copy.isCompleted, isTrue);

@@ -130,3 +130,30 @@ In Google Cloud Console → APIs & Services → OAuth consent screen → Test us
 ### References
 - **Commit:** N/A
 - **Files:** `assets/client_secret.json` (gitignored)
+
+---
+
+## [2026-03-02] Hover Interaction & Service Architecture (Sprint 5 Refinement)
+
+> **Tags:** #Architecture #UX #Testing #State #Morpheus #Neo
+
+### Context
+Coordination between event hit-testing, mouse coordinates, and window expansion state was prone to race conditions and inconsistent behavior across font sizes.
+
+### The Issue
+1.  Global/Static state in `WindowService` made testing difficult and caused state bleed.
+2.  Ad-hoc expansion overrides in `TimelineStrip` (e.g., forcing expansion for icons) led to unexpected window resizing.
+3.  Expansion thresholds were hardcoded and didn't scale with font size.
+
+### The Solution
+1.  **Avoid Globals/Statics**: Refactored `WindowService` to be instance-based and injected via constructor.
+2.  **Pure State Determination**: Created `ExpansionLogic` as a stateless pure function of coordinates and 2D `EventBounds`.
+3.  **Expansion Column Rule**: The window only expands when the mouse is within an event's horizontal bounds or settings are open. Icons (Gear/Refresh) are in the collapsed area and don't need expansion.
+4.  **Calculated Thresholds**: All heights are derived from `settings.fontSize.px` using a central `_updateHeights()` helper.
+
+### The Rule
+**Window state must be a deterministic function of inputs.** Services must be instance-based. Interactive elements in the collapsed area must not trigger window expansion unless they represent an event hit or settings override.
+
+### References
+- **Decisions:** `DEC-003`
+- **Files:** `app/lib/features/timeline/expansion_logic.dart`, `app/lib/core/window/window_service.dart`, `app/lib/features/timeline/timeline_strip.dart`
