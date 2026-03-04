@@ -33,6 +33,10 @@ class HoverDetailOverlay extends StatelessWidget {
         .trim();
   }
 
+  static const _kShadows = [
+    Shadow(color: Colors.black54, offset: Offset(0, 1), blurRadius: 2),
+  ];
+
   @override
   Widget build(BuildContext context) {
     final cleanDescription =
@@ -62,52 +66,56 @@ class HoverDetailOverlay extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Top Row: Category/Calendar Name
-            Text(
-              event.isTask
-                  ? 'TASK: ${event.calendarName.toUpperCase()}'
-                  : event.calendarName.toUpperCase(),
-              style: const TextStyle(
-                color: Colors.white60,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.5,
-              ),
+            // Top Row: Category + Buttons
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    event.isTask
+                        ? 'TASK: ${event.calendarName.toUpperCase()}'
+                        : event.calendarName.toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.white60,
+                      fontSize: 14, // S5-FIX: Increased from 10
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                      shadows: _kShadows,
+                    ),
+                  ),
+                ),
+                if (event.videoCallUrl != null) ...[
+                  _LinkButton(
+                    label: 'JOIN',
+                    url: event.videoCallUrl!,
+                    highlight: true,
+                  ),
+                  const SizedBox(width: 6),
+                ],
+                if (event.calendarEventUrl != null)
+                  _LinkButton(
+                    label: 'OPEN',
+                    url: event.calendarEventUrl!,
+                  ),
+              ],
             ),
             const SizedBox(height: 6),
-
-            // Buttons at the top (within the card)
-            if (event.calendarEventUrl != null || event.videoCallUrl != null) ...[
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                children: [
-                  if (event.calendarEventUrl != null)
-                    _LinkButton(
-                        label: 'Open in Cal', url: event.calendarEventUrl!),
-                  if (event.videoCallUrl != null)
-                    _LinkButton(
-                      label: 'Join Meeting',
-                      url: event.videoCallUrl!,
-                      highlight: true,
-                    ),
-                ],
-              ),
-              const SizedBox(height: 10),
-            ],
-
             Text(
               event.title,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 14,
+                fontSize: 18, // S5-FIX: Increased from 14
                 fontWeight: FontWeight.w600,
+                shadows: _kShadows,
               ),
             ),
             const SizedBox(height: 2),
             Text(
               '${_fmt(event.startTime)} – ${_fmt(event.endTime)}',
-              style: const TextStyle(color: Colors.white70, fontSize: 12),
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 16, // S5-FIX: Increased from 12
+                shadows: _kShadows,
+              ),
             ),
             if (!event.isTask &&
                 truncatedDescription != null &&
@@ -116,7 +124,11 @@ class HoverDetailOverlay extends StatelessWidget {
               Text(
                 truncatedDescription,
                 style: const TextStyle(
-                    color: Colors.white, fontSize: 12, height: 1.3),
+                  color: Colors.white,
+                  fontSize: 16, // S5-FIX: Increased from 12
+                  height: 1.3,
+                  shadows: _kShadows,
+                ),
                 maxLines: 4,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -152,10 +164,21 @@ class _LinkButton extends StatelessWidget {
           border: Border.all(
             color: highlight ? Colors.white60 : Colors.white30,
           ),
+          boxShadow: const [
+            BoxShadow(color: Colors.black26, blurRadius: 2, offset: Offset(0, 1)),
+          ],
         ),
         child: Text(
           label,
-          style: const TextStyle(color: Colors.white, fontSize: 12),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 14, // S5-FIX: Increased from 10
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.5,
+            shadows: [
+              Shadow(color: Colors.black38, offset: Offset(0, 1), blurRadius: 1),
+            ],
+          ),
         ),
       ),
     );
