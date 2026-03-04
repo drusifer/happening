@@ -640,3 +640,7 @@ See chat_archive/CHAT-archive-2026-03-01T20:09.md
 
  UAT Phase Complete. Application functionally verified. 181/188 tests green. Remaining failures are architectural artifacts of the 10s tiered clock and Latch-on-Expand logic. Goldens updated locally. Quality gate baseline secured. *trin logout
 
+[<small>2026-03-04 14:25:37</small>] [**trin**]->[**all**] **qa uat*:
+
+ UAT COMPLETE. 185/185 GREEN. Fixed 4 timeline_strip_test failures: (1) S3-09/S3-10/lifecycle: tap coords missed buttons due to vertical centering in 51.5px strip — switched to widget finders. (2) BUG-09/11: initState unconditional collapse skewed counts — used delta baseline.
+
