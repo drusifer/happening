@@ -58,17 +58,16 @@ class ExpansionLogic {
     required List<EventBounds> eventBounds,
     required double stripHeight,
     required bool isSettingsOpen,
-    bool isAppFocused = true,
   }) {
-    // 0. App focus — collapse immediately unless settings is open.
-    if (!isAppFocused) {
-      unawaited(AppLogger.debug('ExpansionLogic -> Collapsed (App Lost Focus)'));
-      return isSettingsOpen ? ExpansionState.expanded : ExpansionState.collapsed;
+    // 1. Settings always forces expansion.
+    if (isSettingsOpen) {
+      unawaited(AppLogger.debug('ExpansionLogic -> Expanded (Settings Open)'));
+      return ExpansionState.expanded;
     }
 
-    // No pointer event means this was a lifecycle-only call; settings drives it.
+    // No pointer event means this was a lifecycle-only call; if settings is closed, we collapse.
     if (details == null) {
-      return isSettingsOpen ? ExpansionState.expanded : ExpansionState.collapsed;
+      return ExpansionState.collapsed;
     }
 
     double mouseX = details.localPosition.dx;
@@ -79,12 +78,6 @@ class ExpansionLogic {
     if (details is PointerExitEvent) {
       unawaited(AppLogger.debug('ExpansionLogic -> Collapsed (PointerExit) at x=${mouseX.toStringAsFixed(1)}, y=${mouseY.toStringAsFixed(1)}'));
       return ExpansionState.collapsed;
-    }
-
-    // 1. Settings always forces expansion.
-    if (isSettingsOpen) {
-      unawaited(AppLogger.debug('ExpansionLogic -> Expanded (Settings Open)'));
-      return ExpansionState.expanded;
     }
 
     // 2. Vertical Guard: If the mouse is above the strip, we are collapsed.
