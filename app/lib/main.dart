@@ -15,6 +15,8 @@ import 'package:happening/app.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/util/logger.dart';
 import 'package:happening/core/window/window_service.dart';
+import 'package:screen_retriever/screen_retriever.dart';
+import 'package:window_manager/window_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,7 +43,10 @@ void main() async {
   await AppLogger.debug('Calculated initial window height: $initialHeight expanded: $expandedHeight');
 
   // 4. Initialize window management.
-  final windowService = WindowService();
+  final windowService = WindowService(
+    windowManager: windowManager,
+    screenRetriever: screenRetriever,
+  );
   await windowService.initialize(height: initialHeight, expandedHeight: expandedHeight);
   await AppLogger.debug('WindowService initialized.');
 
