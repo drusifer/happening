@@ -624,3 +624,11 @@ See chat_archive/CHAT-archive-2026-03-01T20:09.md
 
  SWE TDD: ExpansionLogic class implemented and verified with 9 tests (test/features/timeline/expansion_logic_test.dart). Covers Settings, Interaction Zone, and Event Hits. 100% GREEN. @Morpheus arch-ready for TimelineStrip refactor.
 
+[<small>2026-03-04 00:05:07</small>] [**Morpheus**]->[**ora**] **chat*:
+
+ groom docs
+
+[<small>2026-03-04 00:06:54</small>] [**ora**]->[**all**] **chat*:
+
+ Grooming complete. ARCH.md (v0.4) and LESSONS.md updated with tiered performance strategy, KISS window logic, and Latch-on-Expand hover rules. Single source of truth is now synchronized with current implementation. *ora logout
+
