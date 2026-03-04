@@ -8,6 +8,8 @@
 //
 // ---------------------------------------------------------------------------
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/features/calendar/calendar_controller.dart';
@@ -111,22 +113,33 @@ class _SettingsPanelState extends State<SettingsPanel> {
                 Text(
                   'SETTINGS',
                   style: TextStyle(
-                    color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.5),
+                    color:
+                        theme.textTheme.bodySmall?.color?.withValues(alpha: 0.5),
                     fontSize: baseSize * 0.6,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.0,
                   ),
                 ),
-                GestureDetector(
-                  onTap: widget.onSignOut,
-                  child: Text(
-                    'LOGOUT',
-                    style: TextStyle(
-                      color: Colors.redAccent.withValues(alpha: 0.7),
-                      fontSize: baseSize * 0.6,
-                      fontWeight: FontWeight.bold,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _MiniButton(
+                      label: 'QUIT',
+                      onTap: () => exit(0),
+                      color: theme.dividerColor.withValues(alpha: 0.1),
+                      textColor: theme.textTheme.bodySmall?.color
+                          ?.withValues(alpha: 0.7),
+                      fontSize: baseSize * 0.55,
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    _MiniButton(
+                      label: 'LOGOUT',
+                      onTap: widget.onSignOut,
+                      color: Colors.redAccent.withValues(alpha: 0.15),
+                      textColor: Colors.redAccent.withValues(alpha: 0.8),
+                      fontSize: baseSize * 0.55,
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -227,11 +240,13 @@ class _SettingsPanelState extends State<SettingsPanel> {
                                   decoration: BoxDecoration(
                                     color: isSelected
                                         ? cal.color.withValues(alpha: 0.2)
-                                        : theme.dividerColor.withValues(alpha: 0.05),
+                                        : theme.dividerColor
+                                            .withValues(alpha: 0.05),
                                     borderRadius: BorderRadius.circular(4),
                                     border: isSelected
                                         ? Border.all(
-                                            color: cal.color.withValues(alpha: 0.4))
+                                            color: cal.color
+                                                .withValues(alpha: 0.4))
                                         : null,
                                   ),
                                   child: Row(
@@ -249,8 +264,9 @@ class _SettingsPanelState extends State<SettingsPanel> {
                                           style: TextStyle(
                                             color: theme
                                                 .textTheme.bodyMedium?.color
-                                                ?.withOpacity(
-                                                    isSelected ? 1.0 : 0.6),
+                                                ?.withValues(
+                                                    alpha:
+                                                        isSelected ? 1.0 : 0.6),
                                             fontSize: baseSize * 0.65,
                                           ),
                                           maxLines: 1,
@@ -376,6 +392,45 @@ class _PickerRow<T> extends StatelessWidget {
           ),
         );
       }).toList(),
+    );
+  }
+}
+
+class _MiniButton extends StatelessWidget {
+  const _MiniButton({
+    required this.label,
+    required this.onTap,
+    required this.color,
+    required this.textColor,
+    required this.fontSize,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+  final Color color;
+  final Color? textColor;
+  final double fontSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: textColor,
+            fontSize: fontSize,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
     );
   }
 }
