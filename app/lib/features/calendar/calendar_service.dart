@@ -83,11 +83,16 @@ class GoogleCalendarService implements CalendarService {
       _appendToFixtureLog(response.toJson());
     }
 
-    // Fetch calendar metadata to get the name
+    // Fetch calendar metadata to get the name and default color.
     String? calendarName;
+    Color? calendarColor;
     try {
       final meta = await _api.calendarList.get(calendarId);
       calendarName = meta.summary;
+      if (meta.backgroundColor != null) {
+        calendarColor =
+            Color(int.parse(meta.backgroundColor!.replaceFirst('#', '0xFF')));
+      }
     } catch (_) {}
 
     return (response.items ?? [])
@@ -96,6 +101,7 @@ class GoogleCalendarService implements CalendarService {
               e,
               calendarId: calendarId,
               calendarName: calendarName ?? 'Calendar',
+              calendarColor: calendarColor,
             ))
         .toList();
   }
@@ -139,6 +145,7 @@ class GoogleCalendarService implements CalendarService {
     bool isTask = false,
     String calendarId = 'primary',
     String calendarName = 'Primary',
+    Color? calendarColor,
   }) {
     // Log raw API payload — copy from debug console to build test fixtures.
     unawaited(AppLogger.debug('[CalendarAPI] ${jsonEncode(e.toJson())}'));
@@ -161,7 +168,7 @@ class GoogleCalendarService implements CalendarService {
       title: (e.summary?.isNotEmpty ?? false) ? e.summary! : '(No title)',
       startTime: startTime,
       endTime: endTime,
-      color: _kEventColors[e.colorId] ?? Colors.blue, // S4-18
+      color: _kEventColors[e.colorId] ?? calendarColor ?? Colors.blue, // S4-18
       calendarEventUrl: e.htmlLink,
       videoCallUrl: VideoLinkExtractor.extract(
         hangoutLink: e.hangoutLink,

@@ -13,9 +13,12 @@ import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Card that expands downward from an event block on hover.
-/// Rendered via OverlayEntry so it escapes the 30px strip bounds.
 class HoverDetailOverlay extends StatelessWidget {
-  const HoverDetailOverlay({super.key, required this.event, this.width = 260});
+  const HoverDetailOverlay({
+    super.key,
+    required this.event,
+    this.width = 260,
+  });
 
   final CalendarEvent event;
   final double width;
@@ -59,32 +62,40 @@ class HoverDetailOverlay extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (event.isTask)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 2),
-                child: Text(
-                  'TASK: ${event.calendarName.toUpperCase()}',
-                  style: const TextStyle(
-                    color: Colors.white60,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              )
-            else
-              Padding(
-                padding: const EdgeInsets.only(bottom: 2),
-                child: Text(
-                  event.calendarName.toUpperCase(),
-                  style: const TextStyle(
-                    color: Colors.white60,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
-                  ),
-                ),
+            // Top Row: Category/Calendar Name
+            Text(
+              event.isTask
+                  ? 'TASK: ${event.calendarName.toUpperCase()}'
+                  : event.calendarName.toUpperCase(),
+              style: const TextStyle(
+                color: Colors.white60,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 0.5,
               ),
+            ),
+            const SizedBox(height: 6),
+
+            // Buttons at the top (within the card)
+            if (event.calendarEventUrl != null || event.videoCallUrl != null) ...[
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                children: [
+                  if (event.calendarEventUrl != null)
+                    _LinkButton(
+                        label: 'Open in Cal', url: event.calendarEventUrl!),
+                  if (event.videoCallUrl != null)
+                    _LinkButton(
+                      label: 'Join Meeting',
+                      url: event.videoCallUrl!,
+                      highlight: true,
+                    ),
+                ],
+              ),
+              const SizedBox(height: 10),
+            ],
+
             Text(
               event.title,
               style: const TextStyle(
@@ -108,25 +119,6 @@ class HoverDetailOverlay extends StatelessWidget {
                     color: Colors.white, fontSize: 12, height: 1.3),
                 maxLines: 4,
                 overflow: TextOverflow.ellipsis,
-              ),
-            ],
-            if (event.calendarEventUrl != null ||
-                event.videoCallUrl != null) ...[
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 6,
-                runSpacing: 4,
-                children: [
-                  if (event.calendarEventUrl != null)
-                    _LinkButton(
-                        label: 'Open in Cal', url: event.calendarEventUrl!),
-                  if (event.videoCallUrl != null)
-                    _LinkButton(
-                      label: 'Join Meeting',
-                      url: event.videoCallUrl!,
-                      highlight: true,
-                    ),
-                ],
               ),
             ],
           ],

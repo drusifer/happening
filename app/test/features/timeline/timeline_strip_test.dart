@@ -85,7 +85,7 @@ class _FakeSettingsService extends SettingsService {
   @override
   AppSettings get current => const AppSettings();
   @override
-  Stream<AppSettings> get stream => const Stream.empty();
+  Stream<AppSettings> get settings => const Stream.empty();
 }
 
 void main() {
