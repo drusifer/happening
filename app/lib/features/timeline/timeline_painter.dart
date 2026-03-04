@@ -156,7 +156,7 @@ class TimelinePainter extends CustomPainter {
     final blockHeight = size.height - 2;
     const top = 1.0;
 
-    // Sort by duration descending: shorter events on top (paint last)
+    // Sort by duration descending: shorter events on top (paint last).
     final renderList = [...events]
       ..sort((a, b) => b.duration.compareTo(a.duration));
 
