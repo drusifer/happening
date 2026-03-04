@@ -59,7 +59,9 @@ class _FakeClock extends ClockService {
   @override
   DateTime get now => fixedTime;
   @override
-  Stream<DateTime> get tick => const Stream.empty();
+  Stream<DateTime> get tick1s => const Stream.empty();
+  @override
+  Stream<DateTime> get tick10s => const Stream.empty();
 }
 
 class _FakeCalendarService extends CalendarController {

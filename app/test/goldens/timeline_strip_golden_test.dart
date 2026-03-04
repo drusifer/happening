@@ -51,7 +51,9 @@ class _FakeClock extends ClockService {
   @override
   DateTime get now => fixedTime;
   @override
-  Stream<DateTime> get tick => Stream.value(fixedTime);
+  Stream<DateTime> get tick1s => Stream.value(fixedTime);
+  @override
+  Stream<DateTime> get tick10s => Stream.value(fixedTime);
 }
 
 class _FakeSettings extends SettingsService {

@@ -1,19 +1,26 @@
-// Real-time clock tick stream.
+// Real-time clock tick streams.
 //
 // TLDR:
-// Overview: Provides a 1Hz clock signal for real-time UI updates.
-// Problem: Need to trigger periodic redraws of the timeline as time passes.
-// Solution: Exposes a periodic Stream<DateTime> that ticks every second.
+// Overview: Provides periodic clock signals for UI updates.
+// Problem: 1Hz updates for the entire timeline are CPU intensive.
+// Solution: Exposes separate 1s and 10s streams to allow tiered UI updates.
 // Breaking Changes: No.
 //
 // ---------------------------------------------------------------------------
 
-/// Emits the current [DateTime] once per second.
+/// Emits the current [DateTime] at various intervals.
 class ClockService {
   DateTime get now => DateTime.now();
 
-  Stream<DateTime> get tick => Stream.periodic(
+  /// Precise 1Hz tick for countdowns and timers.
+  Stream<DateTime> get tick1s => Stream.periodic(
         const Duration(seconds: 1),
+        (_) => now,
+      );
+
+  /// Coarse 10s tick for heavy layout and painting updates.
+  Stream<DateTime> get tick10s => Stream.periodic(
+        const Duration(seconds: 10),
         (_) => now,
       );
 }
