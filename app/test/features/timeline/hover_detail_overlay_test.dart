@@ -28,30 +28,30 @@ void main() {
       expect(find.text('10:00 – 10:30'), findsOneWidget);
     });
 
-    testWidgets('shows Join Meeting button when videoCallUrl present',
+    testWidgets('shows JOIN button when videoCallUrl present',
         (tester) async {
       await tester.pumpWidget(_wrap(HoverDetailOverlay(
           event: _event(videoCallUrl: 'https://meet.google.com/abc'))));
-      expect(find.text('Join Meeting'), findsOneWidget);
+      expect(find.text('JOIN'), findsOneWidget);
     });
 
-    testWidgets('hides Join Meeting button when videoCallUrl absent',
+    testWidgets('hides JOIN button when videoCallUrl absent',
         (tester) async {
       await tester.pumpWidget(_wrap(HoverDetailOverlay(event: _event())));
-      expect(find.text('Join Meeting'), findsNothing);
+      expect(find.text('JOIN'), findsNothing);
     });
 
-    testWidgets('shows Open in Cal button when calendarEventUrl present',
+    testWidgets('shows OPEN button when calendarEventUrl present',
         (tester) async {
       await tester.pumpWidget(_wrap(HoverDetailOverlay(
           event: _event(calendarEventUrl: 'https://calendar.google.com/e/1'))));
-      expect(find.text('Open in Cal'), findsOneWidget);
+      expect(find.text('OPEN'), findsOneWidget);
     });
 
-    testWidgets('hides Open in Cal button when calendarEventUrl absent',
+    testWidgets('hides OPEN button when calendarEventUrl absent',
         (tester) async {
       await tester.pumpWidget(_wrap(HoverDetailOverlay(event: _event())));
-      expect(find.text('Open in Cal'), findsNothing);
+      expect(find.text('OPEN'), findsNothing);
     });
 
     testWidgets('shows both buttons when both URLs present', (tester) async {
@@ -61,8 +61,8 @@ void main() {
           videoCallUrl: 'https://meet.google.com/abc',
         ),
       )));
-      expect(find.text('Open in Cal'), findsOneWidget);
-      expect(find.text('Join Meeting'), findsOneWidget);
+      expect(find.text('OPEN'), findsOneWidget);
+      expect(find.text('JOIN'), findsOneWidget);
     });
   });
 }
