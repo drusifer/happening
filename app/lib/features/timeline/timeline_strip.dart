@@ -127,16 +127,34 @@ class _TimelineStripState extends State<TimelineStrip>
 
     _updateHeights();
 
-    // 1. Expansion Logic
+    // 1. Calculate Dynamic Bounds
+    // S5-FIX: "Context-Aware Bounding Box" logic.
+    // On the strip: identifying events by their columns.
+    // In the card zone: identifying events by their hover cards.
+    final mouseX = details.localPosition.dx;
+    final mouseY = details.localPosition.dy;
+    final isOverStripZone = mouseY < _collapsedHeight;
+    
     final bounds = widget.events.map((e) {
-      final startX = layout.xForTime(e.startTime, _now);
-      final endX = layout.effectiveEndX(e, _now);
-      return EventBounds(
-        left: startX,
-        right: endX,
-        top: 0,
-        bottom: 175,
-      );
+      if (isOverStripZone) {
+        final startX = layout.xForTime(e.startTime, _now);
+        final endX = layout.effectiveEndX(e, _now);
+        return EventBounds(
+          left: startX,
+          right: endX,
+          top: 0,
+          bottom: _collapsedHeight,
+        );
+      } else {
+        final cardW = _cardWidth(layout.stripWidth, event: e);
+        final cardL = _cardLeft(layout.stripWidth, event: e);
+        return EventBounds(
+          left: cardL,
+          right: cardL + cardW,
+          top: _collapsedHeight,
+          bottom: 175,
+        );
+      }
     }).toList();
 
     final state = ExpansionLogic.determineState(
@@ -146,12 +164,25 @@ class _TimelineStripState extends State<TimelineStrip>
       isSettingsOpen: _isSettingsOpen,
     );
 
-    // 2. State Sync — only setState when something actually changed.
-    final isOverStrip =
-        details is! PointerExitEvent && details.localPosition.dy < _collapsedHeight;
-    final hit = (state == ExpansionState.expanded)
-        ? layout.eventAtX(details.localPosition.dx, widget.events, _now)
-        : null;
+    // 2. State Sync — prioritize current event to avoid jumping between overlapping bounds
+    final isOverStrip = details is! PointerExitEvent && isOverStripZone;
+    
+    CalendarEvent? hit;
+    if (_hoveredEvent != null) {
+      final idx = widget.events.indexWhere((e) => e.id == _hoveredEvent!.id);
+      if (idx != -1 && bounds[idx].contains(mouseX, mouseY)) {
+        hit = _hoveredEvent;
+      }
+    }
+    
+    if (hit == null && state == ExpansionState.expanded) {
+      for (int i = 0; i < widget.events.length; i++) {
+        if (bounds[i].contains(mouseX, mouseY)) {
+          hit = widget.events[i];
+          break;
+        }
+      }
+    }
 
     if (isOverStrip != _isHoveringStrip || hit?.id != _hoveredEvent?.id) {
       unawaited(AppLogger.debug('${details.runtimeType}: ${hit?.title ?? (isOverStrip ? 'Strip' : 'Outside')}'));
@@ -177,22 +208,22 @@ class _TimelineStripState extends State<TimelineStrip>
 
   // ── Helpers ──────────────────────────────────────────────────────────────
 
-  double _cardLeft(double screenWidth) {
+  double _cardLeft(double screenWidth, {CalendarEvent? event}) {
     final layout = _layout;
-    final event = _hoveredEvent;
-    if (layout == null || event == null) return 4.0;
-    final startX = layout.xForTime(event.startTime, _now);
-    final cardWidth = _cardWidth(screenWidth);
+    final target = event ?? _hoveredEvent;
+    if (layout == null || target == null) return 4.0;
+    final startX = layout.xForTime(target.startTime, _now);
+    final cardWidth = _cardWidth(screenWidth, event: target);
     return startX.clamp(4.0, math.max(4.0, screenWidth - cardWidth - 4.0));
   }
 
-  double _cardWidth(double screenWidth) {
+  double _cardWidth(double screenWidth, {CalendarEvent? event}) {
     const minCardWidth = 260.0;
     final layout = _layout;
-    final event = _hoveredEvent;
-    if (layout == null || event == null) return minCardWidth;
-    final startX = layout.xForTime(event.startTime, _now);
-    final endX = layout.xForTime(event.endTime, _now);
+    final target = event ?? _hoveredEvent;
+    if (layout == null || target == null) return minCardWidth;
+    final startX = layout.xForTime(target.startTime, _now);
+    final endX = layout.xForTime(target.endTime, _now);
     return (endX - startX).abs().clamp(minCardWidth, double.infinity);
   }
 
