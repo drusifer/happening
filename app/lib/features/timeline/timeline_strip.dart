@@ -128,18 +128,22 @@ class _TimelineStripState extends State<TimelineStrip>
     _updateHeights();
 
     // 1. Calculate Dynamic Bounds
-    // S5-FIX: "Context-Aware Bounding Box" logic.
-    // On the strip: identifying events by their columns.
-    // In the card zone: identifying events by their hover cards.
     final mouseX = details.localPosition.dx;
     final mouseY = details.localPosition.dy;
     final isOverStripZone = mouseY < _collapsedHeight;
+    final isExpanded = _windowService.isExpanded;
     
-    final bounds = widget.events.map((e) {
+    // S5-FIX: Sort events by duration ascending so shorter ones are prioritized 
+    // in hit-testing (latching the most specific event).
+    final sortedEvents = [...widget.events]
+      ..sort((a, b) => a.duration.compareTo(b.duration));
+    
+    final boundsMap = <String, EventBounds>{};
+    for (final e in sortedEvents) {
       if (isOverStripZone) {
         final startX = layout.xForTime(e.startTime, _now);
         final endX = layout.effectiveEndX(e, _now);
-        return EventBounds(
+        boundsMap[e.id] = EventBounds(
           left: startX,
           right: endX,
           top: 0,
@@ -148,18 +152,18 @@ class _TimelineStripState extends State<TimelineStrip>
       } else {
         final cardW = _cardWidth(layout.stripWidth, event: e);
         final cardL = _cardLeft(layout.stripWidth, event: e);
-        return EventBounds(
+        boundsMap[e.id] = EventBounds(
           left: cardL,
           right: cardL + cardW,
           top: _collapsedHeight,
           bottom: 175,
         );
       }
-    }).toList();
+    }
 
     final state = ExpansionLogic.determineState(
       details: details,
-      eventBounds: bounds,
+      eventBounds: boundsMap.values.toList(),
       stripHeight: _collapsedHeight,
       isSettingsOpen: _isSettingsOpen,
     );
@@ -168,17 +172,18 @@ class _TimelineStripState extends State<TimelineStrip>
     final isOverStrip = details is! PointerExitEvent && isOverStripZone;
     
     CalendarEvent? hit;
-    if (_hoveredEvent != null) {
-      final idx = widget.events.indexWhere((e) => e.id == _hoveredEvent!.id);
-      if (idx != -1 && bounds[idx].contains(mouseX, mouseY)) {
+    // If already hovering, check if we stay inside that event's (possibly expanded) bounds first.
+    if (_hoveredEvent != null && boundsMap.containsKey(_hoveredEvent!.id)) {
+      if (boundsMap[_hoveredEvent!.id]!.contains(mouseX, mouseY)) {
         hit = _hoveredEvent;
       }
     }
     
+    // Otherwise, check all events in ascending duration order (shortest first).
     if (hit == null && state == ExpansionState.expanded) {
-      for (int i = 0; i < widget.events.length; i++) {
-        if (bounds[i].contains(mouseX, mouseY)) {
-          hit = widget.events[i];
+      for (final e in sortedEvents) {
+        if (boundsMap[e.id]!.contains(mouseX, mouseY)) {
+          hit = e;
           break;
         }
       }

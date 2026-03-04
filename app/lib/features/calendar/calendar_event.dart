@@ -146,8 +146,31 @@ Set<String> detectCollisions(List<CalendarEvent> events) {
       final a = events[i];
       final b = events[j];
 
-      // Overlap condition: (StartA < EndB) AND (EndA > StartB)
-      if (a.startTime.isBefore(b.endTime) && a.endTime.isAfter(b.startTime)) {
+      // Overlap condition: 
+      // Traditional duration overlap: (StartA < EndB) AND (EndA > StartB)
+      // PLUS Point-in-duration:
+      final aIsPoint = a.startTime == a.endTime;
+      final bIsPoint = b.startTime == b.endTime;
+
+      bool overlap = false;
+      if (aIsPoint && bIsPoint) {
+        overlap = a.startTime == b.startTime;
+      } else if (aIsPoint) {
+        // Point A inside duration B
+        overlap = a.startTime.isAtSameMomentAs(b.startTime) || 
+                 (a.startTime.isAfter(b.startTime) && a.startTime.isBefore(b.endTime)) ||
+                 a.startTime.isAtSameMomentAs(b.endTime);
+      } else if (bIsPoint) {
+        // Point B inside duration A
+        overlap = b.startTime.isAtSameMomentAs(a.startTime) ||
+                 (b.startTime.isAfter(a.startTime) && b.startTime.isBefore(a.endTime)) ||
+                 b.startTime.isAtSameMomentAs(a.endTime);
+      } else {
+        // Both have duration
+        overlap = a.startTime.isBefore(b.endTime) && a.endTime.isAfter(b.startTime);
+      }
+
+      if (overlap) {
         collidingIds.add(a.id);
         collidingIds.add(b.id);
       }
