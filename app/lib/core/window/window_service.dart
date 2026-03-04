@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:happening/core/util/logger.dart';
@@ -49,6 +49,7 @@ class WindowService {
     // Initial setup: No title bar, always on top, set height.
     await _wm.setAsFrameless();
     await _wm.setAlwaysOnTop(true);
+    await _wm.setBackgroundColor(Colors.transparent);
 
     final size = Size(_lastWidth, height);
     await _wm.setMinimumSize(size);

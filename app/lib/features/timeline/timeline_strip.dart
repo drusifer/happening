@@ -177,11 +177,6 @@ class _TimelineStripState extends State<TimelineStrip>
 
   // ── Helpers ──────────────────────────────────────────────────────────────
 
-  List<CalendarEvent> _futureEvents(DateTime now) {
-    return widget.events.where((e) => !e.endTime.isBefore(now)).toList()
-      ..sort((a, b) => a.startTime.compareTo(b.startTime));
-  }
-
   double _cardLeft(double screenWidth) {
     final layout = _layout;
     final event = _hoveredEvent;
