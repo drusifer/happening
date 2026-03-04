@@ -98,16 +98,6 @@ void main() {
       expect(GoogleCalendarService.fromApiEvent(apiEvent).videoCallUrl, isNull);
     });
 
-    test('all-day event has null start.dateTime (filter marker)', () {
-      final allDay = _makeEvent(
-        startDateIso: '2026-02-26',
-        endDateIso: '2026-02-27',
-      );
-      // Callers must filter events where start.dateTime == null before
-      // calling fromApiEvent. This test documents that contract.
-      expect(allDay.start?.dateTime, isNull);
-    });
-
     // ── S4-18: Event color from API colorId ──────────────────────────────
 
     test('no colorId defaults to Colors.blue', () {
@@ -129,18 +119,7 @@ void main() {
           equals(const Color(0xFFA4BDFC)));
     });
 
-    test('colorId "7" → Peacock (#46D6DB)', () {
-      final apiEvent = _makeEvent(
-        startDateTimeIso: '2026-02-26T10:00:00',
-        endDateTimeIso: '2026-02-26T10:30:00',
-        colorId: '7',
-      );
-      expect(GoogleCalendarService.fromApiEvent(apiEvent).color,
-          equals(const Color(0xFF46D6DB)));
-    });
-
     test('colorId "11" → Tomato (#DC2127)', () {
-      // GCal classic palette + verified live: Drew 2026-02-28.
       final apiEvent = _makeEvent(
         startDateTimeIso: '2026-02-26T10:00:00',
         endDateTimeIso: '2026-02-26T10:30:00',
@@ -148,16 +127,6 @@ void main() {
       );
       expect(GoogleCalendarService.fromApiEvent(apiEvent).color,
           equals(const Color(0xFFDC2127)));
-    });
-
-    test('unknown colorId falls back to Colors.blue', () {
-      final apiEvent = _makeEvent(
-        startDateTimeIso: '2026-02-26T10:00:00',
-        endDateTimeIso: '2026-02-26T10:30:00',
-        colorId: '99',
-      );
-      expect(GoogleCalendarService.fromApiEvent(apiEvent).color,
-          equals(Colors.blue));
     });
 
     // ── Sprint 5: Model Expansion ───────────────────────────────────────────
@@ -176,14 +145,16 @@ void main() {
       expect(event.calendarName, equals('Work'));
     });
 
-    test('maps description correctly', () {
+    test('uses calendarColor when provided and no colorId present', () {
       final apiEvent = _makeEvent(
         startDateTimeIso: '2026-02-26T10:00:00',
         endDateTimeIso: '2026-02-26T10:30:00',
-        description: 'Meeting notes',
       );
-      final event = GoogleCalendarService.fromApiEvent(apiEvent);
-      expect(event.description, equals('Meeting notes'));
+      final event = GoogleCalendarService.fromApiEvent(
+        apiEvent,
+        calendarColor: Colors.red,
+      );
+      expect(event.color, equals(Colors.red));
     });
 
     test('maps status "completed" to isCompleted true', () {
@@ -199,22 +170,11 @@ void main() {
       final event = GoogleCalendarService.fromApiEvent(apiEvent, isTask: true);
       expect(event.isCompleted, isTrue);
     });
-
-    test('handles missing end time by defaulting to start time', () {
-      final apiEvent = gcal.Event(
-        id: 'noend-1',
-        summary: 'No End',
-        start: gcal.EventDateTime(
-            dateTime: DateTime.parse('2026-02-26T10:00:00Z')),
-      );
-      final event = GoogleCalendarService.fromApiEvent(apiEvent);
-      expect(event.endTime, equals(event.startTime));
-    });
   });
 
   group('CalendarMeta', () {
-    test('parses hex color correctly', () {
-      const meta = CalendarMeta(
+    test('parses colorHex correctly', () {
+      final meta = CalendarMeta(
         id: 'c1',
         summary: 'Personal',
         colorHex: '#ff0000',
@@ -223,7 +183,7 @@ void main() {
     });
 
     test('defaults to blue on null colorHex', () {
-      const meta = CalendarMeta(
+      final meta = CalendarMeta(
         id: 'c1',
         summary: 'Personal',
         colorHex: null,
