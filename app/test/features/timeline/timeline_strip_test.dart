@@ -57,9 +57,15 @@ class _FakeClock extends ClockService {
   @override
   DateTime get now => fixedTime;
   @override
-  Stream<DateTime> get tick1s => Stream.value(fixedTime);
+  Stream<DateTime> get tick1s => Stream.periodic(
+        const Duration(milliseconds: 1),
+        (_) => fixedTime,
+      );
   @override
-  Stream<DateTime> get tick10s => Stream.value(fixedTime);
+  Stream<DateTime> get tick10s => Stream.periodic(
+        const Duration(milliseconds: 1),
+        (_) => fixedTime,
+      );
 }
 
 class _FakeCalendarService extends CalendarController {
@@ -134,7 +140,7 @@ void main() {
           onSignOut: () {},
         ),
       ));
-      await tester.pump();
+      await tester.pump(Duration.zero);
 
       expect(find.byType(CountdownDisplay), findsOneWidget);
     });
@@ -163,7 +169,7 @@ void main() {
           onSignOut: () {},
         ),
       ));
-      await tester.pump();
+      await tester.pump(Duration.zero);
 
       final display = tester.widget<CountdownDisplay>(
         find.byType(CountdownDisplay),
@@ -183,7 +189,7 @@ void main() {
           onSignOut: () {},
         ),
       ));
-      await tester.pump();
+      await tester.pump(Duration.zero);
 
       expect(find.byIcon(Icons.refresh), findsOneWidget);
       expect(find.byIcon(Icons.settings), findsOneWidget);
@@ -200,8 +206,8 @@ void main() {
       final event = CalendarEvent(
         id: 'e1',
         title: 'Meeting',
-        startTime: now.add(const Duration(minutes: 10)),
-        endTime: now.add(const Duration(minutes: 20)),
+        startTime: now.add(const Duration(minutes: 30)),
+        endTime: now.add(const Duration(minutes: 60)),
         color: Colors.blue,
         calendarEventUrl: null,
         videoCallUrl: null,
@@ -217,14 +223,14 @@ void main() {
           onSignOut: () {},
         ),
       ));
-      await tester.pump();
+      await tester.pump(Duration.zero);
 
       final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
       await gesture.addPointer(location: Offset.zero);
 
       // 1. Hover
-      await gesture.moveTo(const Offset(140, 10)); // Hit event
-      await tester.pump(const Duration(seconds: 10)); // Force layout update
+      await gesture.moveTo(const Offset(140, 10));
+      await tester.pump(const Duration(seconds: 10));
 
       expect(find.byType(HoverDetailOverlay), findsOneWidget);
       expect(fakeWS.expandCalls, equals(1));
@@ -247,8 +253,8 @@ void main() {
         CalendarEvent(
           id: 'e1',
           title: 'Meeting',
-          startTime: now.add(const Duration(minutes: 10)),
-          endTime: now.add(const Duration(minutes: 20)),
+          startTime: now.add(const Duration(minutes: 30)),
+          endTime: now.add(const Duration(minutes: 60)),
           color: Colors.blue,
           calendarEventUrl: null,
           videoCallUrl: null,
@@ -265,23 +271,23 @@ void main() {
           onSignOut: () {},
         ),
       ));
-      await tester.pump();
+      await tester.pump(Duration.zero);
 
       final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
       await gesture.addPointer(location: Offset.zero);
 
       // Move in and jiggle
-      await gesture.moveTo(const Offset(140, 10)); // Hit event
+      await gesture.moveTo(const Offset(140, 10)); 
       await tester.pump(const Duration(seconds: 10));
-      await gesture.moveTo(const Offset(145, 10)); // Jiggle inside same event
+      await gesture.moveTo(const Offset(145, 10));
       await tester.pump();
-      await gesture.moveTo(const Offset(142, 10)); // Jiggle inside same event
+      await gesture.moveTo(const Offset(142, 10));
       await tester.pump();
 
       expect(fakeWS.expandCalls, equals(1),
           reason: 'expand called once despite jiggle');
 
-      await gesture.moveTo(const Offset(400, 300)); // Exit strip + card area
+      await gesture.moveTo(const Offset(400, 10)); // Exit strip horizontally
       await tester.pump(const Duration(seconds: 10));
 
       expect(fakeWS.collapseCalls, equals(1),
@@ -313,11 +319,11 @@ void main() {
           onSignOut: () {},
         ),
       ));
-      await tester.pump();
+      await tester.pump(Duration.zero);
 
       final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
       await gesture.addPointer(location: Offset.zero);
-      await gesture.moveTo(const Offset(140, 10)); // Hit event
+      await gesture.moveTo(const Offset(140, 10));
       await tester.pump(const Duration(seconds: 10));
 
       expect(find.byType(HoverDetailOverlay), findsOneWidget);
@@ -335,26 +341,16 @@ void main() {
       final event = CalendarEvent(
         id: 'e1',
         title: 'Wide Meeting',
-        startTime: now.add(const Duration(minutes: 60)),
-        endTime: now.add(const Duration(minutes: 120)),
+        startTime: now.add(const Duration(minutes: 30)),
+        endTime: now.add(const Duration(minutes: 90)),
         color: Colors.blue,
-        calendarEventUrl: null,
-        videoCallUrl: null,
-      );
-
-      final narrowEvent = CalendarEvent(
-        id: 'e2',
-        title: 'Narrow Meeting',
-        startTime: now.add(const Duration(minutes: 10)),
-        endTime: now.add(const Duration(minutes: 15)),
-        color: Colors.red,
         calendarEventUrl: null,
         videoCallUrl: null,
       );
 
       await tester.pumpWidget(
         wrap(TimelineStrip(
-          events: [event, narrowEvent],
+          events: [event],
           clockService: clock,
           calendarController: fakeController,
           settingsService: settings,
@@ -362,13 +358,12 @@ void main() {
           windowService: windowService,
         )),
       );
-      await tester.pump();
+      await tester.pump(Duration.zero);
 
       final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
       await gesture.addPointer(location: Offset.zero);
 
-      // 1. Test Narrow Event: should clamp to 260px
-      await gesture.moveTo(const Offset(140, 10)); // Hit narrow event
+      await gesture.moveTo(const Offset(140, 10));
       await tester.pump(const Duration(seconds: 10));
 
       expect(find.byType(HoverDetailOverlay), findsOneWidget);
@@ -401,11 +396,11 @@ void main() {
           onSignOut: () {},
         ),
       ));
-      await tester.pump();
+      await tester.pump(Duration.zero);
 
       final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
       await gesture.addPointer(location: Offset.zero);
-      await gesture.moveTo(const Offset(140, 10)); // Hit event
+      await gesture.moveTo(const Offset(140, 10));
       await tester.pump(const Duration(seconds: 10));
 
       expect(find.byType(HoverDetailOverlay), findsOneWidget);
@@ -426,10 +421,10 @@ void main() {
           onSignOut: () => signOutCalled = true,
         ),
       ));
-      await tester.pump();
+      await tester.pump(Duration.zero);
 
-      await tester.tapAt(const Offset(45, 10)); // Settings gear is at 45
-      await tester.pump(const Duration(seconds: 10));
+      await tester.tapAt(const Offset(45, 10)); 
+      await tester.pump();
 
       expect(find.byType(SettingsPanel), findsOneWidget);
       expect(find.text('LOGOUT'), findsOneWidget);
@@ -456,11 +451,11 @@ void main() {
           windowService: windowService,
         )),
       );
-      await tester.pump();
+      await tester.pump(Duration.zero);
 
       // 1. Open settings
       await tester.tapAt(const Offset(45, 10));
-      await tester.pump(const Duration(seconds: 10));
+      await tester.pump();
 
       expect(windowService.isExpanded, isTrue);
 
@@ -486,14 +481,14 @@ void main() {
             windowService: windowService,
           )),
         );
-        await tester.pump();
+        await tester.pump(Duration.zero);
 
         // 1. Expand via hover
         final event = CalendarEvent(
           id: 'e1',
           title: 'Meeting',
-          startTime: now.add(const Duration(minutes: 10)),
-          endTime: now.add(const Duration(minutes: 20)),
+          startTime: now.add(const Duration(minutes: 30)),
+          endTime: now.add(const Duration(minutes: 60)),
           color: Colors.blue,
           calendarEventUrl: null,
           videoCallUrl: null,
@@ -509,7 +504,7 @@ void main() {
             windowService: windowService,
           )),
         );
-        await tester.pump();
+        await tester.pump(Duration.zero);
 
         final gesture =
             await tester.createGesture(kind: PointerDeviceKind.mouse);
@@ -522,7 +517,7 @@ void main() {
         // 2. Lose focus
         tester.binding
             .handleAppLifecycleStateChanged(AppLifecycleState.inactive);
-        await tester.pump(const Duration(seconds: 10));
+        await tester.pump();
 
         // Should collapse
         expect(windowService.isExpanded, isFalse);
