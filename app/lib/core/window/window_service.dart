@@ -4,25 +4,22 @@ import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:happening/core/util/logger.dart';
 
-// Window configuration and lifecycle service.
-//
-// TLDR:
-/// Overview: Sets up the frameless, always-on-top strip at the screen top.
-/// Problem: Need to ensure the window spans the primary display and stays on top across platforms.
-/// Solution: Uses window_manager and screen_retriever with DPR-aware logical sizing.
-///           Resize approach: window starts at strip height, expands to 250px on hover.
-///           Race fix: single setSize() call (no setMin/setMax during resize).
+/// Window management service for resizing the app between strip and hover states.
+///
+/// TLDR:
+/// Overview: Controls physical OS window dimensions via [window_manager].
+/// Problem: High-frequency resizing causes OS flickering and race conditions.
+/// Solution: Direct calls without state guards. The UI handles gating.
 /// Breaking Changes: No.
 ///
 /// ---------------------------------------------------------------------------
 
-/// Configures the app window as an always-on-top frameless strip.
 class WindowService {
   WindowService({
-    WindowManager? windowManager,
-    ScreenRetriever? screenRetriever,
-  })  : _wm = windowManager ?? WindowManager.instance,
-        _sr = screenRetriever ?? ScreenRetriever.instance;
+    required WindowManager windowManager,
+    required ScreenRetriever screenRetriever,
+  })  : _wm = windowManager,
+        _sr = screenRetriever;
 
   final WindowManager _wm;
   final ScreenRetriever _sr;
@@ -31,14 +28,11 @@ class WindowService {
   double _lastHeight = 0.0;
   double _expandedHeight = 0.0;
 
-  // Desired expand state. Only one resize is ever in flight at a time;
-  // if the desired state changes mid-flight the new state is applied after
-  // the current resize completes (see _enqueueResize).
-  bool _wantsExpanded = false;
-  Future<void>? _inFlight;
+  // Track the last intended state to allow UI gating.
+  bool _lastWantsExpanded = false;
 
-  /// Whether the window is currently in the expanded state.
-  bool get isExpanded => _wantsExpanded;
+  /// Whether the window is currently intended to be in the expanded state.
+  bool get isExpanded => _lastWantsExpanded;
 
   /// Call once, before [runApp], to set up the window.
   Future<void> initialize({
@@ -50,78 +44,36 @@ class WindowService {
     _expandedHeight = expandedHeight;
 
     final display = await _sr.getPrimaryDisplay();
-    final dpr = display.scaleFactor?.toDouble() ?? 1.0;
+    _lastWidth = display.size.width;
 
-    // window_manager on Linux (GTK) takes logical pixels; GTK applies the
-    // system scale factor itself. Use logical units directly.
-    _lastWidth = (display.visibleSize?.width ?? 1920.0) / dpr;
-    final size = Size(_lastWidth, _lastHeight);
+    // Initial setup: No title bar, always on top, set height.
+    await _wm.setAsFrameless();
+    await _wm.setAlwaysOnTop(true);
 
-    await _wm.waitUntilReadyToShow(
-      WindowOptions(
-        size: size,
-        minimumSize: Size(_lastWidth, _lastHeight),
-        maximumSize: Size(_lastWidth, _expandedHeight),
-        backgroundColor: const Color(0x00000000), // Transparent
-        skipTaskbar: true,
-        titleBarStyle: TitleBarStyle.hidden,
-        alwaysOnTop: true,
-      ),
-      () async {
-        await _wm.setAsFrameless();
-        await _wm.setBackgroundColor(const Color(0x00000000));
-        await _wm.setResizable(false);
-        await _wm.setMinimumSize(size);
-        await _wm.setMaximumSize(Size(_lastWidth, _expandedHeight));
-        await _wm.show();
-        await _wm.setSize(size);
-        await _wm.setPosition(Offset.zero);
-        await _wm.setAlwaysOnTop(true);
-      },
-    );
+    final size = Size(_lastWidth, height);
+    await _wm.setMinimumSize(size);
+    await _wm.setMaximumSize(size);
+    await _wm.setSize(size);
+
+    // Position at top of screen.
+    await _wm.setPosition(Offset.zero);
+    await _wm.show();
   }
 
   /// Expands the window to show the hover card area.
-  /// Idempotent: multiple calls while already expanded are no-ops.
-  /// Serialized: if a collapse is in flight the expand runs after it completes.
   Future<void> expand({double? height}) async {
     if (height != null) _expandedHeight = height;
-    unawaited(AppLogger.debug('WindowService: expanding to  $height, $_expandedHeight'));
-    _wantsExpanded = true;
-    //await _enqueueResize();
-    _doExpand();
+    unawaited(AppLogger.debug('WindowService: expanding to $_expandedHeight'));
+    _lastWantsExpanded = true;
+    await _doExpand();
   }
 
   /// Collapses the window back to the strip height.
-  /// Idempotent and serialized — see [expand].
   Future<void> collapse({double? height}) async {
     if (height != null) _lastHeight = height;
-    _wantsExpanded = false;
-    unawaited(AppLogger.debug('WindowService: collapsing to  $height, $_lastHeight'));
-    _doCollapse();
-
-    //await _enqueueResize();
-  }
-
-  /// Ensures at most one resize is in flight at a time.
-  ///
-  /// If called while a resize is already running, updates [_wantsExpanded] and
-  /// returns immediately — the running resize will re-check and apply the new
-  /// state when it finishes.
-  Future<void> _enqueueResize() async {
-    if (_inFlight != null) return;
-    bool want;
-    do {
-      want = _wantsExpanded;
-      _inFlight = want ? _doExpand() : _doCollapse();
-      try {
-        await _inFlight;
-      } finally {
-        // Always clear _inFlight — if a platform call throws, leaving it
-        // non-null permanently blocks all future collapse/expand calls.
-        _inFlight = null;
-      }
-    } while (_wantsExpanded != want);
+    unawaited(AppLogger.debug('WindowService: collapsing to $_lastHeight'));
+    _lastWantsExpanded = false;
+    await _doCollapse();
   }
 
   /// GTK/Wayland resize order for expand:

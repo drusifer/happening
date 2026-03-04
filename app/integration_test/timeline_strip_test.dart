@@ -1,3 +1,12 @@
+import 'package:happening/core/window/window_service.dart';
+import 'package:mockito/mockito.dart';
+import 'package:screen_retriever/screen_retriever.dart';
+import 'package:window_manager/window_manager.dart';
+
+class _FakeWindowManager extends Mock implements WindowManager {}
+
+class _FakeScreenRetriever extends Mock implements ScreenRetriever {}
+
 class _FakeWindowService extends WindowService {
   _FakeWindowService()
       : super(
