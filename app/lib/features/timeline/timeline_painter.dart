@@ -8,8 +8,10 @@
 //
 // ---------------------------------------------------------------------------
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
+import 'package:happening/core/util/logger.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/timeline/timeline_layout.dart';
 
@@ -49,6 +51,7 @@ class TimelinePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    unawaited(AppLogger.debug('TimelinePainter.paint size=$size'));
     final layout = TimelineLayout(
       stripWidth: size.width,
       nowIndicatorX: nowIndicatorX,

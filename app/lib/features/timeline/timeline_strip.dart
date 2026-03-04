@@ -62,21 +62,41 @@ class _TimelineStripState extends State<TimelineStrip>
   bool _isHoveringStrip = false;
   bool _isSettingsOpen = false;
 
+  void _updateAnimationTimer(Duration countdown) {
+    if (!widget.enableAnimations) return;
+
+    final needsAnimation = countdown.inSeconds > 0 && countdown.inMinutes < 2;
+
+    if (needsAnimation && _flashTimer == null) {
+      _flashTimer = Timer.periodic(const Duration(milliseconds: 200), (_) {
+        _flashNotifier.value = (_flashNotifier.value + 0.2) % 1.0;
+      });
+    } else if (!needsAnimation && _flashTimer != null) {
+      _flashTimer?.cancel();
+      _flashTimer = null;
+      _flashNotifier.value = 0.0;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _windowService = widget.windowService;
-    if (widget.enableAnimations) {
-      _flashTimer = Timer.periodic(const Duration(milliseconds: 200), (_) {
-        _flashNotifier.value = (_flashNotifier.value + 0.2) % 1.0;
-      });
-    }
 
     WidgetsBinding.instance.addObserver(this);
     _updateHeights();
+    _collidingIds = detectCollisions(widget.events);
     unawaited(AppLogger.debug('TimelineStrip: Initializing collapsedHeight=$_collapsedHeight expandedHeight=$_expandedHeight'));
     // ALWAYS call collapse on init to force initial state regardless of OS/service previous state.
     unawaited(_windowService.collapse(height: _collapsedHeight));
+  }
+
+  @override
+  void didUpdateWidget(TimelineStrip oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.events != widget.events) {
+      _collidingIds = detectCollisions(widget.events);
+    }
   }
 
   @override
@@ -125,13 +145,13 @@ class _TimelineStripState extends State<TimelineStrip>
     final layout = _layout;
     if (layout == null) return;
 
+    unawaited(AppLogger.debug('TimelineStrip._handleMouse ${details.runtimeType}'));
     _updateHeights();
 
     // 1. Calculate Dynamic Bounds
     final mouseX = details.localPosition.dx;
     final mouseY = details.localPosition.dy;
     final isOverStripZone = mouseY < _collapsedHeight;
-    final isExpanded = _windowService.isExpanded;
     
     // S5-FIX: Sort events by duration ascending so shorter ones are prioritized 
     // in hit-testing (latching the most specific event).
@@ -262,18 +282,18 @@ class _TimelineStripState extends State<TimelineStrip>
 
   @override
   Widget build(BuildContext context) {
+    unawaited(AppLogger.debug('Building ${runtimeType}'));
     final theme = Theme.of(context);
     final settings = widget.settingsService.current;
     final fontSize = settings.fontSize.px;
     _updateHeights();
 
     return StreamBuilder<DateTime>(
-      stream: widget.clockService.tick,
+      stream: widget.clockService.tick10s,
       initialData: widget.clockService.now,
       builder: (context, snapshot) {
         final now = snapshot.data!;
         _now = now;
-        _collidingIds = detectCollisions(widget.events);
 
         return LayoutBuilder(
           builder: (context, constraints) {
@@ -313,9 +333,6 @@ class _TimelineStripState extends State<TimelineStrip>
             final DateTime? countdownTarget = active != null
                 ? (nextOverlap?.startTime ?? active.endTime)
                 : nextToStart?.startTime;
-            final countdown = countdownTarget != null
-                ? layout.countdownTo(countdownTarget, now)
-                : Duration.zero;
 
             final baseColor = mode == CountdownMode.untilEnd
                 ? (theme.brightness == Brightness.dark
@@ -345,23 +362,25 @@ class _TimelineStripState extends State<TimelineStrip>
                     left: 0,
                     right: 0,
                     height: _collapsedHeight,
-                    child: CustomPaint(
-                      painter: TimelinePainter(
-                        events: widget.events,
-                        now: now,
-                        nowIndicatorX: nowIndicatorX,
-                        windowStart: layout.windowStart,
-                        windowEnd: layout.windowEnd,
-                        hoveredEventId: _hoveredEvent?.id,
-                        collidingIds: _collidingIds,
-                        fontSize: fontSize,
-                        backgroundColor: stripBackgroundColor,
-                        pastOverlayColor: theme.brightness == Brightness.dark
-                            ? Colors.black26
-                            : Colors.black12,
-                        nowLineColor: const Color(0xFFB71C1C),
-                        tickColor: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.75) ??
-                            Colors.grey,
+                    child: RepaintBoundary(
+                      child: CustomPaint(
+                        painter: TimelinePainter(
+                          events: widget.events,
+                          now: now,
+                          nowIndicatorX: nowIndicatorX,
+                          windowStart: layout.windowStart,
+                          windowEnd: layout.windowEnd,
+                          hoveredEventId: _hoveredEvent?.id,
+                          collidingIds: _collidingIds,
+                          fontSize: fontSize,
+                          backgroundColor: stripBackgroundColor,
+                          pastOverlayColor: theme.brightness == Brightness.dark
+                              ? Colors.black26
+                              : Colors.black12,
+                          nowLineColor: const Color(0xFFB71C1C),
+                          tickColor: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.75) ??
+                              Colors.grey,
+                        ),
                       ),
                     ),
                   ),
@@ -374,39 +393,54 @@ class _TimelineStripState extends State<TimelineStrip>
                         : null,
                     top: 0,
                     height: _collapsedHeight,
-                    child: ValueListenableBuilder<double>(
-                      valueListenable: _flashNotifier,
-                      builder: (context, flashValue, _) {
-                        final countdownColor = _resolveCountdownColor(countdown, baseColor, flashValue);
-                        double countdownScale = 1.0;
-                        Offset shakeOffset = Offset.zero;
-                        if (countdown.inSeconds > 0 && widget.enableAnimations) {
-                          if (countdown.inSeconds <= 120 && countdown.inSeconds > 30) {
-                            countdownScale =
-                                1.0 + (120 - countdown.inSeconds) / 90.0 * 2.0;
-                          } else if (countdown.inSeconds <= 30) {
-                            countdownScale = 3.0;
-                          }
-                          if (countdown.inSeconds <= 60) {
-                            shakeOffset = Offset(
-                                math.sin(flashValue * 8 * math.pi) * 2.0,
-                                0);
-                          }
-                        }
-                        return Center(
-                          child: Transform.translate(
-                            offset: shakeOffset,
-                            child: Transform.scale(
-                              scale: countdownScale,
-                              child: CountdownDisplay(
-                                remaining: countdown,
-                                mode: mode,
-                                color: countdownColor,
-                                fontSize: fontSize,
-                                backgroundColor: stripBackgroundColor,
+                    child: StreamBuilder<DateTime>(
+                      stream: widget.clockService.tick1s,
+                      initialData: now,
+                      builder: (context, timeSnapshot) {
+                        final tickNow = timeSnapshot.data!;
+                        final countdown = countdownTarget != null
+                            ? layout.countdownTo(countdownTarget, tickNow)
+                            : Duration.zero;
+
+                        _updateAnimationTimer(countdown);
+
+                        return ValueListenableBuilder<double>(
+                          valueListenable: _flashNotifier,
+                          builder: (context, flashValue, _) {
+                            final countdownColor = _resolveCountdownColor(
+                                countdown, baseColor, flashValue);
+                            double countdownScale = 1.0;
+                            Offset shakeOffset = Offset.zero;
+                            if (countdown.inSeconds > 0 &&
+                                widget.enableAnimations) {
+                              if (countdown.inSeconds <= 120 &&
+                                  countdown.inSeconds > 30) {
+                                countdownScale =
+                                    1.0 + (120 - countdown.inSeconds) / 90.0 * 2.0;
+                              } else if (countdown.inSeconds <= 30) {
+                                countdownScale = 3.0;
+                              }
+                              if (countdown.inSeconds <= 60) {
+                                shakeOffset = Offset(
+                                    math.sin(flashValue * 8 * math.pi) * 2.0, 0);
+                              }
+                            }
+                            return Center(
+                              child: Transform.translate(
+                                offset: shakeOffset,
+                                child: Transform.scale(
+                                  scale: countdownScale,
+                                  child: CountdownDisplay(
+                                    remaining: countdown,
+                                    mode: mode,
+                                    color: countdownColor,
+                                    fontSize: fontSize,
+                                    backgroundColor: stripBackgroundColor,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
+                            );
+                          },
                         );
                       },
                     ),
@@ -481,6 +515,7 @@ class _IconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    unawaited(AppLogger.debug('Building ${runtimeType}'));
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     return GestureDetector(
