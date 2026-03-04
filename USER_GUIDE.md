@@ -1,6 +1,6 @@
 # User Guide — Happening
 
-Welcome to Happening! This guide will help you understand how to use the timeline strip and get the most out of your day.
+Welcome to Happening! This guide will help you understand how to use the timeline strip and get the most out of your schedule.
 
 ---
 
@@ -8,90 +8,88 @@ Welcome to Happening! This guide will help you understand how to use the timelin
 
 Happening is a **persistent, always-on-top horizontal timeline strip** that lives at the top of your screen. It shows your Google Calendar events flowing toward a fixed "Now" indicator in real time.
 
-> "The calendar comes to you."
+> "The schedule comes to you."
 
 ---
 
-## 2. Getting Started
+## 2. GUI Overview
 
-### 1. Launching the App
-When you first launch the app, you will see a **Sign-In Strip**.
+```text
+ _______________________________________________________________________________
+| [R] [G] | [ NOW ] [ 38 min ]   [ MEETING TOMATO ]        [ LUNCH ]            | <- THE STRIP
+|_________|_____|_______________________________________________________________|
+                |
+                |   .-------------------------------------------------------.
+                |   | CALENDAR NAME                 [ JOIN ]  [ OPEN ]      |
+                |   |                                                       |
+                |   | MEETING TOMATO                                        | <- HOVER CARD
+                |   | 10:00 AM - 11:00 AM                                   |
+                |   |                                                       |
+                |   | Description goes here...                              |
+                '-------------------------------------------------------'
 
-### 2. Signing In
-1. Click the **"Tap to Sign In"** button on the strip.
-2. Your default web browser will open to the Google Account selection page.
-3. Select your Google account and grant Happening permission to read your calendar events.
-4. Once authorized, you can close the browser tab.
-5. Happening will automatically load your events for today and start the timeline.
+ [R] = Refresh Button | [G] = Settings Gear | [NOW] = Current Time Line
+```
 
 ---
 
 ## 3. Understanding the Interface
 
 ### The Strip
-The strip is always visible at the top of your primary display. It stays above all other windows so you always have immediate, glanceable awareness of your schedule.
+The strip is always visible at the top of your primary display. It stays above other windows, providing immediate awareness of your day without the cognitive load of a full calendar grid.
 
-### Now Indicator
-The **Now Indicator** is a fixed vertical line (at the 10% mark from the left) that represents the current moment. 
-- Everything to the **left** of the line is the **past**.
-- Everything to the **right** of the line is the **future**.
+### Now Indicator & Countdown
+- **Now Line**: A fixed vertical line at the 10% mark.
+- **Future/Past**: Future events flow from right to left toward the Now line.
+- **Countdown**: A precise 1-second timer showing the time until your next transition (e.g., "38 min"). It turns **Amber** during meetings and **Red/Flashing** when a transition is imminent (< 2 min).
 
 ### Events & Tasks
-- **Event Blocks**: Each calendar event appears as a colored block. The length represents the duration, and the colors match your Google Calendar.
-- **Task Markers (◇)**: Calendar items marked as tasks (or "Focus Time" in some cases) appear as diamond-shaped markers on the timeline.
-
-### Tick Marks & Time
-The timeline features adaptive tick marks to help you keep track of the day:
-- **Hour Ticks**: Large markers with labels (e.g., "10am").
-- **30-Min Ticks**: Smaller markers with half-hour labels.
-- **15-Min Ticks**: Tiny markers for precise glanceable timing.
-
-### Gap Labels
-Gaps between events represent your free time. When a gap is large enough, Happening displays the duration (e.g., "45m") directly on the strip.
-
-### Countdown Timer
-Located to the right of the Now Indicator, the countdown keeps you informed of your next transition:
-- **White**: Time until your next event starts.
-- **Amber**: Time until your *current* meeting ends.
-- **Orange/Red**: Urgency signals when a transition is imminent (under 5 minutes).
-
-### End of Day
-When you have no more events scheduled for the rest of today, Happening displays a **Celebration Message** (e.g., "All done for today! ✨").
+- **Event Blocks**: Solid colored blocks representing meeting durations.
+- **Task Markers (◇)**: Diamond-shaped markers for tasks or zero-duration items.
+- **Collision Detection**: Overlapping events are drawn with red outlines and transparency. **Note: Shorter events are always drawn on top** so you can easily hover over them.
 
 ---
 
 ## 4. Interaction Features
 
-### Hover Details
-Move your mouse over an event block or task to see more information:
-- **Title**: The full title of the item.
-- **Time**: The start and end time.
-- **Join Button**: If the event has a Google Meet, Zoom, or Teams link, a button will appear to join the call instantly.
-- **Calendar Link**: A button to open the event in your web browser.
+### Latch-on-Expand Hover
+Happening uses "Smart Bounding" to make interaction stable:
+1. **Selection**: Hover over any event on the strip to expand its detail card.
+2. **Stability (The Latch)**: Once a card is open, the hit-zone expands to the full width of the card. This "latches" the card open, allowing you to move your mouse horizontally to click the **JOIN** or **OPEN** buttons without accidentally switching to an adjacent event.
+3. **Dismiss**: Move your mouse outside the card area to collapse the window.
 
-### Settings & Controls
-Hover over the far right of the strip to reveal the **Gear** and **Refresh** icons:
-- **Font Size**: Choose between Small, Medium, and Large text. The strip height will adjust automatically to match your preference.
-- **Manual Refresh**: Force a live sync with Google Calendar.
-- **Logout**: Clear your credentials and switch Google accounts.
-
-### Upcoming in v0.2.0 (In Progress)
-- **Multi-Calendar Support**: Select and display events from multiple Google Calendars.
-- **Themes**: Dark, Light, and System theme support.
-- **Collision Detection**: Visual indicators for overlapping events.
+### Action Buttons
+- **JOIN**: Opens your video call link (Meet, Zoom, Teams, etc.) instantly.
+- **OPEN**: Opens the event directly in your Google Calendar web interface.
 
 ---
 
-## 5. Troubleshooting
+## 5. Settings & Customization
 
-- **Strip is hidden**: Happening is designed to be "Always on Top," but some fullscreen applications (like games or certain video players) may override this.
-- **Events not showing**: 
-  - Ensure you are signed into the correct Google account.
-  - Happening currently shows events from your **Primary** calendar (multi-calendar support is coming in v0.2.0).
-  - Check that the event is scheduled for **today**.
-- **Window Positioning (Linux)**: On some Linux distributions using Wayland, the strip may appear in the center of the screen. We use an X11 bridge to fix this; if it persists, ensure `GDK_BACKEND=x11` is set in your environment.
+Click the **Gear** icon on the far left to open the Settings Panel:
+
+- **Theme**: Switch between **Dark**, **Light**, and **System** themes.
+- **Time Window**: Control how many hours of your day are visible (8h, 12h, or 24h).
+- **Multi-Calendar**: Toggle visibility for all your synced Google Calendars.
+- **Font Size**: Adjust the UI scale. The strip height adapts automatically.
+- **Quit & Logout**: Use the dedicated buttons in the header to exit the app or switch accounts.
 
 ---
 
-## 6. Feedback & Bugs
-Found a bug? Have a suggestion? Reach out to us at [drusifer@gmail.com].
+## 6. Performance & Efficiency
+
+Happening is optimized for ultra-low CPU usage:
+- **Tiered Updates**: The main timeline repaints every 10 seconds, while the countdown timer updates every 1 second.
+- **Idle Mode**: Animations and high-frequency timers automatically deactivate when no transitions are imminent.
+
+---
+
+## 7. Troubleshooting
+
+- **Strip Positioning**: If the strip appears in the center of the screen (Linux/Wayland), ensure `GDK_BACKEND=x11` is set.
+- **Transparency**: The area below the strip is transparent to your desktop. If it appears as a solid black/white box, verify your system's compositor settings.
+
+---
+
+## 8. Feedback & Bugs
+Reach out to us at [drusifer@gmail.com].

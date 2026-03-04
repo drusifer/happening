@@ -133,27 +133,70 @@ In Google Cloud Console → APIs & Services → OAuth consent screen → Test us
 
 ---
 
-## [2026-03-02] Hover Interaction & Service Architecture (Sprint 5 Refinement)
+## [2026-03-03] Direct vs. Serialized Window Management (KISS Protocol)
 
-> **Tags:** #Architecture #UX #Testing #State #Morpheus #Neo
+> **Tags:** #Architecture #WindowManager #KISS #Morpheus
 
 ### Context
-Coordination between event hit-testing, mouse coordinates, and window expansion state was prone to race conditions and inconsistent behavior across font sizes.
+A complex asynchronous serialization queue was implemented in `WindowService` to prevent race conditions during rapid window resizing.
 
 ### The Issue
-1.  Global/Static state in `WindowService` made testing difficult and caused state bleed.
-2.  Ad-hoc expansion overrides in `TimelineStrip` (e.g., forcing expansion for icons) led to unexpected window resizing.
-3.  Expansion thresholds were hardcoded and didn't scale with font size.
+The serialization queue added significant architectural complexity and introduced state synchronization bugs where the window would get "stuck" if a platform call failed or if focus events fired in rapid succession. For low-frequency events like window resizing, the overhead was unjustified.
 
 ### The Solution
-1.  **Avoid Globals/Statics**: Refactored `WindowService` to be instance-based and injected via constructor.
-2.  **Pure State Determination**: Created `ExpansionLogic` as a stateless pure function of coordinates and 2D `EventBounds`.
-3.  **Expansion Column Rule**: The window only expands when the mouse is within an event's horizontal bounds or settings are open. Icons (Gear/Refresh) are in the collapsed area and don't need expansion.
-4.  **Calculated Thresholds**: All heights are derived from `settings.fontSize.px` using a central `_updateHeights()` helper.
+Reverted to a "KISS" approach: direct platform calls gated by simple boolean UI state checks. The `WindowService` became a stateless proxy for the platform, and the `TimelineStrip` became the sole arbiter of when to trigger a transition.
 
 ### The Rule
-**Window state must be a deterministic function of inputs.** Services must be instance-based. Interactive elements in the collapsed area must not trigger window expansion unless they represent an event hit or settings override.
+**Prefer direct, idempotent calls over complex serialization queues for low-frequency OS interactions.** Gating logic should live in the UI controller, not the service proxy, to ensure the physical window state always reflects the intended UI state.
 
 ### References
-- **Decisions:** `DEC-003`
-- **Files:** `app/lib/features/timeline/expansion_logic.dart`, `app/lib/core/window/window_service.dart`, `app/lib/features/timeline/timeline_strip.dart`
+- **Files:** `app/lib/core/window/window_service.dart`, `app/lib/features/timeline/timeline_strip.dart`
+
+---
+
+## [2026-03-03] Context-Aware Hover Bounding (The Latch Logic)
+
+> **Tags:** #UX #Hover #Collision #Neo
+
+### Context
+Users found it difficult to click action buttons on hover cards because moving the mouse horizontally toward a button would often trigger an adjacent overlapping event, causing the original card to vanish.
+
+### The Issue
+Standard 1D horizontal hit-testing is too sensitive for overlapping events. A single bounding box logic for both the strip and the card zone cannot satisfy both "precision navigation" and "stable interaction."
+
+### The Solution
+Implemented "Context-Aware Bounding Boxes":
+1.  **Strip Zone**: Bounds match the exact event column width for precision selection.
+2.  **Card Zone**: Bounds expand to the full width of the hover card.
+3.  **The Latch**: The UI prioritizes the currently hovered event as long as the mouse remains within its (expanded) bounds, effectively "latching" the card open while the user moves toward buttons.
+
+### The Rule
+**Interaction bounds should adapt to the UI state.** Once a detail view is open, expand the "hit zone" to cover the entire interactive surface of that view to prevent focus-stealing from adjacent elements.
+
+### References
+- **Files:** `app/lib/features/timeline/timeline_strip.dart`, `app/lib/features/timeline/expansion_logic.dart`
+
+---
+
+## [2026-03-03] Tiered UI Update Frequency for CPU Optimization
+
+> **Tags:** #Performance #Flutter #CPU #Neo
+
+### Context
+The application was consuming 10-15% of a CPU core while idle, primarily due to full timeline repaints occurring 1-5 times per second.
+
+### The Issue
+1.  **Cascading Repaints**: High-frequency animation updates (5Hz) were triggering sibling repaints of the entire 3000px timeline canvas.
+2.  **Over-driven Layout**: The heavy `TimelinePainter` was recalculating and redrawing everything at 1Hz, even when only the countdown text needed to change.
+
+### The Solution
+1.  **Repaint Isolation**: Wrapped the `CustomPaint` in a `RepaintBoundary` to decouple it from animation updates.
+2.  **Tiered Clock Streams**: Updated `ClockService` to provide `tick1s` (for precise countdowns) and `tick10s` (for coarse timeline updates).
+3.  **Conditional Animation**: Modified the animation timer to only run when an event is within a "critical" 2-minute window.
+
+### The Rule
+**Deactivate high-frequency timers when idle and isolate heavy painters behind a `RepaintBoundary`.** Use tiered update frequencies to match the precision requirements of different UI elements (e.g., 1s for text, 10s for backgrounds).
+
+### References
+- **Files:** `app/lib/core/time/clock_service.dart`, `app/lib/features/timeline/timeline_strip.dart`, `app/lib/features/timeline/timeline_painter.dart`
+
