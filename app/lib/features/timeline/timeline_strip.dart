@@ -375,28 +375,27 @@ class _TimelineStripState extends State<TimelineStrip>
                       },
                     ),
                   ),
-                  if (_isHoveringStrip || _isSettingsOpen)
-                    Positioned(
-                      left: 8,
-                      top: 0,
-                      height: _collapsedHeight,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _IconButton(
-                            icon: Icons.refresh,
-                            onTap: widget.calendarController.refresh,
-                            stripBackgroundColor: stripBackgroundColor,
-                          ),
-                          const SizedBox(width: 4),
-                          _IconButton(
-                            icon: Icons.settings,
-                            onTap: _toggleSettings,
-                            stripBackgroundColor: stripBackgroundColor,
-                          ),
-                        ],
-                      ),
+                  Positioned(
+                    left: 8,
+                    top: 0,
+                    height: _collapsedHeight,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _IconButton(
+                          icon: Icons.refresh,
+                          onTap: widget.calendarController.refresh,
+                          stripBackgroundColor: stripBackgroundColor,
+                        ),
+                        const SizedBox(width: 4),
+                        _IconButton(
+                          icon: Icons.settings,
+                          onTap: _toggleSettings,
+                          stripBackgroundColor: stripBackgroundColor,
+                        ),
+                      ],
                     ),
+                  ),
                   if (_windowService.isExpanded && !_isSettingsOpen && _hoveredEvent != null)
                     Positioned(
                       top: _collapsedHeight,
