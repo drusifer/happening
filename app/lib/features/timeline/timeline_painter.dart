@@ -108,7 +108,8 @@ class TimelinePainter extends CustomPainter {
           final label =
               '${h % 12 == 0 ? 12 : h % 12}${h < 12 || h >= 24 ? 'am' : 'pm'}';
           _paintText(canvas, label, x + 4, 1,
-              fontSize: fontSize * 10 / 11, color: tickColor.withValues(alpha: 1.0));
+              fontSize: fontSize * 10 / 11,
+              color: tickColor.withValues(alpha: 1.0));
         }
       }
 
@@ -121,7 +122,8 @@ class TimelinePainter extends CustomPainter {
               tickPaint..strokeWidth = 0.75);
           if ((tx - nowIndicatorX).abs() > suppressionThreshold * 0.6) {
             _paintText(canvas, ':30', tx + 2, 1,
-                fontSize: fontSize * 8 / 11, color: tickColor.withValues(alpha: 0.85));
+                fontSize: fontSize * 8 / 11,
+                color: tickColor.withValues(alpha: 0.85));
           }
         }
       }
@@ -156,7 +158,7 @@ class TimelinePainter extends CustomPainter {
   }
 
   void _paintEvents(Canvas canvas, Size size, TimelineLayout layout) {
-    final blockHeight = size.height - 2;
+    final blockHeight = size.height - 2.0;
     const top = 1.0;
 
     // Sort by duration descending: shorter events on top (paint last).
@@ -182,17 +184,14 @@ class TimelinePainter extends CustomPainter {
       final isHovered = event.id == hoveredEventId;
       final isColliding = collidingIds.contains(event.id);
 
-      // DEBUG: Force all events to be red to check for visibility issues.
-      Color color = Colors.red;
-      
       // S5-D3: Completed tasks → green
-      // Color color = event.isCompleted
-      //     ? const Color(0xFF51B749) // Basil Green
-      //     : event.color;
+      Color color = event.isCompleted
+          ? const Color(0xFF51B749) // Basil Green
+          : event.color;
 
-      // // Overlapping events get 50% transparency (unless hovered)
-      // final double targetOpacity = isHovered ? 1.0 : (isColliding ? 0.5 : 0.82);
-      // color = color.withValues(alpha: targetOpacity);
+      // Overlapping events get 50% transparency (unless hovered)
+      final double targetOpacity = isHovered ? 1.0 : (isColliding ? 0.5 : 0.82);
+      color = color.withValues(alpha: targetOpacity);
 
       if (event.isTask) {
         // Pass endX = x for zero-duration tasks so the marker is always a
@@ -335,8 +334,7 @@ class TimelinePainter extends CustomPainter {
     // and stay white with a shadow.
     final isDarkBg = ThemeData.estimateBrightnessForColor(backgroundColor) ==
         Brightness.dark;
-    final textColor =
-        isTask && !isDarkBg ? Colors.black87 : Colors.white;
+    final textColor = isTask && !isDarkBg ? Colors.black87 : Colors.white;
     final shadow = (!isTask || isDarkBg)
         ? Shadow(
             blurRadius: 2.0,
@@ -360,7 +358,8 @@ class TimelinePainter extends CustomPainter {
       maxLines: 1,
       ellipsis: '…',
     )..layout(maxWidth: maxWidth);
-    painter.paint(canvas, Offset(x, top + height - painter.height - 2.0));
+    // Lift the baseline slightly (4.0 instead of 2.0) to prevent bottom clipping.
+    painter.paint(canvas, Offset(x, top + height - painter.height - 4.0));
   }
 
   /// Renders a task as a diamond (◇) or two diamonds connected by a line if it has duration.

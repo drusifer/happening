@@ -11,6 +11,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 
 /// Supported font sizes for event labels.
 enum FontSize {
@@ -68,7 +69,7 @@ class AppSettings {
 }
 
 /// Manages the loading, saving, and notification of application settings.
-class SettingsService {
+class SettingsService extends ChangeNotifier {
   SettingsService({required Directory directory})
       : _file = File('${directory.path}/settings.json'),
         _controller = StreamController<AppSettings>.broadcast();
@@ -95,6 +96,7 @@ class SettingsService {
       // Fallback to defaults on error.
       _current = const AppSettings();
     }
+    notifyListeners();
     _controller.add(_current);
   }
 
@@ -102,6 +104,7 @@ class SettingsService {
   Future<void> update(AppSettings newSettings) async {
     _current = newSettings;
     _controller.add(_current);
+    notifyListeners();
     try {
       if (!_file.parent.existsSync()) {
         await _file.parent.create(recursive: true);

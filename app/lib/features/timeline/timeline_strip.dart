@@ -84,17 +84,33 @@ class _TimelineStripState extends State<TimelineStrip>
     _windowService = widget.windowService;
     _windowService.isExpandedNotifier.addListener(_onExpansionChanged);
 
+    // S5-FIX: Listen to settings changes to update heights and trigger rebuild
+    widget.settingsService.addListener(_onSettingsChanged);
+
     WidgetsBinding.instance.addObserver(this);
     _updateHeights();
     _collidingIds = detectCollisions(widget.events);
-    unawaited(AppLogger.debug('TimelineStrip: Initializing collapsedHeight=$_collapsedHeight expandedHeight=$_expandedHeight'));
+    unawaited(AppLogger.debug('TimelineStrip: Initializing'));
     // ALWAYS call collapse on init to force initial state regardless of OS/service previous state.
-    unawaited(_windowService.collapse(height: _collapsedHeight));
+    unawaited(_windowService.collapse());
+  }
+
+  void _onSettingsChanged() {
+    if (mounted) {
+      _updateHeights();
+      setState(() {});
+    }
   }
 
   @override
   void didUpdateWidget(TimelineStrip oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.settingsService != widget.settingsService) {
+      oldWidget.settingsService.removeListener(_onSettingsChanged);
+      widget.settingsService.addListener(_onSettingsChanged);
+      _updateHeights();
+    }
+
     if (oldWidget.events != widget.events) {
       _collidingIds = detectCollisions(widget.events);
     }
@@ -103,6 +119,7 @@ class _TimelineStripState extends State<TimelineStrip>
   @override
   void dispose() {
     _windowService.isExpandedNotifier.removeListener(_onExpansionChanged);
+    widget.settingsService.removeListener(_onSettingsChanged);
     WidgetsBinding.instance.removeObserver(this);
     _flashTimer?.cancel();
     _flashNotifier.dispose();
@@ -118,23 +135,25 @@ class _TimelineStripState extends State<TimelineStrip>
   TimelineLayout? _layout;
   DateTime _now = DateTime.now();
   Set<String> _collidingIds = const {};
-  double _ogCollapsedHeight = 35.0;
-  double _ogExpandedHeight = 190.0;
-  double _collapsedHeight = 35.0;
-  double _expandedHeight = 0;
+
+  // WindowService owns the authoritative physical sizing.
+  double get _collapsedHeight {
+    return _windowService.getCollapsedHeight() -
+        3; // Ensure WindowService is up to date with settings.
+  }
 
   void _updateHeights() {
+    unawaited(AppLogger.debug(
+        'Timestrip: _updatgeHeights called:  strip height is to $_collapsedHeight'));
     final settings = widget.settingsService.current;
-    final fontSize = settings.fontSize.px;
-    _collapsedHeight = _ogCollapsedHeight + fontSize * 1.1;
-    _expandedHeight = _ogExpandedHeight + fontSize * 4;
+    unawaited(_windowService.updateHeights(settings.fontSize));
   }
 
   // ── Focus / lifecycle handlers ────────────────────────────────────────────
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // S5-FIX: Focus-based expansion logic is fragile on Linux. 
+    // S5-FIX: Focus-based expansion logic is fragile on Linux.
     // We only use this to trigger a collapse if settings are closed and we lose focus.
     if (state != AppLifecycleState.resumed && !_isSettingsOpen) {
       if (_windowService.isExpandedNotifier.value) {
@@ -142,7 +161,7 @@ class _TimelineStripState extends State<TimelineStrip>
           _isHoveringStrip = false;
           _hoveredEvent = null;
         });
-        unawaited(_windowService.collapse(height: _collapsedHeight));
+        unawaited(_windowService.collapse());
       }
     }
   }
@@ -150,23 +169,19 @@ class _TimelineStripState extends State<TimelineStrip>
   // ── Mouse handlers ───────────────────────────────────────────────────────
 
   void _handleMouse(PointerEvent details) {
-    unawaited(AppLogger.debug('!!!!!!!! MOUSE EVENT RECEIVED !!!!!!!! ${details.runtimeType}'));
     final layout = _layout;
     if (layout == null) return;
-
-    unawaited(AppLogger.debug('TimelineStrip._handleMouse ${details.runtimeType}'));
-    _updateHeights();
 
     // 1. Calculate Dynamic Bounds
     final mouseX = details.localPosition.dx;
     final mouseY = details.localPosition.dy;
     final isOverStripZone = mouseY < _collapsedHeight;
-    
-    // S5-FIX: Sort events by duration ascending so shorter ones are prioritized 
+
+    // S5-FIX: Sort events by duration ascending so shorter ones are prioritized
     // in hit-testing (latching the most specific event).
     final sortedEvents = [...widget.events]
       ..sort((a, b) => a.duration.compareTo(b.duration));
-    
+
     final boundsMap = <String, EventBounds>{};
     for (final e in sortedEvents) {
       if (isOverStripZone) {
@@ -199,7 +214,7 @@ class _TimelineStripState extends State<TimelineStrip>
 
     // 2. State Sync — prioritize current event to avoid jumping between overlapping bounds
     final isOverStrip = details is! PointerExitEvent && isOverStripZone;
-    
+
     CalendarEvent? hit;
     // If already hovering, check if we stay inside that event's (possibly expanded) bounds first.
     if (_hoveredEvent != null && boundsMap.containsKey(_hoveredEvent!.id)) {
@@ -207,7 +222,7 @@ class _TimelineStripState extends State<TimelineStrip>
         hit = _hoveredEvent;
       }
     }
-    
+
     // Otherwise, check all events in ascending duration order (shortest first).
     if (hit == null && state == ExpansionState.expanded) {
       for (final e in sortedEvents) {
@@ -219,7 +234,8 @@ class _TimelineStripState extends State<TimelineStrip>
     }
 
     if (isOverStrip != _isHoveringStrip || hit?.id != _hoveredEvent?.id) {
-      unawaited(AppLogger.debug('${details.runtimeType}: ${hit?.title ?? (isOverStrip ? 'Strip' : 'Outside')}'));
+      unawaited(AppLogger.debug(
+          '${details.runtimeType}: ${hit?.title ?? (isOverStrip ? 'Strip' : 'Outside')}'));
       setState(() {
         _isHoveringStrip = isOverStrip;
         _hoveredEvent = hit;
@@ -229,13 +245,13 @@ class _TimelineStripState extends State<TimelineStrip>
     // 3. Window Execution (Gated by UI state)
     if (state == ExpansionState.expanded) {
       if (!_windowService.isExpandedNotifier.value) {
-        unawaited(AppLogger.debug('TimelineStrip: Executing expand threshold=$_expandedHeight'));
-        unawaited(_windowService.expand(height: _expandedHeight));
+        unawaited(AppLogger.debug('TimelineStrip: Executing expand'));
+        unawaited(_windowService.expand());
       }
     } else {
       if (_windowService.isExpandedNotifier.value) {
-        unawaited(AppLogger.debug('TimelineStrip: Executing collapse height=$_collapsedHeight'));
-        unawaited(_windowService.collapse(height: _collapsedHeight));
+        unawaited(AppLogger.debug('TimelineStrip: Executing collapse'));
+        unawaited(_windowService.collapse());
       }
     }
   }
@@ -268,16 +284,17 @@ class _TimelineStripState extends State<TimelineStrip>
     });
     if (_isSettingsOpen) {
       if (!_windowService.isExpandedNotifier.value) {
-        unawaited(_windowService.expand(height: _expandedHeight));
+        unawaited(_windowService.expand());
       }
     } else {
       if (_windowService.isExpandedNotifier.value) {
-        unawaited(_windowService.collapse(height: _collapsedHeight));
+        unawaited(_windowService.collapse());
       }
     }
   }
 
-  Color _resolveCountdownColor(Duration remaining, Color base, double flashValue) {
+  Color _resolveCountdownColor(
+      Duration remaining, Color base, double flashValue) {
     if (remaining <= Duration.zero) return Colors.red;
     if (remaining.inMinutes >= 5) return base;
     if (remaining.inMinutes < 2 && widget.enableAnimations) {
@@ -295,7 +312,6 @@ class _TimelineStripState extends State<TimelineStrip>
     final theme = Theme.of(context);
     final settings = widget.settingsService.current;
     final fontSize = settings.fontSize.px;
-    _updateHeights();
 
     return StreamBuilder<DateTime>(
       stream: widget.clockService.tick10s,
@@ -313,9 +329,11 @@ class _TimelineStripState extends State<TimelineStrip>
               stripWidth: stripWidth,
               nowIndicatorX: nowIndicatorX,
               windowStart: now.subtract(Duration(
-                  milliseconds: (settings.timeWindowHours * 3600000 * 0.125).toInt())),
+                  milliseconds:
+                      (settings.timeWindowHours * 3600000 * 0.125).toInt())),
               windowEnd: now.add(Duration(
-                  milliseconds: (settings.timeWindowHours * 3600000 * 0.875).toInt())),
+                  milliseconds:
+                      (settings.timeWindowHours * 3600000 * 0.875).toInt())),
             );
             _layout = layout;
 
@@ -334,11 +352,10 @@ class _TimelineStripState extends State<TimelineStrip>
                     .firstOrNull
                 : null;
 
-            final nextToStart = (widget.events
-                    .where((e) => e.startTime.isAfter(now))
-                    .toList()
-                  ..sort((a, b) => a.startTime.compareTo(b.startTime)))
-                .firstOrNull;
+            final nextToStart =
+                (widget.events.where((e) => e.startTime.isAfter(now)).toList()
+                      ..sort((a, b) => a.startTime.compareTo(b.startTime)))
+                    .firstOrNull;
             final DateTime? countdownTarget = active != null
                 ? (nextOverlap?.startTime ?? active.endTime)
                 : nextToStart?.startTime;
@@ -349,8 +366,13 @@ class _TimelineStripState extends State<TimelineStrip>
                     : Colors.orange[800]!)
                 : theme.textTheme.bodyMedium?.color ?? Colors.white;
 
-            final stripBackgroundColor =
-                theme.brightness == Brightness.dark ? const Color(0xFF1A1A2E) : Colors.white;
+            final stripBackgroundColor = theme.brightness == Brightness.dark
+                ? const Color(0xFF1A1A2E)
+                : Colors.white;
+
+            final isExpanded = _windowService.isExpandedNotifier.value;
+            AppLogger.debug(
+                'TimelineStrip: Layout isExpanded=$isExpanded _collapsedHeight=$_collapsedHeight maxHeight=${constraints.maxHeight}');
 
             return MouseRegion(
               onEnter: _handleMouse,
@@ -364,7 +386,8 @@ class _TimelineStripState extends State<TimelineStrip>
                     top: 0,
                     left: 0,
                     right: 0,
-                    height: _collapsedHeight,
+                    height:
+                        isExpanded ? _collapsedHeight : constraints.maxHeight,
                     child: Container(color: stripBackgroundColor),
                   ),
                   Positioned(
@@ -388,7 +411,8 @@ class _TimelineStripState extends State<TimelineStrip>
                               ? Colors.black26
                               : Colors.black12,
                           nowLineColor: const Color(0xFFB71C1C),
-                          tickColor: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.75) ??
+                          tickColor: theme.textTheme.bodySmall?.color
+                                  ?.withValues(alpha: 0.75) ??
                               Colors.grey,
                         ),
                       ),
@@ -425,14 +449,15 @@ class _TimelineStripState extends State<TimelineStrip>
                                 widget.enableAnimations) {
                               if (countdown.inSeconds <= 120 &&
                                   countdown.inSeconds > 30) {
-                                countdownScale =
-                                    1.0 + (120 - countdown.inSeconds) / 90.0 * 2.0;
+                                countdownScale = 1.0 +
+                                    (120 - countdown.inSeconds) / 90.0 * 2.0;
                               } else if (countdown.inSeconds <= 30) {
                                 countdownScale = 3.0;
                               }
                               if (countdown.inSeconds <= 60) {
                                 shakeOffset = Offset(
-                                    math.sin(flashValue * 8 * math.pi) * 2.0, 0);
+                                    math.sin(flashValue * 8 * math.pi) * 2.0,
+                                    0);
                               }
                             }
                             return Center(
@@ -476,7 +501,9 @@ class _TimelineStripState extends State<TimelineStrip>
                       ],
                     ),
                   ),
-                  if (_windowService.isExpandedNotifier.value && !_isSettingsOpen && _hoveredEvent != null)
+                  if (_windowService.isExpandedNotifier.value &&
+                      !_isSettingsOpen &&
+                      _hoveredEvent != null)
                     Positioned(
                       top: _collapsedHeight,
                       left: _cardLeft(stripWidth),

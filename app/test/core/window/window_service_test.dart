@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:happening/core/window/window_service.dart';
+import 'package:happening/core/settings/settings_service.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:screen_retriever/screen_retriever.dart';
@@ -32,26 +33,30 @@ void main() {
 
       // Mock WM methods to return Future.value()
       when(mockWM.ensureInitialized()).thenAnswer((_) => Future.value());
+      when(mockWM.getDevicePixelRatio()).thenReturn(1.0);
       when(mockWM.setResizable(any)).thenAnswer((_) => Future.value());
       when(mockWM.setMinimumSize(any)).thenAnswer((_) => Future.value());
       when(mockWM.setMaximumSize(any)).thenAnswer((_) => Future.value());
-      when(mockWM.setSize(any, animate: anyNamed('animate'))).thenAnswer((_) => Future.value());
-      when(mockWM.setPosition(any, animate: anyNamed('animate'))).thenAnswer((_) => Future.value());
+      when(mockWM.setSize(any, animate: anyNamed('animate')))
+          .thenAnswer((_) => Future.value());
+      when(mockWM.setPosition(any, animate: anyNamed('animate')))
+          .thenAnswer((_) => Future.value());
       when(mockWM.setAlwaysOnTop(any)).thenAnswer((_) => Future.value());
       when(mockWM.setAsFrameless()).thenAnswer((_) => Future.value());
       when(mockWM.setBackgroundColor(any)).thenAnswer((_) => Future.value());
-      when(mockWM.show(inactive: anyNamed('inactive'))).thenAnswer((_) => Future.value());
+      when(mockWM.show(inactive: anyNamed('inactive')))
+          .thenAnswer((_) => Future.value());
     });
 
     test('initialize sets up the window with logical pixels', () async {
-      await service.initialize(height: 30.0, expandedHeight: 250.0);
+      await service.initialize(initialFontSize: FontSize.medium);
 
       verify(mockWM.ensureInitialized()).called(1);
       verify(mockWM.setAsFrameless()).called(1);
       verify(mockWM.setAlwaysOnTop(true)).called(1);
       verify(mockWM.setBackgroundColor(Colors.transparent)).called(1);
 
-      const expectedSize = Size(1920.0, 30.0);
+      const expectedSize = Size(1920.0, 55.0);
       verify(mockWM.setMinimumSize(expectedSize)).called(1);
       verify(mockWM.setMaximumSize(expectedSize)).called(1);
       verify(mockWM.setSize(expectedSize)).called(1);
@@ -60,23 +65,27 @@ void main() {
     });
 
     test('expand resizes to expanded height', () async {
-      await service.initialize(height: 30.0, expandedHeight: 250.0);
+      await service.initialize(initialFontSize: FontSize.medium);
       await service.expand();
 
       const expandedSize = Size(1920.0, 250.0);
       verify(mockWM.setSize(expandedSize)).called(greaterThanOrEqualTo(1));
-      verify(mockWM.setMinimumSize(expandedSize)).called(greaterThanOrEqualTo(1));
-      verify(mockWM.setMaximumSize(expandedSize)).called(greaterThanOrEqualTo(1));
+      verify(mockWM.setMinimumSize(expandedSize))
+          .called(greaterThanOrEqualTo(1));
+      verify(mockWM.setMaximumSize(expandedSize))
+          .called(greaterThanOrEqualTo(1));
     });
 
     test('collapse resizes to strip height', () async {
-      await service.initialize(height: 30.0, expandedHeight: 250.0);
+      await service.initialize(initialFontSize: FontSize.medium);
       await service.expand();
       await service.collapse();
 
-      const collapsedSize = Size(1920.0, 30.0);
-      verify(mockWM.setMinimumSize(collapsedSize)).called(greaterThanOrEqualTo(1));
-      verify(mockWM.setMaximumSize(collapsedSize)).called(greaterThanOrEqualTo(1));
+      const collapsedSize = Size(1920.0, 55.0);
+      verify(mockWM.setMinimumSize(collapsedSize))
+          .called(greaterThanOrEqualTo(1));
+      verify(mockWM.setMaximumSize(collapsedSize))
+          .called(greaterThanOrEqualTo(1));
       verify(mockWM.setSize(collapsedSize)).called(greaterThanOrEqualTo(1));
     });
   });
