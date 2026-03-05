@@ -1,5 +1,14 @@
 # Current Task
 
+## UAT Fix Pass — 2026-03-04
+**Status**: COMPLETE ✅ — 185/185 GREEN
+
+### Fixed
+- S3-09: `tapAt(10,10)` → `tap(find.byIcon(Icons.refresh))` (y=10 misses vertically-centered button in 51.5px strip)
+- S3-10: `tapAt(45,10)` → `tap(find.byIcon(Icons.settings))` (same root cause)
+- Lifecycle expansion: same coordinate fix as S3-10
+- BUG-09/11: used delta baseline counts to exclude initState unconditional collapse()
+
 ## Sprint 5: Group E Verification — 2026-03-01
 **Status**: COMPLETE ✅
 
