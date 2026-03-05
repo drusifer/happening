@@ -32,22 +32,12 @@ void main() async {
   await settingsSvc.load();
   await AppLogger.debug('Settings loaded.');
 
-  // 3. Determine initial window height from settings.
-  final padding = switch (settingsSvc.current.fontSize) {
-    FontSize.small => 16.0,
-    FontSize.medium => 20.0,
-    FontSize.large => 24.0,
-  };
-  final initialHeight = settingsSvc.current.fontSize.px + padding;
-  const expandedHeight = 160.0;
-  await AppLogger.debug('Calculated initial window height: $initialHeight expanded: $expandedHeight');
-
-  // 4. Initialize window management.
+  // 3. Initialize window management.
   final windowService = WindowService(
     windowManager: windowManager,
     screenRetriever: screenRetriever,
   );
-  await windowService.initialize(height: initialHeight, expandedHeight: expandedHeight);
+  await windowService.initialize(initialFontSize: settingsSvc.current.fontSize);
   await AppLogger.debug('WindowService initialized.');
 
   // 5. Launch app with pre-loaded settings and window service.
