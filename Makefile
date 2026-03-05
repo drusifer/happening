@@ -25,9 +25,17 @@ $(PUB_STAMP): $(APP_DIR)/pubspec.yaml $(APP_DIR)/pubspec.lock
 	cd $(APP_DIR) && $(FLUTTER) pub get
 
 # ── Dev ──────────────────────────────────────────────────────────────────────
-.PHONY: run
-run: $(PUB_STAMP)
+.PHONY: run run-linux run-windows run-windows-test run-windows-simple
+run:
+	@echo "Please specify a platform: make run-linux or make run-windows"
+run-linux: $(PUB_STAMP)
 	cd $(APP_DIR) && PATH="$(LLVM_BIN):$$PATH" GDK_BACKEND=x11 XAUTHORITY=$$(ls /run/user/$$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1) $(FLUTTER) run -d linux
+run-windows: $(PUB_STAMP)
+	cd $(APP_DIR) && $(FLUTTER) run -d windows
+run-windows-test: $(PUB_STAMP)
+	cd $(APP_DIR) && $(FLUTTER) run -d windows --target lib/windows_test.dart
+run-windows-simple: $(PUB_STAMP)
+	cd $(APP_DIR) && $(FLUTTER) run -d windows --target lib/simple_main.dart
 
 # ── Test ─────────────────────────────────────────────────────────────────────
 .PHONY: test
@@ -38,9 +46,13 @@ test: $(PUB_STAMP)
 test-watch: $(PUB_STAMP)
 	cd $(APP_DIR) && $(FLUTTER) test --coverage --watch
 
-.PHONY: integration-test
-integration-test: $(PUB_STAMP)
+.PHONY: integration-test integration-test-linux integration-test-windows
+integration-test:
+	@echo "Please specify a platform: make integration-test-linux or make integration-test-windows"
+integration-test-linux: $(PUB_STAMP)
 	cd $(APP_DIR) && PATH="$(LLVM_BIN):$$PATH" GDK_BACKEND=x11 XAUTHORITY=$$(ls /run/user/$$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1) $(FLUTTER) test integration_test/ -d linux
+integration-test-windows: $(PUB_STAMP)
+	cd $(APP_DIR) && $(FLUTTER) test integration_test/ -d windows
 
 # ── Build ────────────────────────────────────────────────────────────────────
 .PHONY: build-linux build-macos build-windows
@@ -80,7 +92,8 @@ lint-format: $(PUB_STAMP)
 # ── TLDR ─────────────────────────────────────────────────────────────────────
 .PHONY: tldr
 tldr:
-	@rgrep "TLDR" app/lib -B2 -A6 --include="*.dart"
+	@rg "TL*DR" . -B2 -A6 --glob="*.{dart,md}"
+
 
 # ── Clean ────────────────────────────────────────────────────────────────────
 .PHONY: clean
@@ -93,11 +106,16 @@ help:
 	@echo "Happening — Makefile targets"
 	@echo ""
 	@echo "  make setup        Check system deps + fetch pub deps"
-	@echo "  make run          Run app on Linux desktop"
+	@echo "  make run          Run app (use 'run-linux' or 'run-windows')"
+	@echo "  make run-linux    Run app on Linux desktop"
+	@echo "  make run-windows  Run app on Windows desktop"
 	@echo "  make test         Run all tests with coverage"
-	@echo "  make integration-test  Run integration tests on Linux desktop"
+	@echo "  make integration-test  Run integration tests (use 'integration-test-linux' or 'integration-test-windows')"
+	@echo "  make integration-test-linux  Run integration tests on Linux"
+	@echo "  make integration-test-windows  Run integration tests on Windows"
 	@echo "  make build-linux  Release build for Linux"
 	@echo "  make build-macos  Release build for macOS"
+	@echo "  make build-windows Release build for Windows"
 	@echo "  make format       Format all Dart source"
 	@echo "  make analyze      Run Dart analyzer"
 	@echo "  make lint         Run all lint checks (style, metrics, format)"

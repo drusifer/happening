@@ -1,8 +1,56 @@
 import 'dart:async';
+import 'dart:ffi' hide Size;
+import 'dart:io';
+
+import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
-import 'package:screen_retriever/screen_retriever.dart';
-import 'package:window_manager/window_manager.dart';
 import 'package:happening/core/util/logger.dart';
+import 'package:screen_retriever/screen_retriever.dart';
+import 'package:win32/win32.dart' hide Size;
+import 'package:window_manager/window_manager.dart';
+
+// ── Constants ────────────────────────────────────────────────────────────────
+
+const int _uCallbackMessage = 0x0400 + 100; // WM_USER + 100
+const int _abmNew = 0;
+const int _abmRemove = 1;
+const int _abmQuerypos = 2;
+const int _abmSetpos = 3;
+const int _abeTop = 1;
+
+// Flutter Windows runner class name — used to find the HWND.
+const String _flutterWindowClass = 'FLUTTER_RUNNER_WIN32_WINDOW';
+
+// ── APPBARDATA FFI struct ────────────────────────────────────────────────────
+
+final class _AppBarData extends Struct {
+  @Uint32()
+  external int cbSize;
+  @IntPtr()
+  external int hWnd;
+  @Uint32()
+  external int uCallbackMessage;
+  @Uint32()
+  external int uEdge;
+  @Int32()
+  external int rcLeft;
+  @Int32()
+  external int rcTop;
+  @Int32()
+  external int rcRight;
+  @Int32()
+  external int rcBottom;
+  @IntPtr()
+  external int lParam;
+}
+
+// ── SHAppBarMessage via shell32.dll ──────────────────────────────────────────
+
+typedef _SHNative = IntPtr Function(Uint32 dwMessage, Pointer<_AppBarData> pData);
+typedef _SHDart = int Function(int dwMessage, Pointer<_AppBarData> pData);
+
+final _shAppBarMessage = DynamicLibrary.open('shell32.dll')
+    .lookupFunction<_SHNative, _SHDart>('SHAppBarMessage');
 
 /// Window management service for resizing the app between strip and hover states.
 ///
@@ -28,11 +76,10 @@ class WindowService {
   double _lastHeight = 0.0;
   double _expandedHeight = 0.0;
 
-  // Track the last intended state to allow UI gating.
-  bool _lastWantsExpanded = false;
+  Pointer<_AppBarData>? _appBarData;
 
-  /// Whether the window is currently intended to be in the expanded state.
-  bool get isExpanded => _lastWantsExpanded;
+  /// Notifier for the window's expansion state.
+  final isExpandedNotifier = ValueNotifier<bool>(false);
 
   /// Call once, before [runApp], to set up the window.
   Future<void> initialize({
@@ -45,27 +92,69 @@ class WindowService {
 
     final display = await _sr.getPrimaryDisplay();
     _lastWidth = display.size.width;
-
-    // Initial setup: No title bar, always on top, set height.
-    await _wm.setAsFrameless();
-    await _wm.setAlwaysOnTop(true);
-    await _wm.setBackgroundColor(Colors.transparent);
-
     final size = Size(_lastWidth, height);
-    await _wm.setMinimumSize(size);
-    await _wm.setMaximumSize(size);
-    await _wm.setSize(size);
 
-    // Position at top of screen.
-    await _wm.setPosition(Offset.zero);
-    await _wm.show();
+    final windowOptions = WindowOptions(
+      size: size,
+      alwaysOnTop: true,
+      backgroundColor: Colors.transparent,
+      skipTaskbar: true,
+      titleBarStyle: TitleBarStyle.hidden,
+    );
+
+    await _wm.waitUntilReadyToShow(windowOptions, () async {
+      if (Platform.isWindows) {
+        await _registerAppBar();
+      } else {
+        await _wm.setPosition(Offset.zero);
+      }
+      await _wm.setResizable(false);
+      await _wm.show();
+      await _wm.focus();
+    });
+  }
+
+  void dispose() {
+    if (Platform.isWindows && _appBarData != null) {
+      _shAppBarMessage(_abmRemove, _appBarData!);
+      calloc.free(_appBarData!);
+    }
+  }
+
+  Future<void> _registerAppBar() async {
+    final classNamePtr = _flutterWindowClass.toNativeUtf16();
+    final hwnd = FindWindow(classNamePtr, nullptr);
+    calloc.free(classNamePtr);
+
+    _appBarData = calloc<_AppBarData>();
+    _appBarData!.ref.cbSize = sizeOf<_AppBarData>();
+    _appBarData!.ref.hWnd = hwnd;
+    _appBarData!.ref.uCallbackMessage = _uCallbackMessage;
+    _shAppBarMessage(_abmNew, _appBarData!);
+
+    await _reserveCollapsedSpace();
+  }
+
+  Future<void> _reserveCollapsedSpace() async {
+    final display = await _sr.getPrimaryDisplay();
+    _appBarData!.ref.uEdge = _abeTop;
+    _appBarData!.ref.rcLeft = 0;
+    _appBarData!.ref.rcTop = 0;
+    _appBarData!.ref.rcRight = display.size.width.toInt();
+    _appBarData!.ref.rcBottom = _lastHeight.toInt();
+    _shAppBarMessage(_abmQuerypos, _appBarData!);
+    _shAppBarMessage(_abmSetpos, _appBarData!);
+    await _wm.setPosition(Offset(
+      _appBarData!.ref.rcLeft.toDouble(),
+      _appBarData!.ref.rcTop.toDouble(),
+    ));
   }
 
   /// Expands the window to show the hover card area.
   Future<void> expand({double? height}) async {
     if (height != null) _expandedHeight = height;
     unawaited(AppLogger.debug('WindowService: expanding to $_expandedHeight'));
-    _lastWantsExpanded = true;
+    isExpandedNotifier.value = true;
     await _doExpand();
   }
 
@@ -73,7 +162,7 @@ class WindowService {
   Future<void> collapse({double? height}) async {
     if (height != null) _lastHeight = height;
     unawaited(AppLogger.debug('WindowService: collapsing to $_lastHeight'));
-    _lastWantsExpanded = false;
+    isExpandedNotifier.value = false;
     await _doCollapse();
   }
 
@@ -83,9 +172,15 @@ class WindowService {
   ///   setMaximumSize → prevent compositor from shrinking the window.
   Future<void> _doExpand() async {
     final size = Size(_lastWidth, _expandedHeight);
-    await _wm.setSize(size);
-    await _wm.setMinimumSize(size);
-    await _wm.setMaximumSize(size);
+    if (Platform.isWindows) {
+      await _wm.setMaximumSize(size);
+      await _wm.setSize(size);
+      await _wm.setMinimumSize(size);
+    } else {
+      await _wm.setSize(size);
+      await _wm.setMinimumSize(size);
+      await _wm.setMaximumSize(size);
+    }
   }
 
   /// GTK/Wayland resize order for collapse:
@@ -94,8 +189,14 @@ class WindowService {
   ///   setSize last         → resize (constraints already permit it).
   Future<void> _doCollapse() async {
     final size = Size(_lastWidth, _lastHeight);
-    await _wm.setMinimumSize(size);
-    await _wm.setMaximumSize(size);
-    await _wm.setSize(size);
+    if (Platform.isWindows) {
+      await _wm.setMinimumSize(size);
+      await _wm.setMaximumSize(size);
+      await _wm.setSize(size);
+    } else {
+      await _wm.setMinimumSize(size);
+      await _wm.setMaximumSize(size);
+      await _wm.setSize(size);
+    }
   }
 }

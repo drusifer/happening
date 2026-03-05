@@ -82,6 +82,7 @@ class _TimelineStripState extends State<TimelineStrip>
   void initState() {
     super.initState();
     _windowService = widget.windowService;
+    _windowService.isExpandedNotifier.addListener(_onExpansionChanged);
 
     WidgetsBinding.instance.addObserver(this);
     _updateHeights();
@@ -101,10 +102,17 @@ class _TimelineStripState extends State<TimelineStrip>
 
   @override
   void dispose() {
+    _windowService.isExpandedNotifier.removeListener(_onExpansionChanged);
     WidgetsBinding.instance.removeObserver(this);
     _flashTimer?.cancel();
     _flashNotifier.dispose();
     super.dispose();
+  }
+
+  void _onExpansionChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   TimelineLayout? _layout;
@@ -129,7 +137,7 @@ class _TimelineStripState extends State<TimelineStrip>
     // S5-FIX: Focus-based expansion logic is fragile on Linux. 
     // We only use this to trigger a collapse if settings are closed and we lose focus.
     if (state != AppLifecycleState.resumed && !_isSettingsOpen) {
-      if (_windowService.isExpanded) {
+      if (_windowService.isExpandedNotifier.value) {
         setState(() {
           _isHoveringStrip = false;
           _hoveredEvent = null;
@@ -142,6 +150,7 @@ class _TimelineStripState extends State<TimelineStrip>
   // ── Mouse handlers ───────────────────────────────────────────────────────
 
   void _handleMouse(PointerEvent details) {
+    unawaited(AppLogger.debug('!!!!!!!! MOUSE EVENT RECEIVED !!!!!!!! ${details.runtimeType}'));
     final layout = _layout;
     if (layout == null) return;
 
@@ -219,12 +228,12 @@ class _TimelineStripState extends State<TimelineStrip>
 
     // 3. Window Execution (Gated by UI state)
     if (state == ExpansionState.expanded) {
-      if (!_windowService.isExpanded) {
+      if (!_windowService.isExpandedNotifier.value) {
         unawaited(AppLogger.debug('TimelineStrip: Executing expand threshold=$_expandedHeight'));
         unawaited(_windowService.expand(height: _expandedHeight));
       }
     } else {
-      if (_windowService.isExpanded) {
+      if (_windowService.isExpandedNotifier.value) {
         unawaited(AppLogger.debug('TimelineStrip: Executing collapse height=$_collapsedHeight'));
         unawaited(_windowService.collapse(height: _collapsedHeight));
       }
@@ -258,11 +267,11 @@ class _TimelineStripState extends State<TimelineStrip>
       _hoveredEvent = null;
     });
     if (_isSettingsOpen) {
-      if (!_windowService.isExpanded) {
+      if (!_windowService.isExpandedNotifier.value) {
         unawaited(_windowService.expand(height: _expandedHeight));
       }
     } else {
-      if (_windowService.isExpanded) {
+      if (_windowService.isExpandedNotifier.value) {
         unawaited(_windowService.collapse(height: _collapsedHeight));
       }
     }
@@ -347,6 +356,7 @@ class _TimelineStripState extends State<TimelineStrip>
               onEnter: _handleMouse,
               onHover: _handleMouse,
               onExit: _handleMouse,
+              hitTestBehavior: HitTestBehavior.translucent,
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
@@ -466,7 +476,7 @@ class _TimelineStripState extends State<TimelineStrip>
                       ],
                     ),
                   ),
-                  if (_windowService.isExpanded && !_isSettingsOpen && _hoveredEvent != null)
+                  if (_windowService.isExpandedNotifier.value && !_isSettingsOpen && _hoveredEvent != null)
                     Positioned(
                       top: _collapsedHeight,
                       left: _cardLeft(stripWidth),
