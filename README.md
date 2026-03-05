@@ -24,11 +24,17 @@ Happening is a persistent, always-on-top horizontal timeline strip that reads yo
 
 ## Prerequisites
 
-### System Dependencies (Linux)
+### System Dependencies
+
+#### Linux
 - Flutter SDK (>= 3.19.0)
 - `clang`, `cmake`, `ninja-build`, `pkg-config` (C++ build tools)
 - `libgtk-3-dev` (GTK 3 headers)
 - `lld` (LLVM linker)
+
+#### Windows
+- Flutter SDK (>= 3.19.0)
+- Visual Studio with the "Desktop development with C++" workload installed.
 
 ### Google Cloud Setup
 You need a Google Cloud Project with the **Google Calendar API** enabled and an **OAuth 2.0 Client ID** (Desktop type).
@@ -42,12 +48,20 @@ You need a Google Cloud Project with the **Google Calendar API** enabled and an 
 ### 1. Setup
 Verify your system dependencies and fetch Flutter packages:
 ```bash
+# On Linux, this checks for required packages. On other OSes, it just runs pub get.
 make setup
 ```
 
 ### 2. Run in Development
-Run the app on your Linux desktop (forces X11 backend for window positioning):
+Run the app on your desktop.
 ```bash
+# For Linux (forces X11 backend for window positioning)
+make run-linux
+
+# For Windows
+make run-windows
+
+# To see all run options
 make run
 ```
 
@@ -55,20 +69,16 @@ make run
 
 ## Building
 
-### Release Build (Linux)
-```bash
-make build-linux
-```
-The executable will be located in `app/build/linux/x64/release/bundle/happening`.
-
-### Other Platforms
-- **macOS**: `make build-macos`
-- **Windows**: `make build-windows`
+### Release Builds
+- **Linux**: `make build-linux` (Output: `app/build/linux/x64/release/bundle/`)
+- **macOS**: `make build-macos` (Output: `app/build/macos/release/`)
+- **Windows**: `make build-windows` (Output: `app/build/windows/runner/Release/`)
 
 ---
 
 ## Testing & Quality
-- **Run tests**: `make test`
+- **Run unit tests**: `make test`
+- **Run integration tests**: `make integration-test-linux` or `make integration-test-windows`
 - **Static analysis**: `make analyze`
 - **Format code**: `make format`
 
