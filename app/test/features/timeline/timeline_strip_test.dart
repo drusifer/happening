@@ -194,8 +194,8 @@ void main() {
       expect(find.byIcon(Icons.refresh), findsOneWidget);
       expect(find.byIcon(Icons.settings), findsOneWidget);
 
-      // Tap refresh
-      await tester.tapAt(const Offset(10, 10));
+      // Tap refresh via widget finder (coordinates miss due to vertical centering)
+      await tester.tap(find.byIcon(Icons.refresh));
       await tester.pump();
       expect(fakeController.fetchCalls, equals(1));
     });
@@ -273,24 +273,28 @@ void main() {
       ));
       await tester.pump(Duration.zero);
 
+      // Record baseline after init (initState unconditionally calls collapse once)
+      final baseExpand = fakeWS.expandCalls;
+      final baseCollapse = fakeWS.collapseCalls;
+
       final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
       await gesture.addPointer(location: Offset.zero);
 
       // Move in and jiggle
-      await gesture.moveTo(const Offset(140, 10)); 
+      await gesture.moveTo(const Offset(140, 10));
       await tester.pump(const Duration(seconds: 10));
       await gesture.moveTo(const Offset(145, 10));
       await tester.pump();
       await gesture.moveTo(const Offset(142, 10));
       await tester.pump();
 
-      expect(fakeWS.expandCalls, equals(1),
+      expect(fakeWS.expandCalls - baseExpand, equals(1),
           reason: 'expand called once despite jiggle');
 
-      await gesture.moveTo(const Offset(400, 10)); // Exit strip horizontally
+      await gesture.moveTo(const Offset(400, 10)); // Move to non-event area → collapse
       await tester.pump(const Duration(seconds: 10));
 
-      expect(fakeWS.collapseCalls, equals(1),
+      expect(fakeWS.collapseCalls - baseCollapse, equals(1),
           reason: 'collapse called once on exit');
       await gesture.removePointer();
     });
@@ -423,7 +427,7 @@ void main() {
       ));
       await tester.pump(Duration.zero);
 
-      await tester.tapAt(const Offset(45, 10)); 
+      await tester.tap(find.byIcon(Icons.settings));
       await tester.pump();
 
       expect(find.byType(SettingsPanel), findsOneWidget);
@@ -454,7 +458,7 @@ void main() {
       await tester.pump(Duration.zero);
 
       // 1. Open settings
-      await tester.tapAt(const Offset(45, 10));
+      await tester.tap(find.byIcon(Icons.settings));
       await tester.pump();
 
       expect(windowService.isExpanded, isTrue);
