@@ -182,14 +182,17 @@ class TimelinePainter extends CustomPainter {
       final isHovered = event.id == hoveredEventId;
       final isColliding = collidingIds.contains(event.id);
 
+      // DEBUG: Force all events to be red to check for visibility issues.
+      Color color = Colors.red;
+      
       // S5-D3: Completed tasks → green
-      Color color = event.isCompleted
-          ? const Color(0xFF51B749) // Basil Green
-          : event.color;
+      // Color color = event.isCompleted
+      //     ? const Color(0xFF51B749) // Basil Green
+      //     : event.color;
 
-      // Overlapping events get 50% transparency (unless hovered)
-      final double targetOpacity = isHovered ? 1.0 : (isColliding ? 0.5 : 0.82);
-      color = color.withValues(alpha: targetOpacity);
+      // // Overlapping events get 50% transparency (unless hovered)
+      // final double targetOpacity = isHovered ? 1.0 : (isColliding ? 0.5 : 0.82);
+      // color = color.withValues(alpha: targetOpacity);
 
       if (event.isTask) {
         // Pass endX = x for zero-duration tasks so the marker is always a

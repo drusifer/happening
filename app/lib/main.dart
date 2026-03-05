@@ -39,7 +39,7 @@ void main() async {
     FontSize.large => 24.0,
   };
   final initialHeight = settingsSvc.current.fontSize.px + padding;
-  final expandedHeight = 160.0;
+  const expandedHeight = 160.0;
   await AppLogger.debug('Calculated initial window height: $initialHeight expanded: $expandedHeight');
 
   // 4. Initialize window management.
