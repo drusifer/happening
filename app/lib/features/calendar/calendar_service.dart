@@ -79,9 +79,9 @@ class GoogleCalendarService implements CalendarService {
     );
 
     // Append full raw API response for fixture capture (dev only).
-    if (kDebugMode && calendarId == 'primary') {
-      _appendToFixtureLog(response.toJson());
-    }
+    // if (kDebugMode && calendarId == 'primary') {
+    //  _appendToFixtureLog(response.toJson());
+    //}
 
     // Fetch calendar metadata to get the name and default color.
     String? calendarName;

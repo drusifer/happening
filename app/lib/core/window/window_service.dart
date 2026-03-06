@@ -97,8 +97,8 @@ class WindowService {
     final targetHeight = getCollapsedHeight();
     final size = Size(width, targetHeight);
 
-    unawaited(AppLogger.debug(
-        'WindowService: initial targetHeight is $targetHeight'));
+    await AppLogger.debug(
+        'WindowService: initial targetHeight is $targetHeight');
 
     final windowOptions = WindowOptions(
       size: size,
@@ -147,9 +147,10 @@ class WindowService {
   Future<void> updateHeights(FontSize fontSize) async {
     if (_fontSize == fontSize) return;
     _fontSize = fontSize;
-
+    await AppLogger.debug("updating hights; isExpanded: $isExpandedNotifier.value");
     if (isExpandedNotifier.value) {
       await _doExpand();
+      await AppLogger.debug("updating hights; window expanded");
       if (Platform.isWindows && _appBarData != null) {
         // Update OS reservation data even if window is currently expanded
         // await _reserveCollapsedSpace();
@@ -159,6 +160,7 @@ class WindowService {
         //  await _reserveCollapsedSpace();
       } else {
         await _doCollapse();
+        await AppLogger.debug("updating hights; window collaposed");
       }
     }
   }
@@ -224,14 +226,12 @@ class WindowService {
   /// Expands the window to show the hover card area.
   Future<void> expand() async {
     unawaited(AppLogger.debug('WindowService: expanding'));
-    isExpandedNotifier.value = true;
     await _doExpand();
   }
 
   /// Collapses the window back to the strip height.
   Future<void> collapse() async {
     unawaited(AppLogger.debug('WindowService: collapsing'));
-    isExpandedNotifier.value = false;
     await _doCollapse();
   }
 
@@ -240,10 +240,11 @@ class WindowService {
   ///   setMinimumSize → enforcement backup (setResizable=false sometimes ignores setSize).
   ///   setMaximumSize → prevent compositor from shrinking the window.
   Future<void> _doExpand() async {
+    isExpandedNotifier.value = true;
     final display = await _sr.getPrimaryDisplay();
     final size = Size(display.size.width, _getExpandedHeight());
     await AppLogger.debug(
-        'WindowService: expanding to (max) height ${size.height}');
+        'WindowService: _doExpoand() expanding to (max) height ${size.height}');
     await _wm.setMaximumSize(size);
     await _wm.setSize(size);
     await _wm.setMinimumSize(size);
@@ -254,16 +255,20 @@ class WindowService {
   ///   setMaximumSize       → lock max so compositor can't re-expand.
   ///   setSize last         → resize (constraints already permit it).
   Future<void> _doCollapse() async {
+    isExpandedNotifier.value = false;
     final display = await _sr.getPrimaryDisplay();
 
     // S5-FIX: Match the physical pixel alignment used in _reserveCollapsedSpace.
     double targetHeight = getCollapsedHeight();
 
-    await AppLogger.debug(
-        'WindowService: collpsed targetHeight is $targetHeight which is ${targetHeight / _dpr} logical pixels at DPR $_dpr');
-    final size = Size(display.size.width, targetHeight);
+    await windowManager.focus();
+    await Future.delayed(const Duration(milliseconds: 100));
+    await AppLogger.debug( 'WindowService: _doCollapose collpsed targetHeight is $targetHeight which is ${targetHeight / _dpr} logical pixels at DPR $_dpr');    final size = Size(display.size.width, targetHeight);
+
+    await _wm.setSize(size);
     await _wm.setMinimumSize(size);
     await _wm.setMaximumSize(size);
-    await _wm.setSize(size);
+
+    await _wm.setMaximumSize(size);
   }
 }
