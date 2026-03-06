@@ -42,12 +42,14 @@ class _FakeWindowService extends WindowService {
   Future<void> expand({double? height}) async {
     _wantsExpanded = true;
     expandCalls++;
+    isExpandedNotifier.value = true;
   }
 
   @override
   Future<void> collapse({double? height}) async {
     _wantsExpanded = false;
     collapseCalls++;
+    isExpandedNotifier.value = false;
   }
 }
 

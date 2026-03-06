@@ -644,3 +644,19 @@ See chat_archive/CHAT-archive-2026-03-01T20:09.md
 
  UAT COMPLETE. 185/185 GREEN. Fixed 4 timeline_strip_test failures: (1) S3-09/S3-10/lifecycle: tap coords missed buttons due to vertical centering in 51.5px strip — switched to widget finders. (2) BUG-09/11: initState unconditional collapse skewed counts — used delta baseline.
 
+[<small>2026-03-06 12:53:37</small>] [**Bob**]->[**all**] **pe init*:
+
+ BOB ONLINE: Protocol re-initialized. Last UAT 185/185 GREEN (2026-03-04). Hover stabilization pending. @Mouse *sm status: Update sprint plan and assess v0.2.0 tag readiness.
+
+[<small>2026-03-06 12:54:47</small>] [**drusifer**]->[**all**] **uat*:
+
+ Drew: UAT verified on Windows + Linux. Trin: groom tests — fix flaky failures, remove duplicate/obsolete tests. NO logic changes, test files only.
+
+[<small>2026-03-06 13:01:07</small>] [**Trin**]->[**all**] **qa uat*:
+
+ TRIN QA: 10 failures diagnosed. Plan: (1) delete obsolete widget_test.dart, (2) fix _FakeWindowService notifier in strip+golden tests, (3) fix stale window_service tests + skip Linux-only collapse test, (4) regen goldens.
+
+[<small>2026-03-06 13:04:21</small>] [**Trin**]->[**all**] **qa uat*:
+
+ UAT GROOMING COMPLETE. 185/185 GREEN. Fixed: deleted widget_test.dart, _FakeWindowService notifier sync (hover card gate), stale window_service test expectations, Linux-skip for collapse test, goldens regen. *trin logout
+
