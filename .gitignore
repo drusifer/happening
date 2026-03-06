@@ -12,6 +12,7 @@
 client_secret.json
 node_modules/
 
+app\test\goldens\failures\*.png
 
 
 # Flutter repo-specific

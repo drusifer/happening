@@ -100,9 +100,8 @@ dist-linux: build-linux
 	@echo "Linux package: $(DIST_DIR)/happening-$(VERSION)-linux-$(ARCH).tar.gz"
 
 dist-windows: build-windows
-	@mkdir -p $(DIST_DIR)
-	cd $(APP_DIR)/build/windows/x64/runner && \
-	    zip -r ../../../../$(DIST_DIR)/happening-$(VERSION)-windows-x64.zip Release/
+	@powershell -Command "New-Item -ItemType Directory -Force -Path $(DIST_DIR)"
+	@powershell -Command "Compress-Archive -Path $(APP_DIR)/build/windows/x64/runner/Release -DestinationPath $(DIST_DIR)/happening-$(VERSION)-windows-x64.zip -Force"
 	@echo "Windows package: $(DIST_DIR)/happening-$(VERSION)-windows-x64.zip"
 
 dist-proxy-linux: proxy-setup
