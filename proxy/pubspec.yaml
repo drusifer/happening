@@ -1,0 +1,10 @@
+name: token_proxy
+description: OAuth token exchange proxy for the happening app. Holds the client_secret server-side so it never ships in the app binary.
+version: 1.0.0
+publish_to: none
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+
+dependencies:
+  http: ^1.0.0
