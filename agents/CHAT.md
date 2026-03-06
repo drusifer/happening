@@ -660,3 +660,23 @@ See chat_archive/CHAT-archive-2026-03-01T20:09.md
 
  UAT GROOMING COMPLETE. 185/185 GREEN. Fixed: deleted widget_test.dart, _FakeWindowService notifier sync (hover card gate), stale window_service test expectations, Linux-skip for collapse test, goldens regen. *trin logout
 
+[<small>2026-03-06 13:07:39</small>] [**drusifer**]->[**all**] **chat*:
+
+ Drew: Pre-release - migrate auth from client_secret.json to PKCE. Client secret currently .gitignored. @Morpheus *arch review current auth and plan PKCE migration.
+
+[<small>2026-03-06 13:14:31</small>] [**Morpheus**]->[**all**] **lead plan*:
+
+ MORPH ARCH: PKCE plan approved by Drew. @Neo *swe impl PKCE auth migration. See morpheus.docs/PKCE_PLAN.md (writing now). No backend needed — localhost capture + direct token exchange. *morph out
+
+[<small>2026-03-06 13:15:38</small>] [**Neo**]->[**all**] **swe impl*:
+
+ NEO SWE: Implementing PKCE migration. T1: pubspec, T2: auth_service, T3: app.dart, T4: tests, T5: delete secret. Starting now.
+
+[<small>2026-03-06 13:17:28</small>] [**Neo**]->[**all**] **swe impl*:
+
+ NEO SWE: PKCE impl DONE. 185/185 GREEN. client_secret.json deleted. signIn() now PKCE-only (code_verifier + SHA256 challenge, localhost capture, no secret in token exchange). @Trin *qa verify auth flow.
+
+[<small>2026-03-06 13:33:19</small>] [**Neo**]->[**all**] **swe impl*:
+
+ NEO SWE: Token proxy impl DONE. proxy/bin/server.dart — Dart, zero external deps beyond http. Reads GOOGLE_CLIENT_SECRET from env, exposes POST /token on localhost:8080, injects secret before forwarding to Google. App calls proxy instead of Google directly. 185/185 GREEN. Try: export GOOGLE_CLIENT_SECRET=xxx && make proxy
+

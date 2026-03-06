@@ -9,11 +9,9 @@
 // ---------------------------------------------------------------------------
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:googleapis_auth/auth_io.dart';
 
@@ -34,6 +32,8 @@ import 'core/window/window_service.dart';
 
 enum _AuthState { loading, unauthenticated, authenticated }
 
+const _kGoogleClientId =
+    '732125393297-j5m383u2fdek7j24olmn2vnmjmf49cqn.apps.googleusercontent.com';
 const _scopes = ['https://www.googleapis.com/auth/calendar.readonly'];
 
 // ---------------------------------------------------------------------------
@@ -84,11 +84,10 @@ class _HappeningAppState extends State<HappeningApp> {
       final dir = Directory('$home/.config/happening');
 
       final tokenStore = FileTokenStore(directory: dir);
-      final clientId = await _loadClientId();
       await AppLogger.debug('OAuth Client ID loaded.');
 
       _auth = GoogleAuthService(
-        clientId: clientId,
+        clientId: ClientId(_kGoogleClientId, ''),
         scopes: _scopes,
         tokenStore: tokenStore,
       );
@@ -106,17 +105,6 @@ class _HappeningAppState extends State<HappeningApp> {
       await AppLogger.debug('Service initialization FAILED: $e');
       if (mounted) setState(() => _authState = _AuthState.unauthenticated);
     }
-  }
-
-  /// Loads OAuth client credentials from the bundled asset file.
-  Future<ClientId> _loadClientId() async {
-    final raw = await rootBundle.loadString('assets/client_secret.json');
-    final data = (jsonDecode(raw) as Map<String, dynamic>)['installed']
-        as Map<String, dynamic>;
-    return ClientId(
-      data['client_id'] as String,
-      data['client_secret'] as String,
-    );
   }
 
   // ── Actions ──────────────────────────────────────────────────────────────
