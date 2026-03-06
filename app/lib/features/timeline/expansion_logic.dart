@@ -62,7 +62,7 @@ class ExpansionLogic {
   }) {
     // 1. Settings always forces expansion.
     if (isSettingsOpen) {
-      unawaited(AppLogger.debug('ExpansionLogic -> Expanded (Settings Open)'));
+      AppLogger.debug('ExpansionLogic -> Expanded (Settings Open)');
       return ExpansionState.expanded;
     }
 
@@ -77,15 +77,15 @@ class ExpansionLogic {
     //    'events=${eventBounds.length} settings=$isSettingsOpen'));
 
     if (details is PointerExitEvent) {
-      unawaited(AppLogger.debug(
-          'ExpansionLogic -> Collapsed (PointerExit) at x=${mouseX.toStringAsFixed(1)}, y=${mouseY.toStringAsFixed(1)}'));
+      AppLogger.debug(
+          'ExpansionLogic -> Collapsed (PointerExit) at x=${mouseX.toStringAsFixed(1)}, y=${mouseY.toStringAsFixed(1)}');
       return ExpansionState.collapsed;
     }
 
     // 2. Vertical Guard: If the mouse is above the strip, we are collapsed.
     if (mouseY < 0) {
-      unawaited(AppLogger.debug(
-          'ExpansionLogic -> Collapsed (Above Strip: y=${mouseY.toStringAsFixed(1)})'));
+      AppLogger.debug(
+          'ExpansionLogic -> Collapsed (Above Strip: y=${mouseY.toStringAsFixed(1)})');
       return ExpansionState.collapsed;
     }
 
@@ -93,13 +93,15 @@ class ExpansionLogic {
     // the 2D rectangle of an event's interaction zone (Column + Card).
     for (final bounds in eventBounds) {
       if (bounds.contains(mouseX, mouseY)) {
-        unawaited(AppLogger.debug(
-            'ExpansionLogic -> Expanded (Event Bounds hit at x=${mouseX.toStringAsFixed(1)}, y=${mouseY.toStringAsFixed(1)}) bounds=$bounds'));
+        AppLogger.debug(
+            'ExpansionLogic -> Expanded (Event Bounds hit at x=${mouseX.toStringAsFixed(1)}, y=${mouseY.toStringAsFixed(1)}) bounds=$bounds');
         return ExpansionState.expanded;
       }
     }
 
     // 4. Default: If not inside any event's interactive rectangle.
+    AppLogger.debug(
+            'ExpansionLogic -> Default collapse at x=${mouseX.toStringAsFixed(1)}, y=${mouseY.toStringAsFixed(1)})');
     return ExpansionState.collapsed;
   }
 }
