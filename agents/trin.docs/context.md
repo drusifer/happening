@@ -1,5 +1,12 @@
 # Trin Context
 
+## Test Grooming — 2026-03-06
+- `HoverDetailOverlay` gated on `_windowService.isExpandedNotifier.value` (not just `_hoveredEvent != null`). Fakes MUST update this notifier.
+- `_doCollapse` calls global `windowManager.focus()` on Linux — untestable without full binding. Skip on non-Windows.
+- `window_service.dart` `initialize` now uses `waitUntilReadyToShow` callback pattern — old unit test expectations were stale.
+- Golden: hover card alignment updated for current UI.
+
+
 ## Sprint 5: Fresh Start — 2026-03-01
 - Group A, B, C, D COMPLETE.
 - Starting Group E (Interaction: Click-to-Expand) verification. S5-E1/E2/E3/E4.
