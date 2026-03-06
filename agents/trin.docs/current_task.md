@@ -1,7 +1,15 @@
 # Current Task
 
-## UAT Fix Pass — 2026-03-04
+## Test Grooming — 2026-03-06
 **Status**: COMPLETE ✅ — 185/185 GREEN
+
+### Fixed
+- Deleted obsolete `widget_test.dart` (Flutter counter boilerplate, `MyApp` no longer exists)
+- Fixed `_FakeWindowService.expand/collapse` in `timeline_strip_test.dart` — added `isExpandedNotifier.value` sync (was missing; HoverDetailOverlay gated on this notifier)
+- Fixed `_FakeWindowService.expand/collapse` in `timeline_strip_golden_test.dart` — same fix
+- Updated `window_service_test.dart` `initialize` test to match actual call sequence (old test verified stale setAlwaysOnTop/setMinimumSize etc. no longer called)
+- Added `Platform.isWindows` guard to `collapse` test — _doCollapse calls global `windowManager.focus()` on Linux which requires binding init
+- Regenerated `goldens/hover_card_alignment.png` (80% pixel diff from UI changes)
 
 ### Fixed
 - S3-09: `tapAt(10,10)` → `tap(find.byIcon(Icons.refresh))` (y=10 misses vertically-centered button in 51.5px strip)
