@@ -74,7 +74,7 @@ void main() {
   group('GoogleAuthService', () {
     late MockTokenStore mockStore;
     late GoogleAuthService service;
-    final clientId = ClientId('id', 'secret');
+    final clientId = ClientId('id', '');
 
     setUp(() {
       mockStore = MockTokenStore();
