@@ -147,7 +147,8 @@ class WindowService {
   Future<void> updateHeights(FontSize fontSize) async {
     if (_fontSize == fontSize) return;
     _fontSize = fontSize;
-    await AppLogger.debug("updating hights; isExpanded: $isExpandedNotifier.value");
+    await AppLogger.debug(
+        "updating hights; isExpanded: $isExpandedNotifier.value");
     if (isExpandedNotifier.value) {
       await _doExpand();
       await AppLogger.debug("updating hights; window expanded");
@@ -260,15 +261,21 @@ class WindowService {
 
     // S5-FIX: Match the physical pixel alignment used in _reserveCollapsedSpace.
     double targetHeight = getCollapsedHeight();
+    final size = Size(display.size.width, targetHeight);
 
-    await windowManager.focus();
-    await Future.delayed(const Duration(milliseconds: 100));
-    await AppLogger.debug( 'WindowService: _doCollapose collpsed targetHeight is $targetHeight which is ${targetHeight / _dpr} logical pixels at DPR $_dpr');    final size = Size(display.size.width, targetHeight);
+    await AppLogger.debug(
+        'WindowService: _doCollapose collpsed targetHeight is $targetHeight which is ${targetHeight / _dpr} logical pixels at DPR $_dpr');
+    if (Platform.isWindows) {
+      await _wm.setMinimumSize(size);
+      await _wm.setMaximumSize(size);
+      await _wm.setSize(size);
+    } else {
+      await windowManager.focus();
+      await Future.delayed(const Duration(milliseconds: 100));
 
-    await _wm.setSize(size);
-    await _wm.setMinimumSize(size);
-    await _wm.setMaximumSize(size);
-
-    await _wm.setMaximumSize(size);
+      await _wm.setSize(size);
+      await _wm.setMinimumSize(size);
+      await _wm.setMaximumSize(size);
+    }
   }
 }
