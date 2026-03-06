@@ -3,6 +3,20 @@ SHELL := /bin/bash
 FLUTTER      := flutter
 APP_DIR      := app
 PROXY_DIR    := proxy
+DIST_DIR     := dist
+
+# Read version from pubspec.yaml (e.g. "0.2.0")
+VERSION      := $(shell grep '^version:' $(APP_DIR)/pubspec.yaml | awk '{print $$2}')
+
+# Normalise uname -m → x64 | arm64
+UNAME_ARCH   := $(shell uname -m)
+ifeq ($(UNAME_ARCH),aarch64)
+  ARCH       := arm64
+else ifeq ($(UNAME_ARCH),arm64)
+  ARCH       := arm64
+else
+  ARCH       := x64
+endif
 
 # Snap Flutter bundles LLVM 10 without a linker; native_toolchain_c (pulled
 # in by flutter_secure_storage_linux) needs ld.lld. Prepend system LLVM 20 bin
@@ -65,6 +79,37 @@ build-macos: $(PUB_STAMP)
 
 build-windows: $(PUB_STAMP)
 	cd $(APP_DIR) && $(FLUTTER) build windows --release
+
+# ── Dist ─────────────────────────────────────────────────────────────────────
+# Build release packages ready for distribution.
+#
+# Linux  → dist/happening-<ver>-linux-x64.tar.gz  (bundle dir tarball)
+# Windows→ dist/happening-<ver>-windows-x64.zip   (Release dir zip)
+#
+# Build on the target OS — Windows package must be built on Windows.
+#
+.PHONY: dist dist-linux dist-windows dist-proxy-linux
+
+dist: dist-linux
+	@echo "Done. Artifacts in $(DIST_DIR)/"
+
+dist-linux: build-linux
+	@mkdir -p $(DIST_DIR)
+	tar -czf $(DIST_DIR)/happening-$(VERSION)-linux-$(ARCH).tar.gz \
+	    -C $(APP_DIR)/build/linux/$(ARCH)/release bundle
+	@echo "Linux package: $(DIST_DIR)/happening-$(VERSION)-linux-$(ARCH).tar.gz"
+
+dist-windows: build-windows
+	@mkdir -p $(DIST_DIR)
+	cd $(APP_DIR)/build/windows/x64/runner && \
+	    zip -r ../../../../$(DIST_DIR)/happening-$(VERSION)-windows-x64.zip Release/
+	@echo "Windows package: $(DIST_DIR)/happening-$(VERSION)-windows-x64.zip"
+
+dist-proxy-linux: proxy-setup
+	@mkdir -p $(DIST_DIR)
+	dart compile exe $(PROXY_DIR)/bin/server.dart \
+	    -o $(DIST_DIR)/happening-proxy-$(VERSION)-linux-$(ARCH)
+	@echo "Proxy binary: $(DIST_DIR)/happening-proxy-$(VERSION)-linux-$(ARCH)"
 
 # ── Quality ──────────────────────────────────────────────────────────────────
 .PHONY: format analyze lint lint-style lint-metrics lint-format
@@ -134,6 +179,10 @@ help:
 	@echo "  make build-linux  Release build for Linux"
 	@echo "  make build-macos  Release build for macOS"
 	@echo "  make build-windows Release build for Windows"
+	@echo "  make dist         Build + package Linux (tar.gz)"
+	@echo "  make dist-linux   Build + package Linux tar.gz → dist/"
+	@echo "  make dist-windows      Build + package Windows zip → dist/ (run on Windows)"
+	@echo "  make dist-proxy-linux  Compile proxy to native binary → dist/ (Linux)"
 	@echo "  make format       Format all Dart source"
 	@echo "  make analyze      Run Dart analyzer"
 	@echo "  make lint         Run all lint checks (style, metrics, format)"

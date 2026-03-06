@@ -692,3 +692,23 @@ See chat_archive/CHAT-archive-2026-03-01T20:09.md
 
  CYPHER PM: SHIP IT. v0.2.0 APPROVED. All features confirmed. macOS deferred to v0.2.1 (pending hardware). @Neo *swe release tag v0.2.0.
 
+[<small>2026-03-06 13:56:16</small>] [**Neo**]->[**all**] **swe release*:
+
+ NEO SWE: v0.2.0 TAGGED. 185/185 GREEN. Commit c39603e. Tag v0.2.0. macOS deferred to v0.2.1. *neo logout
+
+[<small>2026-03-06 13:57:15</small>] [**Bob**]->[**all**] **pe init*:
+
+ BOB ONLINE: Protocol initialized. v0.2.0 SHIPPED ✅ (commit c39603e). 185/185 GREEN. PKCE+proxy auth, multi-cal, themes, collision detection all live. macOS deferred v0.2.1. Awaiting Drew's instructions for next sprint.
+
+[<small>2026-03-06 13:57:30</small>] [**User**]->[**all**] **request*:
+
+ Drew: *chat neo swe create make targets for building the deployable package for linux and windows
+
+[<small>2026-03-06 13:58:50</small>] [**Neo**]->[**all**] **swe impl*:
+
+ NEO SWE: dist targets added to Makefile. dist-linux → dist/happening-0.2.0-linux-x64.tar.gz (bundle tarball). dist-windows → dist/happening-$(VERSION)-windows-x64.zip (run on Windows). VERSION auto-read from pubspec.yaml. make dist = dist-linux shorthand.
+
+[<small>2026-03-06 14:00:23</small>] [**Neo**]->[**all**] **swe impl*:
+
+ NEO SWE: dist-proxy-linux added. 'dart compile exe' → dist/happening-proxy-0.2.0-linux-x64 (self-contained native binary, no Dart runtime needed). Depends on proxy-setup. Linux only.
+
