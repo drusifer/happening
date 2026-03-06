@@ -72,11 +72,11 @@ class HoverDetailOverlay extends StatelessWidget {
                 Expanded(
                   child: Text(
                     event.isTask
-                        ? 'TASK: ${event.calendarName.toUpperCase()}'
+                        ? 'TASK:\n ${event.calendarName.toUpperCase()}'
                         : event.calendarName.toUpperCase(),
                     style: const TextStyle(
                       color: Colors.white60,
-                      fontSize: 14, // S5-FIX: Increased from 10
+                      fontSize: 10, // S5-FIX: Increased from 10
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.5,
                       shadows: _kShadows,
@@ -103,7 +103,7 @@ class HoverDetailOverlay extends StatelessWidget {
               event.title,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 18, // S5-FIX: Increased from 14
+                fontSize: 14, // S5-FIX: Increased from 14
                 fontWeight: FontWeight.w600,
                 shadows: _kShadows,
               ),
@@ -113,7 +113,7 @@ class HoverDetailOverlay extends StatelessWidget {
               '${_fmt(event.startTime)} – ${_fmt(event.endTime)}',
               style: const TextStyle(
                 color: Colors.white70,
-                fontSize: 16, // S5-FIX: Increased from 12
+                fontSize: 12, // S5-FIX: Increased from 12
                 shadows: _kShadows,
               ),
             ),
@@ -125,7 +125,7 @@ class HoverDetailOverlay extends StatelessWidget {
                 truncatedDescription,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 16, // S5-FIX: Increased from 12
+                  fontSize: 12, // S5-FIX: Increased from 12
                   height: 1.3,
                   shadows: _kShadows,
                 ),
@@ -165,18 +165,20 @@ class _LinkButton extends StatelessWidget {
             color: highlight ? Colors.white60 : Colors.white30,
           ),
           boxShadow: const [
-            BoxShadow(color: Colors.black26, blurRadius: 2, offset: Offset(0, 1)),
+            BoxShadow(
+                color: Colors.black26, blurRadius: 2, offset: Offset(0, 1)),
           ],
         ),
         child: Text(
           label,
           style: const TextStyle(
             color: Colors.white,
-            fontSize: 14, // S5-FIX: Increased from 10
+            fontSize: 10, // S5-FIX: Increased from 10
             fontWeight: FontWeight.bold,
             letterSpacing: 0.5,
             shadows: [
-              Shadow(color: Colors.black38, offset: Offset(0, 1), blurRadius: 1),
+              Shadow(
+                  color: Colors.black38, offset: Offset(0, 1), blurRadius: 1),
             ],
           ),
         ),
