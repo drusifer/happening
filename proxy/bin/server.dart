@@ -28,7 +28,7 @@ void main(List<String> args) async {
   }
 
   final port = _parsePort(args) ?? _defaultPort;
-  final server = await HttpServer.bind('localhost', port);
+  final server = await HttpServer.bind('0.0.0.0', port);
   stdout.writeln('[proxy] Happening token proxy listening on http://localhost:$port');
   stdout.writeln('[proxy] Press Ctrl+C to stop.');
 
