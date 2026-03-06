@@ -1,10 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+import 'dart:math';
 
+import 'package:crypto/crypto.dart';
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/util/logger.dart';
 import 'token_store.dart';
 
 // Abstract authentication service interface.
@@ -25,21 +29,31 @@ abstract class AuthService {
   AutoRefreshingAuthClient? get client;
 }
 
+// Token exchange proxy URL. Override with --dart-define=PROXY_URL=https://...
+// for production deployments.
+const _kProxyUrl = String.fromEnvironment(
+  'PROXY_URL',
+  defaultValue: 'http://localhost:8080',
+);
+
 class GoogleAuthService implements AuthService {
   GoogleAuthService({
     required ClientId clientId,
     required List<String> scopes,
     required TokenStore tokenStore,
     http.Client? httpClient,
+    String proxyUrl = _kProxyUrl,
   })  : _clientId = clientId,
         _scopes = scopes,
         _tokenStore = tokenStore,
-        _httpClient = httpClient ?? http.Client();
+        _httpClient = httpClient ?? http.Client(),
+        _proxyUrl = proxyUrl;
 
   final ClientId _clientId;
   final List<String> _scopes;
   final TokenStore _tokenStore;
   final http.Client _httpClient;
+  final String _proxyUrl;
 
   AutoRefreshingAuthClient? _client;
 
@@ -66,19 +80,78 @@ class GoogleAuthService implements AuthService {
 
   @override
   Future<bool> signIn() async {
+    unawaited(AppLogger.debug('PKCE signIn: starting'));
     try {
-      _client = await clientViaUserConsent(
-        _clientId,
-        _scopes,
-        (url) => launchUrl(
-          Uri.parse(url),
-          mode: LaunchMode.externalApplication,
-        ),
+      final verifier = _generateVerifier();
+      final challenge = _sha256Challenge(verifier);
+
+      // Bind on a random free port — OS picks it.
+      final server = await HttpServer.bind('localhost', 0);
+      final port = server.port;
+      final redirectUri = 'http://localhost:$port';
+
+      final authUrl = Uri.https('accounts.google.com', '/o/oauth2/auth', {
+        'client_id': _clientId.identifier,
+        'redirect_uri': redirectUri,
+        'response_type': 'code',
+        'scope': _scopes.join(' '),
+        'code_challenge': challenge,
+        'code_challenge_method': 'S256',
+        'access_type': 'offline',
+        'prompt': 'consent',
+      });
+
+      await launchUrl(authUrl, mode: LaunchMode.externalApplication);
+
+      // Wait for browser to redirect back with the auth code.
+      final request = await server.first;
+      final code = request.uri.queryParameters['code']!;
+      request.response
+        ..statusCode = 200
+        ..headers.contentType = ContentType.html
+        ..write(
+            '<html><body><p>Sign-in complete. You may close this window.</p></body></html>');
+      await request.response.close();
+      await server.close();
+
+      // Exchange code + verifier via the local proxy, which adds client_secret
+      // server-side so it never needs to be embedded in this binary.
+      final response = await _httpClient.post(
+        Uri.parse('$_proxyUrl/token'),
+        body: {
+          'client_id': _clientId.identifier,
+          'code': code,
+          'code_verifier': verifier,
+          'grant_type': 'authorization_code',
+          'redirect_uri': redirectUri,
+        },
       );
+
+      unawaited(AppLogger.debug(
+          'PKCE token response: ${response.statusCode} ${response.body}'));
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      if (data.containsKey('error')) {
+        unawaited(AppLogger.debug(
+            'PKCE token exchange failed: ${data['error']} — ${data['error_description']}'));
+        return false;
+      }
+      final expiresIn = (data['expires_in'] as num).toInt();
+      final creds = AccessCredentials(
+        AccessToken(
+          'Bearer',
+          data['access_token'] as String,
+          DateTime.now().toUtc().add(Duration(seconds: expiresIn)),
+        ),
+        data['refresh_token'] as String?,
+        _scopes,
+      );
+
+      _client = autoRefreshingClient(_clientId, creds, _httpClient);
       _client!.credentialUpdates.listen(_onCredentialsChanged);
       _onCredentialsChanged(_client!.credentials);
       return true;
-    } catch (_) {
+    } catch (e, st) {
+      unawaited(AppLogger.debug('PKCE signIn exception: $e\n$st'));
       return false;
     }
   }
@@ -119,5 +192,20 @@ class GoogleAuthService implements AuthService {
       json['refreshToken'] as String?,
       List<String>.from(json['scopes'] as List),
     );
+  }
+
+  // ── PKCE helpers ─────────────────────────────────────────────────────────
+
+  /// Generates a cryptographically random code verifier (RFC 7636 §4.1).
+  String _generateVerifier() {
+    final random = Random.secure();
+    final bytes = List<int>.generate(32, (_) => random.nextInt(256));
+    return base64Url.encode(bytes).replaceAll('=', '');
+  }
+
+  /// Returns BASE64URL(SHA256(verifier)) with padding stripped (RFC 7636 §4.2).
+  String _sha256Challenge(String verifier) {
+    final digest = sha256.convert(utf8.encode(verifier));
+    return base64Url.encode(digest.bytes).replaceAll('=', '');
   }
 }

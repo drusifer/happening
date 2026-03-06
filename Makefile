@@ -2,6 +2,7 @@ SHELL := /bin/bash
 
 FLUTTER      := flutter
 APP_DIR      := app
+PROXY_DIR    := proxy
 
 # Snap Flutter bundles LLVM 10 without a linker; native_toolchain_c (pulled
 # in by flutter_secure_storage_linux) needs ld.lld. Prepend system LLVM 20 bin
@@ -89,6 +90,23 @@ lint-metrics: $(PUB_STAMP)
 lint-format: $(PUB_STAMP)
 	cd $(APP_DIR) && dart format --output=none --set-exit-if-changed lib/ test/
 
+# ── Proxy ────────────────────────────────────────────────────────────────────
+# Runs the local OAuth token exchange proxy. The proxy adds client_secret
+# server-side so the app binary never contains the secret.
+#
+# Usage:
+#   export GOOGLE_CLIENT_SECRET=<your_secret>
+#   make proxy
+#
+.PHONY: proxy proxy-setup
+proxy-setup:
+	cd $(PROXY_DIR) && dart pub get
+
+proxy: proxy-setup
+	@test -n "$$GOOGLE_CLIENT_SECRET" || \
+		(echo "Error: GOOGLE_CLIENT_SECRET is not set. Run: export GOOGLE_CLIENT_SECRET=<secret>"; exit 1)
+	cd $(PROXY_DIR) && dart run bin/server.dart
+
 # ── TLDR ─────────────────────────────────────────────────────────────────────
 .PHONY: tldr
 tldr:
@@ -123,4 +141,6 @@ help:
 	@echo "  make lint-metrics Run complexity and performance metrics"
 	@echo "  make lint-format  Check if code is correctly formatted"
 	@echo "  make tldr         Print TLDR header map of all lib source files"
+	@echo "  make proxy        Run OAuth token exchange proxy (requires GOOGLE_CLIENT_SECRET)"
+	@echo "  make proxy-setup  Install proxy dependencies"
 	@echo "  make clean        Remove build artifacts"
