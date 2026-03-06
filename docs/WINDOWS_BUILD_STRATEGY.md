@@ -50,6 +50,15 @@ The most straightforward and platform-idiomatic way to work with Flutter on Wind
     flutter test
     ```
 
+*   **Create Distribution (Release):**
+    ```powershell
+    cd app
+    flutter build windows --release
+    cd ..
+    New-Item -ItemType Directory -Force -Path dist
+    Copy-Item -Recurse -Force app\build\windows\x64\runner\Release\* dist\
+    ```
+
 ### `Makefile` Adaptations
 
 To maintain a unified `make` interface for developers who prefer it, we can make the following changes to the `Makefile`:
