@@ -217,7 +217,11 @@ class _TimelineStripState extends State<TimelineStrip>
 
     CalendarEvent? hit;
     // If already hovering, check if we stay inside that event's (possibly expanded) bounds first.
-    if (_hoveredEvent != null && boundsMap.containsKey(_hoveredEvent!.id)) {
+    // S5-FIX: Only latch if we are in the card zone (below strip). On the strip, we want precision switching.
+    final shouldLatch = _hoveredEvent != null &&
+        ExpansionLogic.shouldPrioritizeLatch(mouseY, _collapsedHeight);
+
+    if (shouldLatch && boundsMap.containsKey(_hoveredEvent!.id)) {
       if (boundsMap[_hoveredEvent!.id]!.contains(mouseX, mouseY)) {
         hit = _hoveredEvent;
       }

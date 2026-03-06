@@ -101,7 +101,18 @@ class ExpansionLogic {
 
     // 4. Default: If not inside any event's interactive rectangle.
     AppLogger.debug(
-            'ExpansionLogic -> Default collapse at x=${mouseX.toStringAsFixed(1)}, y=${mouseY.toStringAsFixed(1)})');
+        'ExpansionLogic -> Default collapse at x=${mouseX.toStringAsFixed(1)}, y=${mouseY.toStringAsFixed(1)})');
     return ExpansionState.collapsed;
+  }
+
+  /// Determines if the hover logic should prioritize the currently open card
+  /// (The Latch) or allow switching to a new event.
+  ///
+  /// Returns true if the mouse is in the "Card Zone" (below the strip).
+  /// Returns false if the mouse is in the "Strip Zone" (on the strip).
+  static bool shouldPrioritizeLatch(double mouseY, double stripHeight) {
+    // If we are below the strip (y >= height), we are in the card area.
+    // We should LATCH (keep current event) to prevent accidental switching.
+    return mouseY >= stripHeight;
   }
 }
