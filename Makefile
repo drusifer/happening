@@ -6,7 +6,11 @@ PROXY_DIR    := proxy
 DIST_DIR     := dist
 
 # Read version from pubspec.yaml (e.g. "0.2.0")
-VERSION      := $(shell grep '^version:' $(APP_DIR)/pubspec.yaml | awk '{print $$2}')
+ifeq ($(OS),Windows_NT)
+  VERSION    := $(shell powershell -Command "(Select-String -Path $(APP_DIR)/pubspec.yaml -Pattern '^version:').Line.Split(' ')[1]")
+else
+  VERSION    := $(shell grep '^version:' $(APP_DIR)/pubspec.yaml | awk '{print $$2}')
+endif
 
 # Normalise uname -m → x64 | arm64
 UNAME_ARCH   := $(shell uname -m)
@@ -46,6 +50,7 @@ run:
 run-linux: $(PUB_STAMP)
 	cd $(APP_DIR) && PATH="$(LLVM_BIN):$$PATH" GDK_BACKEND=x11 XAUTHORITY=$$(ls /run/user/$$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1) $(FLUTTER) run -d linux
 run-windows: $(PUB_STAMP)
+	@powershell -Command "if (Test-Path $(APP_DIR)/windows/flutter/ephemeral) { Remove-Item -Recurse -Force $(APP_DIR)/windows/flutter/ephemeral }"
 	cd $(APP_DIR) && $(FLUTTER) run -d windows
 run-windows-test: $(PUB_STAMP)
 	cd $(APP_DIR) && $(FLUTTER) run -d windows --target lib/windows_test.dart
