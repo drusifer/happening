@@ -13,53 +13,77 @@ Happening is a persistent, always-on-top horizontal timeline strip that reads yo
 
 ---
 
-## Project Status: Sprint 5 (Completed)
+## Project Status: v0.2.1 (macOS)
 - [x] **Sprint 1**: Foundation & Shell (Always-on-top window, mock timeline)
 - [x] **Sprint 2**: Google Calendar Integration (OAuth flow, real event fetching, polling)
 - [x] **Sprint 3**: Refactor & Polish (Hover details, settings, platform optimization)
-- [x] **Sprint 4**: Linux Release + Test Pyramid (v0.1.0 shipped 🚀)
-- [x] **Sprint 5**: v0.2.0 Features (Multi-Calendar, Themes, Visual Polish, macOS)
+- [x] **Sprint 4**: Linux Release + Test Pyramid (v0.1.0 shipped)
+- [x] **Sprint 5**: v0.2.0 Features (Multi-Calendar, Themes, Visual Polish, PKCE auth)
+- [x] **Sprint 6**: v0.2.1 macOS support
 
 ---
 
-## Prerequisites
+## Installing (End Users)
 
-### System Dependencies
+Download the latest release for your platform from the [releases page](https://github.com/drussell/happening/releases).
+
+> **No extra setup required.** Authentication uses PKCE OAuth via a hosted proxy — no API keys or client secrets needed.
+
+### Runtime Requirements
+
+| Platform | Requirement |
+|----------|-------------|
+| macOS    | macOS 12 Monterey or later |
+| Linux    | GTK 3 (`libgtk-3`) — pre-installed on most modern distros |
+| Windows  | Windows 10 or later, Visual C++ Redistributable (usually already installed) |
+
+### macOS
+1. Download `happening-<version>-macos-arm64.app` (or `x64` for Intel Macs).
+2. Move `happening.app` to your `/Applications` folder.
+3. On first launch, right-click → **Open** (to bypass Gatekeeper on unsigned builds).
+4. Sign in with Google when prompted — a browser window will open automatically.
+
+### Linux
+1. Download `happening-<version>-linux-x64.tar.gz`.
+2. Extract and run:
+    ```bash
+    tar -xzf happening-<version>-linux-x64.tar.gz
+    ./bundle/happening
+    ```
+3. Sign in with Google when prompted.
+
+### Windows
+1. Download `happening-<version>-windows-x64.zip`.
+2. Extract the zip to a folder of your choice.
+3. Run `happening.exe` from the extracted `Release/` folder.
+4. Sign in with Google when prompted — a browser window will open automatically.
+
+---
+
+## Building from Source (Developers)
+
+### Build Requirements
+
+These are only needed if you are building from source. End users do not need these.
+
+#### macOS
+- Flutter SDK (>= 3.19.0)
+- Xcode (>= 14) with Command Line Tools (`xcode-select --install`)
+- CocoaPods (`sudo gem install cocoapods`)
 
 #### Linux
 - Flutter SDK (>= 3.19.0)
-- `clang`, `cmake`, `ninja-build`, `pkg-config` (C++ build tools)
-- `libgtk-3-dev` (GTK 3 headers)
+- `clang`, `cmake`, `ninja-build`, `pkg-config`
+- `libgtk-3-dev`
 - `lld` (LLVM linker)
 
 #### Windows
 - Flutter SDK (>= 3.19.0)
-- Visual Studio with the "Desktop development with C++" workload installed.
-
-### Google Cloud Setup
-You need a Google Cloud Project with the **Google Calendar API** enabled and an **OAuth 2.0 Client ID** (Desktop type).
-
-Instead of a `client_secret.json` file, the application now uses a local proxy to handle authentication.
-
-### Running the Auth Proxy
-To run the application, you must first run the authentication proxy in a separate terminal:
-
-1.  **Set the `GOOGLE_CLIENT_SECRET` environment variable:**
-    ```bash
-    export GOOGLE_CLIENT_SECRET=<your_google_client_secret>
-    ```
-
-2.  **Run the proxy:**
-    ```bash
-    make proxy
-    ```
-
-The proxy will listen on `localhost:8080` and handle the token exchange with Google. The application will connect to this proxy to authenticate.
-
+- Visual Studio with "Desktop development with C++" workload
 
 ---
 
-## Getting Started
+## Getting Started (Developers)
 
 ### 1. Setup
 Verify your system dependencies and fetch Flutter packages:
@@ -71,14 +95,10 @@ make setup
 ### 2. Run in Development
 Run the app on your desktop.
 ```bash
-# For Linux (forces X11 backend for window positioning)
-make run-linux
-
-# For Windows
-make run-windows
-
-# To see all run options
-make run
+make run-linux    # Linux (X11 backend)
+make run-macos    # macOS
+make run-windows  # Windows
+make run          # Lists all options
 ```
 
 ---
@@ -86,15 +106,20 @@ make run
 ## Building
 
 ### Release Builds
-- **Linux**: `make build-linux` (Output: `app/build/linux/x64/release/bundle/`)
-- **macOS**: `make build-macos` (Output: `app/build/macos/release/`)
-- **Windows**: `make build-windows` (Output: `app/build/windows/runner/Release/`)
+- **Linux**: `make build-linux` → `app/build/linux/x64/release/bundle/`
+- **macOS**: `make build-macos` → `app/build/macos/Build/Products/Release/happening.app`
+- **Windows**: `make build-windows` → `app/build/windows/x64/runner/Release/`
+
+### Distribution Packages
+- **Linux**: `make dist-linux` → `dist/happening-<ver>-linux-x64.tar.gz`
+- **macOS**: `make dist-macos` → `dist/happening-<ver>-macos-<arch>.app`
+- **Windows**: `make dist-windows` → `dist/happening-<ver>-windows-x64.zip`
 
 ---
 
 ## Testing & Quality
 - **Run unit tests**: `make test`
-- **Run integration tests**: `make integration-test-linux` or `make integration-test-windows`
+- **Run integration tests**: `make integration-test-linux`, `make integration-test-macos`, or `make integration-test-windows`
 - **Static analysis**: `make analyze`
 - **Format code**: `make format`
 

@@ -1,8 +1,11 @@
 # Current Task
 
-## Sprint 5 Refinement (Post-v0.2.0)
-- [x] Sprint 5 Fresh Start v0.2.0 features (Multi-cal, Themes, Visual Polish, macOS).
-- [/] Refine Hover Interaction (HOVER_FIX_PLAN.md).
-- [x] Architectural Interface: `ExpansionBehavior` pure logic.
-- [ ] @Neo *swe impl Refactor `TimelineStrip` to use `ExpansionBehavior` and update `WindowService` calls.
-- [ ] @Trin *qa test verify `ExpansionBehavior` logic (Unit tests) + Visual verification.
+## macOS Build Plan (v0.2.1)
+- [x] Analysed codebase for macOS blockers
+- [x] Written MACOS_BUILD_PLAN.md
+- [ ] T1: @Neo *swe fix window_service.dart (lazy init + Platform.isWindows guards)
+- [ ] T1b: Fix Release.entitlements — add network.server for PKCE auth
+- [ ] T2: @Neo *swe impl Makefile macOS targets (run-macos, dist-macos, integration-test-macos, dist-proxy-macos)
+- [ ] T3: @Trin *qa smoke macOS (run-macos, auth, timeline, hover)
+- [ ] T4: macOS window level investigation (if needed after T3)
+- [ ] T5: @Oracle *ora update docs for macOS

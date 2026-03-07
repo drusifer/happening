@@ -50,11 +50,13 @@ $(PUB_STAMP): $(APP_DIR)/pubspec.yaml $(APP_DIR)/pubspec.lock
 	cd $(APP_DIR) && $(FLUTTER) pub get
 
 # ── Dev ──────────────────────────────────────────────────────────────────────
-.PHONY: run run-linux run-windows run-windows-test run-windows-simple
+.PHONY: run run-linux run-macos run-windows run-windows-test run-windows-simple
 run:
-	@echo "Please specify a platform: make run-linux or make run-windows"
+	@echo "Please specify a platform: make run-linux, run-macos, or run-windows"
 run-linux: $(PUB_STAMP)
 	cd $(APP_DIR) && PATH="$(LLVM_BIN):$$PATH" GDK_BACKEND=x11 XAUTHORITY=$$(ls /run/user/$$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1) $(FLUTTER) run -d linux
+run-macos: $(PUB_STAMP)
+	cd $(APP_DIR) && $(FLUTTER) run -d macos
 run-windows: $(PUB_STAMP)
 	@powershell -Command "if (Test-Path $(APP_DIR)/windows/flutter/ephemeral) { Remove-Item -Recurse -Force $(APP_DIR)/windows/flutter/ephemeral }"
 	cd $(APP_DIR) && $(FLUTTER) run -d windows
@@ -72,11 +74,13 @@ test: $(PUB_STAMP)
 test-watch: $(PUB_STAMP)
 	cd $(APP_DIR) && $(FLUTTER) test --coverage --watch
 
-.PHONY: integration-test integration-test-linux integration-test-windows
+.PHONY: integration-test integration-test-linux integration-test-macos integration-test-windows
 integration-test:
-	@echo "Please specify a platform: make integration-test-linux or make integration-test-windows"
+	@echo "Please specify a platform: make integration-test-linux, integration-test-macos, or integration-test-windows"
 integration-test-linux: $(PUB_STAMP)
 	cd $(APP_DIR) && PATH="$(LLVM_BIN):$$PATH" GDK_BACKEND=x11 XAUTHORITY=$$(ls /run/user/$$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1) $(FLUTTER) test integration_test/ -d linux
+integration-test-macos: $(PUB_STAMP)
+	cd $(APP_DIR) && $(FLUTTER) test integration_test/ -d macos
 integration-test-windows: $(PUB_STAMP)
 	cd $(APP_DIR) && $(FLUTTER) test integration_test/ -d windows
 
@@ -99,7 +103,7 @@ build-windows: $(PUB_STAMP)
 #
 # Build on the target OS — Windows package must be built on Windows.
 #
-.PHONY: dist dist-linux dist-windows dist-proxy-linux
+.PHONY: dist dist-linux dist-macos dist-windows dist-proxy-linux
 
 dist: dist-linux
 	@echo "Done. Artifacts in $(DIST_DIR)/"
@@ -109,6 +113,12 @@ dist-linux: build-linux
 	tar -czf $(DIST_DIR)/happening-$(VERSION)-linux-$(ARCH).tar.gz \
 	    -C $(APP_DIR)/build/linux/$(ARCH)/release bundle
 	@echo "Linux package: $(DIST_DIR)/happening-$(VERSION)-linux-$(ARCH).tar.gz"
+
+dist-macos: build-macos
+	@mkdir -p $(DIST_DIR)
+	cp -r $(APP_DIR)/build/macos/Build/Products/Release/happening.app \
+	    $(DIST_DIR)/happening-$(VERSION)-macos-$(ARCH).app
+	@echo "macOS package: $(DIST_DIR)/happening-$(VERSION)-macos-$(ARCH).app"
 
 dist-windows: build-windows
 	@cmd /c if not exist $(DIST_DIR) mkdir $(DIST_DIR)
@@ -179,19 +189,22 @@ help:
 	@echo "Happening — Makefile targets"
 	@echo ""
 	@echo "  make setup        Check system deps + fetch pub deps"
-	@echo "  make run          Run app (use 'run-linux' or 'run-windows')"
+	@echo "  make run          Run app (use 'run-linux', 'run-macos', or 'run-windows')"
 	@echo "  make run-linux    Run app on Linux desktop"
+	@echo "  make run-macos    Run app on macOS desktop"
 	@echo "  make run-windows  Run app on Windows desktop"
 	@echo "  make test         Run all tests with coverage"
-	@echo "  make integration-test  Run integration tests (use 'integration-test-linux' or 'integration-test-windows')"
-	@echo "  make integration-test-linux  Run integration tests on Linux"
+	@echo "  make integration-test  Run integration tests (use platform suffix)"
+	@echo "  make integration-test-linux    Run integration tests on Linux"
+	@echo "  make integration-test-macos    Run integration tests on macOS"
 	@echo "  make integration-test-windows  Run integration tests on Windows"
-	@echo "  make build-linux  Release build for Linux"
-	@echo "  make build-macos  Release build for macOS"
+	@echo "  make build-linux   Release build for Linux"
+	@echo "  make build-macos   Release build for macOS"
 	@echo "  make build-windows Release build for Windows"
-	@echo "  make dist         Build + package Linux (tar.gz)"
-	@echo "  make dist-linux   Build + package Linux tar.gz → dist/"
-	@echo "  make dist-windows      Build + package Windows zip → dist/ (run on Windows)"
+	@echo "  make dist          Build + package Linux (tar.gz)"
+	@echo "  make dist-linux    Build + package Linux tar.gz → dist/"
+	@echo "  make dist-macos    Build + package macOS .app → dist/ (run on macOS)"
+	@echo "  make dist-windows  Build + package Windows zip → dist/ (run on Windows)"
 	@echo "  make dist-proxy-linux  Compile proxy to native binary → dist/ (Linux)"
 	@echo "  make format       Format all Dart source"
 	@echo "  make analyze      Run Dart analyzer"
