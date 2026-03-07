@@ -1,4 +1,6 @@
-SHELL := /bin/bash
+ifneq ($(OS),Windows_NT)
+  SHELL := /bin/bash
+endif
 
 FLUTTER      := flutter
 APP_DIR      := app
@@ -13,13 +15,17 @@ else
 endif
 
 # Normalise uname -m → x64 | arm64
-UNAME_ARCH   := $(shell uname -m)
-ifeq ($(UNAME_ARCH),aarch64)
-  ARCH       := arm64
-else ifeq ($(UNAME_ARCH),arm64)
-  ARCH       := arm64
-else
+ifeq ($(OS),Windows_NT)
   ARCH       := x64
+else
+  UNAME_ARCH := $(shell uname -m)
+  ifeq ($(UNAME_ARCH),aarch64)
+    ARCH     := arm64
+  else ifeq ($(UNAME_ARCH),arm64)
+    ARCH     := arm64
+  else
+    ARCH     := x64
+  endif
 endif
 
 # Snap Flutter bundles LLVM 10 without a linker; native_toolchain_c (pulled
@@ -105,8 +111,8 @@ dist-linux: build-linux
 	@echo "Linux package: $(DIST_DIR)/happening-$(VERSION)-linux-$(ARCH).tar.gz"
 
 dist-windows: build-windows
-	@powershell -Command "New-Item -ItemType Directory -Force -Path $(DIST_DIR)"
-	@powershell -Command "Compress-Archive -Path $(APP_DIR)/build/windows/x64/runner/Release -DestinationPath $(DIST_DIR)/happening-$(VERSION)-windows-x64.zip -Force"
+	@cmd /c if not exist $(DIST_DIR) mkdir $(DIST_DIR)
+	cd $(APP_DIR)/build/windows/x64/runner && zip -r $(CURDIR)/$(DIST_DIR)/happening-$(VERSION)-windows-x64.zip Release
 	@echo "Windows package: $(DIST_DIR)/happening-$(VERSION)-windows-x64.zip"
 
 dist-proxy-linux: proxy-setup
