@@ -29,12 +29,36 @@ abstract class AuthService {
   AutoRefreshingAuthClient? get client;
 }
 
-// Token exchange proxy URL. Override with --dart-define=PROXY_URL=https://...
-// for production deployments.
+const _googleTokenUrl = 'https://oauth2.googleapis.com/token';
 const _kProxyUrl = String.fromEnvironment(
   'PROXY_URL',
-  defaultValue: 'http://localhost:8080',
+  defaultValue: 'https://hproxy.globalheadsortails.com',
 );
+
+/// Routes Google token requests through the proxy so client_secret is injected
+/// server-side and never embedded in the app binary.
+class _ProxyingClient extends http.BaseClient {
+  _ProxyingClient(this._inner, this._proxyUrl);
+
+  final http.Client _inner;
+  final String _proxyUrl;
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) async {
+    if (request.method == 'POST' &&
+        request.url.toString() == _googleTokenUrl) {
+      final bytes = await request.finalize().toBytes();
+      final proxied = http.Request('POST', Uri.parse('$_proxyUrl/token'))
+        ..headers.addAll(request.headers)
+        ..bodyBytes = bytes;
+      return _inner.send(proxied);
+    }
+    return _inner.send(request);
+  }
+
+  @override
+  void close() => _inner.close();
+}
 
 class GoogleAuthService implements AuthService {
   GoogleAuthService({
@@ -70,7 +94,8 @@ class GoogleAuthService implements AuthService {
 
     try {
       final creds = _decode(json);
-      _client = autoRefreshingClient(_clientId, creds, _httpClient);
+      _client = autoRefreshingClient(
+          _clientId, creds, _ProxyingClient(_httpClient, _proxyUrl));
       _client!.credentialUpdates.listen(_onCredentialsChanged);
       return true;
     } catch (_) {
@@ -114,8 +139,7 @@ class GoogleAuthService implements AuthService {
       await request.response.close();
       await server.close();
 
-      // Exchange code + verifier via the local proxy, which adds client_secret
-      // server-side so it never needs to be embedded in this binary.
+      // Exchange code + verifier via proxy, which injects client_secret.
       final response = await _httpClient.post(
         Uri.parse('$_proxyUrl/token'),
         body: {
@@ -146,7 +170,8 @@ class GoogleAuthService implements AuthService {
         _scopes,
       );
 
-      _client = autoRefreshingClient(_clientId, creds, _httpClient);
+      _client = autoRefreshingClient(
+          _clientId, creds, _ProxyingClient(_httpClient, _proxyUrl));
       _client!.credentialUpdates.listen(_onCredentialsChanged);
       _onCredentialsChanged(_client!.credentials);
       return true;
