@@ -95,7 +95,7 @@ class _HappeningAppState extends State<HappeningApp> {
       await AppLogger.debug('AuthService initialized. Attempting restore...');
       if (await _auth.tryRestore()) {
         await AppLogger.debug('Auth restored successfully.');
-        unawaited(_startCalendar());
+        await _startCalendar();
       } else {
         await AppLogger.debug(
             'Auth restore failed. Moving to unauthenticated state.');
@@ -110,8 +110,16 @@ class _HappeningAppState extends State<HappeningApp> {
   // ── Actions ──────────────────────────────────────────────────────────────
 
   Future<void> _signIn() async {
-    if (await _auth.signIn()) {
-      unawaited(_startCalendar());
+    setState(() => _authState = _AuthState.loading);
+    try {
+      if (await _auth.signIn()) {
+        await _startCalendar();
+      } else {
+        if (mounted) setState(() => _authState = _AuthState.unauthenticated);
+      }
+    } catch (e) {
+      unawaited(AppLogger.debug('Sign-in error: $e'));
+      if (mounted) setState(() => _authState = _AuthState.unauthenticated);
     }
   }
 
