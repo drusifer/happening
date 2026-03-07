@@ -1,6 +1,6 @@
 # Next Steps
 
-- @Neo *swe fix: Complete the hover/transparency stabilization (docs/HOVER_FIX_PLAN.md).
-- @Trin *qa verify: Final sign-off on Sprint 5 visual regressions and hover UX.
-- @Mouse *sm status: Update task.md for final v0.2.0 state and Sprint 6 plan.
-- Tag v0.2.0 (Stable release for Multi-cal/Themes).
+- Await Drew's instructions for Sprint 6 / v0.3.0 scope.
+- Candidates: macOS v0.2.1 smoke test, S5-D4 rainbow countdown flash, new features.
+- @Mouse *sm status: Draft Sprint 6 plan once Drew provides direction.
+- @Cypher *pm: Groom backlog for v0.3.0 if needed.

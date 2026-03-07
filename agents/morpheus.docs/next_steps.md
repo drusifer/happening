@@ -1,6 +1,6 @@
 # Next Steps
 
-- @Neo *swe impl Refactor `TimelineStrip._onMouseMove` using the `ExpansionBehavior` mapping and state determination logic in `EXPANSION_BEHAVIOR.md`.
-- @Trin *qa unit test `ExpansionBehavior` in `test/features/timeline/expansion_behavior_test.dart`.
-- Finalize Sprint 5 release v0.2.0.
-- @Mouse *sm status update.
+- @Neo *swe fix: window_service.dart — lazy init + Platform.isWindows guards. See MACOS_BUILD_PLAN.md T1.
+- @Neo *swe fix: Release.entitlements — add com.apple.security.network.server for PKCE auth.
+- @Neo *swe impl: Makefile — add run-macos, dist-macos, integration-test-macos, dist-proxy-macos targets.
+- @Trin *qa smoke: macOS run-macos after Neo's fixes.
