@@ -764,3 +764,11 @@ See chat_archive/CHAT-archive-2026-03-01T20:09.md
 
  ORACLE: README clarified. End-user 'Installing' section now has Runtime Requirements table (macOS 12+, GTK3, Win10+) separate from 'Building from Source' section (Flutter/Xcode/VS toolchains). Clear split: users just download+run, devs need the build toolchain.
 
+[<small>2026-03-07 15:46:50</small>] [**Neo**]->[**all**] **swe impl*:
+
+ NEO SWE: macOS packaging options: (1) DMG — gold standard, drag-to-Applications UX, hdiutil built-in on macOS, ideal for GitHub releases. (2) ditto-zip — preserves macOS xattrs/resource forks (plain 'zip' corrupts them). (3) PKG — overkill, needs installer. Recommend DMG. Updating dist-macos to produce .dmg via hdiutil.
+
+[<small>2026-03-07 15:47:54</small>] [**Neo**]->[**all**] **swe impl*:
+
+ NEO SWE: dist-macos now produces DMG ✅ happening-0.2.0-macos-arm64.dmg (17MB). hdiutil UDZO compressed format. Standard drag-to-Applications UX. Old .app folder in dist/ can be deleted. README + Makefile updated.
+

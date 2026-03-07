@@ -116,9 +116,12 @@ dist-linux: build-linux
 
 dist-macos: build-macos
 	@mkdir -p $(DIST_DIR)
-	cp -r $(APP_DIR)/build/macos/Build/Products/Release/happening.app \
-	    $(DIST_DIR)/happening-$(VERSION)-macos-$(ARCH).app
-	@echo "macOS package: $(DIST_DIR)/happening-$(VERSION)-macos-$(ARCH).app"
+	$(eval DMG := $(DIST_DIR)/happening-$(VERSION)-macos-$(ARCH).dmg)
+	hdiutil create -volname "Happening $(VERSION)" \
+	    -srcfolder $(APP_DIR)/build/macos/Build/Products/Release/happening.app \
+	    -ov -format UDZO \
+	    $(DMG)
+	@echo "macOS package: $(DMG)"
 
 dist-windows: build-windows
 	@cmd /c if not exist $(DIST_DIR) mkdir $(DIST_DIR)
@@ -203,7 +206,7 @@ help:
 	@echo "  make build-windows Release build for Windows"
 	@echo "  make dist          Build + package Linux (tar.gz)"
 	@echo "  make dist-linux    Build + package Linux tar.gz → dist/"
-	@echo "  make dist-macos    Build + package macOS .app → dist/ (run on macOS)"
+	@echo "  make dist-macos    Build + package macOS .dmg → dist/ (run on macOS)"
 	@echo "  make dist-windows  Build + package Windows zip → dist/ (run on Windows)"
 	@echo "  make dist-proxy-linux  Compile proxy to native binary → dist/ (Linux)"
 	@echo "  make format       Format all Dart source"
