@@ -38,10 +38,11 @@ Download the latest release for your platform from the [releases page](https://g
 | Windows  | Windows 10 or later, Visual C++ Redistributable (usually already installed) |
 
 ### macOS
-1. Download `happening-<version>-macos-arm64.app` (or `x64` for Intel Macs).
-2. Move `happening.app` to your `/Applications` folder.
-3. On first launch, right-click → **Open** (to bypass Gatekeeper on unsigned builds).
-4. Sign in with Google when prompted — a browser window will open automatically.
+1. Download `happening-<version>-macos-arm64.dmg` (or `x64` for Intel Macs).
+2. Open the `.dmg` and drag `happening.app` to your `/Applications` folder.
+3. Eject the disk image.
+4. On first launch, right-click → **Open** (to bypass Gatekeeper on unsigned builds).
+5. Sign in with Google when prompted — a browser window will open automatically.
 
 ### Linux
 1. Download `happening-<version>-linux-x64.tar.gz`.
@@ -112,7 +113,7 @@ make run          # Lists all options
 
 ### Distribution Packages
 - **Linux**: `make dist-linux` → `dist/happening-<ver>-linux-x64.tar.gz`
-- **macOS**: `make dist-macos` → `dist/happening-<ver>-macos-<arch>.app`
+- **macOS**: `make dist-macos` → `dist/happening-<ver>-macos-<arch>.dmg`
 - **Windows**: `make dist-windows` → `dist/happening-<ver>-windows-x64.zip`
 
 ---
