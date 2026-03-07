@@ -123,13 +123,16 @@ The window is initialized as a 250px tall transparent container.
 
 ---
 
-## 7. OAuth Desktop Flow
+## 7. OAuth Desktop Flow (PKCE + Proxy)
 
-Google OAuth on desktop uses the **loopback redirect** approach via `googleapis_auth`:
-1. App starts a local HTTP server on a random port.
-2. Opens system browser to Google OAuth consent URL.
-3. capture the auth code and exchange for tokens.
-4. Tokens are persisted to `~/.config/happening/google_credentials`.
+Google OAuth on desktop uses the **PKCE (Proof Key for Code Exchange)** flow to avoid shipping a client secret in the application.
+
+1.  **Code Challenge:** The app generates a `code_verifier` and a `code_challenge` (SHA256 hash of the verifier).
+2.  **Auth URL:** The app opens the system browser with the `code_challenge`.
+3.  **Local Redirect:** The user authenticates and Google redirects to a local URL (`localhost:port`) with an auth `code`.
+4.  **Token Exchange via Proxy:** The app sends the `code` and `code_verifier` to a local proxy server (`make proxy`). The proxy adds the `client_secret` (read from an environment variable) and forwards the request to Google to exchange the code for an access token.
+5.  **Token Storage:** The proxy returns the tokens to the app, which stores them securely in `~/.config/happening/google_credentials.json`.
+
 
 ---
 

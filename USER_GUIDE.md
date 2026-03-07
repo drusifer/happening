@@ -14,22 +14,7 @@ Happening is a **persistent, always-on-top horizontal timeline strip** that live
 
 ## 2. GUI Overview
 
-```text
- _______________________________________________________________________________
-| [R] [G] | [ NOW ] [ 38 min ]   [ MEETING TOMATO ]        [ LUNCH ]            | <- THE STRIP
-|_________|_____|_______________________________________________________________|
-                |
-                |   .-------------------------------------------------------.
-                |   | CALENDAR NAME                 [ JOIN ]  [ OPEN ]      |
-                |   |                                                       |
-                |   | MEETING TOMATO                                        | <- HOVER CARD
-                |   | 10:00 AM - 11:00 AM                                   |
-                |   |                                                       |
-                |   | Description goes here...                              |
-                '-------------------------------------------------------'
-
- [R] = Refresh Button | [G] = Settings Gear | [NOW] = Current Time Line
-```
+![Happening UI Overview](app/test/goldens/goldens/uat_edge_cases.png)
 
 ---
 
@@ -48,6 +33,8 @@ The strip is always visible at the top of your primary display. It stays above o
 - **Task Markers (◇)**: Diamond-shaped markers for tasks or zero-duration items.
 - **Collision Detection**: Overlapping events are drawn with red outlines and transparency. **Note: Shorter events are always drawn on top** so you can easily hover over them.
 
+![Event and Tick Rendering](app/test/goldens/goldens/ticks_over_events.png)
+
 ---
 
 ## 4. Interaction Features
@@ -57,6 +44,8 @@ Happening uses "Smart Bounding" to make interaction stable:
 1. **Selection**: Hover over any event on the strip to expand its detail card.
 2. **Stability (The Latch)**: Once a card is open, the hit-zone expands to the full width of the card. This "latches" the card open, allowing you to move your mouse horizontally to click the **JOIN** or **OPEN** buttons without accidentally switching to an adjacent event.
 3. **Dismiss**: Move your mouse outside the card area to collapse the window.
+
+![Hover Card Alignment](app/test/goldens/goldens/hover_card_alignment.png)
 
 ### Action Buttons
 - **JOIN**: Opens your video call link (Meet, Zoom, Teams, etc.) instantly.

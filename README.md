@@ -38,8 +38,24 @@ Happening is a persistent, always-on-top horizontal timeline strip that reads yo
 
 ### Google Cloud Setup
 You need a Google Cloud Project with the **Google Calendar API** enabled and an **OAuth 2.0 Client ID** (Desktop type).
-1. Download your `client_secret.json` from the Google Cloud Console.
-2. Place it in `app/assets/client_secret.json`.
+
+Instead of a `client_secret.json` file, the application now uses a local proxy to handle authentication.
+
+### Running the Auth Proxy
+To run the application, you must first run the authentication proxy in a separate terminal:
+
+1.  **Set the `GOOGLE_CLIENT_SECRET` environment variable:**
+    ```bash
+    export GOOGLE_CLIENT_SECRET=<your_google_client_secret>
+    ```
+
+2.  **Run the proxy:**
+    ```bash
+    make proxy
+    ```
+
+The proxy will listen on `localhost:8080` and handle the token exchange with Google. The application will connect to this proxy to authenticate.
+
 
 ---
 
