@@ -51,9 +51,6 @@ typedef _SHNative = IntPtr Function(
     Uint32 dwMessage, Pointer<_AppBarData> pData);
 typedef _SHDart = int Function(int dwMessage, Pointer<_AppBarData> pData);
 
-final _shAppBarMessage = DynamicLibrary.open('shell32.dll')
-    .lookupFunction<_SHNative, _SHDart>('SHAppBarMessage');
-
 /// Window management service for resizing the app between strip and hover states.
 ///
 /// TLDR:
@@ -77,6 +74,7 @@ class WindowService {
   FontSize _fontSize = FontSize.medium;
 
   Pointer<_AppBarData>? _appBarData;
+  late final _SHDart _shAppBarMessage;
 
   /// Notifier for the window's expansion state.
   final isExpandedNotifier = ValueNotifier<bool>(false);
@@ -129,6 +127,8 @@ class WindowService {
   }
 
   Future<void> _registerAppBar() async {
+    _shAppBarMessage = DynamicLibrary.open('shell32.dll')
+        .lookupFunction<_SHNative, _SHDart>('SHAppBarMessage');
     final classNamePtr = _flutterWindowClass.toNativeUtf16();
     final hwnd = FindWindow(classNamePtr, nullptr);
     calloc.free(classNamePtr);
@@ -166,27 +166,27 @@ class WindowService {
     }
   }
 
+  /// Returns collapsed height in logical pixels (for window_manager APIs).
   double getCollapsedHeight() {
-    double baseHeight;
     switch (_fontSize) {
       case FontSize.small:
-        baseHeight = 50.0;
+        return 50.0;
       case FontSize.medium:
-        baseHeight = 55.0;
+        return 55.0;
       case FontSize.large:
-        baseHeight = 60.0;
+        return 60.0;
     }
-    return (baseHeight * _dpr).floorToDouble();
   }
 
+  /// Returns expanded height in logical pixels (for window_manager APIs).
   double _getExpandedHeight() {
     switch (_fontSize) {
       case FontSize.small:
-        return 240.0 * _dpr.ceilToDouble();
+        return 240.0;
       case FontSize.medium:
-        return 250.0 * _dpr.ceilToDouble();
+        return 250.0;
       case FontSize.large:
-        return 260.0 * _dpr.ceilToDouble();
+        return 260.0;
     }
   }
 
@@ -194,12 +194,12 @@ class WindowService {
     final display = await _sr.getPrimaryDisplay();
     final width = display.size.width;
 
-    // S5-FIX: Convert logical pixels to physical pixels for the Win32 API.
+    // Convert logical pixels to physical pixels for the Win32 API.
     _appBarData!.ref.uEdge = _abeTop;
     _appBarData!.ref.rcLeft = 0;
     _appBarData!.ref.rcTop = 0;
     _appBarData!.ref.rcRight = (width * _dpr).round();
-    final targetHeight = (getCollapsedHeight() / _dpr).ceil();
+    final targetHeight = (getCollapsedHeight() * _dpr).round();
     _appBarData!.ref.rcBottom = targetHeight;
 
     unawaited(AppLogger.debug(
@@ -264,7 +264,7 @@ class WindowService {
     final size = Size(display.size.width, targetHeight);
 
     await AppLogger.debug(
-        'WindowService: _doCollapose collpsed targetHeight is $targetHeight which is ${targetHeight / _dpr} logical pixels at DPR $_dpr');
+        'WindowService: collapsing to $targetHeight logical px (${targetHeight * _dpr} physical) at DPR $_dpr');
     if (Platform.isWindows) {
       await _wm.setMinimumSize(size);
       await _wm.setMaximumSize(size);

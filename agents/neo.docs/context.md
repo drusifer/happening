@@ -11,6 +11,13 @@
 - 185/185 tests GREEN
 
 
+## macOS Build — 2026-03-07
+- window_service.dart: moved `DynamicLibrary.open('shell32.dll')` from top-level into `_registerAppBar()` (Windows-only path). Declared as `late final _SHDart _shAppBarMessage` class field.
+- Release.entitlements: added `com.apple.security.network.server` for PKCE localhost redirect capture.
+- Makefile: added run-macos, dist-macos, integration-test-macos targets.
+- macOS build: ✅ 40.5MB .app (flutter build macos --release).
+- Tests: 184/185 — 1 golden test (S4-31) fails due to Linux vs macOS rendering difference. Expected. Goldens need regen on macOS.
+
 ## Sprint 5: Refinement — 2026-03-02
 - Implemented `ExpansionLogic` (pure logic) in `app/lib/features/timeline/expansion_logic.dart`.
 - TDD complete: `app/test/features/timeline/expansion_logic_test.dart` passes with 9 tests.
