@@ -1,8 +1,11 @@
 # happening
 A sliding calendar strip that always shows you what's happening next. Optimized for those with "event-based time keeping" brains.
 
+Here is what it looks like at 20x speed:
+![Happening Preview](preview.gif)
+
+
 ## Table of Contents
-- [START_HERE.md](START_HERE.md) — Onboarding and setup
 - [USER_GUIDE.md](USER_GUIDE.md) — How to use Happening (End-user docs)
 - [Docs](docs/) — Architecture, Decisions, PRD, and Task Board
 - [Agents](agents/) — Persona documentation and CHAT.md
