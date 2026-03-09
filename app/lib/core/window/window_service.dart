@@ -96,7 +96,7 @@ class WindowService {
     final size = Size(width, targetHeight);
 
     await AppLogger.debug(
-        'WindowService: initial targetHeight is $targetHeight');
+        'WindowService: init dpr=$_dpr displaySize=${display.size} collapsedHeight=$targetHeight expandedHeight=${_getExpandedHeight()}');
 
     final windowOptions = WindowOptions(
       size: size,
@@ -245,10 +245,34 @@ class WindowService {
     final display = await _sr.getPrimaryDisplay();
     final size = Size(display.size.width, _getExpandedHeight());
     await AppLogger.debug(
-        'WindowService: _doExpoand() expanding to (max) height ${size.height}');
-    await _wm.setMaximumSize(size);
-    await _wm.setSize(size);
-    await _wm.setMinimumSize(size);
+        'WindowService: _doExpand() target=${size.height} dpr=$_dpr');
+    final sizeBefore = await _wm.getSize();
+    await AppLogger.debug('WindowService: _doExpand() sizeBefore=$sizeBefore');
+    if (Platform.isLinux) {
+      // GTK/Wayland: setSize is ignored when setResizable(false) is set, so
+      // setMinimumSize is the actual resize mechanism. Call it before
+      // setMaximumSize to avoid an intermediate "natural height" state (200px)
+      // that doesn't reliably trigger a Flutter viewport update on 2nd+ expand.
+      await _wm.setSize(size);
+      final sizeAfterSet = await _wm.getSize();
+      await AppLogger.debug('WindowService: _doExpand() after setSize: $sizeAfterSet');
+      await _wm.setMinimumSize(size);
+      final sizeAfterMin = await _wm.getSize();
+      await AppLogger.debug('WindowService: _doExpand() after setMinimumSize: $sizeAfterMin');
+      await _wm.setMaximumSize(size);
+      final sizeAfterMax = await _wm.getSize();
+      await AppLogger.debug('WindowService: _doExpand() after setMaximumSize: $sizeAfterMax (DONE)');
+    } else {
+      await _wm.setMaximumSize(size);
+      final sizeAfterMax = await _wm.getSize();
+      await AppLogger.debug('WindowService: _doExpand() after setMaximumSize: $sizeAfterMax');
+      await _wm.setSize(size);
+      final sizeAfterSet = await _wm.getSize();
+      await AppLogger.debug('WindowService: _doExpand() after setSize: $sizeAfterSet');
+      await _wm.setMinimumSize(size);
+      final sizeAfterMin = await _wm.getSize();
+      await AppLogger.debug('WindowService: _doExpand() after setMinimumSize: $sizeAfterMin (DONE)');
+    }
   }
 
   /// GTK/Wayland resize order for collapse:
@@ -264,18 +288,32 @@ class WindowService {
     final size = Size(display.size.width, targetHeight);
 
     await AppLogger.debug(
-        'WindowService: collapsing to $targetHeight logical px (${targetHeight * _dpr} physical) at DPR $_dpr');
+        'WindowService: _doCollapse() target=$targetHeight dpr=$_dpr');
+    final sizeBefore = await _wm.getSize();
+    await AppLogger.debug('WindowService: _doCollapse() sizeBefore=$sizeBefore');
     if (Platform.isWindows) {
       await _wm.setMinimumSize(size);
+      final sizeAfterMin = await _wm.getSize();
+      await AppLogger.debug('WindowService: _doCollapse() after setMinimumSize: $sizeAfterMin');
       await _wm.setMaximumSize(size);
+      final sizeAfterMax = await _wm.getSize();
+      await AppLogger.debug('WindowService: _doCollapse() after setMaximumSize: $sizeAfterMax');
       await _wm.setSize(size);
+      final sizeAfterSet = await _wm.getSize();
+      await AppLogger.debug('WindowService: _doCollapse() after setSize: $sizeAfterSet (DONE)');
     } else {
       await windowManager.focus();
       await Future.delayed(const Duration(milliseconds: 100));
 
       await _wm.setSize(size);
+      final sizeAfterSet = await _wm.getSize();
+      await AppLogger.debug('WindowService: _doCollapse() after setSize: $sizeAfterSet');
       await _wm.setMinimumSize(size);
+      final sizeAfterMin = await _wm.getSize();
+      await AppLogger.debug('WindowService: _doCollapse() after setMinimumSize: $sizeAfterMin');
       await _wm.setMaximumSize(size);
+      final sizeAfterMax = await _wm.getSize();
+      await AppLogger.debug('WindowService: _doCollapse() after setMaximumSize: $sizeAfterMax (DONE)');
     }
   }
 }
