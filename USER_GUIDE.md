@@ -14,7 +14,9 @@ Happening is a **persistent, always-on-top horizontal timeline strip** that live
 
 ## 2. GUI Overview
 
-![Happening UI Overview](app/test/goldens/goldens/uat_edge_cases.png)
+
+![Happening UI](preview.gif)
+
 
 ---
 
