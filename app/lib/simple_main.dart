@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
@@ -14,7 +15,7 @@ void main() async {
     windowManager: WindowManager.instance,
     screenRetriever: ScreenRetriever.instance,
   );
-  await windowService.initialize(height: 50, expandedHeight: 250);
+  await windowService.initialize(initialFontSize: FontSize.medium);
   runApp(SimpleTestApp(windowService: windowService));
 }
 

@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/util/logger.dart';
 import 'package:screen_retriever/screen_retriever.dart';
-import 'package:win32/win32.dart' hide Size;
+import 'package:win32/win32.dart';
 import 'package:window_manager/window_manager.dart';
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -130,12 +130,13 @@ class WindowService {
     _shAppBarMessage = DynamicLibrary.open('shell32.dll')
         .lookupFunction<_SHNative, _SHDart>('SHAppBarMessage');
     final classNamePtr = _flutterWindowClass.toNativeUtf16();
-    final hwnd = FindWindow(classNamePtr, nullptr);
+    final res = FindWindow(PCWSTR(classNamePtr), PCWSTR(nullptr));
+    final hwnd = res.value;
     calloc.free(classNamePtr);
 
     _appBarData = calloc<_AppBarData>();
     _appBarData!.ref.cbSize = sizeOf<_AppBarData>();
-    _appBarData!.ref.hWnd = hwnd;
+    _appBarData!.ref.hWnd = hwnd.address;
     _appBarData!.ref.uCallbackMessage = _uCallbackMessage;
     _shAppBarMessage(_abmNew, _appBarData!);
 
