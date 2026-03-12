@@ -25,7 +25,7 @@ void main() {
 
       // Default mock behavior for initialization
       when(mockSR.getPrimaryDisplay()).thenAnswer((_) async => Display(
-            id: 0,
+            id: '0',
             name: 'primary',
             size: const Size(1920, 1080),
             visiblePosition: Offset.zero,

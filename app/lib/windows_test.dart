@@ -96,13 +96,14 @@ void main() async {
 
   // Find the Flutter window HWND by class name (more reliable than GetActiveWindow).
   final classNamePtr = _flutterWindowClass.toNativeUtf16();
-  final hwnd = FindWindow(classNamePtr, nullptr);
+  final res = FindWindow(PCWSTR(classNamePtr), PCWSTR(nullptr));
+  final hwnd = res.value;
   calloc.free(classNamePtr);
 
   // Register as a Windows AppBar so the shell reserves screen space.
   final appBarData = calloc<_AppBarData>();
   appBarData.ref.cbSize = sizeOf<_AppBarData>();
-  appBarData.ref.hWnd = hwnd;
+  appBarData.ref.hWnd = hwnd.address;
   appBarData.ref.uCallbackMessage = _uCallbackMessage;
   _shAppBarMessage(_abmNew, appBarData);
 
