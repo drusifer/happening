@@ -230,21 +230,22 @@ class _LoadingStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
-      alignment: Alignment.center,
-      child: Text(
-        'Fetching calendar...',
-        style: TextStyle(
-          color: Theme.of(context)
-              .textTheme
-              .bodyMedium
-              ?.color
-              ?.withValues(alpha: 0.5),
-          fontSize: settings.fontSize.px,
-          fontStyle: FontStyle.italic,
+    final bg = isDark ? const Color(0xFF1A1A2E) : Colors.white;
+    return Stack(
+      children: [
+        Container(color: bg, alignment: Alignment.center,
+          child: Text('Fetching calendar...',
+            style: TextStyle(
+              color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
+              fontSize: settings.fontSize.px,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
         ),
-      ),
+        Positioned(right: 8, top: 0, bottom: 0,
+          child: Center(child: _QuitButton(backgroundColor: bg)),
+        ),
+      ],
     );
   }
 }
@@ -261,22 +262,51 @@ class _SignInStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = isDark ? const Color(0xFF1A1A2E) : Colors.white;
+    return Stack(
+      children: [
+        GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: Container(
+            color: bg,
+            alignment: Alignment.center,
+            child: Text('Tap to sign in with Google →',
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                fontSize: settings.fontSize.px,
+              ),
+            ),
+          ),
+        ),
+        Positioned(right: 8, top: 0, bottom: 0,
+          child: Center(child: _QuitButton(backgroundColor: bg)),
+        ),
+      ],
+    );
+  }
+}
+
+class _QuitButton extends StatelessWidget {
+  const _QuitButton({required this.backgroundColor});
+  final Color backgroundColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GestureDetector(
-      onTap: onTap,
+      onTap: () => exit(0),
       behavior: HitTestBehavior.opaque,
       child: Container(
-        color: isDark ? const Color(0xFF1A1A2E) : Colors.white,
-        alignment: Alignment.center,
-        child: Text(
-          'Tap to sign in with Google →',
-          style: TextStyle(
-            color: Theme.of(context)
-                .textTheme
-                .bodyMedium
-                ?.color
-                ?.withValues(alpha: 0.7),
-            fontSize: settings.fontSize.px,
-          ),
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: backgroundColor.withValues(alpha: 0.92),
+          shape: BoxShape.circle,
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 3)],
+        ),
+        child: Icon(Icons.power_settings_new,
+          color: isDark ? Colors.white70 : Colors.black54,
+          size: 16,
         ),
       ),
     );

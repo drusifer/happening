@@ -96,7 +96,7 @@ class WindowService {
     final size = Size(width, targetHeight);
 
     await AppLogger.debug(
-        'WindowService: init dpr=$_dpr displaySize=${display.size} collapsedHeight=$targetHeight expandedHeight=${_getExpandedHeight()}');
+        'WindowService: init dpr=$_dpr displaySize=${display.size} collapsedHeight=$targetHeight expandedHeight=${getExpandedHeight()}');
 
     final windowOptions = WindowOptions(
       size: size,
@@ -180,7 +180,7 @@ class WindowService {
   }
 
   /// Returns expanded height in logical pixels (for window_manager APIs).
-  double _getExpandedHeight() {
+  double getExpandedHeight() {
     switch (_fontSize) {
       case FontSize.small:
         return 240.0;
@@ -244,7 +244,7 @@ class WindowService {
   Future<void> _doExpand() async {
     isExpandedNotifier.value = true;
     final display = await _sr.getPrimaryDisplay();
-    final size = Size(display.size.width, _getExpandedHeight());
+    final size = Size(display.size.width, getExpandedHeight());
     await AppLogger.debug(
         'WindowService: _doExpand() target=${size.height} dpr=$_dpr');
     final sizeBefore = await _wm.getSize();

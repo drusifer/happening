@@ -80,6 +80,7 @@ These are only needed if you are building from source. End users do not need the
 - `clang`, `cmake`, `ninja-build`, `pkg-config`
 - `libgtk-3-dev`
 - `lld` (LLVM linker)
+- `libgtk-layer-shell-dev` *(optional — enables Wayland strut/positioning support)*
 
 #### Windows
 - Flutter SDK (>= 3.19.0)

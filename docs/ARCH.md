@@ -1,8 +1,8 @@
 # ARCH: Happening — System Architecture
 
-**Version**: 0.4
+**Version**: 0.5
 **Author**: Morpheus (Tech Lead) / Ora (Knowledge Officer)
-**Date**: 2026-03-03
+**Date**: 2026-03-16
 **Status**: Approved
 
 ## TLDR
@@ -84,13 +84,13 @@ happening/
 
 ## 4. Key Packages
 
-| Package | Purpose | Why |
-|---|---|---|
-| `window_manager` | Always-on-top, frameless, transparency | Best Flutter desktop window control |
-| `googleapis_auth` | OAuth 2.0 flow (desktop loopback) | Native Linux support (direct flow) |
-| `googleapis` | Google Calendar REST API v3 | Official client |
-| `url_launcher` | Open event links + video call URLs | Standard package |
-| `screen_retriever` | Screen dimensions for positioning | Companion to window_manager |
+| Package | Version | Purpose | Why |
+|---|---|---|---|
+| `window_manager` | 0.5.1 | Always-on-top, frameless, resize | Best Flutter desktop window control |
+| `screen_retriever` | 0.2.0 | Screen dimensions for positioning | Companion to window_manager |
+| `googleapis_auth` | 2.0.0 | OAuth 2.0 PKCE flow (desktop loopback) | Native Linux support (direct flow) |
+| `googleapis` | — | Google Calendar REST API v3 | Official client |
+| `url_launcher` | — | Open event links + video call URLs | Standard package |
 
 ---
 
@@ -105,6 +105,9 @@ To minimize CPU usage while maintaining precision, the app uses multiple update 
 ### Repaint Isolation
 The `TimelinePainter` is wrapped in a `RepaintBoundary`. This ensures that updates to sibling widgets (like the ticking countdown text or the flashing icons) do not trigger an expensive repaint of the large timeline canvas.
 
+### Countdown Clock Precision
+`active`, `countdownTarget`, `mode`, and `baseColor` are recomputed inside the `tick1s` StreamBuilder (not just the outer `tick10s` builder). This ensures color transitions (flash → amber → idle) happen within 1s of an event boundary, not up to 10s later.
+
 ### Latch-on-Expand Hit Testing
 To provide stable interactions, hit-test bounds are context-aware:
 - **Strip Zone**: Bounds match event column widths.
@@ -115,11 +118,23 @@ To provide stable interactions, hit-test bounds are context-aware:
 
 ## 6. Window Strategy
 
-### Transparent Always-On-Top Shell
-The window is initialized as a 250px tall transparent container.
-- The **Strip** (35-50px) is painted at the top with a solid background.
-- The **Hover Cards** expand into the transparent area below.
-- This creates the illusion of a small strip that "grows" while maintaining a fixed OS window size to avoid expensive resizing.
+### Dynamic Resize with Solid Background
+The window resizes between two heights driven by hover state:
+- **Collapsed** (~55px): only the strip is visible. Background covers full window height (solid color, no transparency dependency).
+- **Expanded** (~250px): the strip + hover card area. Background uses `WindowService.getExpandedHeight()` (not `constraints.maxHeight`) to cover the full area even during the async OS resize transition.
+
+The background is always a solid color — no compositor transparency required. This avoids the common GTK/Wayland black-area bug where transparent pixels render as black when the compositor does not composite the window.
+
+### Linux Platform Layer (`my_application.cc`)
+On Linux, the runner sets up the window as a top-of-screen panel before it is mapped:
+- **X11**: `_NET_WM_WINDOW_TYPE_DOCK` and `_NET_WM_STRUT_PARTIAL` are set via Xlib **before** `gtk_widget_show` to prevent the WM from placing the window in the wrong position on first map.
+- **Wayland**: `gtk-layer-shell` (`libgtk-layer-shell`) anchors the window to the top edge with `GTK_LAYER_SHELL_LAYER_TOP` and reserves exclusive screen space via `gtk_layer_set_exclusive_zone`. Requires `libgtk-layer-shell-dev` at build time (optional — gracefully skipped if absent).
+
+### Always-Visible Controls
+Three icon buttons are always painted on the strip regardless of auth state:
+- **Refresh** (left) — re-fetches calendar events
+- **Settings** (left) — opens the settings panel
+- **Quit** (right, power icon) — `exit(0)`, visible in loading, sign-in, and authenticated states
 
 ---
 
@@ -144,6 +159,8 @@ Google OAuth on desktop uses the **PKCE (Proof Key for Code Exchange)** flow to 
 | AOQ-5 | CPU Bottlenecks? | **Tiered Frequency** | Repainting a 3000px canvas at 1Hz is too heavy for idle. |
 | AOQ-6 | Resizing? | **KISS Protocol** | Asynchronous queues were prone to "stuck" windows. Use direct UI-gated calls. |
 | AOQ-7 | Interaction? | **Contextual Latching** | Standard hit-testing makes action buttons hard to click. |
+| AOQ-8 | Linux display server? | **Dual X11+Wayland** | X11 strut via Xlib; Wayland strut via gtk-layer-shell. Both in `my_application.cc`, guarded at compile and runtime. |
+| AOQ-9 | Background transparency? | **Solid color always** | Transparent windows render black without a compositor. Solid background eliminates the dependency. |
 
 ---
 
