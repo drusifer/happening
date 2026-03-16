@@ -9,6 +9,7 @@
 // ---------------------------------------------------------------------------
 
 import 'dart:async';
+import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:flutter/gestures.dart';
@@ -390,8 +391,9 @@ class _TimelineStripState extends State<TimelineStrip>
                     top: 0,
                     left: 0,
                     right: 0,
-                    height:
-                        isExpanded ? _collapsedHeight : constraints.maxHeight,
+                    height: isExpanded
+                        ? _windowService.getExpandedHeight()
+                        : constraints.maxHeight,
                     child: Container(color: stripBackgroundColor),
                   ),
                   Positioned(
@@ -436,8 +438,45 @@ class _TimelineStripState extends State<TimelineStrip>
                       initialData: now,
                       builder: (context, timeSnapshot) {
                         final tickNow = timeSnapshot.data!;
-                        final countdown = countdownTarget != null
-                            ? layout.countdownTo(countdownTarget, tickNow)
+
+                        // Recompute active/target/mode/color with fresh time so
+                        // event-boundary transitions (e.g. start → end) are
+                        // reflected within 1s instead of waiting for tick10s.
+                        final tickActive =
+                            _layout?.activeEvent(widget.events, tickNow);
+                        final tickNextOverlap = tickActive != null
+                            ? (widget.events
+                                    .where((e) =>
+                                        e.startTime.isAfter(tickNow) &&
+                                        e.startTime
+                                            .isBefore(tickActive.endTime))
+                                    .toList()
+                                  ..sort((a, b) =>
+                                      a.startTime.compareTo(b.startTime)))
+                                .firstOrNull
+                            : null;
+                        final tickNextToStart = tickActive == null
+                            ? (widget.events
+                                    .where((e) => e.startTime.isAfter(tickNow))
+                                    .toList()
+                                  ..sort((a, b) =>
+                                      a.startTime.compareTo(b.startTime)))
+                                .firstOrNull
+                            : null;
+                        final tickTarget = tickActive != null
+                            ? (tickNextOverlap?.startTime ?? tickActive.endTime)
+                            : tickNextToStart?.startTime;
+                        final tickMode = tickActive != null
+                            ? CountdownMode.untilEnd
+                            : CountdownMode.untilNext;
+                        final tickBaseColor = tickMode == CountdownMode.untilEnd
+                            ? (theme.brightness == Brightness.dark
+                                ? Colors.amber
+                                : Colors.orange[800]!)
+                            : theme.textTheme.bodyMedium?.color ?? Colors.white;
+
+                        final countdown = tickTarget != null
+                            ? layout.countdownTo(tickTarget, tickNow)
                             : Duration.zero;
 
                         _updateAnimationTimer(countdown);
@@ -446,7 +485,7 @@ class _TimelineStripState extends State<TimelineStrip>
                           valueListenable: _flashNotifier,
                           builder: (context, flashValue, _) {
                             final countdownColor = _resolveCountdownColor(
-                                countdown, baseColor, flashValue);
+                                countdown, tickBaseColor, flashValue);
                             double countdownScale = 1.0;
                             Offset shakeOffset = Offset.zero;
                             if (countdown.inSeconds > 0 &&
@@ -471,7 +510,7 @@ class _TimelineStripState extends State<TimelineStrip>
                                   scale: countdownScale,
                                   child: CountdownDisplay(
                                     remaining: countdown,
-                                    mode: mode,
+                                    mode: tickMode,
                                     color: countdownColor,
                                     fontSize: fontSize,
                                     backgroundColor: stripBackgroundColor,
@@ -503,6 +542,18 @@ class _TimelineStripState extends State<TimelineStrip>
                           stripBackgroundColor: stripBackgroundColor,
                         ),
                       ],
+                    ),
+                  ),
+                  Positioned(
+                    right: 8,
+                    top: 0,
+                    height: _collapsedHeight,
+                    child: Center(
+                      child: _IconButton(
+                        icon: Icons.power_settings_new,
+                        onTap: () => exit(0),
+                        stripBackgroundColor: stripBackgroundColor,
+                      ),
                     ),
                   ),
                   if (_windowService.isExpandedNotifier.value &&

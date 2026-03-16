@@ -111,6 +111,27 @@ Added `target_link_libraries(${BINARY_NAME} PRIVATE X11)` to `app/linux/runner/C
 
 ---
 
+## [2026-03-16] X11 DOCK Type Must Be Set Before gtk_widget_show
+
+> **Tags:** #Linux #X11 #WindowManager #Positioning #Neo
+
+### Context
+On startup the strip occasionally appeared too low with empty space above it. Restarting fixed it, indicating a race condition.
+
+### The Issue
+In `first_frame_cb`, `gtk_widget_show(toplevel)` was called before `set_x11_strut()`. The WM saw the window as a normal window type first and positioned it accordingly (e.g. below the desktop panel). Setting `_NET_WM_WINDOW_TYPE_DOCK` and `_NET_WM_STRUT_PARTIAL` after the window was already mapped didn't always trigger a reposition.
+
+### The Solution
+Swap the order: call `set_x11_strut()` before `gtk_widget_show()`. The toplevel is already realized (via `gtk_widget_realize` on the view), so `gtk_widget_get_window()` returns a valid GdkWindow. The WM sees the DOCK type from the first map event and never mispositions it.
+
+### The Rule
+**Set `_NET_WM_WINDOW_TYPE_DOCK` and `_NET_WM_STRUT_PARTIAL` before mapping the window.** A window's type hint must be applied before `gtk_widget_show` to guarantee the WM places it correctly from the start.
+
+### References
+- **Files:** `app/linux/runner/my_application.cc`
+
+---
+
 ## [2026-02-27] Google OAuth Test Users Required for Unverified Apps
 
 > **Tags:** #Auth #GoogleOAuth #Setup #Drew

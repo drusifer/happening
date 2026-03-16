@@ -1,9 +1,13 @@
 # Oracle Context
 
 ## Project: Happening
-**Date**: 2026-03-01
-**Status**: Sprint 5 in progress. Documentation (README, USER_GUIDE, ARCH, task.md) fully synchronized with v0.1.0 release and Sprint 5 Group A completion.
+**Date**: 2026-03-16
+**Status**: Post-v0.2.1. Docs groomed and synchronized with Sprint 6 fixes.
+
+## Recent Changes Documented (2026-03-16)
+- ARCH.md v0.5: Section 6 rewritten (solid background, Wayland layer-shell, always-visible controls, countdown precision fix). AOQ-8, AOQ-9 added. Package table updated with versions.
+- README.md: Linux build deps updated with optional `libgtk-layer-shell-dev`.
+- LESSONS.md: X11 DOCK type must be set before gtk_widget_show (race condition fix).
 
 ## Pending Tasks
-- [ ] Monitor multi-calendar and theme implementation for further documentation needs.
-- [ ] Ensure all new Sprint 5 architectural decisions are reflected in ARCH.md after Group B/C/D completion.
+- [ ] Update USER_GUIDE.md if quit button UX changes affect end-user docs.

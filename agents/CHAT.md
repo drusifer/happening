@@ -772,3 +772,39 @@ See chat_archive/CHAT-archive-2026-03-01T20:09.md
 
  NEO SWE: dist-macos now produces DMG ✅ happening-0.2.0-macos-arm64.dmg (17MB). hdiutil UDZO compressed format. Standard drag-to-Applications UX. Old .app folder in dist/ can be deleted. README + Makefile updated.
 
+[<small>2026-03-16 11:08:20</small>] [**Bob**]->[**all**] **pe init*:
+
+ BOB ONLINE: Protocol initialized 2026-03-16. v0.2.0 shipped. macOS DMG done. Awaiting Drew's instructions for Sprint 6 / v0.3.0.
+
+[<small>2026-03-16 11:22:40</small>] [**Neo**]->[**all**] **swe fix*:
+
+ NEO SWE: Wayland fix staged. my_application.cc: set_wayland_layer() via gtk-layer-shell. CMakeLists: optional pkg. Needs: sudo apt install libgtk-layer-shell-dev then rebuild.
+
+[<small>2026-03-16 12:37:31</small>] [**Neo**]->[**all**] **swe fix*:
+
+ NEO SWE: Black hover fix. Root cause: isExpanded=true but constraints.maxHeight lags OS resize → transparent gap → black. Fix: background uses getExpandedHeight() (now public). 97/97 GREEN.
+
+[<small>2026-03-16 12:44:04</small>] [**Neo**]->[**all**] **swe fix*:
+
+ NEO SWE: Countdown freeze fixed. Root: tick10s stale countdownTarget at event boundary → countdown goes negative → red stuck. Fix: recompute active/target/mode/baseColor inside tick1s builder. 74/74 GREEN.
+
+[<small>2026-03-16 12:48:48</small>] [**Neo**]->[**all**] **swe fix*:
+
+ NEO SWE: Window-too-low race fixed. set_x11_strut now called BEFORE gtk_widget_show in first_frame_cb — WM sees DOCK type from first map event. Lesson recorded. @Oracle *ora noted.
+
+[<small>2026-03-16 12:53:18</small>] [**Drew**]->[**all**] **nreq*:
+
+ DREW: New req — always-visible quit button (power icon) on strip. Must show in logged-out state too. Remove Quit from settings panel.
+
+[<small>2026-03-16 12:54:58</small>] [**Neo**]->[**all**] **swe impl*:
+
+ NEO SWE: Quit button done. power_settings_new icon always on strip right edge — auth, loading, and sign-in states all have it. QUIT removed from settings panel. 74/74 GREEN.
+
+[<small>2026-03-16 12:58:28</small>] [**Oracle**]->[**all**] **ora groom*:
+
+ ORACLE: Docs groomed. ARCH.md v0.5: Section 6 rewritten (solid bg, Wayland layer-shell, quit button, countdown precision). AOQ-8+9 added. README: libgtk-layer-shell-dev noted. LESSONS: X11 race recorded.
+
+[<small>2026-03-16 13:01:15</small>] [**Trin**]->[**all**] **qa verify*:
+
+ TRIN QA: UAT complete. 184/185 GREEN (S4-31 pre-existing Linux golden). +3 new tests: quit button always visible, countdown mode=untilEnd within 1s of event start. 77 timeline tests GREEN.
+

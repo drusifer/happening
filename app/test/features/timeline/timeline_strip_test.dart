@@ -532,4 +532,85 @@ void main() {
       });
     });
   });
+
+  group('Quit button (always-visible)', () {
+    testWidgets('power icon is present on strip with no events', (tester) async {
+      final windowService = _FakeWindowService();
+      await tester.pumpWidget(wrap(TimelineStrip(
+        events: const [],
+        clockService: clock,
+        calendarController: fakeController,
+        settingsService: fakeSettings,
+        onSignOut: () {},
+        windowService: windowService,
+        enableAnimations: false,
+      )));
+      await tester.pump(Duration.zero);
+      expect(find.byIcon(Icons.power_settings_new), findsOneWidget);
+    });
+
+    testWidgets('power icon is present when expanded with hover card', (tester) async {
+      final windowService = _FakeWindowService();
+      final event = CalendarEvent(
+        id: 'e1',
+        title: 'Meeting',
+        startTime: now.add(const Duration(minutes: 30)),
+        endTime: now.add(const Duration(minutes: 60)),
+        color: Colors.blue,
+        calendarEventUrl: null,
+        videoCallUrl: null,
+      );
+      await tester.pumpWidget(wrap(TimelineStrip(
+        events: [event],
+        clockService: clock,
+        calendarController: fakeController,
+        settingsService: fakeSettings,
+        onSignOut: () {},
+        windowService: windowService,
+        enableAnimations: false,
+      )));
+      await tester.pump(Duration.zero);
+
+      final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await gesture.addPointer(location: Offset.zero);
+      await gesture.moveTo(const Offset(140, 10));
+      await tester.pump(const Duration(seconds: 1));
+
+      expect(windowService.isExpanded, isTrue);
+      expect(find.byIcon(Icons.power_settings_new), findsOneWidget);
+      await gesture.removePointer();
+    });
+  });
+
+  group('Countdown tick1s precision (event boundary)', () {
+    testWidgets('countdown mode switches to untilEnd within 1s of event start', (tester) async {
+      // Event starts at `now` — active immediately.
+      final activeEvent = CalendarEvent(
+        id: 'active',
+        title: 'Active Meeting',
+        startTime: now.subtract(const Duration(seconds: 1)),
+        endTime: now.add(const Duration(hours: 1)),
+        color: Colors.blue,
+        calendarEventUrl: null,
+        videoCallUrl: null,
+      );
+      final windowService = _FakeWindowService();
+      await tester.pumpWidget(wrap(TimelineStrip(
+        events: [activeEvent],
+        clockService: clock,
+        calendarController: fakeController,
+        settingsService: fakeSettings,
+        onSignOut: () {},
+        windowService: windowService,
+        enableAnimations: false,
+      )));
+      await tester.pump(Duration.zero);
+
+      // The countdown display should show untilEnd mode (no "in X" prefix).
+      final countdownFinder = find.byType(CountdownDisplay);
+      expect(countdownFinder, findsOneWidget);
+      final widget = tester.widget<CountdownDisplay>(countdownFinder);
+      expect(widget.mode, CountdownMode.untilEnd);
+    });
+  });
 }

@@ -8,8 +8,6 @@
 //
 // ---------------------------------------------------------------------------
 
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/features/calendar/calendar_controller.dart';
@@ -120,26 +118,12 @@ class _SettingsPanelState extends State<SettingsPanel> {
                     letterSpacing: 1.0,
                   ),
                 ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _MiniButton(
-                      label: 'QUIT',
-                      onTap: () => exit(0),
-                      color: theme.dividerColor.withValues(alpha: 0.1),
-                      textColor: theme.textTheme.bodySmall?.color
-                          ?.withValues(alpha: 0.7),
-                      fontSize: baseSize * 0.55,
-                    ),
-                    const SizedBox(width: 8),
-                    _MiniButton(
-                      label: 'LOGOUT',
-                      onTap: widget.onSignOut,
-                      color: Colors.redAccent.withValues(alpha: 0.15),
-                      textColor: Colors.redAccent.withValues(alpha: 0.8),
-                      fontSize: baseSize * 0.55,
-                    ),
-                  ],
+                _MiniButton(
+                  label: 'LOGOUT',
+                  onTap: widget.onSignOut,
+                  color: Colors.redAccent.withValues(alpha: 0.15),
+                  textColor: Colors.redAccent.withValues(alpha: 0.8),
+                  fontSize: baseSize * 0.55,
                 ),
               ],
             ),

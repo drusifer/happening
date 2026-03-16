@@ -5,6 +5,9 @@
 #include <gdk/gdkx.h>
 #include <X11/Xatom.h>
 #endif
+#ifdef HAS_GTK_LAYER_SHELL
+#include <gtk-layer-shell/gtk-layer-shell.h>
+#endif
 
 #include "flutter/generated_plugin_registrant.h"
 
@@ -79,11 +82,31 @@ static void set_x11_strut(GtkWindow* window) {
 #endif
 }
 
+// Configures the window as a Wayland layer-shell panel anchored to the top of
+// the screen, reserving exclusive space equal to the strip height.
+// No-op if gtk-layer-shell was not available at build time.
+static void set_wayland_layer(GtkWindow* window) {
+#ifdef HAS_GTK_LAYER_SHELL
+  GdkDisplay* display = gdk_display_get_default();
+  // Only activate on Wayland; X11 path uses set_x11_strut instead.
+  if (GDK_IS_X11_DISPLAY(display)) return;
+
+  gtk_layer_init_for_window(window);
+  gtk_layer_set_layer(window, GTK_LAYER_SHELL_LAYER_TOP);
+  gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_TOP, TRUE);
+  gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_LEFT, TRUE);
+  gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_RIGHT, TRUE);
+  gtk_layer_set_exclusive_zone(window, get_reserved_height());
+#endif
+}
+
 // Called when first Flutter frame received.
 static void first_frame_cb(MyApplication* self, FlView* view) {
   GtkWidget* toplevel = gtk_widget_get_toplevel(GTK_WIDGET(view));
-  gtk_widget_show(toplevel);
+  // Set X11 DOCK type + strut BEFORE showing so the WM never positions the
+  // window as a normal window first (avoids race where it appears too low).
   set_x11_strut(GTK_WINDOW(toplevel));
+  gtk_widget_show(toplevel);
 }
 
 // Implements GApplication::activate.
@@ -112,6 +135,7 @@ static void my_application_activate(GApplication* application) {
   }
 
   gtk_window_set_default_size(window, 1280, 1);
+  set_wayland_layer(window);
 
   g_autoptr(FlDartProject) project = fl_dart_project_new();
   fl_dart_project_set_dart_entrypoint_arguments(

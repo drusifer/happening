@@ -24,4 +24,16 @@ target_link_libraries(${BINARY_NAME} PRIVATE flutter)
 target_link_libraries(${BINARY_NAME} PRIVATE PkgConfig::GTK)
 target_link_libraries(${BINARY_NAME} PRIVATE X11)
 
+# Optional: Wayland layer-shell support (install libgtk-layer-shell-dev to enable).
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LAYER_SHELL gtk-layer-shell-0)
+if(LAYER_SHELL_FOUND)
+  message(STATUS "gtk-layer-shell found — Wayland strut support enabled")
+  target_link_libraries(${BINARY_NAME} PRIVATE ${LAYER_SHELL_LIBRARIES})
+  target_include_directories(${BINARY_NAME} PRIVATE ${LAYER_SHELL_INCLUDE_DIRS})
+  target_compile_definitions(${BINARY_NAME} PRIVATE HAS_GTK_LAYER_SHELL)
+else()
+  message(STATUS "gtk-layer-shell NOT found — Wayland strut support disabled")
+endif()
+
 target_include_directories(${BINARY_NAME} PRIVATE "${CMAKE_SOURCE_DIR}")
