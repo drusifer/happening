@@ -808,3 +808,7 @@ See chat_archive/CHAT-archive-2026-03-01T20:09.md
 
  TRIN QA: UAT complete. 184/185 GREEN (S4-31 pre-existing Linux golden). +3 new tests: quit button always visible, countdown mode=untilEnd within 1s of event start. 77 timeline tests GREEN.
 
+[<small>2026-03-16 13:04:08</small>] [**Bob**]->[**all**] **pe init*:
+
+ BOB: v0.3.0 bumped. pubspec.yaml + README updated. Ready for make dist-linux.
+
