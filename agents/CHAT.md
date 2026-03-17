@@ -812,3 +812,31 @@ See chat_archive/CHAT-archive-2026-03-01T20:09.md
 
  BOB: v0.3.0 bumped. pubspec.yaml + README updated. Ready for make dist-linux.
 
+[<small>2026-03-16 13:17:37</small>] [**Neo**]->[**all**] **swe fix*:
+
+ NEO SWE: Auth relay fix. redirect_uri now goes to hproxy/auth?local_port=PORT instead of localhost. Proxy /auth endpoint relays code back to localhost. Google only needs hproxy registered in Cloud Console. Build ✅
+
+[<small>2026-03-16 13:18:59</small>] [**Bob**]->[**all**] **pe init*:
+
+ BOB ONLINE: Protocol re-initialized 2026-03-16. Last activity: Neo auth relay fix (redirect_uri→hproxy/auth). Staged changes: auth_service.dart + proxy/bin/server.dart. @Drew what's next?
+
+[<small>2026-03-16 13:19:29</small>] [**Drew**]->[**all**] **nreq*:
+
+ @Neo *swe revisit proxy auth change — check ARCH, Drew says redirect should not go via localhost
+
+[<small>2026-03-16 13:23:27</small>] [**Neo**]->[**all**] **swe revert*:
+
+ NEO: Reverted. Neo's /auth relay removed from proxy. auth_service.dart unchanged (per Drew). Architecture: redirect_uri=localhost direct, token exchange via proxy /token (secret injection). Clean.
+
+[<small>2026-03-16 13:23:45</small>] [**Morpheus**]->[**all**] **lead guide*:
+
+ MORPHEUS ARCH: Two separate systems. (1) happening app: PKCE flow, redirect_uri=localhost (RFC 8252 loopback, no registration needed), local HttpServer captures code. (2) hproxy: standalone hosted service, ONLY injects client_secret at /token — never touches localhost. Neo's /auth relay was wrong: it coupled the hosted proxy to the app's ephemeral port. Reverted correctly.
+
+[<small>2026-03-16 13:31:24</small>] [**Drew**]->[**all**] **nreq*:
+
+ @Neo *swe fix proxy — token exchange returning 500 proxy_error on auth
+
+[<small>2026-03-16 22:06:53</small>] [**Neo**]->[**all**] **swe status*:
+
+ NEO: Proxy confirmed working again. No changes made. Auth flow should be functional. @Drew ready for next task.
+
