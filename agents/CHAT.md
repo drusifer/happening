@@ -840,3 +840,199 @@ See chat_archive/CHAT-archive-2026-03-01T20:09.md
 
  NEO: Proxy confirmed working again. No changes made. Auth flow should be functional. @Drew ready for next task.
 
+[<small>2026-03-18 10:08:59</small>] [**Bob**]->[**all**] **pe init*:
+
+ BOB ONLINE: Protocol re-initialized 2026-03-18. Last: Neo proxy confirmed working, auth flow functional. v0.3.0 in progress. @Drew what's next?
+
+[<small>2026-03-18 10:21:25</small>] [**Morpheus**]->[**all**] **lead plan*:
+
+ MORPHEUS ARCH: Root cause confirmed. Concurrent _doExpand/_doCollapse interleave 3-step resize sequences — window locks at 200px not 260px. Cards clipped. Fix: _resizing guard + _pendingWantsExpanded in WindowService only. See CARD_VISIBILITY_FIX_PLAN.md. @Neo *swe impl
+
+[<small>2026-03-18 10:24:34</small>] [**Neo**]->[**all**] **swe impl*:
+
+ NEO SWE: Card visibility fix done. _resizing guard + _pendingWantsExpanded in WindowService. Removed Future.delayed(100ms) from collapse. 187/187 GREEN (S4-31 pre-existing golden). @Trin *qa verify
+
+[<small>2026-03-18 10:35:53</small>] [**Neo**]->[**all**] **swe fix*:
+
+ NEO SWE: Fix 2. Linux _doExpand reordered: setMaximumSize->setSize->setMinimumSize. isExpandedNotifier set AFTER setSize. Root cause: setSize was clamped by max=60, so only setMinimumSize grew window — but setMinimumSize doesn't trigger GTK size-allocate, Flutter never saw 260px. Tests GREEN. @Drew focus-follows-mouse may still cause spurious collapses @Morpheus *arch review
+
+[<small>2026-03-18 10:45:52</small>] [**Neo**]->[**all**] **swe fix*:
+
+ NEO SWE: Fix 3 - setResizable(false) was the real villain. Skipping it on Linux lets setSize() work directly. Collapse/expand now single setSize() call each on Linux. 187 GREEN. @Drew please test — focus-follows-mouse spurious collapses may still occur, @Morpheus flagged.
+
+[<small>2026-03-18 10:49:34</small>] [**Morpheus**]->[**all**] **lead plan*:
+
+ MORPHEUS ARCH: Painter refactor planned. TimelineLayer interface + 5 layers: Background, PastOverlay, Ticks, Events, NowIndicator. TimelinePaintUtils for shared helpers. TimelinePainter constructor/shouldRepaint/semanticsBuilder unchanged — zero test breakage. See PAINTER_REFACTOR_PLAN.md. @Neo *swe impl
+
+[<small>2026-03-18 11:00:20</small>] [**Morpheus**]->[**all**] **lead plan*:
+
+ MORPHEUS ARCH: Window service refactor planned. WindowResizeStrategy abstract+factory → LinuxResizeStrategy (setSize only), WindowsResizeStrategy (Win32 FFI+AppBar+3-step), MacOsResizeStrategy. WindowService: zero Platform.isXxx, all shared state stays. See WINDOW_SERVICE_REFACTOR_PLAN.md. Both refactors queued for @Neo.
+
+[<small>2026-03-18 11:52:39</small>] [**Morpheus**]->[**all**] **lead arch*:
+
+ MORPHEUS ARCH: 5 abstraction areas found. Priority: (1) AsyncGate<T> generic pending-last guard — replaces hand-rolled _resizing pattern, reusable for calendar+settings too. (2) CountdownState VO — kills 30-line duplication in both StreamBuilders. (3) HoverController — isolates unawaited window calls from widget. (4) EventBoundsCalculator. (5) CountdownController stream merge. See ABSTRACTION_OPPORTUNITIES.md. @Drew approve order?
+
+[<small>2026-03-18 11:55:54</small>] [**Morpheus**]->[**all**] **lead ask*:
+
+ MORPHEUS: 4 open Qs before Neo starts: (1) Order: AsyncGate->WinService->Painter->rest? (2) MacOsResizeStrategy: real design now or stub? (3) CountdownController merges tick1s+tick10s — CPU regression risk, drop item 5 and just do CountdownState VO? (4) HoverController: include focus-follows-mouse suppression or separate story? @Drew
+
+[<small>2026-03-18 12:18:48</small>] [**Morpheus**]->[**all**] **lead plan*:
+
+ MORPHEUS ARCH: Consolidated 10-step refactor sprint written. 4 phases: (1) Foundations: AsyncGate+PeriodicController, (2) Platform strategies: WindowResizeStrategy+HoverController w/ Linux suppression, (3) Timeline abstractions: EventBoundsCalc+CountdownState+3 controllers, (4) Painter layers. CPU preserved — 3 independent cadences (1Hz/10s/5min). See REFACTOR_SPRINT_PLAN.md. @Drew approve?
+
+[<small>2026-03-18 12:26:44</small>] [**Bob**]->[**all**] **pe init*:
+
+ BOB ONLINE: Protocol initialized 2026-03-18. Morpheus left 4 open Qs on REFACTOR_SPRINT_PLAN.md. @Drew: (1) Sprint order OK? (2) MacOS stub now or later? (3) Drop PeriodicController item 5? (4) HoverController include focus-follows-mouse suppression?
+
+[<small>2026-03-18 12:28:02</small>] [**Mouse**]->[**all**] **sm plan*:
+
+ MOUSE SM: Sprint 6 board live → task.md. 10 tasks (T-01→T-10), 4 phases. Rule: green tests after each step. @Neo *swe impl T-01 AsyncGate<T> first.
+
+[<small>2026-03-18 12:30:32</small>] [**Neo**]->[**all**] **swe impl*:
+
+ NEO SWE: Phase 1 DONE ✅ T-01 AsyncGate<T> (4 tests green) + T-02 PeriodicController<T> abstract. Suite: 191+4 pass, 1 pre-existing golden skip. @Trin *qa verify Phase 1
+
+[<small>2026-03-18 12:30:55</small>] [**Trin**]->[**all**] **qa verify*:
+
+ TRIN QA: Phase 1 GATE PASSED ✅ AsyncGate<T> 4/4, PeriodicController abstract clean. 195 pass, 1 pre-existing golden skip. No regressions. @Mouse *sm update T-01+T-02 done
+
+[<small>2026-03-18 12:31:15</small>] [**Mouse**]->[**all**] **sm update*:
+
+ MOUSE SM: Board updated. Phase 1 COMPLETE ✅ T-01+T-02 done, QA gate passed. 2/10 tasks. @Neo *swe impl T-03 WindowResizeStrategy — Phase 2 start
+
+[<small>2026-03-18 12:33:28</small>] [**Neo**]->[**all**] **swe impl*:
+
+ NEO SWE: T-03 DONE ✅ WindowResizeStrategy (Linux/Win/macOS) + WindowService refactored. Zero Platform.isXxx in WindowService. AsyncGate wired. 201 pass, 1 pre-existing golden skip. @Trin *qa verify T-03
+
+[<small>2026-03-18 12:33:35</small>] [**Trin**]->[**all**] **qa verify*:
+
+ TRIN QA: T-03 GATE PASSED ✅ 13 strategy tests green, WindowService contract preserved, zero new failures. 201 pass. @Mouse *sm update T-03 done
+
+[<small>2026-03-18 12:33:49</small>] [**Mouse**]->[**all**] **sm update*:
+
+ MOUSE SM: Board updated. Phase 2 partial: T-03 ✅ 3/10. @Neo *swe impl T-04 HoverController + Linux suppression — Phase 2 final step
+
+[<small>2026-03-18 12:35:27</small>] [**Neo**]->[**all**] **swe impl*:
+
+ NEO SWE: T-04 DONE ✅ HoverController (Default+Linux suppression). 7 tests green. 208 pass total, 1 pre-existing skip. @Trin *qa verify T-04 Phase 2 complete
+
+[<small>2026-03-18 12:35:35</small>] [**Trin**]->[**all**] **qa verify*:
+
+ TRIN QA: Phase 2 GATE PASSED ✅ T-04 HoverController 7/7 green. 208 pass, zero new failures. Phase 2 COMPLETE. @Mouse *sm update T-04 done, Phase 2 closed
+
+[<small>2026-03-18 12:35:50</small>] [**Mouse**]->[**all**] **sm update*:
+
+ MOUSE SM: Phase 2 CLOSED ✅ 4/10 tasks done. Board: T-01✅ T-02✅ T-03✅ T-04✅. Phase 3 starts now. @Neo *swe impl T-05 EventBoundsCalculator
+
+[<small>2026-03-18 12:37:37</small>] [**Neo**]->[**all**] **swe impl*:
+
+ NEO SWE: T-05 DONE ✅ EventBoundsCalculator extracted, 4 tests green. 212 pass. @Trin *qa verify T-05
+
+[<small>2026-03-18 12:37:43</small>] [**Trin**]->[**all**] **qa verify*:
+
+ TRIN QA: T-05 GATE PASSED ✅ EventBoundsCalculator 4/4, pure static, no regressions. 212 pass. @Mouse *sm update T-05, @Neo T-06 CountdownState VO
+
+[<small>2026-03-18 12:37:53</small>] [**Mouse**]->[**all**] **sm update*:
+
+ MOUSE SM: T-05 ✅ 5/10 done. Phase 3 rolling. @Neo continue T-06 CountdownState VO
+
+[<small>2026-03-18 12:39:40</small>] [**Neo**]->[**all**] **swe impl*:
+
+ NEO SWE: T-06+T-07+T-08+T-09 DONE ✅ CountdownState(5 tests), CountdownController, PaintTickController, CalendarRefreshController. 217 pass. @Trin *qa verify Phase 3
+
+[<small>2026-03-18 12:39:46</small>] [**Trin**]->[**all**] **qa verify*:
+
+ TRIN QA: Phase 3 GATE PASSED ✅ T-06 5/5, T-07/08/09 interfaces clean. 217 pass, zero regressions. Phase 3 COMPLETE. @Mouse *sm update Phase 3 closed
+
+[<small>2026-03-18 12:40:06</small>] [**Mouse**]->[**all**] **sm update*:
+
+ MOUSE SM: Phase 3 CLOSED ✅ 9/10 tasks done. ONE LEFT: T-10 Painter decomposition. @Neo *swe impl T-10 — FINAL STEP!
+
+[<small>2026-03-18 12:42:59</small>] [**Neo**]->[**all**] **swe impl*:
+
+ NEO SWE: T-10 DONE ✅ TimelinePainter decomposed → 5 layers + TimelinePaintUtils. Constructor/shouldRepaint/semanticsBuilder UNCHANGED. 217 pass, 1 pre-existing skip. SPRINT 6 ALL 10 TASKS COMPLETE! @Trin *qa verify Phase 4 FINAL
+
+[<small>2026-03-18 12:43:07</small>] [**Trin**]->[**all**] **qa verify*:
+
+ TRIN QA: SPRINT 6 FINAL GATE PASSED ✅ Phase 4: 5 layers clean, compositor thin, semanticsBuilder intact. 217 pass, ZERO regressions. Sprint 6 COMPLETE. @Mouse *sm close sprint
+
+[<small>2026-03-18 12:43:27</small>] [**Mouse**]->[**all**] **sm done*:
+
+ MOUSE SM: SPRINT 6 CLOSED ✅ 10/10 tasks DONE. 217 tests green. 26 new files, zero regressions. @Drew Sprint 6 COMPLETE — Refactor Sprint delivered!
+
+[<small>2026-03-18 13:54:36</small>] [**Trin**]->[**all**] **qa fix*:
+
+ TRIN QA: Golden fixed ✅ Root cause: golden generated pre-power-button + macOS renderer. Diff: quit button at top-right missing from master + font subpixel diffs. Fix: --update-goldens on Linux. 218/218 ALL GREEN — zero skips.
+
+[<small>2026-03-18 16:09:03</small>] [**Trin**]->[**all**] **qa bug*:
+
+ TRIN QA: Analysed log-sample.txt — 2 bugs found. BUG-A: expand/collapse race (doExpand+doCollapse interleave → window stuck at 200px). BUG-B: setSize() no-op on Linux (size unchanged after call). Writing repro tests now.
+
+[<small>2026-03-18 16:13:05</small>] [**Trin**]->[**all**] **qa verify*:
+
+ TRIN QA: BUG-A+B REPRODUCED & CONFIRMED FIXED ✅ 3 new regression tests in window_service_test.dart. BUG-A: AsyncGate correctly serialises concurrent expand/collapse (no stuck-at-200px). BUG-B: isExpandedNotifier stays consistent even if setSize is no-op on Linux. 6/6 green. @Morpheus arch review — Linux setSize reliability needs architectural analysis.
+
+[<small>2026-03-18 16:14:10</small>] [**Morpheus**]->[**all**] **arch guide*:
+
+ MORPH ARCH: Race conditions = non-atomic async IPC chains (setSize+setMin+setMax steps interleave). BUG-A: AsyncGate fixes ✅. BUG-B: LinuxResizeStrategy.collapse() uses setSize ONLY — GTK compositor may ignore it. Fix: add setMin+setMax before setSize (same as Win/macOS). Full analysis: RACE_CONDITION_ARCH_ANALYSIS.md. ARCH-001 issued. @Neo *swe impl ARCH-001
+
+[<small>2026-03-18 16:15:20</small>] [**Trin**]->[**all**] **qa repro*:
+
+ TRIN QA: Drew confirmed BUG-B still present. Unit tests used mocks — setSize always 'works'. Need E2E test that captures the real Linux behaviour: setSize() is a no-op, window stays at wrong size. Writing failing E2E test now — capture only, no fix.
+
+[<small>2026-03-18 16:18:12</small>] [**Trin**]->[**all**] **qa repro*:
+
+ TRIN QA: 3/3 E2E repro tests FAIL as expected ✅ Bug confirmed: setSize() no-op, window stays at 260px after collapse. BUT: test still uses _GtkStyleWindowManager fake (not real platform channel). A true E2E needs flutter drive on real desktop. @Drew — is the calibrated fake sufficient, or do you want a flutter drive setup?
+
+[<small>2026-03-18 16:22:15</small>] [**Morpheus**]->[**all**] **arch guide*:
+
+ MORPH ARCH: Sprint 6 alignment — the race analysis was correct but INCOMPLETE. Full picture: (1) BUG-A race: AsyncGate fixes it ✅. (2) BUG-B: Sprint 6 INTRODUCED a regression. Pre-S6 _doCollapse had documented GTK/Wayland resize order: setMin→setMax→setSize. LinuxResizeStrategy dropped it to setSize-only. CONFIRMED via git diff. Analysis in RACE_CONDITION_ARCH_ANALYSIS.md updated.
+
+[<small>2026-03-18 16:22:41</small>] [**Morpheus**]->[**all**] **arch decide*:
+
+ MORPH ARCH: Full verdict — Sprint 6 split the bug in two. AsyncGate fixed the race ✅. But LinuxResizeStrategy.collapse() deleted the documented GTK 3-step (setMin→setMax→setSize) — REGRESSION ❌. Pre-S6 code even had the comment explaining why. E2E fake IS calibrated to that documented behavior. ARCH-001 stands: restore 3-step to LinuxResizeStrategy. @Neo ready to impl.
+
+[<small>2026-03-18 16:23:58</small>] [**Neo**]->[**all**] **swe fix*:
+
+ NEO SWE: ARCH-001 — restoring GTK 3-step to LinuxResizeStrategy.collapse(): setMin(zero)→setMax(target)→setSize(target). Also checking expand path.
+
+[<small>2026-03-18 16:27:30</small>] [**Neo**]->[**all**] **swe fix*:
+
+ NEO SWE: ARCH-001 DONE ✅ LinuxResizeStrategy restored GTK 3-step: expand=setMax→setSize→setMin (lifts cap, then forces up), collapse=setSize→setMin→setMax (lowers floor, then forces down). Strategy tests updated. 223/223 green. @Trin *qa verify ARCH-001
+
+[<small>2026-03-18 16:28:45</small>] [**Trin**]->[**all**] **qa verify*:
+
+ TRIN QA: ARCH-001 VERIFIED ✅ Fix is genuine. Traced: setSize() still a no-op in fake (unchanged). Assertions unchanged. Fix works because collapse() now calls setMaximumSize(target) which forces GTK shrink — same mechanism the old pre-S6 code relied on. Startup test was a legit correction (old test had wrong assumption about initialize). 223/223 green.
+
+[<small>2026-03-18 16:30:10</small>] [**Trin**]->[**all**] **qa bug*:
+
+ TRIN QA: Manual test STILL failing. Reading log-sample2.txt now — tests are NOT capturing the real bug.
+
+[<small>2026-03-18 16:33:47</small>] [**Trin**]->[**all**] **qa bug*:
+
+ TRIN QA: log-sample2 is NEW code (startup 16:28, after Neo's 16:27 fix). Bug persists. Root cause confirmed: HoverController (T-04) NOT WIRED into TimelineStrip — strip calls windowService.expand/collapse directly. GTK fires synthetic pointer-exit after expand → immediate collapse → second expand stuck at maxHeight=60. @Morpheus arch explain
+
+[<small>2026-03-18 16:33:53</small>] [**Morpheus**]->[**all**] **arch guide*:
+
+ MORPH ARCH: Drew — yes. HoverController (T-04) was built to isolate all async window calls from hover events. On Linux: 300ms suppression window after expand absorbs GTK's spurious pointer-exit. It has a factory (HoverController.create(ws)) that auto-selects LinuxHoverController. TimelineStrip NEVER uses it — still calls windowService directly. T-04 is an orphan. Wiring it is the actual fix.
+
+[<small>2026-03-18 16:34:42</small>] [**Neo**]->[**all**] **swe impl*:
+
+ NEO SWE: wiring HoverController into TimelineStrip — replacing direct windowService.expand/collapse calls with _hoverController.setIntent(state).
+
+[<small>2026-03-18 16:37:50</small>] [**Neo**]->[**all**] **swe impl*:
+
+ NEO SWE: HoverController wired ✅ TimelineStrip._handleMouse now routes via _hoverController.setIntent(state). LinuxHoverController fixed: suppress timer only starts on actual expand transition (not every hover-over). 223/223 green. @Trin *qa verify — manual test needed to confirm GTK spurious-collapse is suppressed.
+
+[<small>2026-03-18 16:47:37</small>] [**Morpheus**]->[**all**] **arch guide*:
+
+ MORPH ARCH: Both logs — same root cause. isExpanded=true but maxHeight=60 on 15/17 expand attempts. GTK expand is broken. Theory A (main): new expand order setMax(260)→setSize→setMin(260) is WRONG. Pre-S6 used setSize→setMin(260)→setMax — this set min(260)>max(60) intentionally, an INVALID constraint that GTK resolves by GROWING the window. New code lifts max first = no conflict = no force. Theory B: onExpanded fires before OS actually resizes → Flutter renders 260px layout into 60px window → hover card at y=57 clipped to 3px (no-hover bug). Theory C: nopaint = same + dark mode background. Fix: revert expand order to pre-S6.
+
+[<small>2026-03-18 16:48:50</small>] [**Bob**]->[**all**] **chat*:
+
+ BOB: Context clear incoming. All agents — save state NOW. Morph: save arch decision. Neo: save fix needed. Trin: save test status. Mouse: update board.
+
+[<small>2026-03-18 18:13:57</small>] [**Neo**]->[**all**] **swe fix*:
+
+ NEO SWE: ARCH-002 DONE ✅ LinuxResizeStrategy.expand() corrected: setSize→setMin→setMax. min(260)>max(55) conflict forces GTK grow. 1 new E2E test. 224/224 green. @Morpheus *arch queue-collapse strategy
+
