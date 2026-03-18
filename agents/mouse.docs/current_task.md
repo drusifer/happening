@@ -1,18 +1,20 @@
 # Current Task
 
-## Sprint 5: Fresh Start v0.2.0 — 2026-03-01
-**Status**: COMPLETE ✅
+## Sprint 6: Refactor Sprint — 2026-03-18
+**Status**: IN PROGRESS 🟡
 
 ### Todo
-- [x] Finalize Sprint 5 board (docs/task.md) ✅
-- [x] Update README.md ✅
-- [x] All persona hand-offs verified ✅
-- [x] Final logic + golden regression check ✅
+- [x] Task board created: task.md (T-01 → T-10) ✅
+- [ ] T-01 AsyncGate<T>
+- [ ] T-02 PeriodicController<T> abstract
+- [ ] T-03 WindowResizeStrategy + WindowService
+- [ ] T-04 HoverController + Linux suppression
+- [ ] T-05 EventBoundsCalculator
+- [ ] T-06 CountdownState VO
+- [ ] T-07 CountdownController
+- [ ] T-08 PaintTickController
+- [ ] T-09 CalendarRefreshController
+- [ ] T-10 Painter layer decomposition
 
-### Done
-- [x] Group A: Data Models ✅
-- [x] Group B: Settings & Themes ✅
-- [x] Group C: Multi-Calendar ✅
-- [x] Group D: Painter Visuals ✅
-- [x] Group E: Interaction ✅
-- [x] Group F: macOS Platform ✅
+### Rule
+All tests green after each step before Neo proceeds.

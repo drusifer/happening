@@ -22,6 +22,7 @@ import 'package:happening/features/calendar/calendar_controller.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/timeline/countdown_display.dart';
 import 'package:happening/features/timeline/expansion_logic.dart';
+import 'package:happening/features/timeline/hover/hover_controller.dart';
 import 'package:happening/features/timeline/hover_detail_overlay.dart';
 import 'package:happening/features/timeline/settings_panel.dart';
 import 'package:happening/features/timeline/timeline_layout.dart';
@@ -57,6 +58,7 @@ class TimelineStrip extends StatefulWidget {
 class _TimelineStripState extends State<TimelineStrip>
     with WidgetsBindingObserver {
   late final WindowService _windowService;
+  late final HoverController _hoverController;
   final _flashNotifier = ValueNotifier<double>(0.0);
   Timer? _flashTimer;
   CalendarEvent? _hoveredEvent;
@@ -83,6 +85,7 @@ class _TimelineStripState extends State<TimelineStrip>
   void initState() {
     super.initState();
     _windowService = widget.windowService;
+    _hoverController = HoverController.create(_windowService);
     _windowService.isExpandedNotifier.addListener(_onExpansionChanged);
 
     // S5-FIX: Listen to settings changes to update heights and trigger rebuild
@@ -122,6 +125,7 @@ class _TimelineStripState extends State<TimelineStrip>
     _windowService.isExpandedNotifier.removeListener(_onExpansionChanged);
     widget.settingsService.removeListener(_onSettingsChanged);
     WidgetsBinding.instance.removeObserver(this);
+    _hoverController.dispose();
     _flashTimer?.cancel();
     _flashNotifier.dispose();
     super.dispose();
@@ -247,18 +251,10 @@ class _TimelineStripState extends State<TimelineStrip>
       });
     }
 
-    // 3. Window Execution (Gated by UI state)
-    if (state == ExpansionState.expanded) {
-      if (!_windowService.isExpandedNotifier.value) {
-        unawaited(AppLogger.debug('TimelineStrip: Executing expand'));
-        unawaited(_windowService.expand());
-      }
-    } else {
-      if (_windowService.isExpandedNotifier.value) {
-        unawaited(AppLogger.debug('TimelineStrip: Executing collapse'));
-        unawaited(_windowService.collapse());
-      }
-    }
+    // 3. Window Execution — routed through HoverController.
+    // On Linux, LinuxHoverController suppresses spurious collapses fired by
+    // GTK's synthetic pointer-exit during window resize (300ms window).
+    _hoverController.setIntent(state);
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────
