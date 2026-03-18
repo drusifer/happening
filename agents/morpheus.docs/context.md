@@ -25,14 +25,16 @@ setMinimumSize(260)  → min=max=260, valid constraint, GTK may not resize
 - **Bug 1 (no-hover)**: `isExpanded=true` + `maxHeight=60` → HoverDetailOverlay at `top:57` clipped to 3px in 60px window → invisible
 - **Bug 2 (nopaint)**: Same + dark mode background → all black
 
-### Sprint 6 Regression Summary
+### Linux Async Bug Sprint — COMPLETE 2026-03-18
 | Component | Status |
 |---|---|
-| AsyncGate (race condition) | ✅ Fixed |
-| LinuxResizeStrategy.collapse() | ✅ Fixed (setSize→setMin→setMax) |
-| LinuxResizeStrategy.expand() | ❌ BROKEN (wrong order, needs revert to pre-S6) |
-| HoverController wired | ✅ Done |
+| AsyncGate (race condition BUG-A) | ✅ Fixed |
+| LinuxResizeStrategy.collapse() (ARCH-001) | ✅ Fixed (setSize→setMin→setMax) |
+| LinuxResizeStrategy.expand() (ARCH-002) | ✅ Fixed (setSize→setMin→setMax, min>max forces grow) |
+| AsyncGate dedup + cancel-reversal (ARCH-003) | ✅ Fixed |
+| HoverController wired into TimelineStrip | ✅ Done |
 | LinuxHoverController suppress timer | ✅ Fixed (only on actual expand transition) |
+| Manual UAT | ✅ Passed (Drew, 2026-03-18) |
 
 ### ARCH-002 Decision
 **LinuxResizeStrategy.expand() must use:** `setSize → setMinimumSize → setMaximumSize`
