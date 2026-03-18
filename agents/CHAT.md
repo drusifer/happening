@@ -1036,3 +1036,31 @@ See chat_archive/CHAT-archive-2026-03-01T20:09.md
 
  NEO SWE: ARCH-002 DONE ✅ LinuxResizeStrategy.expand() corrected: setSize→setMin→setMax. min(260)>max(55) conflict forces GTK grow. 1 new E2E test. 224/224 green. @Morpheus *arch queue-collapse strategy
 
+[<small>2026-03-18 18:17:32</small>] [**Morpheus**]->[**all**] **arch decide*:
+
+ MORPH ARCH: Queue-collapse impl done ✅ AsyncGate upgraded: same-as-inflight now CANCELS pending reversal (not just drops). expand→collapse→expand = pending collapse cancelled, single expand fires. 2 new dedup tests. 226/226. ARCH-003 priority-queue analysis next.
+
+[<small>2026-03-18 18:17:45</small>] [**Morpheus**]->[**all**] **arch decide*:
+
+ MORPH ARCH: Priority-queue analysis — for hover intent, last-wins is correct semantic (not expand-first). Expand-before-collapse would flash card on quick mouse-exit. Current upgraded AsyncGate handles GTK spurious pattern without priority ordering. Platform channel events arrive in-order so timestamp-sort not needed. Recommendation: keep last-wins + cancel-reversal. ARCH-003 CLOSED — no further action.
+
+[<small>2026-03-18 18:19:45</small>] [**Trin**]->[**all**] **qa verify*:
+
+ @Drew UAT E2E starting — reading state, checking test coverage gaps.
+
+[<small>2026-03-18 18:21:37</small>] [**Trin**]->[**all**] **qa verify*:
+
+ TRIN QA: UAT E2E GATE ✅ 226/226 green. Coverage: (1) ARCH-002 expand E2E — GTK min>max forces grow ✅ (2) ARCH-001 AsyncGate dedup+cancel-reversal ✅ (3) LinuxHoverController spurious-collapse suppression ✅ (4) HoverController→WindowService wiring via _handleMouse ✅ (5) BUG-A race (expand-collapse-expand ends expanded) ✅ (6) BUG-B startup collapse ✅. GAP: flutter drive on real GTK not automated (fake is calibrated). Manual hot-restart recommended @Drew.
+
+[<small>2026-03-18 18:23:25</small>] [**Trin**]->[**all**] **qa done*:
+
+ TRIN QA: MANUAL UAT PASSED ✅ Drew confirmed — hover expand/collapse working on real GTK. All bugs closed: BUG-A race, BUG-B setSize no-op, ARCH-001 collapse order, ARCH-002 expand order, ARCH-003 AsyncGate dedup. @Mouse *sm close sprint
+
+[<small>2026-03-18 18:23:39</small>] [**Mouse**]->[**all**] **sm done*:
+
+ MOUSE SM: Linux async bug sprint CLOSED ✅ BUG-A+B fixed, ARCH-001+002+003 delivered, 226/226 green, manual UAT passed. @Drew — ship it! @Oracle *ora groom docs
+
+[<small>2026-03-18 18:24:32</small>] [**Oracle**]->[**all**] **ora record*:
+
+ ORACLE: Docs groomed ✅ RACE_CONDITION_ARCH_ANALYSIS.md — all 3 ARCHs marked DONE + manual UAT noted. next_steps.md — immediate cleared, macOS backlog preserved. context.md — sprint summary updated. No stale open items.
+

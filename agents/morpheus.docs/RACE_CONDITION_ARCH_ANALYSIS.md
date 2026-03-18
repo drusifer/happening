@@ -41,7 +41,7 @@ This is the exact pattern seen in `log-sample.txt` lines 89-95.
 ```
 Sprint 6 deleted this documented knowledge when creating `LinuxResizeStrategy`.
 **E2E repro tests**: 3 failing tests in `test/core/window/window_linux_e2e_test.dart` confirm it.
-**Status**: ❌ CONFIRMED REGRESSION introduced by Sprint 6.
+**Status**: ✅ FIXED — ARCH-001 restored 3-step (setSize→setMin→setMax). 2026-03-18.
 
 ---
 
@@ -88,8 +88,10 @@ This mirrors what the OLD pre-Sprint6 code did (which DID work on Linux).
 | Concern | Sprint 6 Change | Verdict |
 |---|---|---|
 | Race condition (BUG-A) | Added `AsyncGate<bool>` | ✅ FIXED. Serialises expand/collapse. Regression tests pass. |
-| Linux collapse (BUG-B) | Created `LinuxResizeStrategy` | ❌ REGRESSED. Deleted working 3-step sequence. Replaced with setSize-only, which GTK ignores. |
-| Platform isolation | `WindowResizeStrategy` abstraction | ✅ CORRECT design. Wrong implementation for Linux collapse path. |
+| Linux collapse (BUG-B) | Created `LinuxResizeStrategy` | ✅ FIXED (ARCH-001). 3-step restored: setSize→setMin→setMax. 2026-03-18. |
+| Linux expand (BUG-C) | `LinuxResizeStrategy.expand()` wrong order | ✅ FIXED (ARCH-002). Corrected to setSize→setMin→setMax. min>max forces GTK grow. 2026-03-18. |
+| AsyncGate dedup | No dedup, redundant re-runs possible | ✅ FIXED (ARCH-003). Same-as-inflight cancels pending reversal. 2026-03-18. |
+| Platform isolation | `WindowResizeStrategy` abstraction | ✅ CORRECT design. All platforms now correctly implemented. |
 
 **The E2E test (`window_linux_e2e_test.dart`) is correctly calibrated.** Drew's concern about it relying too much on fakes is valid in principle, but the `_GtkStyleWindowManager` fake is grounded in pre-Sprint6 source comments AND log evidence. It's not an arbitrary mock — it encodes documented GTK behavior. The 3 FAILING tests are the correct repro.
 
@@ -115,7 +117,12 @@ Future<void> collapse(Size targetSize) async {
 
 ---
 
-## Decision
-> **ARCH-001**: `LinuxResizeStrategy.collapse()` MUST use constraint-forcing (setMin + setMax + setSize) matching Windows/macOS strategies. Rationale: GTK setSize() is advisory; setMaximumSize() is the reliable forcing mechanism per log-sample.txt evidence.
+## Decisions
 
-Action: `@Neo *swe impl ARCH-001 — update LinuxResizeStrategy.collapse()`
+> **ARCH-001** ✅ DONE: `LinuxResizeStrategy.collapse()` uses setSize→setMin→setMax. setMaximumSize forces shrink.
+
+> **ARCH-002** ✅ DONE: `LinuxResizeStrategy.expand()` uses setSize→setMin→setMax. setMinimumSize with min>max forces GTK grow. DO NOT lift max first — it removes the conflict that triggers growth.
+
+> **ARCH-003** ✅ DONE: `AsyncGate` upgraded — same-as-inflight cancels pending reversal. Same-as-pending deduped. Prevents redundant resize ops after GTK spurious event bursts.
+
+**Manual UAT passed 2026-03-18 (Drew).**
