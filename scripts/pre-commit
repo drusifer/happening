@@ -1,0 +1,14 @@
+#!/bin/bash
+# Pre-commit hook: scan staged files for secrets using gitleaks
+
+gitleaks protect --staged --config=.gitleaks.toml -v
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -ne 0 ]; then
+  echo ""
+  echo "❌ gitleaks found potential secrets in staged files."
+  echo "   Review the findings above and remove sensitive data before committing."
+  echo "   To bypass (only if you're sure it's a false positive):"
+  echo "     git commit --no-verify"
+  exit 1
+fi
