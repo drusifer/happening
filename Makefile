@@ -41,9 +41,22 @@ PUB_STAMP    := $(APP_DIR)/.dart_tool/package_config.json
 
 # Check system deps, then fetch pub deps.
 .PHONY: setup
-setup:
+setup: install-hooks
 	./scripts/setup.sh
 	cd $(APP_DIR) && $(FLUTTER) pub get
+
+# Install git hooks from scripts/ into .git/hooks/.
+# Works on Linux, macOS, and Windows (Git Bash / PowerShell).
+.PHONY: install-hooks
+install-hooks:
+ifeq ($(OS),Windows_NT)
+	@powershell -Command "Copy-Item -Force scripts/pre-commit .git/hooks/pre-commit"
+	@echo "Git hooks installed."
+else
+	@cp scripts/pre-commit .git/hooks/pre-commit
+	@chmod +x .git/hooks/pre-commit
+	@echo "Git hooks installed."
+endif
 
 # Fetch pub deps only when pubspec files are newer than the stamp.
 $(PUB_STAMP): $(APP_DIR)/pubspec.yaml $(APP_DIR)/pubspec.lock
@@ -191,7 +204,8 @@ clean:
 help:
 	@echo "Happening — Makefile targets"
 	@echo ""
-	@echo "  make setup        Check system deps + fetch pub deps"
+	@echo "  make setup        Check system deps + fetch pub deps + install hooks"
+	@echo "  make install-hooks  Install git pre-commit hook (blocks secrets)"
 	@echo "  make run          Run app (use 'run-linux', 'run-macos', or 'run-windows')"
 	@echo "  make run-linux    Run app on Linux desktop"
 	@echo "  make run-macos    Run app on macOS desktop"
