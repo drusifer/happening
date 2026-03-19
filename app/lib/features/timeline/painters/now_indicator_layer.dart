@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:happening/features/timeline/painters/timeline_layer.dart';
 
+/// TLDR: Paints the vertical "now" line with shadow and top/bottom triangle markers.
 class NowIndicatorLayer implements TimelineLayer {
   const NowIndicatorLayer({
     required this.nowIndicatorX,

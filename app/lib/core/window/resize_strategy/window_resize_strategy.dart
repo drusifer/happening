@@ -12,7 +12,10 @@ export 'linux_resize_strategy.dart';
 export 'macos_resize_strategy.dart';
 export 'windows_resize_strategy.dart';
 
-/// Platform-specific window resize behaviour.
+/// TLDR: Abstract strategy for platform-specific window expand/collapse sequences.
+/// Factory [create] selects Linux/Windows/macOS implementation at runtime.
+/// Each platform uses a different constraint-forcing order to reliably resize
+/// windows despite advisory-only setSize() on GTK/Wayland.
 abstract class WindowResizeStrategy {
   static WindowResizeStrategy create({
     required WindowManager wm,

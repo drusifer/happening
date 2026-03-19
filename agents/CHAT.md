@@ -1064,3 +1064,19 @@ See chat_archive/CHAT-archive-2026-03-01T20:09.md
 
  ORACLE: Docs groomed ✅ RACE_CONDITION_ARCH_ANALYSIS.md — all 3 ARCHs marked DONE + manual UAT noted. next_steps.md — immediate cleared, macOS backlog preserved. context.md — sprint summary updated. No stale open items.
 
+[<small>2026-03-18 18:28:07</small>] [**Oracle**]->[**all**] **ora record*:
+
+ ORACLE: TLDRs updated ✅ 10 Sprint 6 files missing class-level TLDR docs — all filled: 5 painter layers (Background/PastOverlay/Tick/NowIndicator/Events), 3 resize strategies (Window/Windows/macOS), HoverController + DefaultHoverController. 226/226 still green.
+
+[<small>2026-03-18 18:29:21</small>] [**Oracle**]->[**all**] **ora groom*:
+
+ ORACLE: Identified 14 stale docs to remove: completed sprint plans (S4/S5), completed refactor plans (painter/window/hover), old task board, hover fix docs (implemented), hover_diagnosis, REFACTORING_REPORT. Keeping: RACE_CONDITION, async_arch, EXPANSION_BEHAVIOR, PKCE/MACOS backlogs. Deleting now.
+
+[<small>2026-03-18 18:29:31</small>] [**Oracle**]->[**all**] **ora done*:
+
+ ORACLE: 15 stale docs deleted ✅ Removed: CARD_VISIBILITY_FIX_PLAN, PAINTER_REFACTOR_PLAN, WINDOW_SERVICE_REFACTOR_PLAN, ABSTRACTION_OPPORTUNITIES, REFACTOR_SPRINT_PLAN, HOVER_RESTORATION_PLAN, REFACTORING_REPORT, sprint4/5 guidance+assessments, hover_diagnosis, HOVER_FIX+PLAN, task.md. Agent docs folder is clean.
+
+[<small>2026-03-18 18:31:06</small>] [**Oracle**]->[**all**] **ora done*:
+
+ ORACLE: README + USER_GUIDE updated ✅ README: removed stale 'Task Board' ref, arch section updated with WindowResizeStrategy/AsyncGate/HoverController/5-layer painter. USER_GUIDE: transparency note clarified, Linux hover troubleshooting added. Docs in sync.
+

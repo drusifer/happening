@@ -78,7 +78,8 @@ Happening is optimized for ultra-low CPU usage:
 ## 7. Troubleshooting
 
 - **Strip Positioning**: If the strip appears in the center of the screen (Linux/Wayland), ensure `GDK_BACKEND=x11` is set.
-- **Transparency**: The area below the strip is transparent to your desktop. If it appears as a solid black/white box, verify your system's compositor settings.
+- **Transparency**: The area below the strip is transparent to your desktop. If it appears as a solid black/white box, verify your system's compositor settings (compositing must be enabled).
+- **Hover card not expanding (Linux)**: If hovering over an event does nothing, try a full app restart. The GTK window resize uses a constraint-forcing sequence that requires the app to initialize in the correct size state.
 
 ---
 
