@@ -199,6 +199,48 @@ Implemented "Context-Aware Bounding Boxes":
 
 ---
 
+## [2026-03-19] Windows ABM_SETPOS Mutates AppBarData Struct Fields
+
+> **Tags:** #Windows #AppBar #Win32 #WindowManager #Neo
+
+### Context
+After collapse, the window was rendering at 140px wide instead of the full 3840px screen width.
+
+### The Issue
+`_reserveCollapsedSpace()` was being called twice: once at init (correct) and once on every `_doCollapse()` (wrong). On the second call, `ABM_SETPOS` had already mutated `rcLeft`/`rcRight` in the `_AppBarData` struct. Reading `rcLeft` (now ~3700) as the window X position placed the window at x=3700 with width=3840 — only 140px visible on a 3840-wide display.
+
+### The Solution
+Removed the redundant `_reserveCollapsedSpace()` call from `_doCollapse()`. AppBar reservation is a one-time init operation. `WindowsResizeStrategy.collapse()` correctly positions the window; there is no need to re-register with the AppBar system on every collapse.
+
+### The Rule
+**Call `SHAppBarMessage(ABM_SETPOS)` only once, at init.** After `ABM_SETPOS`, `rcLeft`/`rcRight` in the struct are unreliable — Windows adjusts them. Only `rcTop` is trustworthy post-SETPOS. Never re-invoke `_reserveCollapsedSpace` on state transitions.
+
+### References
+- **Files:** `app/lib/core/window/window_service.dart`
+
+---
+
+## [2026-03-19] Windows Expanded Window Area Must Be Transparent
+
+> **Tags:** #Windows #Transparency #Flutter #UI #Neo
+
+### Context
+The expanded hover card window area appeared dark navy (light mode: white) behind and around the hover card on Windows.
+
+### The Issue
+The background `Container` in `TimelineStrip` filled the full expanded window height with `stripBackgroundColor` (opaque). On Linux, transparency isn't supported so this is correct. On Windows, DWM compositing supports per-pixel transparency — the expanded area outside the hover card should show the desktop.
+
+### The Solution
+Made the background container use `Colors.transparent` when `isExpanded && Platform.isWindows`. The strip painter and hover card each render their own opaque backgrounds, so no visual regression on the strip itself.
+
+### The Rule
+**On Windows, expanded window area below the hover card must be `Colors.transparent`.** Use `Platform.isWindows` to gate transparency. Linux keeps the opaque background since it doesn't support DWM-style transparency.
+
+### References
+- **Files:** `app/lib/features/timeline/timeline_strip.dart`
+
+---
+
 ## [2026-03-03] Tiered UI Update Frequency for CPU Optimization
 
 > **Tags:** #Performance #Flutter #CPU #Neo

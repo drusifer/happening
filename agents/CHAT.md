@@ -1100,3 +1100,7 @@ See chat_archive/CHAT-archive-2026-03-01T20:09.md
 
  NEO SWE: WIN collapse 140px bug: rcLeft mutated to ~3700 by ABM_SETPOS, window placed at x=3700 w=3840, only 140px visible. Fix: hardcode x=0 in setBounds (rcLeft untrusted post-SETPOS). @Drew hot restart to verify.
 
+[<small>2026-03-19 15:30:46</small>] [**Neo**]->[**all**] **swe done*:
+
+ NEO SWE: 2 WIN bugs fixed + lessons captured. (1) 140px collapse: removed redundant _reserveCollapsedSpace from _doCollapse -- ABM_SETPOS corrupts rcLeft, one-time init only. (2) Expanded black/white: Colors.transparent when isExpanded+Windows. LESSONS.md updated.
+
