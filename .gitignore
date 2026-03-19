@@ -3,6 +3,7 @@
 
 # Miscellaneous
 *.class
+log-sample*.txt
 # *.lock — intentionally NOT ignored: pubspec.lock is committed for reproducible builds
 *.log
 *.pyc
