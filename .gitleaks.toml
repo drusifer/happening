@@ -1,0 +1,33 @@
+[extend]
+# Use gitleaks default ruleset as a base
+useDefault = true
+
+[[rules]]
+id = "google-calendar-id"
+description = "Google Calendar ID"
+regex = '''[a-z0-9._%+\-]+@group\.calendar\.google\.com'''
+tags = ["calendar", "google"]
+
+[[rules]]
+id = "email-address"
+description = "Email address in sensitive context"
+regex = '''[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}'''
+tags = ["email", "pii"]
+
+  [rules.allowlist]
+  # Allow emails in pubspec.yaml (author fields), dart files (comments/docs), and test files
+  paths = [
+    '''pubspec\.yaml''',
+    '''.*\.dart''',
+    '''.*_test\.dart''',
+    '''README.*''',
+    '''CLAUDE\.md''',
+  ]
+
+[allowlist]
+description = "Global allowlists"
+paths = [
+  '''.gitleaks.toml''',
+  '''\.gitignore''',
+  '''pubspec\.lock''',
+]
