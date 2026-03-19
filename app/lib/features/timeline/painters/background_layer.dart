@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:happening/features/timeline/painters/timeline_layer.dart';
 
+/// TLDR: Fills the entire canvas with a solid background color.
 class BackgroundLayer implements TimelineLayer {
   const BackgroundLayer({required this.color});
   final Color color;

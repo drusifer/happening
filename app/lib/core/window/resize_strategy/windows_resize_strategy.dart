@@ -4,7 +4,9 @@ import 'package:window_manager/window_manager.dart';
 
 import 'window_resize_strategy.dart';
 
-/// Windows: AppBar registration + 3-step resize sequence.
+/// TLDR: Windows resize strategy. setResizable(false) on init.
+/// Expand: fires onExpanded first (Win32 is synchronous), then setMax→setSize→setMin.
+/// Collapse: setMin→setMax→setSize.
 class WindowsResizeStrategy extends WindowResizeStrategy {
   WindowsResizeStrategy({
     required WindowManager wm,

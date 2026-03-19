@@ -5,7 +5,8 @@ import 'package:happening/features/timeline/expansion_logic.dart';
 
 import 'hover_controller.dart';
 
-/// Default hover controller for Windows/macOS.
+/// TLDR: Windows/macOS hover controller — forwards expand/collapse directly to
+/// [WindowService] with no suppression (platform compositors don't fire spurious events).
 class DefaultHoverController extends HoverController {
   DefaultHoverController(this._ws);
   final WindowService _ws;

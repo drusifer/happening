@@ -4,6 +4,9 @@ import 'package:happening/features/timeline/painters/timeline_layer.dart';
 import 'package:happening/features/timeline/painters/timeline_paint_utils.dart';
 import 'package:happening/features/timeline/timeline_layout.dart';
 
+/// TLDR: Paints all calendar events as colored blocks (or task diamonds) on the
+/// timeline strip. Handles hover highlight, collision outlines, free-time hatch,
+/// event labels, and inter-event gap labels.
 class EventsLayer implements TimelineLayer {
   const EventsLayer({
     required this.events,

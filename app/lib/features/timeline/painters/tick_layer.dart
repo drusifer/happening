@@ -3,6 +3,8 @@ import 'package:happening/features/timeline/painters/timeline_layer.dart';
 import 'package:happening/features/timeline/painters/timeline_paint_utils.dart';
 import 'package:happening/features/timeline/timeline_layout.dart';
 
+/// TLDR: Paints hour/half/quarter/5-min tick marks and time labels on the timeline.
+/// Sub-tick density scales with zoom (pixelsPerHour). Labels suppressed near now-indicator.
 class TickLayer implements TimelineLayer {
   const TickLayer({
     required this.layout,

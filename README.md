@@ -7,7 +7,7 @@ Here is what it looks like at 20x speed:
 
 ## Table of Contents
 - [USER_GUIDE.md](USER_GUIDE.md) — How to use Happening (End-user docs)
-- [Docs](docs/) — Architecture, Decisions, PRD, and Task Board
+- [Docs](docs/) — Architecture, Decisions, and PRD
 - [Agents](agents/) — Persona documentation and CHAT.md
 - [App](app/) — Flutter application source code
 
@@ -132,7 +132,8 @@ make run          # Lists all options
 
 ## Architecture Overview
 - **Framework**: Flutter (Desktop)
-- **Window Management**: `window_manager` for frameless, always-on-top behavior.
-- **Rendering**: `CustomPainter` for the proportional timeline (1 pixel = N seconds).
-- **State Management**: `StreamBuilder` driven by a 1Hz clock tick for smooth real-time animation.
+- **Window Management**: `window_manager` for frameless, always-on-top behavior. Platform-specific resize sequences (`WindowResizeStrategy`) handle GTK/Wayland constraint-forcing on Linux.
+- **Rendering**: `CustomPainter` decomposed into 5 composited layers (`BackgroundLayer`, `PastOverlayLayer`, `TickLayer`, `NowIndicatorLayer`, `EventsLayer`).
+- **State Management**: `StreamBuilder` driven by a 1Hz clock tick. `AsyncGate<T>` serializes async window ops and deduplicates rapid intent changes.
+- **Hover**: `HoverController` isolates all expand/collapse calls from pointer events. `LinuxHoverController` adds 300ms suppression for GTK spurious pointer-exit after resize.
 - **Data**: Google Calendar API v3 via `googleapis`.
