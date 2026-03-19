@@ -390,7 +390,11 @@ class _TimelineStripState extends State<TimelineStrip>
                     height: isExpanded
                         ? _windowService.getExpandedHeight()
                         : constraints.maxHeight,
-                    child: Container(color: stripBackgroundColor),
+                    child: Container(
+                      color: isExpanded && Platform.isWindows
+                          ? Colors.transparent
+                          : stripBackgroundColor,
+                    ),
                   ),
                   Positioned(
                     top: 0,

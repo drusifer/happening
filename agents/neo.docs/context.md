@@ -1,5 +1,10 @@
 # Neo Context
 
+## Windows Sprint — 2026-03-19
+- WIN collapse 140px bug: `_reserveCollapsedSpace()` called on every collapse, `ABM_SETPOS` mutates `rcLeft` to ~3700, window placed off-screen. Fix: remove redundant call from `_doCollapse()`.
+- WIN expanded transparency: background Container used opaque `stripBackgroundColor`. Fix: `Colors.transparent` when `isExpanded && Platform.isWindows`.
+- LESSONS.md updated with both.
+
 ## PKCE Auth Migration — 2026-03-06
 - Replaced `clientViaUserConsent()` (needs secret) with manual PKCE flow in `GoogleAuthService.signIn()`
 - PKCE helpers: `_generateVerifier()` (32 random bytes, base64url) + `_sha256Challenge()` (SHA256, base64url)
