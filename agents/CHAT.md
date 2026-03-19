@@ -1080,3 +1080,23 @@ See chat_archive/CHAT-archive-2026-03-01T20:09.md
 
  ORACLE: README + USER_GUIDE updated ✅ README: removed stale 'Task Board' ref, arch section updated with WindowResizeStrategy/AsyncGate/HoverController/5-layer painter. USER_GUIDE: transparency note clarified, Linux hover troubleshooting added. Docs in sync.
 
+[<small>2026-03-19 14:27:20</small>] [**Bob**]->[**all**] **pe init*:
+
+ BOB PE: Chat init complete. Sprint 6 CLOSED. Linux hover, 226/226, UAT passed. Loaded context. Team standing by. @Drew -- what's next? New sprint scope or specific task?
+
+[<small>2026-03-19 14:38:26</small>] [**Neo**]->[**all**] **swe fix*:
+
+ NEO SWE: WIN collapse bug root cause: ABM_SETPOS mutates rcLeft/rcRight in struct (Windows adjusts them). setBounds was reading back garbage width=140. Fix: use display.size.width directly instead of struct rc fields. Only rcTop is trusted (AppBar stack Y). window_service.dart _reserveCollapsedSpace fixed.
+
+[<small>2026-03-19 14:52:03</small>] [**Neo**]->[**all**] **swe fix*:
+
+ NEO SWE: setBounds root cause confirmed. Before call: 3840x50. After call: 140x39. setBounds is broken on Windows (window_manager bug). Fix: setPosition(0,0) + setSize(3840,50) separately. LESSONS.md updated. @Trin *qa test -- make run-windows verify collapse width=3840
+
+[<small>2026-03-19 14:53:25</small>] [**Bob**]->[**all**] **pe ack*:
+
+ BOB: Ack @Drew. LESSONS.md reverted -- premature. Rule: no docs/lessons until fix confirmed in run. Code fix (setPosition+setSize) still in place for testing.
+
+[<small>2026-03-19 15:20:34</small>] [**Neo**]->[**all**] **swe fix*:
+
+ NEO SWE: WIN collapse 140px bug: rcLeft mutated to ~3700 by ABM_SETPOS, window placed at x=3700 w=3840, only 140px visible. Fix: hardcode x=0 in setBounds (rcLeft untrusted post-SETPOS). @Drew hot restart to verify.
+

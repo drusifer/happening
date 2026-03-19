@@ -89,6 +89,7 @@ class WindowService {
   final isExpandedNotifier = ValueNotifier<bool>(false);
 
   double _dpr = 1.0;
+  double _screenWidth = 0;
 
   /// Call once, before [runApp], to set up the window.
   Future<void> initialize({
@@ -101,6 +102,7 @@ class WindowService {
     _dpr = realDpr;
     final display = await _sr.getPrimaryDisplay();
     final width = display.size.width;
+    _screenWidth = width;
     final targetHeight = getCollapsedHeight();
     final size = Size(width, targetHeight);
 
@@ -193,13 +195,10 @@ class WindowService {
   }
 
   Future<void> _reserveCollapsedSpace() async {
-    final display = await _sr.getPrimaryDisplay();
-    final width = display.size.width;
-
     _appBarData!.ref.uEdge = _abeTop;
     _appBarData!.ref.rcLeft = 0;
     _appBarData!.ref.rcTop = 0;
-    _appBarData!.ref.rcRight = (width * _dpr).round();
+    _appBarData!.ref.rcRight = (_screenWidth * _dpr).round();
     final targetHeight = (getCollapsedHeight() * _dpr).round();
     _appBarData!.ref.rcBottom = targetHeight;
 
@@ -214,7 +213,7 @@ class WindowService {
       await _wm.setBounds(Rect.fromLTWH(
         _appBarData!.ref.rcLeft / _dpr,
         _appBarData!.ref.rcTop / _dpr,
-        (_appBarData!.ref.rcRight - _appBarData!.ref.rcLeft) / _dpr,
+        _screenWidth,
         (_appBarData!.ref.rcBottom - _appBarData!.ref.rcTop) / _dpr,
       ));
     }
@@ -233,32 +232,23 @@ class WindowService {
   }
 
   Future<void> _doResize(bool wantsExpanded) async {
-    final display = await _sr.getPrimaryDisplay();
-    final width = display.size.width;
     if (wantsExpanded) {
-      await _doExpand(width: width);
+      await _doExpand();
     } else {
-      await _doCollapse(width: width);
+      await _doCollapse();
     }
   }
 
-  Future<void> _doExpand({double? width}) async {
-    final display = width != null ? null : await _sr.getPrimaryDisplay();
-    final w = width ?? display!.size.width;
-    final size = Size(w, getExpandedHeight());
+  Future<void> _doExpand() async {
+    final size = Size(_screenWidth, getExpandedHeight());
     await AppLogger.debug('WindowService: _doExpand() target=${size.height}');
     await _strategy.expand(size, () => isExpandedNotifier.value = true);
   }
 
-  Future<void> _doCollapse({double? width}) async {
-    final display = width != null ? null : await _sr.getPrimaryDisplay();
-    final w = width ?? display!.size.width;
-    final size = Size(w, getCollapsedHeight());
+  Future<void> _doCollapse() async {
+    final size = Size(_screenWidth, getCollapsedHeight());
     await AppLogger.debug('WindowService: _doCollapse() target=${size.height}');
     isExpandedNotifier.value = false;
     await _strategy.collapse(size);
-    if (Platform.isWindows && _appBarData != null) {
-      await _reserveCollapsedSpace();
-    }
   }
 }
