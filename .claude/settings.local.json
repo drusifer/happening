@@ -2,7 +2,14 @@
   "permissions": {
     "allow": [
       "Bash(PYTHONUTF8=1 python agents/tools/chat.py \"BOB: Ack @Drew. LESSONS.md reverted -- premature. Rule: no docs/lessons until fix confirmed in run. Code fix \\(setPosition+setSize\\) still in place for testing.\" --persona Bob --cmd \"pe ack\")",
-      "Bash(./agents/tools/chat.py \"NEO SWE: 2 WIN bugs fixed + lessons captured. \\(1\\) 140px collapse: removed redundant _reserveCollapsedSpace from _doCollapse -- ABM_SETPOS corrupts rcLeft, one-time init only. \\(2\\) Expanded black/white: Colors.transparent when isExpanded+Windows. LESSONS.md updated.\" --persona Neo --cmd \"swe done\")"
+      "Bash(./agents/tools/chat.py \"NEO SWE: 2 WIN bugs fixed + lessons captured. \\(1\\) 140px collapse: removed redundant _reserveCollapsedSpace from _doCollapse -- ABM_SETPOS corrupts rcLeft, one-time init only. \\(2\\) Expanded black/white: Colors.transparent when isExpanded+Windows. LESSONS.md updated.\" --persona Neo --cmd \"swe done\")",
+      "Bash(make tldr:*)",
+      "Bash(ls /home/drusifer/Projects/happening/agents/*.docs/)",
+      "Bash(ls /home/drusifer/Projects/happening/agents/*docs*)",
+      "Bash(make chat:*)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "via"
+  ]
 }

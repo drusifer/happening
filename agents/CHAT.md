@@ -1104,3 +1104,151 @@ See chat_archive/CHAT-archive-2026-03-01T20:09.md
 
  NEO SWE: 2 WIN bugs fixed + lessons captured. (1) 140px collapse: removed redundant _reserveCollapsedSpace from _doCollapse -- ABM_SETPOS corrupts rcLeft, one-time init only. (2) Expanded black/white: Colors.transparent when isExpanded+Windows. LESSONS.md updated.
 
+
+---
+[<small>2026-03-23 12:03:20</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make tldr | /home/drusifer/Projects/happening/build/build.out
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:194: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-03-23 12:08:52</small>] [**User**]->[**all**] **request*:
+ Bob Protocol init
+
+---
+[<small>2026-03-23 12:09:16</small>] [**Bob**]->[**all**] **pe init*:
+ BOB PE: Protocol initialized ✅ Sprint 6 CLOSED (2026-03-19). Last work: WIN collapse bugs fixed (ABM_SETPOS rcLeft corruption + expanded transparency). 226/226 green. Team standing by. @Drew — what's next?
+
+---
+[<small>2026-03-23 12:10:29</small>] [**Bob**]->[**all**] **pe test*:
+ test
+
+---
+[<small>2026-03-23 12:15:56</small>] [**User**]->[**Morpheus**] **request*:
+ UX on linux is still flaky either all black or no cards showing, please evaluate the latest log in ~/.config/happening/debug.log and review lessons. We need linux specific fix so we don't break windows and mac
+
+---
+[<small>2026-03-23 12:23:54</small>] [**Morpheus**]->[**Neo**] **lead arch*:
+ MORPHEUS: Linux expand root cause confirmed. See LINUX_EXPAND_ANALYSIS.md. Fix: swap expand() to setMaximumSize->setMinimumSize. @Neo *swe fix LinuxResizeStrategy.expand()
+
+---
+[<small>2026-03-23 12:24:09</small>] [**Neo**]->[**Trin**] **swe fix*:
+ NEO: Fixed LinuxResizeStrategy.expand() -- swapped to setMaximumSize->setMinimumSize, dropped setSize. Collapse unchanged. Linux-only. @Trin *qa test
+
+---
+[<small>2026-03-23 12:52:42</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Error: Build process failed
+make[1]: *** [Makefile.prj:70: run-linux] Error 1
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-03-23 12:53:03</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Error: Build process failed
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+make[1]: *** [Makefile.prj:70: run-linux] Error 1
+
+---
+[<small>2026-03-23 12:54:28</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Error: Build process failed
+make[1]: *** [Makefile.prj:70: run-linux] Error 1
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-03-23 13:34:51</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Error: Build process failed
+make[1]: *** [Makefile.prj:70: run-linux] Error 1
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-03-23 13:35:49</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Error: Build process failed
+make[1]: *** [Makefile.prj:70: run-linux] Error 1
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-03-23 14:19:02</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:194: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-03-23 14:20:48</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:194: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-03-23 14:44:20</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:194: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-03-23 14:45:29</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:194: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-03-23 14:55:12</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:194: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-03-23 15:32:53</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Error: Build process failed
+make[1]: *** [Makefile.prj:70: run-linux] Error 1
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-03-23 15:33:20</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:194: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-03-23 15:54:19</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:194: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-03-23 16:38:59</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:194: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-03-23 17:03:56</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make build-linux | /home/drusifer/Projects/happening/build/build.out
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:194: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-03-23 17:38:52</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:194: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-03-23 18:01:32</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:194: warning: ignoring old recipe for target 'tldr'

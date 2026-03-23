@@ -1,6 +1,11 @@
 # Morpheus Context
 
-## Active Investigation: Linux Window Resize Bugs — 2026-03-18
+## Active: Linux Expand Bug Re-investigation — 2026-03-23
+
+### Root Cause Confirmed (ARCH-002 regression)
+`LinuxResizeStrategy.expand()` order was wrong in Sprint 6 "fix". The conflict trick (min>max) is unpredictable. Real fix: setMaximumSize→setMinimumSize. GTK grows window when window < min_size (well-defined). Fixed in linux_resize_strategy.dart. Awaiting Trin UAT.
+
+## Previous: Linux Window Resize Bugs — 2026-03-18
 
 ### Root Cause Identified (CONFIRMED)
 `LinuxResizeStrategy.expand()` order is WRONG. GTK expand requires intentional min>max conflict to force compositor to grow.
