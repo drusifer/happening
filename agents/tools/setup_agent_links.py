@@ -1,21 +1,26 @@
 #!/usr/bin/env python3
 """
-Setup Agent Discovery Links
+Setup Agent Discovery Links — creates symlinks so AI tools can find agent personas.
 
-Creates symlinks for agent discovery across different AI platforms:
-- Claude: .claude/skills/<name>/ -> agents/<name>.docs/
-- OpenAI/Codex/Cursor: AGENTS.md -> agents/AGENTS.md
-- Gemini: GEMINI.md -> agents/AGENTS.md
+TLDR:
+    Scans agents/*.docs/ directories for persona folders (identified by the
+    presence of SKILL.md) and creates the platform-specific symlinks each AI
+    tool expects: .claude/skills/<name>/ for Claude Code, AGENTS.md / GEMINI.md /
+    .cursorrules / CHATGPT.md / .github/copilot-instructions.md at the project
+    root for other tools.
+    Key functions: find_project_root() locates the repo root; find_persona_folders()
+    discovers persona dirs; find_shared_skills() finds agents/skills/*/;
+    setup_claude_skills() builds the .claude/skills/ tree; setup_root_symlinks()
+    creates root-level links; check_yaml_frontmatter() warns about missing
+    SKILL.md frontmatter; create_symlink() safely creates/replaces a symlink.
+    Role in the system: a one-time setup script run from the project root; depends
+    on agents/*.docs/SKILL.md files existing and produces the discovery artifacts
+    consumed by Claude Code, OpenAI Codex, Cursor, Gemini CLI, and GitHub Copilot.
 
-Run from project root:
-    python agents/tools/setup_agent_links.py
-
-Or make executable:
-    chmod +x agents/tools/setup_agent_links.py
-    ./agents/tools/setup_agent_links.py
 """
 
 import os
+import shutil
 import sys
 from pathlib import Path
 
@@ -33,17 +38,17 @@ def find_project_root() -> Path:
     return project_root
 
 
-def find_persona_folders(agents_dir: Path) -> list[tuple[str, Path, Path]]:
-    """Find all persona folders (*.docs directories with *_AGENT.md files)."""
+def find_persona_folders(agents_dir: Path) -> list[tuple[str, Path]]:
+    """Find all persona folders (*.docs directories with SKILL.md files)."""
     personas = []
 
     for item in agents_dir.iterdir():
         if item.is_dir() and item.name.endswith(".docs"):
-            # Look for *_AGENT.md file
-            agent_files = list(item.glob("*_AGENT.md"))
-            if agent_files:
+            # Look for SKILL.md file
+            skill_md = item / "SKILL.md"
+            if skill_md.exists():
                 persona_name = item.name.replace(".docs", "")
-                personas.append((persona_name, item, agent_files[0]))
+                personas.append((persona_name, item))
 
     return personas
 
@@ -94,18 +99,15 @@ def setup_claude_skills(project_root: Path, personas: list, shared_skills: list)
     count = 0
 
     # Persona skills (agents/*.docs/)
-    for persona_name, persona_dir, agent_file in personas:
+    for persona_name, persona_dir in personas:
         # Create symlink: .claude/skills/<name>/ -> agents/<name>.docs/
         skill_link = skills_dir / persona_name
         if create_symlink(skill_link, persona_dir):
             print(f"  ✅ {skill_link.relative_to(project_root)} -> {persona_dir.relative_to(project_root)}")
             count += 1
-
-        # Create SKILL.md symlink inside persona folder
-        skill_md = persona_dir / "SKILL.md"
-        if create_symlink(skill_md, agent_file):
-            print(f"  ✅ {skill_md.relative_to(project_root)} -> {agent_file.name}")
-            count += 1
+        else:
+            # Already linked
+            pass
 
     # Shared skills (agents/skills/*/)
     for skill_name, skill_dir in shared_skills:
@@ -118,7 +120,7 @@ def setup_claude_skills(project_root: Path, personas: list, shared_skills: list)
 
 
 def setup_root_symlinks(project_root: Path, agents_dir: Path) -> int:
-    """Create AGENTS.md and GEMINI.md symlinks at project root."""
+    """Create discovery symlinks at project root for various AI tools."""
     print("\n📁 Setting up root symlinks...")
 
     agents_md = agents_dir / "AGENTS.md"
@@ -128,30 +130,63 @@ def setup_root_symlinks(project_root: Path, agents_dir: Path) -> int:
         return 0
 
     count = 0
+    links = [
+        ("AGENTS.md", "OpenAI/Codex/Standard"),
+        ("GEMINI.md", "Gemini CLI"),
+        (".cursorrules", "Cursor AI"),
+        ("CHATGPT.md", "ChatGPT Projects (Copy-Paste)"),
+    ]
 
-    # AGENTS.md for OpenAI/Codex/Cursor/Copilot
-    link = project_root / "AGENTS.md"
-    if create_symlink(link, agents_md):
-        print(f"  ✅ AGENTS.md -> agents/AGENTS.md (OpenAI/Codex/Cursor)")
-        count += 1
+    for link_name, tool_name in links:
+        link = project_root / link_name
+        if create_symlink(link, agents_md):
+            print(f"  ✅ {link_name} -> agents/AGENTS.md ({tool_name})")
+            count += 1
 
-    # GEMINI.md for Gemini CLI
-    link = project_root / "GEMINI.md"
-    if create_symlink(link, agents_md):
-        print(f"  ✅ GEMINI.md -> agents/AGENTS.md (Gemini)")
+    # GitHub Copilot (specific directory)
+    github_dir = project_root / ".github"
+    github_dir.mkdir(exist_ok=True)
+    copilot_link = github_dir / "copilot-instructions.md"
+    if create_symlink(copilot_link, agents_md):
+        print(f"  ✅ .github/copilot-instructions.md -> agents/AGENTS.md (GitHub Copilot)")
         count += 1
 
     return count
+
+
+def setup_via_mcp(project_root: Path) -> bool:
+    """Configure via MCP server for this project using `via install mcp`."""
+    print("\n📡 Setting up via MCP server...")
+
+    if not shutil.which("via"):
+        print("  ⚠️  via not found on PATH — skipping MCP setup")
+        print("     Install via and re-run: pip install via")
+        return False
+
+    import subprocess
+    result = subprocess.run(
+        ["via", "install", "mcp"],
+        cwd=project_root,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        print(f"  ❌ via install mcp failed: {result.stderr.strip()}")
+        return False
+
+    print(f"  ✅ via install mcp ({result.stdout.strip() or 'done'})")
+    return True
 
 
 def check_yaml_frontmatter(personas: list) -> list[str]:
     """Check which persona files are missing YAML frontmatter."""
     missing = []
 
-    for persona_name, persona_dir, agent_file in personas:
-        content = agent_file.read_text()
+    for persona_name, persona_dir in personas:
+        skill_md = persona_dir / "SKILL.md"
+        content = skill_md.read_text()
         if not content.startswith("---"):
-            missing.append(str(agent_file))
+            missing.append(str(skill_md))
 
     return missing
 
@@ -170,12 +205,12 @@ def main():
     personas = find_persona_folders(agents_dir)
     if not personas:
         print("\n❌ No persona folders found!")
-        print("   Expected: agents/<name>.docs/<Name>_*_AGENT.md")
+        print("   Expected: agents/<name>.docs/SKILL.md")
         sys.exit(1)
 
     print(f"\nFound {len(personas)} personas:")
-    for name, _, agent_file in personas:
-        print(f"  • {name}: {agent_file.name}")
+    for name, _ in personas:
+        print(f"  • {name}")
 
     # Find shared skills
     shared_skills = find_shared_skills(agents_dir)
@@ -201,11 +236,16 @@ def main():
     total += setup_claude_skills(project_root, personas, shared_skills)
     total += setup_root_symlinks(project_root, agents_dir)
 
+    # Set up via MCP
+    via_ok = setup_via_mcp(project_root)
+
     print(f"\n✅ Done! Created {total} symlinks.")
     print("\nAgent discovery is now enabled for:")
     print("  • Claude Code (.claude/skills/)")
     print("  • OpenAI Codex, Cursor, Copilot (AGENTS.md)")
     print("  • Gemini CLI (GEMINI.md)")
+    if via_ok:
+        print("  • via MCP server (.mcp.json)")
 
 
 if __name__ == "__main__":

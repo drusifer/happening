@@ -1,211 +1,154 @@
-# Bob System - Complete Reference
+# BobProtocol — Quick Reference
 
-## Quick Start
+Type `*help` anytime to see this. One AI switches between 8 specialized personas driven by `agents/CHAT.md`.
 
-Type `*help` anytime to see this reference. The Bob System is a single AI that switches between 7 specialized personas to handle different aspects of development.
-
-**Basic Usage:**
-1. Type `*chat` - I'll read the conversation and respond as the appropriate persona
-2. Use persona commands directly - `*swe impl feature` or `*qa test all`
-3. Reference personas in chat - `@Oracle *ora ask` or `@Neo *swe fix bug`
+**Basic usage:**
+- `*chat <message>` — auto-routes to the right persona
+- `*chat @<Persona> *<command> <args>` — direct invocation
+- `*<command> <args>` — skip the chat layer, invoke a persona directly
 
 ---
 
-## Available Personas
+## The Team
 
-### 👔 Bob - Prompt Engineering Expert
-**File:** `agents/bob.docs/Bob_PE_AGENT.md`
-**Prefix:** `*prompt` / `*reprompt` / `*learn`
+### Bob — Prompt Engineer
+`agents/bob.docs/SKILL.md` · prefix: `*new` / `*reprompt` / `*learn`
 
-**Responsibilities:** Agent creation, prompt engineering, team process improvements
+| Command | Action |
+|---------|--------|
+| `*new <desc>` | Create a new agent |
+| `*reprompt <instructions>` | Update existing agents |
+| `*learn <lesson>` | Broadcast lesson to all agents |
+| `*help` | Show this reference |
 
-| Command | Usage | Example |
-|---------|-------|---------|
-| `*prompt <DESC>` | Create new agent | `*prompt Create a DevOps agent for CI/CD` |
-| `*reprompt <INSTRUCTIONS>` | Update agent prompts | `*reprompt Add MCP tools to all agents` |
-| `*learn <LESSON>` | Broadcast lesson | `*learn Always consult Oracle before major decisions` |
-| `*chat` | Activate multi-persona | `*chat` |
-| `*help` | Show this guide | `*help` |
+### Cypher — Product Manager
+`agents/cypher.docs/SKILL.md` · prefix: `*pm`
 
----
+| Command | Action |
+|---------|--------|
+| `*pm story <request>` | Write user stories |
+| `*pm req <feature>` | Define requirements and acceptance criteria |
+| `*pm prioritize` | Prioritize the backlog |
+| `*pm update` | Post product status update |
+| `*pm doc <topic>` | Create a PRD or product document |
 
-### 📋 Cypher - Product Manager
-**File:** `agents/cypher.docs/Cypher_PM_AGENT.md`
-**Prefix:** `*pm`
+### Morpheus — Tech Lead
+`agents/morpheus.docs/SKILL.md` · prefix: `*lead`
 
-**Responsibilities:** Product vision, requirements, PRDs, user stories, roadmap
+| Command | Action |
+|---------|--------|
+| `*lead arch <topic>` | Architecture review or decision |
+| `*lead plan <story>` | Create technical implementation plan |
+| `*lead decide <choice>` | Make and record an architectural decision |
+| `*lead guide <area>` | Provide technical guidance |
+| `*lead refactor <target>` | Plan a refactoring strategy |
 
-| Command | Usage | Example |
-|---------|-------|---------|
-| `*pm doc <TYPE>` | Create/update docs | `*pm doc PRD` |
-| `*pm assess <SCOPE>` | Assess completion | `*pm assess authentication feature` |
-| `*pm prioritize <ITEMS>` | Prioritize features | `*pm prioritize backlog` |
-| `*pm update <STATUS>` | Post status update | `*pm update Sprint 3 progress` |
-| `*pm story <USER_STORY>` | Add/update user story | `*pm story User can reset password` |
+### Neo — Software Engineer
+`agents/neo.docs/SKILL.md` · prefix: `*swe`
 
----
+| Command | Action |
+|---------|--------|
+| `*swe impl <task>` | Implement a feature |
+| `*swe fix <issue>` | Diagnose and fix a bug |
+| `*swe test <scope>` | Write and run tests |
+| `*swe refactor <target>` | Refactor code |
 
-### 🧠 Morpheus - Tech Lead / Architect
-**File:** `agents/morpheus.docs/Morpheus_SE_AGENT.md`
-**Prefix:** `*lead`
+### Oracle — Knowledge Officer
+`agents/oracle.docs/SKILL.md` · prefix: `*ora`
 
-**Responsibilities:** Architecture, design decisions, refactoring, code quality, backlog management
+| Command | Action |
+|---------|--------|
+| `*ora ask <question>` | Query the knowledge base |
+| `*ora record <type> <content>` | Log a decision, lesson, or finding |
+| `*ora groom` | Audit and organise the file structure |
+| `*ora distill <file>` | Break down a large doc with TL;DR + ToC |
+| `*ora tldr` | Write/update TLDR blocks in all files |
+| `*ora archive` | Archive old CHAT.md messages |
 
-| Command | Usage | Example |
-|---------|-------|---------|
-| `*lead story <USER_STORY>` | Add/update backlog | `*lead story Add OAuth support` |
-| `*lead plan <EPIC>` | Break down epic | `*lead plan Authentication system` |
-| `*lead guide <ISSUE>` | Architectural guidance | `*lead guide How to structure services?` |
-| `*lead refactor <TARGET>` | Refactoring strategy | `*lead refactor authentication module` |
-| `*lead decide <CHOICE>` | Make decision | `*lead decide Use JWT for auth tokens` |
+### Trin — QA Guardian
+`agents/trin.docs/SKILL.md` · prefix: `*qa`
 
----
+| Command | Action |
+|---------|--------|
+| `*qa test <scope>` | Run tests (`all`, `unit`, `integration`, or specific) |
+| `*qa verify <feature>` | Verify acceptance criteria |
+| `*qa review <change>` | Code review |
+| `*qa report` | Summarise codebase health |
+| `*qa repro <issue>` | Reproduce a bug |
 
-### 💻 Neo - Senior Software Engineer
-**File:** `agents/neo.docs/Neo_SWE_AGENT.md`
-**Prefix:** `*swe`
+### Mouse — Scrum Master
+`agents/mouse.docs/SKILL.md` · prefix: `*sm`
 
-**Responsibilities:** Implementation, coding, debugging, low-level technical work
+| Command | Action |
+|---------|--------|
+| `*sm status` | Current sprint progress |
+| `*sm plan <sprint>` | Create or update a sprint plan |
+| `*sm tasks` | List active tasks |
+| `*sm next` | Identify and assign the next task |
+| `*sm blocked` | Report and triage a blocker |
+| `*sm done <task>` | Mark a task complete |
+| `*sm assign <task> <persona>` | Assign a task |
+| `*sm velocity` | Team velocity metrics |
 
-| Command | Usage | Example |
-|---------|-------|---------|
-| `*swe impl <TASK>` | Implement feature | `*swe impl Add password validation` |
-| `*swe fix <ISSUE>` | Fix bug | `*swe fix APDU parsing error` |
-| `*swe test <SCOPE>` | Write/run tests | `*swe test crypto module` |
-| `*swe refactor <TARGET>` | Refactor code | `*swe refactor auth service` |
+### Smith — Expert User & UX Advocate
+`agents/smith.docs/SKILL.md` · prefix: `*user`
 
----
-
-### 📚 Oracle - Knowledge Officer
-**File:** `agents/oracle.docs/Oracle_INFO_AGENT.md`
-**Prefix:** `*ora`
-
-**Responsibilities:** Documentation, knowledge management, information organization
-
-| Command | Usage | Example |
-|---------|-------|---------|
-| `*ora groom` | Organize docs | `*ora groom` |
-| `*ora ask <QUESTION>` | Query knowledge | `*ora ask What's our auth pattern?` |
-| `*ora record <TYPE> <CONTENT>` | Log entry | `*ora record decision Use AES-128 for encryption` |
-| `*ora distill <FILE_PATH>` | Break down doc | `*ora distill specs/NXP_NTAG424.pdf` |
-
-**Types for *ora record:**
-- `decision` → DECISIONS.md
-- `lesson` → LESSONS.md
-- `KPRs` → OBJECTIVES.md
-- `Found Facts` → FACTS.md
-- `Frequently asked qusetions` → FAQ.md
-
-
----
-
-### 🛡️ Trin - QA / Guardian
-**File:** `agents/trin.docs/Trin_QA_AGENT.md`
-**Prefix:** `*qa`
-
-**Responsibilities:** Testing, quality assurance, regression prevention
-
-| Command | Usage | Example |
-|---------|-------|---------|
-| `*qa test <SCOPE>` | Run tests | `*qa test all` or `*qa test crypto` |
-| `*qa verify <FEATURE>` | Create test plan | `*qa verify authentication` |
-| `*qa report` | Health summary | `*qa report` |
-| `*qa review <CHANGE>` | Code review | `*qa review auth_service.py` |
-| `*qa repro <ISSUE>` | Reproduce bug | `*qa repro login timeout` |
+| Command | Action |
+|---------|--------|
+| `*user review <stories>` | Review user stories and acceptance criteria |
+| `*user test <feature>` | Usability-test a feature by running the software |
+| `*user consult <question>` | Quick, non-blocking UX opinion |
+| `*user feedback <question>` | Deeper investigation of open UX/domain questions |
+| `*user approve [gate]` | Approve a sprint review gate |
+| `*user reject REASON: … \| FIX: …` | Block a sprint gate |
+| `*user bug CMD: … \| EXPECTED: … \| ACTUAL: … \| UX ISSUE: …` | File a usability defect |
 
 ---
 
-### 🐭 Mouse - Scrum Master
-**File:** `agents/mouse.docs/Mouse_SM_AGENT.md`
-**Prefix:** `*sm`
+## Sprint Cycle (Quick Reference)
 
-**Responsibilities:** Sprint coordination, task tracking, velocity, team metrics
-
-| Command | Usage | Example |
-|---------|-------|---------|
-| `*sm status` | Sprint status | `*sm status` |
-| `*sm tasks` | List tasks | `*sm tasks` |
-| `*sm next` | Show ready tasks | `*sm next` |
-| `*sm blocked` | List blockers | `*sm blocked` |
-| `*sm done` | Show completed | `*sm done` |
-| `*sm velocity` | Team metrics | `*sm velocity` |
-| `*sm plan <EPIC>` | Break down epic | `*sm plan Add dark mode` |
-| `*sm assign <TASK> <AGENT>` | Assign task | `*sm assign Fix bug Neo` |
-
-## State Management Protocol
-
-**Every persona MUST maintain state files in their `.docs/` folder:**
-
-**ENTRY (When Activating):**
-1. Read `agents/CHAT.md` (last 10-20 messages)
-2. Load `agents/[persona].docs/context.md` (accumulated knowledge)
-3. Load `agents/[persona].docs/current_task.md` (active work)
-4. Load `agents/[persona].docs/next_steps.md` (resume plan)
-
-**WORK:**
-5. Execute assigned tasks
-6. Post updates to `agents/CHAT.md`
-
-**EXIT (Before Switching - MANDATORY):**
-7. Update `context.md` (key decisions, findings, blockers)
-8. Update `current_task.md` (progress %, completed items, next items)
-9. Update `next_steps.md` (resume plan)
-
-**State files are your WORKING MEMORY. Without them, you forget everything!**
-
-
-## Anti-Loop Protocol
-
-**If a fix fails ONCE:**
-1. **STOP** - Don't retry immediately
-2. **Oracle First** (`@Oracle *ora ask`):
-   - Have we seen this error before?
-   - What have we tried for this problem?
-   - What lessons have we learned about this issue?
-3. Read error logs carefully
-4. Verify environment (paths, imports)
-5. Plan based on Oracle's knowledge + logs
-6. ONE retry with new approach
-7. If THAT fails: Document the lesson learned and escalate
-
-**ABSOLUTE RULE:** NO THIRD ATTEMPT without:
-- Consulting Oracle
-- Reviewing what was tried
-- Getting team/user input
+```
+Cypher *pm plan sprint
+  └─ Smith *user approve / *user reject
+Morpheus *lead arch sprint
+  └─ Smith *user approve / *user reject
+Mouse *sm plan sprint
+  └─ [phase loop]
+     Neo *swe impl → Trin *qa uat → Morpheus *lead review
+     └─ repeat until all phases done
+Oracle *ora groom
+Smith *user test <sprint>
+  └─ issues → Trin triage → fix loop
+Cypher *pm launch <sprint>
+```
 
 ---
 
-## Quality Standards
+## State Management (Every Persona)
 
-### We Don't Ship Shit (Uncle Bob)
-- Quality over speed
-- Test before commit
-- No regressions allowed
-- Working, testable, maintainable code
+**ENTRY:** Read CHAT.md → load context.md, current_task.md, next_steps.md
 
-### Code Standards
-- SOLID principles
-- DRY (Don't Repeat Yourself)
-- Type hinting (strict)
-- Comprehensive error handling
-- Full package references (absolute imports)
-
-### Testing Standards
-- Unit tests for all logic
-- Test vectors from specs
-- Fast, incremental tests
-- No flaky tests
-- Coverage tracking
-
-
-## Getting Help
-
-- **This file:** `agents/bob.docs/HELP.md`
-- **Full protocol:** `agents/bob.docs/BOB_SYSTEM_PROTOCOL.md`
-- **Quick start:** `START_HERE.md`
-- **Ask Oracle:** `@Oracle *ora ask <question>`
-
-**Command:** Type `*help` anytime to see this reference.
+**EXIT (mandatory before switching):**
+1. Update `context.md`
+2. Update `current_task.md`
+3. Update `next_steps.md`
+4. `make chat MSG="<handoff>" PERSONA="<Name>" CMD="handoff" TO="<next>"`
 
 ---
 
+## Anti-Loop Rule
+
+Fail once → stop, consult Oracle, retry with new approach.
+**No third attempt** without Oracle + user sign-off.
+
+---
+
+## Common Make Targets
+
+```bash
+make help    # list all targets
+make chat    # post to CHAT.md
+make tldr    # show TL;DR from all files
+```
+
+See **[SHORTHAND_GUIDE.md](../../SHORTHAND_GUIDE.md)** for the full trigger reference.

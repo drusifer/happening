@@ -2,7 +2,15 @@
 name: bob-protocol
 description: Multi-persona coordination protocol. Enables AI to switch between specialized personas (Neo, Morpheus, Trin, Oracle, Mouse, Cypher, Bob) based on task needs. Use for *chat workflow, state management, and cross-agent communication.
 triggers: ["*chat"]
+requires: ["chat", "make", "personas"]
 ---
+
+One-line summary: Orchestrates multi-persona AI coordination through a shared chat log using the `*chat` trigger.
+
+TLDR:
+    Routes `*chat` messages to the right specialist persona (Neo, Trin, Morpheus, etc.) — either by explicit `@mention` or auto-selection based on task type.
+    Each persona loads its state files on entry, executes one task, saves state on exit, and posts results to `agents/CHAT.md`.
+    Key commands: `make chat MSG="..." PERSONA="..." CMD="..."` — anti-loop rule: no third attempt without Oracle + user sign-off.
 
 # Bob Protocol - Multi-Persona Coordination
 
@@ -12,7 +20,7 @@ The Bob Protocol enables ONE AI to dynamically switch between multiple specializ
 
 ## Available Personas
 
-Each persona is defined in `agents/<name>.docs/<Name>_<ROLE>_AGENT.md`:
+Each persona is defined in `agents/<name>.docs/SKILL.md`:
 
 | Persona | Role | Prefix | Use When |
 |---------|------|--------|----------|
@@ -23,6 +31,7 @@ Each persona is defined in `agents/<name>.docs/<Name>_<ROLE>_AGENT.md`:
 | **Mouse** | Scrum Master | `*sm` | Sprint tracking, coordination |
 | **Cypher** | Product Manager | `*pm` | Requirements, user stories |
 | **Bob** | Prompt Engineer | `*prompt` | Agent creation, process improvement |
+| **Smith** | Expert User | `*user` | User story review, usability testing, sprint review gates |
 
 ---
 
@@ -33,7 +42,7 @@ When user types `*chat <message>`, execute this workflow:
 ### Step 1: Log User Message (ALWAYS)
 **First**, log the user's message to CHAT.md:
 ```bash
-./agents/tools/chat.py "<user's message>" --persona User --cmd "request"
+make chat MSG="<user's message>" PERSONA="User" CMD="request"
 ```
 
 ### Step 2: Read Chat Log
@@ -69,7 +78,7 @@ If no explicit `@mention`, analyze the request to determine who should respond:
 - **Bob** (`*prompt`) - Agent creation, process improvement
 
 ### Step 4: Load Persona and Execute
-1. Load the target `*_AGENT.md` file
+1. Load the target `agents/<name>.docs/SKILL.md` file
 2. Load persona's state files (context.md, current_task.md, next_steps.md)
 3. Adopt that persona completely
 4. **Execute the command** referenced in the message (if direct invocation)
@@ -81,18 +90,32 @@ Execute the required task. **SHORT iterations** are key.
 ### Step 6: Post Response to Chat
 Log your response as the persona:
 ```bash
-./agents/tools/chat.py "<response>" --persona <Name> --cmd <command>
+make chat MSG="<response>" PERSONA="<Name>" CMD="<command>"
 ```
 
-### Step 7: Save State & Loop
-1. Update persona's state files (MANDATORY)
-2. If more work needed, identify next persona and repeat from Step 3
+### Step 7: Save State — BEFORE ANY SWITCH (MANDATORY GATE)
+
+**This step is a hard gate. You MUST NOT switch personas until it is complete.**
+State files are the only memory that survives context overflow and conversation restarts.
+
+1. **Write** `agents/[persona].docs/context.md` — what was learned, key decisions
+2. **Write** `agents/[persona].docs/current_task.md` — progress %, what was done, what's next
+3. **Write** `agents/[persona].docs/next_steps.md` — exact resume instructions
+4. **Post** a final chat message confirming handoff (persona → next persona or User)
+5. Only AFTER all four steps above: switch to next persona or stop
+
+If more work needed, identify next persona and repeat from Step 3.
 
 ---
 
 ## State Management (CRITICAL)
 
-**Each persona MUST maintain state files** in their `.docs/` folder:
+**Each persona MUST maintain state files** in their `.docs/` folder.
+
+> **Why this matters:** Claude's context window fills up and conversations restart.
+> State files are the ONLY persistent memory across those boundaries. If you switch
+> without saving, the next activation starts blind — no task context, no decisions,
+> no progress. Save first, always.
 
 ### ENTRY (When Activating)
 1. Read `agents/CHAT.md` (last 10-20 messages)
@@ -102,14 +125,18 @@ Log your response as the persona:
 
 ### WORK
 5. Execute assigned tasks
-6. Post updates to `agents/CHAT.md`
+6. Post updates to `agents/CHAT.md` after each significant step
 
-### EXIT (Before Switching - MANDATORY)
-7. Update `context.md` - Key decisions, findings
-8. Update `current_task.md` - Progress %, next items
-9. Update `next_steps.md` - Resume plan
+### EXIT — HARD GATE: Save BEFORE switching
+7. Update `context.md` — key findings, decisions made this session
+8. Update `current_task.md` — progress %, completed items, exact next item
+9. Update `next_steps.md` — step-by-step resume instructions for a cold start
+10. Post handoff message: `make chat MSG="<summary> @NextPersona *command" PERSONA="<Name>" CMD="handoff" TO="<next>"`
+11. **Only now** switch personas or stop
 
-**State files are your WORKING MEMORY. Without them, you forget everything!**
+**Do not skip or defer steps 7-10. A context overflow or restart mid-task means
+the next session reads these files cold. Write them as if you will never be
+asked again and someone else must continue.**
 
 ---
 
@@ -123,6 +150,118 @@ Use `@mentions` in CHAT.md:
 @Oracle *ora ask <question>     # Query knowledge
 @Morpheus *lead decide <choice> # Request decision
 ```
+
+---
+
+## Sprint Implementation Cycle
+
+When implementing a complete sprint, follow this ordered cycle. Each step requires a **user review gate** before continuing.
+
+```
+1. Cypher   *pm plan sprint      → Define stories, acceptance criteria, scope
+   ── SMITH REVIEW GATE: *user review <stories> → *user approve OR *user reject ──
+2. Morpheus *lead arch sprint    → Architecture decisions, technical design
+   ── SMITH REVIEW GATE: *user feedback <arch>  → *user approve OR *user reject ──
+3. Mouse    *sm plan sprint      → Break sprint into short phases (1-3 tasks each)
+   ── NO GATE — proceed to phase loop ──────────────────────────────────────
+```
+
+**Phase Loop** (repeat for each phase until sprint is complete):
+
+```
+4. Neo      *swe impl <phase N>  → TDD implementation: tests first, then code
+5. Trin     *qa uat <phase N>    → UAT: run tests, verify acceptance criteria
+6. Morpheus *lead review <N>     → Code review: quality, architecture alignment
+   ── If review passes: proceed to next phase ──────────────────────────────
+   ── If review fails:  @Neo fix, @Trin re-test, @Morpheus re-review ────────
+```
+
+**All phases done** — proceed to sprint close:
+
+```
+7. Oracle  *ora groom             → Update docs, record decisions, archive sprint artifacts
+8. Smith   *user test <sprint>    → End-to-end user testing of all delivered features
+           *user feedback          → Holistic UX feedback on the completed sprint
+   ── If issues found: *user bug → Trin triage → fix loop before launch ────
+9. Cypher  *pm launch <sprint>    → Announce release, update changelog, close sprint
+```
+
+**Sprint Complete** when Cypher posts `*pm launch`.
+
+### Quick Reference
+
+| Step | Persona | Command | Gate |
+|------|---------|---------|------|
+| 1 | Cypher | `*pm plan sprint` | Smith review (`*user review`) |
+| 1a | Smith | `*user approve` / `*user reject` | Must approve to proceed |
+| 2 | Morpheus | `*lead arch sprint` | Smith review (`*user feedback`) |
+| 2a | Smith | `*user approve` / `*user reject` | Must approve to proceed |
+| 3 | Mouse | `*sm plan sprint` | None |
+| 4 | Neo | `*swe impl <phase N>` | Trin UAT |
+| 5 | Trin | `*qa uat <phase N>` | Morpheus review |
+| 6 | Morpheus | `*lead review <phase N>` | Next phase or fix loop |
+| 7 | Oracle | `*ora groom` | None |
+| 8 | Smith | `*user test <sprint>` + `*user feedback` | Issues → fix loop before launch |
+| 9 | Cypher | `*pm launch <sprint>` | Sprint complete |
+
+### Sprint Transition Handoffs (Required `make chat` calls)
+
+Every persona **must** post a handoff message before switching. These are the required calls at each sprint transition:
+
+```bash
+# Step 1 → Gate 1: Cypher hands off to Smith
+make chat MSG="Stories ready for user review. @Smith *user review <sprint>" PERSONA="Cypher" CMD="pm handoff" TO="Smith"
+
+# Gate 1 approve → Step 2: Smith hands off to Morpheus
+make chat MSG="*user approve. Stories approved. @Morpheus *lead arch sprint" PERSONA="Smith" CMD="user approve" TO="Morpheus"
+
+# Gate 1 reject → back to Cypher: Smith hands off to Cypher
+make chat MSG="*user reject REASON: <reason> | FIX: <fix>. @Cypher revise stories." PERSONA="Smith" CMD="user reject" TO="Cypher"
+
+# Step 2 → Gate 2: Morpheus hands off to Smith
+make chat MSG="Architecture complete. @Smith *user feedback <arch summary>" PERSONA="Morpheus" CMD="lead handoff" TO="Smith"
+
+# Gate 2 approve → Step 3: Smith hands off to Mouse
+make chat MSG="*user approve. Architecture approved. @Mouse *sm plan sprint" PERSONA="Smith" CMD="user approve" TO="Mouse"
+
+# Gate 2 reject → back to Morpheus: Smith hands off to Morpheus
+make chat MSG="*user reject REASON: <reason> | FIX: <fix>. @Morpheus revise arch." PERSONA="Smith" CMD="user reject" TO="Morpheus"
+
+# Step 3 → Phase Loop: Mouse hands off to Neo
+make chat MSG="Sprint planned. Phase 1 ready. @Neo *swe impl phase-1" PERSONA="Mouse" CMD="sm handoff" TO="Neo"
+
+# Step 4 → Step 5: Neo hands off to Trin after each phase
+make chat MSG="Phase N impl complete. @Trin *qa uat phase-N" PERSONA="Neo" CMD="swe handoff" TO="Trin"
+
+# Step 5 → Step 6: Trin hands off to Morpheus
+make chat MSG="UAT phase N passed. @Morpheus *lead review phase-N" PERSONA="Trin" CMD="qa handoff" TO="Morpheus"
+
+# Step 6 pass → next phase: Morpheus hands off to Neo (or Oracle if last phase)
+make chat MSG="Phase N review passed. @Neo *swe impl phase-N+1" PERSONA="Morpheus" CMD="lead handoff" TO="Neo"
+make chat MSG="All phases reviewed. @Oracle *ora groom" PERSONA="Morpheus" CMD="lead handoff" TO="Oracle"
+
+# Step 6 fail → fix loop: Morpheus hands off to Neo
+make chat MSG="Phase N review FAILED. @Neo *swe fix <issues>" PERSONA="Morpheus" CMD="lead reject" TO="Neo"
+
+# Step 7 → Step 8: Oracle hands off to Smith
+make chat MSG="Docs groomed. @Smith *user test <sprint>" PERSONA="Oracle" CMD="ora handoff" TO="Smith"
+
+# Step 8 pass → Step 9: Smith hands off to Cypher
+make chat MSG="User testing passed. @Cypher *pm launch <sprint>" PERSONA="Smith" CMD="user approve" TO="Cypher"
+
+# Step 8 fail → fix loop: Smith routes bug to Trin
+make chat MSG="*user bug CMD: <cmd> | EXPECTED: <x> | ACTUAL: <y> | UX ISSUE: <z>. @Trin triage." PERSONA="Smith" CMD="user bug" TO="Trin"
+
+# Step 9: Cypher closes sprint
+make chat MSG="*pm launch <sprint>. Sprint complete." PERSONA="Cypher" CMD="pm launch" TO="all"
+```
+
+### Rules
+- **Short phases**: Mouse must keep each phase to 1-3 tasks. Large phases cause context overflow.
+- **No skipping gates**: Smith's review gates after Cypher and Morpheus are mandatory — do not auto-proceed. Smith must explicitly `*user approve` before moving forward.
+- **Fix loop**: If Trin UAT or Morpheus review fails, loop back to Neo for that phase only — don't restart the sprint.
+- **State saves**: Every persona saves state before handoff (see State Management above).
+- **Chat first**: Post the handoff `make chat` call BEFORE switching personas. The next persona reads CHAT.md on entry — if the handoff isn't there, they start blind.
 
 ---
 
@@ -166,19 +305,19 @@ If a fix fails ONCE:
 
 ```bash
 # Step 1: Log user's message
-./agents/tools/chat.py "help me fix the bug in parser.py" --persona User --cmd "request"
+make chat MSG="help me fix the bug in parser.py" PERSONA="User" CMD="request"
 
 # Step 2-3: Read chat, identify Neo (coding task - auto-selected)
 # (AI determines this is a coding task → Neo)
 
 # Step 4: Load Neo's agent and state
-# (AI reads Neo_SWE_AGENT.md and neo.docs/context.md, etc.)
+# (AI reads neo.docs/SKILL.md and neo.docs/context.md, etc.)
 
 # Step 5: Perform the fix as Neo
 # (AI investigates and fixes the bug)
 
 # Step 6: Post response
-./agents/tools/chat.py "Fixed the bug in parser.py. The issue was..." --persona Neo --cmd "swe fix"
+make chat MSG="Fixed the bug in parser.py. The issue was..." PERSONA="Neo" CMD="swe fix"
 
 # Step 7: Save state
 # (AI updates neo.docs/context.md, current_task.md, next_steps.md)
@@ -192,7 +331,7 @@ If a fix fails ONCE:
 
 ```bash
 # Step 1: Log user's message
-./agents/tools/chat.py "@neo *fix bug in parser.py line 42" --persona User --cmd "request"
+make chat MSG="@neo *fix bug in parser.py line 42" PERSONA="User" CMD="request"
 
 # Step 2-3: Parse direct invocation
 # @neo → Target: Neo
@@ -200,14 +339,14 @@ If a fix fails ONCE:
 # "bug in parser.py line 42" → Arguments
 
 # Step 4: Load Neo's agent and execute command
-# (AI reads Neo_SWE_AGENT.md, loads state, becomes Neo)
+# (AI reads neo.docs/SKILL.md, loads state, becomes Neo)
 # (AI executes the *swe fix command with the given arguments)
 
 # Step 5: Perform the fix as Neo
 # (AI goes directly to parser.py line 42 and fixes the bug)
 
 # Step 6: Post response
-./agents/tools/chat.py "Fixed line 42 in parser.py..." --persona Neo --cmd "swe fix"
+make chat MSG="Fixed line 42 in parser.py..." PERSONA="Neo" CMD="swe fix"
 
 # Step 7: Save state
 # (AI updates neo.docs/context.md, current_task.md, next_steps.md)
@@ -225,6 +364,9 @@ If a fix fails ONCE:
 | `*chat @mouse *status` | Mouse | `*sm status` |
 | `*chat @cypher *req R` | Cypher | `*pm req R` |
 | `*chat @bob *prompt P` | Bob | `*prompt P` |
+| `*chat @smith *user review S` | Smith | `*user review S` |
+| `*chat @smith *user approve` | Smith | `*user approve` |
+| `*chat @smith *user test F` | Smith | `*user test F` |
 
 **CHAT.md now contains:**
 ```

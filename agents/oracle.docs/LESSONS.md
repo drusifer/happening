@@ -263,3 +263,28 @@ The application was consuming 10-15% of a CPU core while idle, primarily due to 
 ### References
 - **Files:** `app/lib/core/time/clock_service.dart`, `app/lib/features/timeline/timeline_strip.dart`, `app/lib/features/timeline/timeline_painter.dart`
 
+---
+
+## [2026-03-23] GTK Window Expand: setMaximumSize First, Then setMinimumSize
+
+> **Tags:** #Linux #GTK #WindowManager #Resize #Morpheus
+
+### Context
+Linux expand was flaky — "all black" or "no cards" on hover. Both symptoms caused by `isExpandedNotifier=true` while GTK never actually grew the window.
+
+### The Issue
+`LinuxResizeStrategy.expand()` used the order: `setSize → setMinimumSize → setMaximumSize`. This creates a `min > max` invalid constraint which GTK resolves unpredictably (compositor-dependent). Sometimes it grows the window, sometimes it clamps min to max and stays collapsed.
+
+### The Solution
+Swap to: `setMaximumSize(target) → setMinimumSize(target)`. This works because:
+1. `setMaximumSize(target)`: lifts cap, constraints valid (`min < max`), window stays put
+2. `setMinimumSize(target)`: raises floor to `min = max = target`, with `window < min` — **GTK must grow** (well-defined standard behavior, not compositor-dependent)
+
+Drop the `setSize` advisory call — it is ignored when max-cap is still in place.
+
+### The Rule
+**On Linux GTK, expand via `setMaximumSize(target)` then `setMinimumSize(target)`.** The reliable forcing mechanism is GTK's guarantee that `window_size >= min_size`, NOT the `min > max` invalid constraint trick (which is unpredictable across compositor versions). Collapse order (setSize → setMinimumSize → setMaximumSize) remains correct.
+
+### References
+- **Files:** `app/lib/core/window/resize_strategy/linux_resize_strategy.dart`
+
