@@ -6,7 +6,10 @@
       "Bash(make tldr:*)",
       "Bash(ls /home/drusifer/Projects/happening/agents/*.docs/)",
       "Bash(ls /home/drusifer/Projects/happening/agents/*docs*)",
-      "Bash(make chat:*)"
+      "Bash(make chat:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(/home/drusifer/Projects/happening/agents/neo.docs/current_task.md:*)",
+      "Bash(make test:*)"
     ]
   },
   "enabledMcpjsonServers": [
