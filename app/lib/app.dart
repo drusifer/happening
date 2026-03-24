@@ -197,12 +197,9 @@ class _HappeningAppState extends State<HappeningApp> {
                   stream: _calendar!.events,
                   initialData: _calendar!.lastEvents,
                   builder: (context, eventSnapshot) {
-                    final events = eventSnapshot.data;
-                    if (events == null) {
-                      return _LoadingStrip(settings: settings);
-                    }
                     return TimelineStrip(
-                      events: events,
+                      events: eventSnapshot.data ?? const [],
+                      isLoading: eventSnapshot.data == null,
                       clockService: _clock,
                       calendarController: _calendar!,
                       settingsService: widget.settingsService,
@@ -215,37 +212,6 @@ class _HappeningAppState extends State<HappeningApp> {
           ),
         );
       },
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// S5-FIX: Loading state strip
-// ---------------------------------------------------------------------------
-
-class _LoadingStrip extends StatelessWidget {
-  const _LoadingStrip({required this.settings});
-  final AppSettings settings;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? const Color(0xFF1A1A2E) : Colors.white;
-    return Stack(
-      children: [
-        Container(color: bg, alignment: Alignment.center,
-          child: Text('Fetching calendar...',
-            style: TextStyle(
-              color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
-              fontSize: settings.fontSize.px,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-        ),
-        Positioned(right: 8, top: 0, bottom: 0,
-          child: Center(child: _QuitButton(backgroundColor: bg)),
-        ),
-      ],
     );
   }
 }

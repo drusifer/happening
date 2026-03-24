@@ -38,6 +38,7 @@ class TimelineStrip extends StatefulWidget {
     required this.settingsService,
     required this.onSignOut,
     required this.windowService,
+    this.isLoading = false,
     this.enableAnimations = true,
   });
 
@@ -47,6 +48,9 @@ class TimelineStrip extends StatefulWidget {
   final SettingsService settingsService;
   final VoidCallback onSignOut;
   final WindowService windowService;
+
+  /// Whether calendar data is still being fetched for the first time.
+  final bool isLoading;
 
   /// Whether to run repeating animations. Disable in tests to allow pumpAndSettle.
   final bool enableAnimations;
@@ -420,6 +424,9 @@ class _TimelineStripState extends State<TimelineStrip>
                           tickColor: theme.textTheme.bodySmall?.color
                                   ?.withValues(alpha: 0.75) ??
                               Colors.grey,
+                          isLoading: widget.isLoading,
+                          loadingTextColor:
+                              theme.textTheme.bodyMedium?.color ?? Colors.white,
                         ),
                       ),
                     ),
