@@ -1404,3 +1404,27 @@ Makefile.prj:216: warning: ignoring old recipe for target 'tldr'
  Build PASSED | make dist-linux | /home/drusifer/Projects/happening/build/build.out
 make[1]: Leaving directory '/home/drusifer/Projects/happening'
 Makefile.prj:216: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-04-01 14:23:14</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make run-windows | /mnt/c/Users/drusi/VSCode_Projects/happening/build/build.out
+make[1]: *** [Makefile.prj:46: /mnt/c/Users/drusi/VSCode_Projects/happening/.flutter/flutter/bin/flutter] Error 127
+
+
+---
+[<small>2026-04-01 14:30:00</small>] [**Bob**]->[**all**] **pe init*:
+
+BOB PE INITIALIZED ✅ 2026-04-01. Context loaded. Last sprint: Fetching Layer refactor (2026-03-23) — 226/226 GREEN. Recent: FlutterSecureTokenStore added (v0.3.1), linux secure_storage C++ build fixed by Morpheus. Dist: dist-linux ✅, dist-windows ⚠️ (flutter path issue on WSL). Team standing by. @Drew — what's next?
+
+
+---
+[<small>2026-04-01 14:35:00</small>] [**Bob**]->[**Drew**] **pe chat*:
+
+Re: "what did we do to fix it last time?" — The previous screen-size issue at startup was fixed by making sure `main.dart` loads settings *before* `WindowService.initialize()` so the initial height matches the font size (not hardcoded 32px). That fixed the wrong-height flash on startup. The *current* issue is different: `_SignInStrip` was a separate widget that never called `WindowService` at all, so the window had no sizing contract in the unauthenticated state. Fix applied: `_SignInStrip` removed from `app.dart` — unauthenticated state now renders `TimelineStrip` with `onSignIn` callback. `TimelineStrip.initState` always calls `windowService.collapse()`, so the strip height is correct regardless of auth state.
+
+
+---
+[<small>2026-04-01 15:30:00</small>] [**Bob**]->[**all**] **pe chat*:
+
+Settings panel refactor DONE ✅. Changes: (1) SignIn screen now a SignInLayer painter (FetchingLayer pattern) inside TimelineStrip — no more separate widget, window sizing always correct. (2) Settings panel: 3-col layout (SETTINGS+Theme+TimeWindow+LOGOUT | FontSize | Calendars), Calendars rowspans full height via Expanded+ListView, panel bounded by Positioned bottom:8 in timeline_strip.dart. No overflow at any font size. @Drew — ready for next task.
+

@@ -34,20 +34,24 @@ class TimelineStrip extends StatefulWidget {
     super.key,
     required this.events,
     required this.clockService,
-    required this.calendarController,
     required this.settingsService,
     required this.onSignOut,
     required this.windowService,
+    this.calendarController,
+    this.onSignIn,
     this.isLoading = false,
     this.enableAnimations = true,
   });
 
   final List<CalendarEvent> events;
   final ClockService clockService;
-  final CalendarController calendarController;
+  final CalendarController? calendarController;
   final SettingsService settingsService;
   final VoidCallback onSignOut;
   final WindowService windowService;
+
+  /// When set, the strip renders a sign-in prompt instead of calendar content.
+  final VoidCallback? onSignIn;
 
   /// Whether calendar data is still being fetched for the first time.
   final bool isLoading;
@@ -311,12 +315,18 @@ class _TimelineStripState extends State<TimelineStrip>
 
   // ── Build ────────────────────────────────────────────────────────────────
 
+  // ── Build ────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     unawaited(AppLogger.debug('Building ${runtimeType}'));
     final theme = Theme.of(context);
     final settings = widget.settingsService.current;
     final fontSize = settings.fontSize.px;
+
+    final stripBackgroundColor = theme.brightness == Brightness.dark
+        ? const Color(0xFF1A1A2E)
+        : Colors.white;
 
     return StreamBuilder<DateTime>(
       stream: widget.clockService.tick10s,
@@ -346,34 +356,6 @@ class _TimelineStripState extends State<TimelineStrip>
             final mode = active != null
                 ? CountdownMode.untilEnd
                 : CountdownMode.untilNext;
-
-            final nextOverlap = active != null
-                ? (widget.events
-                        .where((e) =>
-                            e.startTime.isAfter(now) &&
-                            e.startTime.isBefore(active.endTime))
-                        .toList()
-                      ..sort((a, b) => a.startTime.compareTo(b.startTime)))
-                    .firstOrNull
-                : null;
-
-            final nextToStart =
-                (widget.events.where((e) => e.startTime.isAfter(now)).toList()
-                      ..sort((a, b) => a.startTime.compareTo(b.startTime)))
-                    .firstOrNull;
-            final DateTime? countdownTarget = active != null
-                ? (nextOverlap?.startTime ?? active.endTime)
-                : nextToStart?.startTime;
-
-            final baseColor = mode == CountdownMode.untilEnd
-                ? (theme.brightness == Brightness.dark
-                    ? Colors.amber
-                    : Colors.orange[800]!)
-                : theme.textTheme.bodyMedium?.color ?? Colors.white;
-
-            final stripBackgroundColor = theme.brightness == Brightness.dark
-                ? const Color(0xFF1A1A2E)
-                : Colors.white;
 
             final isExpanded = _windowService.isExpandedNotifier.value;
             AppLogger.debug(
@@ -427,10 +409,22 @@ class _TimelineStripState extends State<TimelineStrip>
                           isLoading: widget.isLoading,
                           loadingTextColor:
                               theme.textTheme.bodyMedium?.color ?? Colors.white,
+                          isSignIn: widget.onSignIn != null,
+                          signInTextColor:
+                              theme.textTheme.bodyMedium?.color ?? Colors.white,
                         ),
                       ),
                     ),
                   ),
+                  if (widget.onSignIn != null)
+                    Positioned.fill(
+                      child: GestureDetector(
+                        onTap: widget.onSignIn,
+                        behavior: HitTestBehavior.opaque,
+                        child: const SizedBox.expand(),
+                      ),
+                    ),
+                  if (widget.onSignIn == null)
                   Positioned(
                     left: mode == CountdownMode.untilEnd
                         ? nowIndicatorX + 8
@@ -530,27 +524,28 @@ class _TimelineStripState extends State<TimelineStrip>
                       },
                     ),
                   ),
-                  Positioned(
-                    left: 8,
-                    top: 0,
-                    height: _collapsedHeight,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _IconButton(
-                          icon: Icons.refresh,
-                          onTap: widget.calendarController.refresh,
-                          stripBackgroundColor: stripBackgroundColor,
-                        ),
-                        const SizedBox(width: 4),
-                        _IconButton(
-                          icon: Icons.settings,
-                          onTap: _toggleSettings,
-                          stripBackgroundColor: stripBackgroundColor,
-                        ),
-                      ],
+                  if (widget.onSignIn == null)
+                    Positioned(
+                      left: 8,
+                      top: 0,
+                      height: _collapsedHeight,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _IconButton(
+                            icon: Icons.refresh,
+                            onTap: widget.calendarController!.refresh,
+                            stripBackgroundColor: stripBackgroundColor,
+                          ),
+                          const SizedBox(width: 4),
+                          _IconButton(
+                            icon: Icons.settings,
+                            onTap: _toggleSettings,
+                            stripBackgroundColor: stripBackgroundColor,
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
                   Positioned(
                     right: 8,
                     top: 0,
@@ -563,7 +558,8 @@ class _TimelineStripState extends State<TimelineStrip>
                       ),
                     ),
                   ),
-                  if (_windowService.isExpandedNotifier.value &&
+                  if (widget.onSignIn == null &&
+                      _windowService.isExpandedNotifier.value &&
                       !_isSettingsOpen &&
                       _hoveredEvent != null)
                     Positioned(
@@ -574,7 +570,7 @@ class _TimelineStripState extends State<TimelineStrip>
                         width: _cardWidth(stripWidth),
                       ),
                     ),
-                  if (_isSettingsOpen)
+                  if (widget.onSignIn == null && _isSettingsOpen)
                     Positioned.fill(
                       child: GestureDetector(
                         onTap: _toggleSettings,
@@ -582,13 +578,14 @@ class _TimelineStripState extends State<TimelineStrip>
                         child: Container(color: Colors.transparent),
                       ),
                     ),
-                  if (_isSettingsOpen)
+                  if (widget.onSignIn == null && _isSettingsOpen)
                     Positioned(
                       top: _collapsedHeight,
                       left: 8,
+                      bottom: 8,
                       child: SettingsPanel(
                         settingsService: widget.settingsService,
-                        calendarController: widget.calendarController,
+                        calendarController: widget.calendarController!,
                         onSignOut: widget.onSignOut,
                       ),
                     ),

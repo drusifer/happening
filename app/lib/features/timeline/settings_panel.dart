@@ -101,23 +101,63 @@ class _SettingsPanelState extends State<SettingsPanel> {
                 color: Colors.black26, blurRadius: 10, offset: Offset(0, 4)),
           ],
         ),
-        child: Column(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            // ── Left: controls + LOGOUT ──────────────────────────────────
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   'SETTINGS',
                   style: TextStyle(
-                    color:
-                        theme.textTheme.bodySmall?.color?.withValues(alpha: 0.5),
+                    color: theme.textTheme.bodySmall?.color
+                        ?.withValues(alpha: 0.5),
                     fontSize: baseSize * 0.6,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.0,
                   ),
                 ),
+                const SizedBox(height: 10),
+                _SectionHeader(
+                    theme: theme, title: 'Theme', fontSize: baseSize * 0.7),
+                const SizedBox(height: 6),
+                _PickerRow<AppTheme>(
+                  values: AppTheme.values,
+                  current: settings.theme,
+                  fontSize: baseSize * 0.65,
+                  onSelect: (val) =>
+                      widget.settingsService.update(AppSettings(
+                    fontSize: settings.fontSize,
+                    theme: val,
+                    timeWindowHours: settings.timeWindowHours,
+                    selectedCalendarIds: settings.selectedCalendarIds,
+                  )),
+                  labelBuilder: (v) =>
+                      v.name[0].toUpperCase() + v.name.substring(1),
+                ),
+                const SizedBox(height: 10),
+                _SectionHeader(
+                    theme: theme,
+                    title: 'Time Window',
+                    fontSize: baseSize * 0.7),
+                const SizedBox(height: 6),
+                _PickerRow<int>(
+                  values: const [8, 12, 24],
+                  current: settings.timeWindowHours,
+                  fontSize: baseSize * 0.65,
+                  onSelect: (val) =>
+                      widget.settingsService.update(AppSettings(
+                    fontSize: settings.fontSize,
+                    theme: settings.theme,
+                    timeWindowHours: val,
+                    selectedCalendarIds: settings.selectedCalendarIds,
+                  )),
+                  labelBuilder: (v) => '${v}h',
+                ),
+                const Spacer(),
                 _MiniButton(
                   label: 'LOGOUT',
                   onTap: widget.onSignOut,
@@ -127,85 +167,65 @@ class _SettingsPanelState extends State<SettingsPanel> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Row(
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 12),
+              width: 1,
+              color: theme.dividerColor.withValues(alpha: 0.1),
+            ),
+            // ── Middle: Font Size ────────────────────────────────────────
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Theme & Time Window Column
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _SectionHeader(
-                        theme: theme, title: 'Theme', fontSize: baseSize * 0.7),
-                    const SizedBox(height: 8),
-                    _PickerRow<AppTheme>(
-                      values: AppTheme.values,
-                      current: settings.theme,
-                      fontSize: baseSize * 0.65,
-                      onSelect: (val) =>
-                          widget.settingsService.update(AppSettings(
-                        fontSize: settings.fontSize,
-                        theme: val,
-                        timeWindowHours: settings.timeWindowHours,
-                        selectedCalendarIds: settings.selectedCalendarIds,
-                      )),
-                      labelBuilder: (v) =>
-                          v.name[0].toUpperCase() + v.name.substring(1),
-                    ),
-                    const SizedBox(height: 16),
-                    _SectionHeader(
-                        theme: theme,
-                        title: 'Time Window',
-                        fontSize: baseSize * 0.7),
-                    const SizedBox(height: 8),
-                    _PickerRow<int>(
-                      values: const [8, 12, 24],
-                      current: settings.timeWindowHours,
-                      fontSize: baseSize * 0.65,
-                      onSelect: (val) =>
-                          widget.settingsService.update(AppSettings(
-                        fontSize: settings.fontSize,
-                        theme: settings.theme,
-                        timeWindowHours: val,
-                        selectedCalendarIds: settings.selectedCalendarIds,
-                      )),
-                      labelBuilder: (v) => '${v}h',
-                    ),
-                  ],
+                _SectionHeader(
+                    theme: theme,
+                    title: 'Font Size',
+                    fontSize: baseSize * 0.7),
+                const SizedBox(height: 6),
+                _PickerRow<FontSize>(
+                  values: FontSize.values,
+                  current: settings.fontSize,
+                  fontSize: baseSize * 0.65,
+                  onSelect: (val) =>
+                      widget.settingsService.update(AppSettings(
+                    fontSize: val,
+                    theme: settings.theme,
+                    timeWindowHours: settings.timeWindowHours,
+                    selectedCalendarIds: settings.selectedCalendarIds,
+                  )),
+                  labelBuilder: (v) =>
+                      v.name[0].toUpperCase() + v.name.substring(1),
                 ),
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  width: 1,
-                  height: 120 * scale,
-                  color: theme.dividerColor.withValues(alpha: 0.1),
-                ),
-                // Calendars Column
-                SizedBox(
-                  width: 180 * scale,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _SectionHeader(
-                          theme: theme,
-                          title: 'Calendars',
-                          fontSize: baseSize * 0.7),
-                      const SizedBox(height: 8),
-                      if (_isLoadingCalendars)
-                        const Center(
-                            child: Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: SizedBox(
+              ],
+            ),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 12),
+              width: 1,
+              color: theme.dividerColor.withValues(alpha: 0.1),
+            ),
+            // ── Right: Calendars spanning full height ────────────────────
+            SizedBox(
+              width: 180 * scale,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _SectionHeader(
+                      theme: theme,
+                      title: 'Calendars',
+                      fontSize: baseSize * 0.7),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: _isLoadingCalendars
+                        ? const Center(
+                            child: SizedBox(
                               width: 12,
                               height: 12,
-                              child: CircularProgressIndicator(strokeWidth: 2)),
-                        ))
-                      else if (_availableCalendars != null)
-                        ConstrainedBox(
-                          constraints: BoxConstraints(maxHeight: 100 * scale),
-                          child: ListView.separated(
-                            shrinkWrap: true,
-                            itemCount: _availableCalendars!.length,
+                              child:
+                                  CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        : ListView.separated(
+                            itemCount: _availableCalendars?.length ?? 0,
                             separatorBuilder: (_, __) =>
                                 const SizedBox(height: 4),
                             itemBuilder: (context, index) {
@@ -215,7 +235,6 @@ class _SettingsPanelState extends State<SettingsPanel> {
                                       ? cal.id == 'primary'
                                       : settings.selectedCalendarIds
                                           .contains(cal.id);
-
                               return GestureDetector(
                                 onTap: () => _toggleCalendar(cal.id),
                                 child: Container(
@@ -236,11 +255,12 @@ class _SettingsPanelState extends State<SettingsPanel> {
                                   child: Row(
                                     children: [
                                       Container(
-                                          width: 8 * scale,
-                                          height: 8 * scale,
-                                          decoration: BoxDecoration(
-                                              color: cal.color,
-                                              shape: BoxShape.circle)),
+                                        width: 8 * scale,
+                                        height: 8 * scale,
+                                        decoration: BoxDecoration(
+                                            color: cal.color,
+                                            shape: BoxShape.circle),
+                                      ),
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: Text(
@@ -249,8 +269,9 @@ class _SettingsPanelState extends State<SettingsPanel> {
                                             color: theme
                                                 .textTheme.bodyMedium?.color
                                                 ?.withValues(
-                                                    alpha:
-                                                        isSelected ? 1.0 : 0.6),
+                                                    alpha: isSelected
+                                                        ? 1.0
+                                                        : 0.6),
                                             fontSize: baseSize * 0.65,
                                           ),
                                           maxLines: 1,
@@ -260,49 +281,17 @@ class _SettingsPanelState extends State<SettingsPanel> {
                                       if (isSelected)
                                         Icon(Icons.check,
                                             size: baseSize * 0.65,
-                                            color: theme.colorScheme.primary),
+                                            color:
+                                                theme.colorScheme.primary),
                                     ],
                                   ),
                                 ),
                               );
                             },
                           ),
-                        ),
-                    ],
                   ),
-                ),
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  width: 1,
-                  height: 120 * scale,
-                  color: theme.dividerColor.withValues(alpha: 0.1),
-                ),
-                // Font Size Column
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _SectionHeader(
-                        theme: theme,
-                        title: 'Font Size',
-                        fontSize: baseSize * 0.7),
-                    const SizedBox(height: 8),
-                    _PickerRow<FontSize>(
-                      values: FontSize.values,
-                      current: settings.fontSize,
-                      fontSize: baseSize * 0.65,
-                      onSelect: (val) =>
-                          widget.settingsService.update(AppSettings(
-                        fontSize: val,
-                        theme: settings.theme,
-                        timeWindowHours: settings.timeWindowHours,
-                        selectedCalendarIds: settings.selectedCalendarIds,
-                      )),
-                      labelBuilder: (v) =>
-                          v.name[0].toUpperCase() + v.name.substring(1),
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),

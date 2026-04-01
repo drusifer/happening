@@ -18,6 +18,7 @@ import 'package:happening/features/timeline/painters/events_layer.dart';
 import 'package:happening/features/timeline/painters/fetching_layer.dart';
 import 'package:happening/features/timeline/painters/now_indicator_layer.dart';
 import 'package:happening/features/timeline/painters/past_overlay_layer.dart';
+import 'package:happening/features/timeline/painters/sign_in_layer.dart';
 import 'package:happening/features/timeline/painters/tick_layer.dart';
 import 'package:happening/features/timeline/timeline_layout.dart';
 
@@ -39,6 +40,8 @@ class TimelinePainter extends CustomPainter {
     this.fontSize = 11,
     this.isLoading = false,
     this.loadingTextColor = Colors.white,
+    this.isSignIn = false,
+    this.signInTextColor = Colors.white,
   });
 
   final List<CalendarEvent> events;
@@ -59,6 +62,8 @@ class TimelinePainter extends CustomPainter {
 
   final bool isLoading;
   final Color loadingTextColor;
+  final bool isSignIn;
+  final Color signInTextColor;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -100,6 +105,12 @@ class TimelinePainter extends CustomPainter {
         textColor: loadingTextColor,
         fontSize: fontSize,
       ),
+      SignInLayer(
+        isSignIn: isSignIn,
+        backgroundColor: backgroundColor,
+        textColor: signInTextColor,
+        fontSize: fontSize,
+      ),
     ];
 
     for (final layer in layers) {
@@ -114,7 +125,8 @@ class TimelinePainter extends CustomPainter {
       old.hoveredEventId != hoveredEventId ||
       old.collidingIds != collidingIds ||
       old.countdownColor != countdownColor ||
-      old.isLoading != isLoading;
+      old.isLoading != isLoading ||
+      old.isSignIn != isSignIn;
 
   /// Semantic nodes for canvas content — makes ticks, events, and task
   /// diamonds queryable by integration tests via [find.bySemanticsLabel].

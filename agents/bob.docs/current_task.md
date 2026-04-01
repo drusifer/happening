@@ -6,4 +6,5 @@
 - [x] Auth relay reverted — localhost PKCE flow confirmed correct.
 - [x] Proxy /token confirmed working (no changes needed).
 - [x] Bob protocol re-initialized (2026-03-18).
+- [x] Bob protocol re-initialized (2026-04-01).
 - [ ] Awaiting Drew's next task directive.
