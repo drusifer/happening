@@ -74,6 +74,14 @@ set_target_properties(${BINARY_NAME}
 # them to the application.
 include(flutter/generated_plugins.cmake)
 
+# flutter_secure_storage_linux 1.2.3 bundles nlohmann/json.hpp that uses a
+# deprecated C++ literal-operator syntax. Newer clang promotes this to an error
+# via -Werror. Suppress it for this plugin only — does not affect other targets.
+if(TARGET flutter_secure_storage_linux_plugin)
+  target_compile_options(flutter_secure_storage_linux_plugin PRIVATE
+    -Wno-deprecated-literal-operator)
+endif()
+
 
 # === Installation ===
 # By default, "installing" just makes a relocatable bundle in the build

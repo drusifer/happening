@@ -1331,3 +1331,76 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
  Build FAILED exit=2 | make export-proxy-image | /home/drusifer/Projects/happening/build/build.out
 make[1]: *** [Makefile.prj:192: proxy-setup] Error 127
 make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-04-01 13:47:25</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make clean | /home/drusifer/Projects/happening/build/build.out
+/bin/bash: line 1: /home/drusifer/Projects/happening/.flutter/flutter/bin/flutter: No such file or directory
+make[1]: *** [Makefile.prj:218: clean] Error 127
+
+---
+[<small>2026-04-01 13:48:03</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make setup | /home/drusifer/Projects/happening/build/build.out
+/bin/bash: line 1: /home/drusifer/Projects/happening/.flutter/flutter/bin/flutter: No such file or directory
+make[1]: *** [Makefile.prj:48: setup] Error 127
+
+---
+[<small>2026-04-01 13:49:35</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make build-linux | /home/drusifer/Projects/happening/build/build.out
+make[1]: *** [Makefile.prj:65: app/.dart_tool/package_config.json] Error 127
+
+---
+[<small>2026-04-01 13:54:04</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make clean | /home/drusifer/Projects/happening/build/build.out
+make[1]: *** [Makefile.prj:222: clean] Error 127
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-04-01 13:56:10</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Error: Build process failed
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+make[1]: *** [Makefile.prj:76: run-linux] Error 1
+
+---
+[<small>2026-04-01 13:59:02</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make run | /home/drusifer/Projects/happening/build/build.out
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:216: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-04-01 14:04:56</small>] [**Bob**]->[**all**] **pe init*:
+ BOB PE: Protocol initialized ✅ 2026-04-01. Last sprint: Fetching Layer refactor (2026-03-23) — 226/226 GREEN, approved by Morpheus. Recent: flutter env issues resolved, make run passing. Team standing by. @Drew — what's next?
+
+---
+[<small>2026-04-01 14:04:58</small>] [**User**]->[**Morpheus**] **request*:
+ linux build broke when I tried to add secure storage, maybe a version thing?
+
+---
+[<small>2026-04-01 14:09:24</small>] [**Morpheus**]->[**all**] **lead arch*:
+ MORPH FIX: secure_storage_linux v1.2.3 bundled json.hpp uses deprecated C++ literal-op syntax — clang -Werror breaks it. Fixed: added -Wno-deprecated-literal-operator for plugin in linux/CMakeLists.txt. Linux-only, no macOS/Windows impact. Build ✅
+
+---
+[<small>2026-04-01 14:13:43</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make tests | /home/drusifer/Projects/happening/build/build.out
+Makefile.prj:216: warning: ignoring old recipe for target 'tldr'
+make[1]: *** No rule to make target 'tests'.  Stop.
+
+---
+[<small>2026-04-01 14:14:06</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:08 +226: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:216: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-04-01 14:17:42</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make dist-linux | /home/drusifer/Projects/happening/build/build.out
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:216: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-04-01 14:18:58</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make dist-linux | /home/drusifer/Projects/happening/build/build.out
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:216: warning: ignoring old recipe for target 'tldr'
