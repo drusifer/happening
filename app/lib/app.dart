@@ -9,7 +9,6 @@
 // ---------------------------------------------------------------------------
 
 import 'dart:async';
-import 'dart:io' show exit;
 
 import 'package:flutter/material.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
@@ -184,11 +183,16 @@ class _HappeningAppState extends State<HappeningApp> {
             backgroundColor: Colors.transparent,
             body: switch (_authState) {
               _AuthState.loading => SizedBox(
+                  width: double.infinity,
                   height: settings.fontSize.px + 20,
                 ),
-              _AuthState.unauthenticated => _SignInStrip(
-                  onTap: _signIn,
-                  settings: settings,
+              _AuthState.unauthenticated => TimelineStrip(
+                  events: const [],
+                  clockService: _clock,
+                  settingsService: widget.settingsService,
+                  windowService: widget.windowService,
+                  onSignOut: _signOut,
+                  onSignIn: _signIn,
                 ),
               _AuthState.authenticated => StreamBuilder<List<CalendarEvent>>(
                   stream: _calendar!.events,
@@ -213,65 +217,3 @@ class _HappeningAppState extends State<HappeningApp> {
   }
 }
 
-// ---------------------------------------------------------------------------
-// S2-09: First-launch auth gate — fits inside the 30 px strip
-// ---------------------------------------------------------------------------
-
-class _SignInStrip extends StatelessWidget {
-  const _SignInStrip({required this.onTap, required this.settings});
-  final VoidCallback onTap;
-  final AppSettings settings;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark ? const Color(0xFF1A1A2E) : Colors.white;
-    return Stack(
-      children: [
-        GestureDetector(
-          onTap: onTap,
-          behavior: HitTestBehavior.opaque,
-          child: Container(
-            color: bg,
-            alignment: Alignment.center,
-            child: Text('Tap to sign in with Google →',
-              style: TextStyle(
-                color: Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
-                fontSize: settings.fontSize.px,
-              ),
-            ),
-          ),
-        ),
-        Positioned(right: 8, top: 0, bottom: 0,
-          child: Center(child: _QuitButton(backgroundColor: bg)),
-        ),
-      ],
-    );
-  }
-}
-
-class _QuitButton extends StatelessWidget {
-  const _QuitButton({required this.backgroundColor});
-  final Color backgroundColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return GestureDetector(
-      onTap: () => exit(0),
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: backgroundColor.withValues(alpha: 0.92),
-          shape: BoxShape.circle,
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 3)],
-        ),
-        child: Icon(Icons.power_settings_new,
-          color: isDark ? Colors.white70 : Colors.black54,
-          size: 16,
-        ),
-      ),
-    );
-  }
-}
