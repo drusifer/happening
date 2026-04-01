@@ -1,15 +1,22 @@
 #!/usr/bin/env bash
-# Verify Flutter and Linux desktop build dependencies are installed.
-# Called by `make setup`. Does NOT install anything — tells you what's missing.
+# Bootstrap Flutter SDK and verify Linux desktop build dependencies.
+# Called by `make setup`.
 set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+FLUTTER_SDK="$PROJECT_ROOT/.flutter/flutter"
 
 ERRORS=()
 
-# ── Flutter ───────────────────────────────────────────────────────────────────
-if ! command -v flutter &>/dev/null; then
-  ERRORS+=("flutter: not found — install via: sudo snap install flutter --classic")
+# ── Flutter SDK ───────────────────────────────────────────────────────────────
+if [ -x "$FLUTTER_SDK/bin/flutter" ]; then
+  echo "✓ flutter SDK ($FLUTTER_SDK)"
 else
-  echo "✓ flutter $(flutter --version --machine 2>/dev/null | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d["frameworkVersion"])' 2>/dev/null || flutter --version | head -1 | awk '{print $2}')"
+  echo "==> Flutter SDK not found — cloning stable into .flutter/flutter ..."
+  mkdir -p "$PROJECT_ROOT/.flutter"
+  git clone https://github.com/flutter/flutter.git --branch stable --depth 1 "$FLUTTER_SDK"
+  echo "✓ flutter SDK cloned"
 fi
 
 # ── Linux desktop build deps ──────────────────────────────────────────────────
@@ -42,7 +49,7 @@ if [[ ${#ERRORS[@]} -gt 0 ]]; then
     echo "  • $e"
   done
   echo ""
-  echo "Quick fix: sudo apt install clang cmake ninja-build pkg-config libgtk-3-dev lld"
+  echo "Quick fix: sudo apt install clang cmake ninja-build pkg-config libgtk-3-dev lld libsecret-1-dev"
   exit 1
 fi
 
