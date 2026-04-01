@@ -136,3 +136,5 @@ ephemeral/
 .vscode/
 
 
+app/pubspec.yaml~
+app/.pubspec.yaml.un~
