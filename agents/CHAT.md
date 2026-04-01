@@ -1318,3 +1318,16 @@ Makefile.prj:194: warning: ignoring old recipe for target 'tldr'
 ---
 [<small>2026-03-23 20:31:29</small>] [**Morpheus**]->[**all**] **lead approve*:
  Review PASSED. Clean impl — no widget swap, FetchingLayer fits compositor pattern exactly. Shipping.
+
+---
+[<small>2026-04-01 13:21:57</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make clean | /home/drusifer/Projects/happening/build/build.out
+/bin/bash: line 1: flutter: command not found
+make[1]: *** [Makefile.prj:216: clean] Error 127
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-04-01 13:22:24</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make export-proxy-image | /home/drusifer/Projects/happening/build/build.out
+make[1]: *** [Makefile.prj:192: proxy-setup] Error 127
+make[1]: Leaving directory '/home/drusifer/Projects/happening'

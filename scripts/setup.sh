@@ -14,7 +14,7 @@ fi
 
 # ── Linux desktop build deps ──────────────────────────────────────────────────
 # C++ compiler, build system, package detection, GTK windowing, linker, secure storage plugin
-APT_PKGS=(clang cmake ninja-build pkg-config libgtk-3-dev lld)
+APT_PKGS=(clang cmake ninja-build pkg-config libgtk-3-dev lld libsecret-1-dev)
 APT_NOTES=(
   "C++ compiler for the Linux runner"
   "build system for the Linux runner"
@@ -22,6 +22,7 @@ APT_NOTES=(
   "cmake package detection"
   "Flutter Linux GTK 3 windowing"
   "LLVM linker (Dart AOT requires lld)"
+  "flutter_secure_storage Linux backend (libsecret / GNOME Keyring)"
 )
 
 for i in "${!APT_PKGS[@]}"; do

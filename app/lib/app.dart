@@ -9,7 +9,7 @@
 // ---------------------------------------------------------------------------
 
 import 'dart:async';
-import 'dart:io';
+import 'dart:io' show exit;
 
 import 'package:flutter/material.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
@@ -80,10 +80,7 @@ class _HappeningAppState extends State<HappeningApp> {
   Future<void> _initServices() async {
     await AppLogger.debug('HappeningApp._initServices starting...');
     try {
-      final home = Platform.environment['HOME'] ?? '';
-      final dir = Directory('$home/.config/happening');
-
-      final tokenStore = FileTokenStore(directory: dir);
+      final tokenStore = FlutterSecureTokenStore();
       await AppLogger.debug('OAuth Client ID loaded.');
 
       _auth = GoogleAuthService(

@@ -62,7 +62,7 @@ Future<void> _handleToken(HttpRequest request, String secret) async {
       body: params,
     );
 
-    stdout.writeln('[proxy] Token exchange: ${googleResponse.statusCode} ${googleResponse.body}');
+    stdout.writeln('[proxy] Token exchange: ${googleResponse.statusCode}');
 
     request.response
       ..statusCode = googleResponse.statusCode

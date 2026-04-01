@@ -10,6 +10,8 @@
 
 import 'dart:io';
 
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
 /// Abstract token storage interface.
 ///
 /// TLDR:
@@ -57,5 +59,18 @@ class FileTokenStore implements TokenStore {
   }
 }
 
-// FlutterSecureTokenStore will be added back when flutter_secure_storage
-// ships a json.hpp compatible with LLVM 20 (tracked: Sprint 3 / S3-token).
+/// OS keychain-backed token storage (macOS Keychain, Windows DPAPI, Linux libsecret).
+class FlutterSecureTokenStore implements TokenStore {
+  FlutterSecureTokenStore() : _storage = const FlutterSecureStorage();
+  final FlutterSecureStorage _storage;
+
+  @override
+  Future<void> write({required String key, required String value}) =>
+      _storage.write(key: key, value: value);
+
+  @override
+  Future<String?> read({required String key}) => _storage.read(key: key);
+
+  @override
+  Future<void> delete({required String key}) => _storage.delete(key: key);
+}
