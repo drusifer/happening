@@ -41,10 +41,18 @@ PUB_STAMP    := $(APP_DIR)/.dart_tool/package_config.json
 
 # ── Bootstrap ────────────────────────────────────────────────────────────────
 
+# Flutter SDK sentinel — runs setup.sh (which clones the SDK) if the binary is missing.
+$(FLUTTER):
+	./scripts/setup.sh
+
 # Check system deps, then fetch pub deps.
 .PHONY: setup
 setup: install-hooks
 	./scripts/setup.sh
+	cd $(APP_DIR) && $(FLUTTER) pub get
+
+# Fetch pub deps only when pubspec files are newer than the stamp.
+$(PUB_STAMP): $(FLUTTER) $(APP_DIR)/pubspec.yaml $(APP_DIR)/pubspec.lock
 	cd $(APP_DIR) && $(FLUTTER) pub get
 
 # Install git hooks from scripts/ into .git/hooks/.
@@ -59,10 +67,6 @@ else
 	@chmod +x .git/hooks/pre-commit
 	@echo "Git hooks installed."
 endif
-
-# Fetch pub deps only when pubspec files are newer than the stamp.
-$(PUB_STAMP): $(APP_DIR)/pubspec.yaml $(APP_DIR)/pubspec.lock
-	cd $(APP_DIR) && $(FLUTTER) pub get
 
 # ── Dev ──────────────────────────────────────────────────────────────────────
 .PHONY: run run-linux run-macos run-windows run-windows-test run-windows-simple
@@ -190,7 +194,7 @@ PROXY_BIN    := $(DIST_DIR)/happening-proxy-$(VERSION)-linux-$(ARCH)
 PROXY_TAR    := $(DIST_DIR)/happening-proxy-$(VERSION).tar
 
 .PHONY: proxy proxy-setup export-proxy-image
-proxy-setup:
+proxy-setup: $(DART)
 	cd $(PROXY_DIR) && $(DART) pub get
 
 proxy: proxy-setup
