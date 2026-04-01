@@ -73,7 +73,7 @@ endif
 run:
 	@echo "Please specify a platform: make run-linux, run-macos, or run-windows"
 run-linux: $(PUB_STAMP) 
-	cd $(APP_DIR) && PATH="$(LLVM_BIN):$$PATH" GDK_BACKEND=x11 XAUTHORITY=$$(ls /run/user/$$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1) $(FLUTTER) run -d linux
+	cd $(APP_DIR) && PATH="$(FLUTTER_SDK)\bin:$(LLVM_BIN):$$PATH" GDK_BACKEND=x11 XAUTHORITY=$$(ls /run/user/$$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1) $(FLUTTER) run -d linux
 run-macos: $(PUB_STAMP)
 	cd $(APP_DIR) && $(FLUTTER) run -d macos
 run-windows: $(PUB_STAMP)
@@ -97,7 +97,7 @@ test-watch: $(PUB_STAMP)
 integration-test:
 	@echo "Please specify a platform: make integration-test-linux, integration-test-macos, or integration-test-windows"
 integration-test-linux: $(PUB_STAMP)
-	cd $(APP_DIR) && PATH="$(LLVM_BIN):$$PATH" GDK_BACKEND=x11 XAUTHORITY=$$(ls /run/user/$$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1) $(FLUTTER) test integration_test/ -d linux
+	cd $(APP_DIR) && PATH="$(FLUTTER_SDK)\bin:$(LLVM_BIN):$$PATH" GDK_BACKEND=x11 XAUTHORITY=$$(ls /run/user/$$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1) $(FLUTTER) test integration_test/ -d linux
 integration-test-macos: $(PUB_STAMP)
 	cd $(APP_DIR) && $(FLUTTER) test integration_test/ -d macos
 integration-test-windows: $(PUB_STAMP)
@@ -106,7 +106,7 @@ integration-test-windows: $(PUB_STAMP)
 # ── Build ────────────────────────────────────────────────────────────────────
 .PHONY: build-linux build-macos build-windows
 build-linux: $(PUB_STAMP)
-	cd $(APP_DIR) && PATH="$(LLVM_BIN):$$PATH" $(FLUTTER) build linux --release
+	cd $(APP_DIR) && PATH="$(FLUTTER_SDK)\bin:$(LLVM_BIN):$$PATH" $(FLUTTER) build linux --release
 
 build-macos: $(PUB_STAMP)
 	cd $(APP_DIR) && $(FLUTTER) build macos --release
