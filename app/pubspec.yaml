@@ -17,6 +17,7 @@ dependencies:
   url_launcher: any
   http: any
   crypto: any
+  flutter_secure_storage: any
   win32: any
   ffi: any
 

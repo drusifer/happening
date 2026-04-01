@@ -11,6 +11,7 @@
 .history
 app/build
 
+dist/happening-proxy-*
 
 
 # Flutter repo-specific

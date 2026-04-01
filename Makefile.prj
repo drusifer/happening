@@ -2,7 +2,9 @@ ifneq ($(OS),Windows_NT)
   SHELL := /bin/bash
 endif
 
-FLUTTER      := flutter
+FLUTTER_SDK  := $(CURDIR)/.flutter/flutter
+FLUTTER      := $(FLUTTER_SDK)/bin/flutter
+DART         := $(FLUTTER_SDK)/bin/dart
 APP_DIR      := app
 PROXY_DIR    := proxy
 DIST_DIR     := dist
@@ -143,14 +145,14 @@ dist-windows: build-windows
 
 dist-proxy-linux: proxy-setup
 	@mkdir -p $(DIST_DIR)
-	dart compile exe $(PROXY_DIR)/bin/server.dart \
+	$(DART) compile exe $(PROXY_DIR)/bin/server.dart \
 	    -o $(DIST_DIR)/happening-proxy-$(VERSION)-linux-$(ARCH)
 	@echo "Proxy binary: $(DIST_DIR)/happening-proxy-$(VERSION)-linux-$(ARCH)"
 
 # ── Quality ──────────────────────────────────────────────────────────────────
 .PHONY: format analyze lint lint-style lint-metrics lint-format
 format: $(PUB_STAMP)
-	cd $(APP_DIR) && dart format lib/ test/
+	cd $(APP_DIR) && $(DART) format lib/ test/
 
 analyze: $(PUB_STAMP)
 	cd $(APP_DIR) && $(FLUTTER) analyze
@@ -169,7 +171,7 @@ lint-metrics: $(PUB_STAMP)
 
 # Formatting check (non-modifying)
 lint-format: $(PUB_STAMP)
-	cd $(APP_DIR) && dart format --output=none --set-exit-if-changed lib/ test/
+	cd $(APP_DIR) && $(DART) format --output=none --set-exit-if-changed lib/ test/
 
 # ── Proxy ────────────────────────────────────────────────────────────────────
 # Runs the local OAuth token exchange proxy. The proxy adds client_secret
@@ -179,14 +181,30 @@ lint-format: $(PUB_STAMP)
 #   export GOOGLE_CLIENT_SECRET=<your_secret>
 #   make proxy
 #
-.PHONY: proxy proxy-setup
+# To export a container image tar for deployment via pi-patch:
+#   make export-proxy-image   # compile binary + build image + save tar to dist/
+#   Then in pi-patch: make deploy-happening TAR=<path-to-tar> VERSION=$(VERSION)
+#
+PROXY_IMAGE  := localhost/happening-proxy
+PROXY_BIN    := $(DIST_DIR)/happening-proxy-$(VERSION)-linux-$(ARCH)
+PROXY_TAR    := $(DIST_DIR)/happening-proxy-$(VERSION).tar
+
+.PHONY: proxy proxy-setup export-proxy-image
 proxy-setup:
-	cd $(PROXY_DIR) && dart pub get
+	cd $(PROXY_DIR) && $(DART) pub get
 
 proxy: proxy-setup
 	@test -n "$$GOOGLE_CLIENT_SECRET" || \
 		(echo "Error: GOOGLE_CLIENT_SECRET is not set. Run: export GOOGLE_CLIENT_SECRET=<secret>"; exit 1)
-	cd $(PROXY_DIR) && dart run bin/server.dart
+	cd $(PROXY_DIR) && $(DART) run bin/server.dart
+
+export-proxy-image: dist-proxy-linux ## Compile proxy + build container image + export tar to dist/
+	cp $(PROXY_BIN) $(PROXY_DIR)/bin/happening-proxy
+	docker build -t $(PROXY_IMAGE):$(VERSION) $(PROXY_DIR)
+	docker save -o $(PROXY_TAR) $(PROXY_IMAGE):$(VERSION)
+	rm $(PROXY_DIR)/bin/happening-proxy
+	@echo "Image exported to $(PROXY_TAR)"
+	@echo "Deploy with: make -C /path/to/pi-patch/cluster deploy-happening TAR=$(CURDIR)/$(PROXY_TAR) VERSION=$(VERSION)"
 
 # ── TLDR ─────────────────────────────────────────────────────────────────────
 .PHONY: tldr
@@ -232,4 +250,5 @@ help:
 	@echo "  make tldr         Print TLDR header map of all lib source files"
 	@echo "  make proxy        Run OAuth token exchange proxy (requires GOOGLE_CLIENT_SECRET)"
 	@echo "  make proxy-setup  Install proxy dependencies"
+	@echo "  make export-proxy-image  Compile proxy + build image + export tar to dist/"
 	@echo "  make clean        Remove build artifacts"

@@ -152,7 +152,7 @@ class GoogleAuthService implements AuthService {
       );
 
       unawaited(AppLogger.debug(
-          'PKCE token response: ${response.statusCode} ${response.body}'));
+          'PKCE token response: ${response.statusCode}'));
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       if (data.containsKey('error')) {
         unawaited(AppLogger.debug(
