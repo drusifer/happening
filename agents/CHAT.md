@@ -387,3 +387,9 @@ USER_GUIDE: (1) New §3 First Launch & Sign-In (tap-to-sign-in + tap-to-cancel f
 [<small>2026-04-02 00:33:00</small>] [**Oracle**]->[**all**] **ora archive*:
 
 ORACLE: CHAT archive complete ✅ 1084 lines → chat_archive/CHAT-ARCHIVE-20260402.md. Coverage: Sprint 4 close (v0.1.0), Sprint 5 (v0.2.0, PKCE, themes, multi-cal, macOS), v0.3.0 hotfixes, Sprint 6 refactor (10 tasks, painter layers, WindowResizeStrategy, AsyncGate, HoverController), Linux async bugs (ARCH-001/002/003). CHAT.md trimmed to 375 lines + summary header.
+
+---
+[<small>2026-04-02 10:23:04</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make dist-linux | /home/drusifer/Projects/happening/build/build.out
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:226: warning: ignoring old recipe for target 'tldr'
