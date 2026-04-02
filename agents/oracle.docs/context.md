@@ -17,5 +17,9 @@
 - README.md: Linux build deps updated with optional `libgtk-layer-shell-dev`.
 - LESSONS.md: X11 DOCK type must be set before gtk_widget_show (race condition fix).
 
+## Recent Changes Documented (2026-04-02)
+- README.md: v0.3.1 bump, `libsecret-1-dev` Linux dep, MSIX Windows install, FlutterSecureTokenStore + per-cal isolation in arch section.
+- USER_GUIDE.md: New §3 First Launch/Sign-In (tap-to-sign-in, tap-to-cancel, OS keychain), Quit vs Logout clarified, sections renumbered.
+
 ## Pending Tasks
-- [ ] Update USER_GUIDE.md if quit button UX changes affect end-user docs.
+- None.

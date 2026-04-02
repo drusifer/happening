@@ -10,7 +10,10 @@
       "Bash(flutter analyze:*)",
       "Bash(/home/drusifer/Projects/happening/agents/neo.docs/current_task.md:*)",
       "Bash(make test:*)",
-      "Bash(kubectl exec:*)"
+      "Bash(kubectl exec:*)",
+      "Bash(flutter test:*)",
+      "Bash(wsl -- bash -c \"cd /mnt/c/Users/drusi/VSCode_Projects/happening/app && flutter test --no-pub 2>&1 | tail -20\")",
+      "Bash(powershell -Command ':*)"
     ]
   },
   "enabledMcpjsonServers": [

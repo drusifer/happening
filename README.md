@@ -16,13 +16,14 @@ Happening is a persistent, always-on-top horizontal timeline strip that reads yo
 
 ---
 
-## Project Status: v0.3.0
+## Project Status: v0.3.1
 - [x] **Sprint 1**: Foundation & Shell (Always-on-top window, mock timeline)
 - [x] **Sprint 2**: Google Calendar Integration (OAuth flow, real event fetching, polling)
 - [x] **Sprint 3**: Refactor & Polish (Hover details, settings, platform optimization)
 - [x] **Sprint 4**: Linux Release + Test Pyramid (v0.1.0 shipped)
 - [x] **Sprint 5**: v0.2.0 Features (Multi-Calendar, Themes, Visual Polish, PKCE auth)
 - [x] **Sprint 6**: v0.3.0 Linux/Wayland support, hover card fixes, always-visible quit button
+- [x] **v0.3.1**: Secure credential storage, OAuth cancellation, calendar isolation, settings panel polish
 
 ---
 
@@ -57,10 +58,10 @@ Download the latest release for your platform from the [releases page](https://g
 3. Sign in with Google when prompted.
 
 ### Windows
-1. Download `happening-<version>-windows-x64.zip`.
-2. Extract the zip to a folder of your choice.
-3. Run `happening.exe` from the extracted `Release/` folder.
-4. Sign in with Google when prompted — a browser window will open automatically.
+1. Download `happening-<version>-windows-x64.msix` (recommended installer) or the `.zip` for a portable install.
+2. **MSIX**: Double-click to install, then launch from the Start menu.
+   **ZIP**: Extract to a folder of your choice and run `happening.exe` from the `Release/` folder.
+3. Sign in with Google when prompted — a browser window will open automatically.
 
 ---
 
@@ -80,6 +81,7 @@ These are only needed if you are building from source. End users do not need the
 - `clang`, `cmake`, `ninja-build`, `pkg-config`
 - `libgtk-3-dev`
 - `lld` (LLVM linker)
+- `libsecret-1-dev` *(required for secure credential storage)*
 - `libgtk-layer-shell-dev` *(optional — enables Wayland strut/positioning support)*
 
 #### Windows
@@ -136,4 +138,5 @@ make run          # Lists all options
 - **Rendering**: `CustomPainter` decomposed into 5 composited layers (`BackgroundLayer`, `PastOverlayLayer`, `TickLayer`, `NowIndicatorLayer`, `EventsLayer`).
 - **State Management**: `StreamBuilder` driven by a 1Hz clock tick. `AsyncGate<T>` serializes async window ops and deduplicates rapid intent changes.
 - **Hover**: `HoverController` isolates all expand/collapse calls from pointer events. `LinuxHoverController` adds 300ms suppression for GTK spurious pointer-exit after resize.
-- **Data**: Google Calendar API v3 via `googleapis`.
+- **Auth**: PKCE OAuth flow with cancellable `HttpServer` redirect capture. Credentials persisted via `FlutterSecureTokenStore` (OS keychain on all platforms).
+- **Data**: Google Calendar API v3 via `googleapis`. Per-calendar fetch failures are isolated — one bad calendar does not block others.

@@ -32,6 +32,29 @@ class _FakeCalendarService implements CalendarService {
   }
 }
 
+/// Fake that throws for specific calendar IDs, succeeds for others.
+class _PerCalendarFakeService implements CalendarService {
+  final Set<String> throwingIds;
+  final List<CalendarEvent> eventsForGoodCals;
+
+  _PerCalendarFakeService({
+    required this.throwingIds,
+    required this.eventsForGoodCals,
+  });
+
+  @override
+  Future<List<CalendarMeta>> fetchCalendarList() async => [];
+
+  @override
+  Future<List<CalendarEvent>> fetchEvents(String calendarId) async {
+    if (throwingIds.contains(calendarId)) throw Exception('cal $calendarId failed');
+    return eventsForGoodCals;
+  }
+
+  @override
+  Future<List<CalendarEvent>> fetchTodayEvents() async => eventsForGoodCals;
+}
+
 // ── Fixture ───────────────────────────────────────────────────────────────────
 
 final _now = DateTime(2026, 2, 28, 10, 0);
@@ -142,21 +165,23 @@ void main() {
       expect(controller.lastEvents, isEmpty);
     });
 
-    test('service error on refresh → stream retains last value', () async {
+    test('service error on refresh → stream emits empty list (per-cal isolation)', () async {
+      // With catchError per-calendar, a failing fetch returns [] for that calendar
+      // rather than propagating — so the combined result IS emitted (as []).
       fakeService.mockEvents = [_event('e1')];
       final emitted = <List<CalendarEvent>>[];
       controller.events.listen(emitted.add);
 
       controller.start();
       await Future<void>.delayed(Duration.zero);
-      expect(emitted, hasLength(1));
+      expect(emitted.first.map((e) => e.id), equals(['e1']));
 
       fakeService.shouldThrow = true;
       await controller.refresh();
 
-      // No new emission — stream keeps last value
-      expect(emitted, hasLength(1));
-      expect(emitted.first.first.id, equals('e1'));
+      // Failing calendar returns [] via catchError → stream emits [] (not retained).
+      expect(emitted, hasLength(2));
+      expect(emitted.last, isEmpty);
     });
 
     // ── stop() / dispose() ────────────────────────────────────────────────────
@@ -184,6 +209,28 @@ void main() {
       // Logic check: if we have 0 selected, it should call fetch once (for primary).
       await controller.refresh();
       expect(fakeService.fetchCalls, 1);
+    });
+
+    test('per-calendar error: failing calendar does not block successful ones', () async {
+      // 'primary' succeeds, 'secondary' throws — stream must still emit primary events.
+      final tmp = Directory.systemTemp.createTempSync();
+      final settingsSvc = SettingsService(directory: tmp);
+      await settingsSvc.load();
+      await settingsSvc.update(const AppSettings(selectedCalendarIds: ['secondary']));
+
+      final isolationService = _PerCalendarFakeService(
+        throwingIds: {'secondary'},
+        eventsForGoodCals: [_event('primary-event')],
+      );
+      final ctrl = CalendarController(isolationService, settingsService: settingsSvc);
+      addTearDown(ctrl.dispose);
+
+      final nextEmission = ctrl.events.first;
+      await ctrl.refresh();
+      final result = await nextEmission;
+
+      // Only primary-event survives — secondary's error was swallowed.
+      expect(result.map((e) => e.id).toList(), equals(['primary-event']));
     });
 
     test('fetches primary AND selected secondary calendars', () async {

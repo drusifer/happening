@@ -1,10 +1,9 @@
 # Current Task
 
-## Documentation Grooming & Sync
+## CHAT Archive — 2026-04-02
 **Status**: DONE ✅
 
 ### Done
-- [x] Update `README.md` to reflect Sprint 5 status and completed v0.1.0 release.
-- [x] Update `docs/ARCH.md` to Version 0.3, reflecting current refactored architecture and Sprint 5 data models.
-- [x] Verify TLDR headers across all 18 `.dart` files in `app/lib`.
-- [x] Synchronize `docs/task.md` with Sprint 5 progress.
+- [x] Archived 1084 lines (top 75%) to `agents/chat_archive/CHAT-ARCHIVE-20260402.md`
+- [x] CHAT.md trimmed to 375 lines with summary header + both archive links
+- [x] Archive covers: Sprint 4 (v0.1.0), Sprint 5 (v0.2.0), v0.3.0 hotfixes, Sprint 6, Linux async bugs

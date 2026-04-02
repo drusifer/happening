@@ -288,3 +288,129 @@ Drop the `setSize` advisory call — it is ignored when max-cap is still in plac
 ### References
 - **Files:** `app/lib/core/window/resize_strategy/linux_resize_strategy.dart`
 
+---
+
+## [2026-04-02] Settings Panel Overflow: Positioned Needs a `bottom` Anchor for Bounded Height
+
+> **Tags:** #Flutter #Layout #Settings #UI #Bob
+
+### Context
+The settings panel (opened from the timeline strip) was overflowing by 11px at some font sizes, and the calendar list had no vertical room to grow into.
+
+### The Issue
+The `Positioned` widget in `timeline_strip.dart` that housed `SettingsPanel` had only a `top` constraint and no `bottom`. Without both `top` and `bottom`, Flutter gives the child unbounded vertical space — so `Expanded` inside the panel had nothing to expand against, and the panel could grow beyond the window.
+
+### The Solution
+Added `bottom: 8` to the `Positioned`. This gives the panel a bounded height equal to `(windowHeight - collapsedHeight - 8)`. Inside the panel, the Calendars column uses `Expanded(child: ListView(...))` to fill that space.
+
+### The Rule
+**A `Positioned` child that contains `Expanded` or `Spacer` must have both `top` and `bottom` (or `height`) set.** Without a `bottom` anchor, height is unbounded and `Expanded` has nothing to fill against. The symptom is overflow or widgets that don't fill available space.
+
+### References
+- **Files:** `app/lib/features/timeline/timeline_strip.dart`, `app/lib/features/timeline/settings_panel.dart`
+
+---
+
+## [2026-04-02] Sign-In Screen Must Live Inside TimelineStrip as a Compositor Layer
+
+> **Tags:** #Architecture #Auth #UI #Flutter #Bob
+
+### Context
+On first open (pre-auth), the app window had the wrong size. The sign-in prompt was rendered as a separate widget (`_SignInStrip`) that replaced `TimelineStrip` entirely when unauthenticated.
+
+### The Issue
+`windowService.collapse()` is called in `TimelineStrip.initState()`. When sign-in was a separate widget, `TimelineStrip` was never mounted — so `collapse()` never fired and the window started at the wrong height. Additionally, swapping the root widget on auth-state change caused a jarring visual transition.
+
+### The Solution
+Added `SignInLayer` as a `TimelineLayer` in the compositor pipeline (following the same pattern as `FetchingLayer`). `TimelineStrip` is now always mounted regardless of auth state. When `onSignIn != null`, the painter sets `isSignIn: true` and a `GestureDetector` overlay captures taps. All calendar-only UI (countdown, refresh, settings) is suppressed when in sign-in mode.
+
+### The Rule
+**The `TimelineStrip` must always be mounted.** Auth and loading states are painter layers, not widget swaps. This guarantees `windowService.collapse()` runs at startup and the window is sized correctly from the first frame.
+
+### References
+- **Files:** `app/lib/features/timeline/painters/sign_in_layer.dart` (new), `app/lib/features/timeline/timeline_painter.dart`, `app/lib/features/timeline/timeline_strip.dart`, `app/lib/app.dart`
+
+---
+
+## [2026-04-02] `Future.wait` on Per-Calendar Fetches: One 404 Poisons the Whole Batch
+
+> **Tags:** #API #Calendar #ErrorHandling #Bob
+
+### Context
+Calendar events appeared in the debug log but the timeline strip showed nothing. The log showed: `Initial fetch failed. Emitting empty list to unblock UI` / `Fetch failed error: DetailedApiRequestError(status: 404, message: Not Found)`.
+
+### The Issue
+`CalendarController._fetch()` used `Future.wait(idsToFetch.map((id) => _service.fetchEvents(id)))`. If any single calendar ID returns a 404 (e.g. a group calendar the account no longer has access to), `Future.wait` throws and the entire result set is discarded. All events — including valid ones from other calendars — are lost.
+
+### The Solution
+Wrapped each per-calendar future with `.catchError`: if `fetchEvents(id)` throws, it logs a warning and returns `<CalendarEvent>[]`. The batch still completes and valid calendars contribute their events.
+
+### The Rule
+**Never use bare `Future.wait` on a list of independently-failable API calls.** Add `.catchError` (or equivalent) per item so one bad result doesn't discard all good ones. Log the failure at warn level so stale/invalid IDs are discoverable.
+
+### References
+- **Files:** `app/lib/features/calendar/calendar_controller.dart`
+
+---
+
+## [2026-04-02] Clear `selectedCalendarIds` on Sign-Out to Prevent Account Bleed
+
+> **Tags:** #Auth #Settings #Calendar #Bob
+
+### Context
+After signing out and signing in with a different Google account, the app tried to fetch calendars from the previous account (group calendars, shared calendars), causing 404 errors on every fetch.
+
+### The Issue
+`selectedCalendarIds` is persisted in `settings.json`. Sign-out cleared the OAuth token but left the calendar ID list intact. On the next sign-in (potentially a different account), those stale IDs were fetched and failed.
+
+### The Solution
+In `_signOut()` in `app.dart`, call `settingsService.update(...)` with `selectedCalendarIds: const []` before transitioning state. The new account starts with no explicit selection, which defaults to `primary` only.
+
+### The Rule
+**Clear `selectedCalendarIds` on sign-out.** Calendar IDs are account-scoped. Any settings that reference server-side resources specific to a Google account must be reset when credentials change.
+
+### References
+- **Files:** `app/lib/app.dart`
+
+---
+
+## [2026-04-02] Don't Set Loading Auth State During OAuth — Strip Disappears
+
+> **Tags:** #Auth #UX #Flutter #Bob
+
+### Context
+When the user tapped "sign in", the timeline strip disappeared and was replaced with a blank `SizedBox`. If the OAuth window was closed without completing, there was no way to exit the app.
+
+### The Issue
+`_signIn()` called `setState(() => _authState = _AuthState.loading)` immediately. The `loading` case in `build()` renders a `SizedBox(height: fontSize + 20)` — effectively invisible. The OAuth `await` is non-blocking (Flutter event loop runs fine), but the *display* was cleared, removing the power button and all other controls.
+
+### The Solution
+Removed the `setState` call from `_signIn()`. The strip stays in unauthenticated state (showing the sign-in prompt) throughout the OAuth flow. Auth state only changes to `authenticated` after `signIn()` resolves successfully.
+
+### The Rule
+**Never hide the strip UI during an async operation that the user may need to interrupt.** The `loading` display state is appropriate only for app startup (before first render). During user-initiated flows like OAuth, keep the UI interactive so the user retains control.
+
+### References
+- **Files:** `app/lib/app.dart`
+
+---
+
+## [2026-04-02] OAuth `server.first` Blocks Forever — Store `_pendingServer` for Cancellation
+
+> **Tags:** #Auth #OAuth #UX #Async #Bob
+
+### Context
+If the user opened the OAuth browser window and then closed it without completing sign-in, the app hung indefinitely waiting for a redirect that would never come.
+
+### The Issue
+`HttpServer.bind()` starts a local loopback server; `await server.first` blocks until the browser redirects back with an auth code. If the user closes the browser, no redirect occurs and the future never resolves — permanently.
+
+### The Solution
+Store the server as `_pendingServer` (instance field on `GoogleAuthService`). Expose `cancelSignIn()` on the `AuthService` interface — it calls `_pendingServer?.close(force: true)`, which causes `server.first` to throw, which the catch block intercepts to return `false`. In the app, track `_isSigningIn` state and pass `onCancelSignIn` to `TimelineStrip`. The strip shows "Signing in… tap to cancel" during the flow and calls cancel on tap.
+
+### The Rule
+**Any `await` on an external event (OAuth redirect, file picker, etc.) needs a cancellation path.** Store the waitable resource as an instance field; expose a `cancel()` method that closes/completes it. Keep the UI interactive throughout so the user is never stuck.
+
+### References
+- **Files:** `app/lib/features/auth/auth_service.dart`, `app/lib/app.dart`, `app/lib/features/timeline/timeline_strip.dart`, `app/lib/features/timeline/painters/sign_in_layer.dart`
+
