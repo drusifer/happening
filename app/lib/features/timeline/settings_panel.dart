@@ -8,6 +8,8 @@
 //
 // ---------------------------------------------------------------------------
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/features/calendar/calendar_controller.dart';
@@ -43,12 +45,28 @@ class _SettingsPanelState extends State<SettingsPanel> {
   Future<void> _loadCalendars() async {
     try {
       final list = await widget.calendarController.service.fetchCalendarList();
-      if (mounted) {
-        setState(() {
-          _availableCalendars = list;
-          _isLoadingCalendars = false;
-        });
+      if (!mounted) return;
+
+      // Auto-select the primary calendar the first time (empty selection).
+      if (widget.settingsService.current.selectedCalendarIds.isEmpty) {
+        final primary = list.firstWhere(
+          (c) => c.isPrimary,
+          orElse: () => list.first,
+        );
+        final settings = widget.settingsService.current;
+        unawaited(widget.settingsService.update(AppSettings(
+          fontSize: settings.fontSize,
+          theme: settings.theme,
+          timeWindowHours: settings.timeWindowHours,
+          selectedCalendarIds: [primary.id],
+        )));
+        unawaited(widget.calendarController.refresh());
       }
+
+      setState(() {
+        _availableCalendars = list;
+        _isLoadingCalendars = false;
+      });
     } catch (_) {
       if (mounted) setState(() => _isLoadingCalendars = false);
     }

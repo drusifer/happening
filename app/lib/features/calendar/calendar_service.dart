@@ -26,11 +26,13 @@ class CalendarMeta {
     required this.id,
     required this.summary,
     required this.colorHex,
+    this.isPrimary = false,
   });
 
   final String id;
   final String summary;
   final String? colorHex;
+  final bool isPrimary;
 
   Color get color => colorHex != null
       ? Color(int.parse(colorHex!.replaceFirst('#', '0xFF')))
@@ -55,6 +57,7 @@ class GoogleCalendarService implements CalendarService {
               id: e.id ?? '',
               summary: e.summary ?? '(No title)',
               colorHex: e.backgroundColor,
+              isPrimary: e.primary == true,
             ))
         .toList();
   }
