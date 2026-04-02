@@ -117,6 +117,7 @@ class GoogleAuthService implements AuthService {
     try {
       final verifier = _generateVerifier();
       final challenge = _sha256Challenge(verifier);
+      final state = _generateVerifier(); // CSRF protection (RFC 6749 §10.12)
 
       // Bind on a random free port — OS picks it.
       final server = await HttpServer.bind('localhost', 0);
@@ -133,6 +134,7 @@ class GoogleAuthService implements AuthService {
         'code_challenge_method': 'S256',
         'access_type': 'offline',
         'prompt': 'consent',
+        'state': state,
       });
 
       await launchUrl(authUrl, mode: LaunchMode.externalApplication);
@@ -148,6 +150,18 @@ class GoogleAuthService implements AuthService {
         return false;
       }
       _pendingServer = null;
+
+      // Verify state to prevent CSRF (RFC 6749 §10.12).
+      final returnedState = request.uri.queryParameters['state'];
+      if (returnedState != state) {
+        unawaited(AppLogger.debug('PKCE signIn: state mismatch — possible CSRF'));
+        request.response
+          ..statusCode = 400
+          ..write('Bad request: state mismatch.');
+        await request.response.close();
+        await server.close();
+        return false;
+      }
 
       final code = request.uri.queryParameters['code'];
       request.response
