@@ -20,7 +20,26 @@ Happening is a **persistent, always-on-top horizontal timeline strip** that live
 
 ---
 
-## 3. Understanding the Interface
+## 3. First Launch & Sign-In
+
+On first launch the strip shows:
+
+> **Tap to sign in with Google →**
+
+Tap anywhere on the strip to open a Google sign-in page in your browser. Once you authorize Happening, the browser closes and the timeline appears automatically.
+
+**Credentials are stored securely in your OS keychain** — you only need to sign in once. On subsequent launches the app restores your session automatically.
+
+### Cancelling a sign-in
+If the browser opens but you change your mind, the strip shows:
+
+> **Signing in… tap to cancel**
+
+Tap anywhere on the strip to abort the OAuth flow. The strip returns to the "Tap to sign in" state immediately.
+
+---
+
+## 4. Understanding the Interface
 
 ### The Strip
 The strip is always visible at the top of your primary display. It stays above other windows, providing immediate awareness of your day without the cognitive load of a full calendar grid.
@@ -39,7 +58,7 @@ The strip is always visible at the top of your primary display. It stays above o
 
 ---
 
-## 4. Interaction Features
+## 5. Interaction Features
 
 ### Latch-on-Expand Hover
 Happening uses "Smart Bounding" to make interaction stable:
@@ -55,7 +74,7 @@ Happening uses "Smart Bounding" to make interaction stable:
 
 ---
 
-## 5. Settings & Customization
+## 6. Settings & Customization
 
 Click the **Gear** icon on the far left to open the Settings Panel:
 
@@ -63,11 +82,12 @@ Click the **Gear** icon on the far left to open the Settings Panel:
 - **Time Window**: Control how many hours of your day are visible (8h, 12h, or 24h).
 - **Multi-Calendar**: Toggle visibility for all your synced Google Calendars.
 - **Font Size**: Adjust the UI scale. The strip height adapts automatically.
-- **Quit & Logout**: Use the dedicated buttons in the header to exit the app or switch accounts.
+- **Logout**: The **LOGOUT** button inside the settings panel signs you out and clears your calendar selection (ready for a different account).
+- **Quit**: The **power icon** (⏻) on the far right of the strip is always visible — click it at any time to exit the app, even before signing in.
 
 ---
 
-## 6. Performance & Efficiency
+## 7. Performance & Efficiency
 
 Happening is optimized for ultra-low CPU usage:
 - **Tiered Updates**: The main timeline repaints every 10 seconds, while the countdown timer updates every 1 second.
@@ -75,7 +95,7 @@ Happening is optimized for ultra-low CPU usage:
 
 ---
 
-## 7. Troubleshooting
+## 8. Troubleshooting
 
 - **Strip Positioning**: If the strip appears in the center of the screen (Linux/Wayland), ensure `GDK_BACKEND=x11` is set.
 - **Transparency**: The area below the strip is transparent to your desktop. If it appears as a solid black/white box, verify your system's compositor settings (compositing must be enabled).
@@ -83,5 +103,5 @@ Happening is optimized for ultra-low CPU usage:
 
 ---
 
-## 8. Feedback & Bugs
+## 9. Feedback & Bugs
 Reach out to us at [drusifer@gmail.com].

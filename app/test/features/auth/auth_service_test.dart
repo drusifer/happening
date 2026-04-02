@@ -12,6 +12,7 @@ import 'auth_service_test.mocks.dart';
 class _FakeAuthService implements AuthService {
   final bool _signInSucceeds;
   bool _signedIn = false;
+  bool cancelCalled = false;
 
   _FakeAuthService({bool signInSucceeds = true})
       : _signInSucceeds = signInSucceeds;
@@ -22,6 +23,9 @@ class _FakeAuthService implements AuthService {
     _signedIn = true;
     return true;
   }
+
+  @override
+  void cancelSignIn() => cancelCalled = true;
 
   @override
   Future<void> signOut() async => _signedIn = false;
@@ -68,6 +72,12 @@ void main() {
       await service.signIn();
       await service.signOut();
       expect(service.isSignedIn, isFalse);
+    });
+
+    test('cancelSignIn is callable and does not throw', () {
+      final service = _FakeAuthService();
+      service.cancelSignIn();
+      expect(service.cancelCalled, isTrue);
     });
   });
 

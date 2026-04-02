@@ -582,6 +582,92 @@ void main() {
     });
   });
 
+  group('sign-in mode', () {
+    testWidgets('onSignIn set: hides refresh, settings, and countdown icons',
+        (tester) async {
+      await tester.pumpWidget(wrap(
+        TimelineStrip(
+          events: const [],
+          clockService: clock,
+          settingsService: fakeSettings,
+          windowService: _FakeWindowService(),
+          onSignOut: () {},
+          onSignIn: () {},
+        ),
+      ));
+      await tester.pump(Duration.zero);
+
+      expect(find.byIcon(Icons.refresh), findsNothing);
+      expect(find.byIcon(Icons.settings), findsNothing);
+      expect(find.byType(CountdownDisplay), findsNothing);
+    });
+
+    testWidgets('onSignIn set: tapping strip calls onSignIn', (tester) async {
+      bool signInCalled = false;
+
+      await tester.pumpWidget(wrap(
+        TimelineStrip(
+          events: const [],
+          clockService: clock,
+          settingsService: fakeSettings,
+          windowService: _FakeWindowService(),
+          onSignOut: () {},
+          onSignIn: () => signInCalled = true,
+        ),
+      ));
+      await tester.pump(Duration.zero);
+
+      await tester.tapAt(const Offset(400, 10));
+      await tester.pump();
+
+      expect(signInCalled, isTrue);
+    });
+
+    testWidgets('onCancelSignIn set: tapping calls cancel, not signIn',
+        (tester) async {
+      bool signInCalled = false;
+      bool cancelCalled = false;
+
+      await tester.pumpWidget(wrap(
+        TimelineStrip(
+          events: const [],
+          clockService: clock,
+          settingsService: fakeSettings,
+          windowService: _FakeWindowService(),
+          onSignOut: () {},
+          onSignIn: () => signInCalled = true,
+          onCancelSignIn: () => cancelCalled = true,
+        ),
+      ));
+      await tester.pump(Duration.zero);
+
+      await tester.tapAt(const Offset(400, 10));
+      await tester.pump();
+
+      expect(cancelCalled, isTrue);
+      expect(signInCalled, isFalse);
+    });
+
+    testWidgets('sign-in mode: calendarController null does not crash',
+        (tester) async {
+      await tester.pumpWidget(wrap(
+        TimelineStrip(
+          events: const [],
+          clockService: clock,
+          settingsService: fakeSettings,
+          windowService: _FakeWindowService(),
+          onSignOut: () {},
+          onSignIn: () {},
+          // calendarController intentionally omitted (nullable)
+        ),
+      ));
+      await tester.pump(Duration.zero);
+
+      // No crash — strip renders without a calendar controller.
+      expect(find.byType(TimelineStrip), findsOneWidget);
+    });
+  });
+
   group('Countdown tick1s precision (event boundary)', () {
     testWidgets('countdown mode switches to untilEnd within 1s of event start', (tester) async {
       // Event starts at `now` — active immediately.
