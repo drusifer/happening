@@ -2,10 +2,6 @@
 
 ## Goal
 Remove `client_secret.json` from the app bundle. Replace `clientViaUserConsent()` (needs secret) with a PKCE flow (no secret needed). Approved by Drew 2026-03-06.
-
-## Client ID (was in client_secret.json)
-`732125393297-j5m383u2fdek7j24olmn2vnmjmf49cqn.apps.googleusercontent.com`
-
 ## Tasks
 
 ### T1 — pubspec.yaml
