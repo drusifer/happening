@@ -39,6 +39,7 @@ class TimelineStrip extends StatefulWidget {
     required this.windowService,
     this.calendarController,
     this.onSignIn,
+    this.onCancelSignIn,
     this.isLoading = false,
     this.enableAnimations = true,
   });
@@ -52,6 +53,9 @@ class TimelineStrip extends StatefulWidget {
 
   /// When set, the strip renders a sign-in prompt instead of calendar content.
   final VoidCallback? onSignIn;
+
+  /// When set, sign-in is in progress — strip shows "tap to cancel" and calls this on tap.
+  final VoidCallback? onCancelSignIn;
 
   /// Whether calendar data is still being fetched for the first time.
   final bool isLoading;
@@ -409,22 +413,23 @@ class _TimelineStripState extends State<TimelineStrip>
                           isLoading: widget.isLoading,
                           loadingTextColor:
                               theme.textTheme.bodyMedium?.color ?? Colors.white,
-                          isSignIn: widget.onSignIn != null,
+                          isSignIn: widget.onSignIn != null || widget.onCancelSignIn != null,
+                          isSigningIn: widget.onCancelSignIn != null,
                           signInTextColor:
                               theme.textTheme.bodyMedium?.color ?? Colors.white,
                         ),
                       ),
                     ),
                   ),
-                  if (widget.onSignIn != null)
+                  if (widget.onSignIn != null || widget.onCancelSignIn != null)
                     Positioned.fill(
                       child: GestureDetector(
-                        onTap: widget.onSignIn,
+                        onTap: widget.onCancelSignIn ?? widget.onSignIn,
                         behavior: HitTestBehavior.opaque,
                         child: const SizedBox.expand(),
                       ),
                     ),
-                  if (widget.onSignIn == null)
+                  if (widget.onSignIn == null && widget.onCancelSignIn == null)
                   Positioned(
                     left: mode == CountdownMode.untilEnd
                         ? nowIndicatorX + 8
@@ -524,7 +529,7 @@ class _TimelineStripState extends State<TimelineStrip>
                       },
                     ),
                   ),
-                  if (widget.onSignIn == null)
+                  if (widget.onSignIn == null && widget.onCancelSignIn == null)
                     Positioned(
                       left: 8,
                       top: 0,
@@ -558,7 +563,7 @@ class _TimelineStripState extends State<TimelineStrip>
                       ),
                     ),
                   ),
-                  if (widget.onSignIn == null &&
+                  if (widget.onSignIn == null && widget.onCancelSignIn == null &&
                       _windowService.isExpandedNotifier.value &&
                       !_isSettingsOpen &&
                       _hoveredEvent != null)
@@ -570,7 +575,7 @@ class _TimelineStripState extends State<TimelineStrip>
                         width: _cardWidth(stripWidth),
                       ),
                     ),
-                  if (widget.onSignIn == null && _isSettingsOpen)
+                  if (widget.onSignIn == null && widget.onCancelSignIn == null && _isSettingsOpen)
                     Positioned.fill(
                       child: GestureDetector(
                         onTap: _toggleSettings,
@@ -578,7 +583,7 @@ class _TimelineStripState extends State<TimelineStrip>
                         child: Container(color: Colors.transparent),
                       ),
                     ),
-                  if (widget.onSignIn == null && _isSettingsOpen)
+                  if (widget.onSignIn == null && widget.onCancelSignIn == null && _isSettingsOpen)
                     Positioned(
                       top: _collapsedHeight,
                       left: 8,

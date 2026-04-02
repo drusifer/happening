@@ -41,6 +41,7 @@ class TimelinePainter extends CustomPainter {
     this.isLoading = false,
     this.loadingTextColor = Colors.white,
     this.isSignIn = false,
+    this.isSigningIn = false,
     this.signInTextColor = Colors.white,
   });
 
@@ -63,6 +64,7 @@ class TimelinePainter extends CustomPainter {
   final bool isLoading;
   final Color loadingTextColor;
   final bool isSignIn;
+  final bool isSigningIn;
   final Color signInTextColor;
 
   @override
@@ -107,6 +109,7 @@ class TimelinePainter extends CustomPainter {
       ),
       SignInLayer(
         isSignIn: isSignIn,
+        isSigningIn: isSigningIn,
         backgroundColor: backgroundColor,
         textColor: signInTextColor,
         fontSize: fontSize,
@@ -126,7 +129,8 @@ class TimelinePainter extends CustomPainter {
       old.collidingIds != collidingIds ||
       old.countdownColor != countdownColor ||
       old.isLoading != isLoading ||
-      old.isSignIn != isSignIn;
+      old.isSignIn != isSignIn ||
+      old.isSigningIn != isSigningIn;
 
   /// Semantic nodes for canvas content — makes ticks, events, and task
   /// diamonds queryable by integration tests via [find.bySemanticsLabel].

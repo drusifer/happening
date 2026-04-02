@@ -23,6 +23,7 @@ import 'token_store.dart';
 
 abstract class AuthService {
   Future<bool> signIn();
+  void cancelSignIn();
   Future<void> signOut();
   Future<bool> tryRestore();
   bool get isSignedIn;
@@ -80,12 +81,19 @@ class GoogleAuthService implements AuthService {
   final String _proxyUrl;
 
   AutoRefreshingAuthClient? _client;
+  HttpServer? _pendingServer;
 
   @override
   AutoRefreshingAuthClient? get client => _client;
 
   @override
   bool get isSignedIn => _client != null;
+
+  @override
+  void cancelSignIn() {
+    unawaited(_pendingServer?.close(force: true));
+    _pendingServer = null;
+  }
 
   @override
   Future<bool> tryRestore() async {
@@ -112,6 +120,7 @@ class GoogleAuthService implements AuthService {
 
       // Bind on a random free port — OS picks it.
       final server = await HttpServer.bind('localhost', 0);
+      _pendingServer = server;
       final port = server.port;
       final redirectUri = 'http://localhost:$port';
 
@@ -128,9 +137,19 @@ class GoogleAuthService implements AuthService {
 
       await launchUrl(authUrl, mode: LaunchMode.externalApplication);
 
-      // Wait for browser to redirect back with the auth code.
-      final request = await server.first;
-      final code = request.uri.queryParameters['code']!;
+      // Wait for browser to redirect back (or for cancelSignIn to close the server).
+      final HttpRequest request;
+      try {
+        request = await server.first;
+      } catch (_) {
+        // Server was closed by cancelSignIn() or another error.
+        _pendingServer = null;
+        unawaited(AppLogger.debug('PKCE signIn: cancelled or server closed'));
+        return false;
+      }
+      _pendingServer = null;
+
+      final code = request.uri.queryParameters['code'];
       request.response
         ..statusCode = 200
         ..headers.contentType = ContentType.html
@@ -138,6 +157,12 @@ class GoogleAuthService implements AuthService {
             '<html><body><p>Sign-in complete. You may close this window.</p></body></html>');
       await request.response.close();
       await server.close();
+
+      if (code == null) {
+        // User denied access — Google redirects back with error= instead of code=.
+        unawaited(AppLogger.debug('PKCE signIn: access denied by user'));
+        return false;
+      }
 
       // Exchange code + verifier via proxy, which injects client_secret.
       final response = await _httpClient.post(

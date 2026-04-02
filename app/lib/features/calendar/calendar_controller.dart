@@ -67,8 +67,14 @@ class CalendarController {
       };
       await AppLogger.debug('Fetching calendars: $idsToFetch');
 
-      final List<List<CalendarEvent>> results =
-          await Future.wait(idsToFetch.map((id) => _service.fetchEvents(id)));
+      final List<List<CalendarEvent>> results = await Future.wait(
+        idsToFetch.map((id) => _service
+            .fetchEvents(id)
+            .catchError((e) {
+              unawaited(AppLogger.warn('fetchEvents($id) failed: $e'));
+              return <CalendarEvent>[];
+            })),
+      );
 
       final allEvents = results.expand((e) => e).toList();
       final deduped = _dedup(allEvents);

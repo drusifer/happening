@@ -59,6 +59,7 @@ class _HappeningAppState extends State<HappeningApp> {
   CalendarController? _calendar;
 
   _AuthState _authState = _AuthState.loading;
+  bool _isSigningIn = false;
 
   // ── Lifecycle ────────────────────────────────────────────────────────────
 
@@ -106,17 +107,21 @@ class _HappeningAppState extends State<HappeningApp> {
   // ── Actions ──────────────────────────────────────────────────────────────
 
   Future<void> _signIn() async {
-    setState(() => _authState = _AuthState.loading);
+    if (mounted) setState(() => _isSigningIn = true);
     try {
       if (await _auth.signIn()) {
         await _startCalendar();
-      } else {
-        if (mounted) setState(() => _authState = _AuthState.unauthenticated);
       }
     } catch (e) {
       unawaited(AppLogger.debug('Sign-in error: $e'));
-      if (mounted) setState(() => _authState = _AuthState.unauthenticated);
+    } finally {
+      if (mounted) setState(() => _isSigningIn = false);
     }
+  }
+
+  void _cancelSignIn() {
+    _auth.cancelSignIn();
+    // _isSigningIn is cleared in _signIn()'s finally block once server.first throws.
   }
 
   Future<void> _startCalendar() async {
@@ -141,6 +146,14 @@ class _HappeningAppState extends State<HappeningApp> {
     await _auth.signOut();
     _calendar?.dispose();
     _calendar = null;
+    // Clear persisted calendar selections so they don't bleed into the next account.
+    final s = widget.settingsService.current;
+    widget.settingsService.update(AppSettings(
+      fontSize: s.fontSize,
+      theme: s.theme,
+      timeWindowHours: s.timeWindowHours,
+      selectedCalendarIds: const [],
+    ));
     if (mounted) setState(() => _authState = _AuthState.unauthenticated);
   }
 
@@ -192,7 +205,8 @@ class _HappeningAppState extends State<HappeningApp> {
                   settingsService: widget.settingsService,
                   windowService: widget.windowService,
                   onSignOut: _signOut,
-                  onSignIn: _signIn,
+                  onSignIn: _isSigningIn ? null : _signIn,
+                  onCancelSignIn: _isSigningIn ? _cancelSignIn : null,
                 ),
               _AuthState.authenticated => StreamBuilder<List<CalendarEvent>>(
                   stream: _calendar!.events,
