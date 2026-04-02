@@ -7,12 +7,14 @@ import 'package:happening/features/timeline/painters/timeline_layer.dart';
 class SignInLayer implements TimelineLayer {
   const SignInLayer({
     required this.isSignIn,
+    required this.isSigningIn,
     required this.backgroundColor,
     required this.textColor,
     required this.fontSize,
   });
 
   final bool isSignIn;
+  final bool isSigningIn;
   final Color backgroundColor;
   final Color textColor;
   final double fontSize;
@@ -28,7 +30,7 @@ class SignInLayer implements TimelineLayer {
 
     final tp = TextPainter(
       text: TextSpan(
-        text: 'Tap to sign in with Google →',
+        text: isSigningIn ? 'Signing in… tap to cancel' : 'Tap to sign in with Google →',
         style: TextStyle(
           color: textColor.withValues(alpha: 0.7),
           fontSize: fontSize,
