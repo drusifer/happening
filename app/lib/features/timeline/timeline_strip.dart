@@ -323,7 +323,7 @@ class _TimelineStripState extends State<TimelineStrip>
 
   @override
   Widget build(BuildContext context) {
-    unawaited(AppLogger.debug('Building ${runtimeType}'));
+    unawaited(AppLogger.debug('Building $runtimeType'));
     final theme = Theme.of(context);
     final settings = widget.settingsService.current;
     final fontSize = settings.fontSize.px;
@@ -362,8 +362,8 @@ class _TimelineStripState extends State<TimelineStrip>
                 : CountdownMode.untilNext;
 
             final isExpanded = _windowService.isExpandedNotifier.value;
-            AppLogger.debug(
-                'TimelineStrip: Layout isExpanded=$isExpanded _collapsedHeight=$_collapsedHeight maxHeight=${constraints.maxHeight}');
+            unawaited(AppLogger.debug(
+                'TimelineStrip: Layout isExpanded=$isExpanded _collapsedHeight=$_collapsedHeight maxHeight=${constraints.maxHeight}'));
 
             return MouseRegion(
               onEnter: _handleMouse,
@@ -616,7 +616,7 @@ class _IconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    unawaited(AppLogger.debug('Building ${runtimeType}'));
+    unawaited(AppLogger.debug('Building $runtimeType'));
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     return GestureDetector(

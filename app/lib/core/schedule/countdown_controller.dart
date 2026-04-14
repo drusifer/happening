@@ -6,7 +6,7 @@ import 'package:happening/features/timeline/countdown_state.dart';
 /// 1Hz [PeriodicController] that emits a [CountdownState] each second.
 ///
 /// Provides a single injectable, testable stream to replace the duplicated
-/// [StreamBuilder] countdown logic in [TimelineStrip].
+/// StreamBuilder countdown logic in TimelineStrip.
 class CountdownController implements PeriodicController<CountdownState> {
   CountdownController({
     required ClockService clock,

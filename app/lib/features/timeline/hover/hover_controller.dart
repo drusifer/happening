@@ -10,7 +10,7 @@ export 'default_hover_controller.dart';
 export 'linux_hover_controller.dart';
 
 /// TLDR: Routes hover expand/collapse intents to [WindowService], isolated from
-/// [TimelineStrip] pointer events. Factory selects [LinuxHoverController] (with
+/// TimelineStrip pointer events. Factory selects [LinuxHoverController] (with
 /// 300ms spurious-collapse suppression) or [DefaultHoverController] by platform.
 abstract class HoverController {
   static HoverController create(WindowService ws) {

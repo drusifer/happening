@@ -1,6 +1,6 @@
 import 'dart:async';
 
-/// Ensures only one async [action] runs at a time.
+/// Ensures only one async action runs at a time.
 ///
 /// If [request] is called while an action is running, the LAST requested
 /// value is remembered and re-fired automatically when the current action

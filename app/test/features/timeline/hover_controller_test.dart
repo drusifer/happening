@@ -1,6 +1,3 @@
-import 'dart:async';
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:happening/features/timeline/expansion_logic.dart';
@@ -8,8 +5,6 @@ import 'package:happening/features/timeline/hover/hover_controller.dart';
 import 'package:mockito/mockito.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
-
-import '../../core/window/window_service_test.mocks.dart';
 
 // ── Fake WindowService ────────────────────────────────────────────────────────
 

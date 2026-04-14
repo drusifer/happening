@@ -393,3 +393,147 @@ ORACLE: CHAT archive complete ✅ 1084 lines → chat_archive/CHAT-ARCHIVE-20260
  Build PASSED | make dist-linux | /home/drusifer/Projects/happening/build/build.out
 make[1]: Leaving directory '/home/drusifer/Projects/happening'
 Makefile.prj:226: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-04-05 12:02:04</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make preview | /home/drusifer/Projects/happening/build/build.out
+Makefile.prj:226: warning: ignoring old recipe for target 'tldr'
+make[1]: *** No rule to make target 'preview'.  Stop.
+
+---
+[<small>2026-04-07 17:18:59</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:226: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-04-09 10:57:05</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make dist-linux | /home/drusifer/Projects/happening/build/build.out
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:226: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-04-09 10:57:51</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:226: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-04-09 10:59:38</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make clean | /home/drusifer/Projects/happening/build/build.out
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:226: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-04-09 11:00:38</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make dist-linux | /home/drusifer/Projects/happening/build/build.out
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:226: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-04-09 11:02:26</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make lints | /home/drusifer/Projects/happening/build/build.out
+Makefile.prj:226: warning: ignoring old recipe for target 'tldr'
+make[1]: *** No rule to make target 'lints'.  Stop.
+
+---
+[<small>2026-04-09 11:02:45</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make lint | /home/drusifer/Projects/happening/build/build.out
+59 issues found. (ran in 13.7s)
+make[1]: *** [Makefile.prj:179: lint-style] Error 1
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-04-09 11:03:08</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make lint-fix | /home/drusifer/Projects/happening/build/build.out
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+make[1]: *** No rule to make target 'lint-fix'.  Stop.
+
+---
+[<small>2026-04-09 11:04:07</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make tldr | /home/drusifer/Projects/happening/build/build.out
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:226: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-04-09 11:04:28</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make lint | /home/drusifer/Projects/happening/build/build.out
+56 issues found. (ran in 3.3s)
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+make[1]: *** [Makefile.prj:179: lint-style] Error 1
+
+---
+[<small>2026-04-09 11:10:44</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make lint | /home/drusifer/Projects/happening/build/build.out
+48 issues found. (ran in 3.6s)
+make[1]: *** [Makefile.prj:179: lint-style] Error 1
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-04-09 11:12:56</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make lint | /home/drusifer/Projects/happening/build/build.out
+48 issues found. (ran in 2.0s)
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+make[1]: *** [Makefile.prj:179: lint-style] Error 1
+
+---
+[<small>2026-04-09 11:15:03</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make lint | /home/drusifer/Projects/happening/build/build.out
+28 issues found. (ran in 2.8s)
+make[1]: *** [Makefile.prj:179: lint-style] Error 1
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-04-09 11:19:47</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make lint | /home/drusifer/Projects/happening/build/build.out
+11 issues found. (ran in 2.8s)
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+make[1]: *** [Makefile.prj:179: lint-style] Error 1
+
+---
+[<small>2026-04-09 11:23:16</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make lint | /home/drusifer/Projects/happening/build/build.out
+6 issues found. (ran in 2.3s)
+make[1]: *** [Makefile.prj:179: lint-style] Error 1
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-04-09 11:27:55</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make lint | /home/drusifer/Projects/happening/build/build.out
+4 issues found. (ran in 1.9s)
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+make[1]: *** [Makefile.prj:179: lint-style] Error 1
+
+---
+[<small>2026-04-09 11:30:35</small>] [**make**]->[**all**] **build*:
+ Build FAILED exit=2 | make lint | /home/drusifer/Projects/happening/build/build.out
+
+✖ total unused files - 4
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-04-09 11:35:05</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:226: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-04-09 11:39:03</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make build-linux | /home/drusifer/Projects/happening/build/build.out
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:226: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-04-09 11:55:50</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make clean | /home/drusifer/Projects/happening/build/build.out
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:226: warning: ignoring old recipe for target 'tldr'
+
+---
+[<small>2026-04-14 12:35:57</small>] [**make**]->[**all**] **build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'

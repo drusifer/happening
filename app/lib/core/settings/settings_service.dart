@@ -115,7 +115,9 @@ class SettingsService extends ChangeNotifier {
     }
   }
 
+  @override
   void dispose() {
     unawaited(_controller.close());
+    super.dispose();
   }
 }

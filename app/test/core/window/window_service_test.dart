@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:happening/core/window/window_service.dart';
 import 'package:happening/core/settings/settings_service.dart';
+import 'package:happening/core/window/window_service.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:screen_retriever/screen_retriever.dart';
@@ -25,12 +25,12 @@ void main() {
       service = WindowService(windowManager: mockWM, screenRetriever: mockSR);
 
       // Default mock behavior for initialization
-      when(mockSR.getPrimaryDisplay()).thenAnswer((_) async => Display(
+      when(mockSR.getPrimaryDisplay()).thenAnswer((_) async => const Display(
             id: '0',
             name: 'primary',
-            size: const Size(1920, 1080),
+            size: Size(1920, 1080),
             visiblePosition: Offset.zero,
-            visibleSize: const Size(1920, 1080),
+            visibleSize: Size(1920, 1080),
             scaleFactor: 1.0,
           ));
 

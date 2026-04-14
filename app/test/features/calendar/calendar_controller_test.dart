@@ -1,5 +1,4 @@
 // Hermetic integration tests for CalendarController (S4-12).
-import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';

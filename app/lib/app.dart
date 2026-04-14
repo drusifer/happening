@@ -17,13 +17,13 @@ import 'package:googleapis_auth/auth_io.dart';
 import 'core/settings/settings_service.dart';
 import 'core/time/clock_service.dart';
 import 'core/util/logger.dart';
+import 'core/window/window_service.dart';
 import 'features/auth/auth_service.dart';
 import 'features/auth/token_store.dart';
 import 'features/calendar/calendar_controller.dart';
 import 'features/calendar/calendar_event.dart';
 import 'features/calendar/calendar_service.dart';
 import 'features/timeline/timeline_strip.dart';
-import 'core/window/window_service.dart';
 
 // ---------------------------------------------------------------------------
 // Auth state
@@ -174,7 +174,7 @@ class _HappeningAppState extends State<HappeningApp> {
       scaffoldBackgroundColor: Colors.transparent,
       canvasColor: Colors.transparent,
       cardColor: Colors.transparent,
-      dialogBackgroundColor: Colors.transparent,
+      dialogTheme: const DialogThemeData(backgroundColor: Colors.transparent),
     );
   }
 

@@ -15,9 +15,6 @@ class _FakeWindowService extends WindowService {
         );
 
   @override
-  bool get isExpanded => false;
-
-  @override
   Future<void> expand({double? height}) async {}
 
   @override

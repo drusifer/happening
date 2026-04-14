@@ -27,6 +27,6 @@ class CalendarRefreshController implements PeriodicController<void> {
   @override
   void dispose() {
     _timer.cancel();
-    _controller.close();
+    unawaited(_controller.close());
   }
 }

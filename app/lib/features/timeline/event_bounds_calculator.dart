@@ -6,7 +6,7 @@ import 'package:happening/features/timeline/timeline_layout.dart';
 
 /// Computes the interactive [EventBounds] for all events given mouse context.
 ///
-/// Extracted from [TimelineStrip._handleMouse] to allow independent unit testing.
+/// Extracted from TimelineStrip._handleMouse to allow independent unit testing.
 class EventBoundsCalculator {
   static const double _minCardWidth = 260.0;
   static const double _cardZoneBottom = 175.0;

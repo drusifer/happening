@@ -25,20 +25,13 @@ class _FakeWindowService extends WindowService {
           screenRetriever: _FakeScreenRetriever(),
         );
 
-  bool _wantsExpanded = false;
-
-  @override
-  bool get isExpanded => _wantsExpanded;
-
   @override
   Future<void> expand({double? height}) async {
-    _wantsExpanded = true;
     isExpandedNotifier.value = true;
   }
 
   @override
   Future<void> collapse({double? height}) async {
-    _wantsExpanded = false;
     isExpandedNotifier.value = false;
   }
 }

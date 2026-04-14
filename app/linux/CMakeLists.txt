@@ -134,3 +134,10 @@ if(NOT CMAKE_BUILD_TYPE MATCHES "Debug")
   install(FILES "${AOT_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
     COMPONENT Runtime)
 endif()
+
+# App icon — bundled into data/ so the C++ runner can load it at runtime via
+# gtk_window_set_icon_from_file().
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/../assets/images/store_logo_120.png"
+  RENAME "app_icon.png"
+  DESTINATION "${INSTALL_BUNDLE_DATA_DIR}"
+  COMPONENT Runtime)
