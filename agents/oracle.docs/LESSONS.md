@@ -290,6 +290,33 @@ Drop the `setSize` advisory call — it is ignored when max-cap is still in plac
 
 ---
 
+## [2026-04-14] Refresh Screen Size and DPI on Metrics Changes
+
+> **Tags:** #Windows #AppBar #DPI #WindowManager #Flutter #Morpheus
+
+### Context
+The Windows AppBar reservation correctly pushed maximized windows below the strip at launch, but could become stale after changing DPI scaling or screen dimensions while Happening was already running.
+
+### The Issue
+`WindowService` cached `_dpr` and `_screenWidth` at initialization. The Windows AppBar rect is expressed in physical pixels, so a post-launch DPI or display-size change made the cached rect stale. Once stale, Windows could stop enforcing the strip's work-area reservation and new windows could overlap the strip.
+
+### The Solution
+`WindowService` now implements `WidgetsBindingObserver.didChangeMetrics()` and refreshes display state from live APIs:
+1. `window_manager.getDevicePixelRatio()` for DPR.
+2. `screen_retriever.getPrimaryDisplay().size.width` for primary display width.
+3. `_reserveCollapsedSpace()` on Windows to re-run `ABM_QUERYPOS`/`ABM_SETPOS` with updated physical-pixel values.
+4. `_doExpand()` or `_doCollapse()` so the visible window matches the current display state.
+
+The refresh button also calls `WindowService.reassertAppBar()`, which performs a full `ABM_REMOVE` -> `ABM_NEW` -> `_reserveCollapsedSpace()` cycle for manual recovery when another app overlaps the strip.
+
+### The Rule
+**Never treat DPR or primary-display width as launch-only constants.** Observe Flutter metric changes, refresh live display values, and reapply both the OS reservation and current window size. On Windows, use `_screenWidth * _dpr` for AppBar physical-pixel width, and trust only `rcTop` after `ABM_SETPOS`.
+
+### References
+- **Files:** `app/lib/core/window/window_service.dart`, `app/lib/features/timeline/timeline_strip.dart`
+
+---
+
 ## [2026-04-02] Settings Panel Overflow: Positioned Needs a `bottom` Anchor for Bounded Height
 
 > **Tags:** #Flutter #Layout #Settings #UI #Bob
@@ -413,4 +440,3 @@ Store the server as `_pendingServer` (instance field on `GoogleAuthService`). Ex
 
 ### References
 - **Files:** `app/lib/features/auth/auth_service.dart`, `app/lib/app.dart`, `app/lib/features/timeline/timeline_strip.dart`, `app/lib/features/timeline/painters/sign_in_layer.dart`
-

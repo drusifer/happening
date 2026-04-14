@@ -4,6 +4,14 @@
 **Date**: 2026-04-02
 **Status**: Post-v0.3.x. Sign-in refactored to TimelineStrip compositor layer. Settings panel overflow fixed. OAuth cancellation implemented.
 
+## Recent Changes Documented (2026-04-14)
+- ARCH.md v0.6: Added Display/DPI Metric Refresh under Window Strategy.
+- DECISIONS.md: Added DEC-004 for refreshing DPR and primary display width via `WindowService.didChangeMetrics()`.
+- LESSONS.md: Recorded rule that DPR/screen width are not launch-only constants; refresh live display metrics and reapply Windows AppBar reservation.
+- APPBAR_REASSERT_PLAN.md: Marked shipped; documented that periodic reassert timer was removed after shrink regression and replaced by metrics-driven refresh plus refresh-button reassert.
+- README.md: Updated project status to v0.4.0 and architecture overview with display/DPI refresh + Windows AppBar reassert behavior.
+- USER_GUIDE.md: Added troubleshooting note for Windows overlap after display scale/resolution changes; Refresh button re-applies reserved screen space.
+
 ## Recent Changes Documented (2026-04-02)
 - LESSONS.md: Settings panel `Positioned` needs `bottom` anchor for bounded height.
 - LESSONS.md: Sign-in screen must live inside TimelineStrip as a compositor layer (SignInLayer).

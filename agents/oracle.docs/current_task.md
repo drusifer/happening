@@ -1,5 +1,24 @@
 # Current Task
 
+## Screen Size / DPI Refresh Docs — 2026-04-14
+**Status**: DONE ✅
+
+### Done
+- [x] Updated `docs/ARCH.md` with Display/DPI Metric Refresh architecture.
+- [x] Added `docs/DECISIONS.md` DEC-004.
+- [x] Added Oracle lesson for refreshing screen size and DPI on metric changes.
+- [x] Updated Morpheus AppBar reassert plan to shipped reality.
+- [x] Posted completion to `agents/CHAT.md`.
+
+## User-Facing Docs Refresh — 2026-04-14
+**Status**: DONE ✅
+
+### Done
+- [x] Reviewed `README.md` and `USER_GUIDE.md` for screen size/DPI refresh relevance.
+- [x] Updated `README.md` project status to v0.4.0 and architecture overview.
+- [x] Updated `USER_GUIDE.md` troubleshooting with Windows overlap recovery via Refresh.
+- [x] Posted completion to `agents/CHAT.md`.
+
 ## CHAT Archive — 2026-04-02
 **Status**: DONE ✅
 

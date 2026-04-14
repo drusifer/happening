@@ -16,7 +16,7 @@ Happening is a persistent, always-on-top horizontal timeline strip that reads yo
 
 ---
 
-## Project Status: v0.3.1
+## Project Status: v0.4.0
 - [x] **Sprint 1**: Foundation & Shell (Always-on-top window, mock timeline)
 - [x] **Sprint 2**: Google Calendar Integration (OAuth flow, real event fetching, polling)
 - [x] **Sprint 3**: Refactor & Polish (Hover details, settings, platform optimization)
@@ -24,6 +24,7 @@ Happening is a persistent, always-on-top horizontal timeline strip that reads yo
 - [x] **Sprint 5**: v0.2.0 Features (Multi-Calendar, Themes, Visual Polish, PKCE auth)
 - [x] **Sprint 6**: v0.3.0 Linux/Wayland support, hover card fixes, always-visible quit button
 - [x] **v0.3.1**: Secure credential storage, OAuth cancellation, calendar isolation, settings panel polish
+- [x] **v0.4.0**: Display/DPI metric refresh, Windows AppBar reservation recovery, refresh-button overlap fix
 
 ---
 
@@ -134,7 +135,7 @@ make run          # Lists all options
 
 ## Architecture Overview
 - **Framework**: Flutter (Desktop)
-- **Window Management**: `window_manager` for frameless, always-on-top behavior. Platform-specific resize sequences (`WindowResizeStrategy`) handle GTK/Wayland constraint-forcing on Linux.
+- **Window Management**: `window_manager` for frameless, always-on-top behavior. Platform-specific resize sequences (`WindowResizeStrategy`) handle GTK/Wayland constraint-forcing on Linux. `WindowService` refreshes display width and DPI on metric changes, and the refresh button can reassert the Windows AppBar reservation if another window overlaps the strip.
 - **Rendering**: `CustomPainter` decomposed into 5 composited layers (`BackgroundLayer`, `PastOverlayLayer`, `TickLayer`, `NowIndicatorLayer`, `EventsLayer`).
 - **State Management**: `StreamBuilder` driven by a 1Hz clock tick. `AsyncGate<T>` serializes async window ops and deduplicates rapid intent changes.
 - **Hover**: `HoverController` isolates all expand/collapse calls from pointer events. `LinuxHoverController` adds 300ms suppression for GTK spurious pointer-exit after resize.

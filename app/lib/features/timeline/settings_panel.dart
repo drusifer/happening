@@ -11,9 +11,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:happening/core/app_metadata.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/features/calendar/calendar_controller.dart';
 import 'package:happening/features/calendar/calendar_service.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+typedef AboutUrlLauncher = Future<bool> Function(Uri url);
 
 /// Popup panel for app settings (Font size, Logout).
 class SettingsPanel extends StatefulWidget {
@@ -22,11 +26,13 @@ class SettingsPanel extends StatefulWidget {
     required this.settingsService,
     required this.calendarController,
     required this.onSignOut,
+    this.launchAboutUrl = _launchAboutUrl,
   });
 
   final SettingsService settingsService;
   final CalendarController calendarController;
   final VoidCallback onSignOut;
+  final AboutUrlLauncher launchAboutUrl;
 
   @override
   State<SettingsPanel> createState() => _SettingsPanelState();
@@ -94,6 +100,10 @@ class _SettingsPanelState extends State<SettingsPanel> {
     unawaited(widget.calendarController.refresh());
   }
 
+  Future<void> _openAbout() async {
+    await widget.launchAboutUrl(Uri.parse(appAboutUrl));
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -129,7 +139,7 @@ class _SettingsPanelState extends State<SettingsPanel> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'SETTINGS',
+                  'SETTINGS  v. $appVersion',
                   style: TextStyle(
                     color: theme.textTheme.bodySmall?.color
                         ?.withValues(alpha: 0.5),
@@ -213,6 +223,12 @@ class _SettingsPanelState extends State<SettingsPanel> {
                   )),
                   labelBuilder: (v) =>
                       v.name[0].toUpperCase() + v.name.substring(1),
+                ),
+                const Spacer(),
+                _TextLink(
+                  label: 'ABOUT',
+                  onTap: () => unawaited(_openAbout()),
+                  fontSize: baseSize * 0.55,
                 ),
               ],
             ),
@@ -312,6 +328,44 @@ class _SettingsPanelState extends State<SettingsPanel> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+Future<bool> _launchAboutUrl(Uri url) {
+  return launchUrl(url, mode: LaunchMode.externalApplication);
+}
+
+class _TextLink extends StatelessWidget {
+  const _TextLink({
+    required this.label,
+    required this.onTap,
+    required this.fontSize,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+  final double fontSize;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 3),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: theme.colorScheme.primary,
+            fontSize: fontSize,
+            fontWeight: FontWeight.bold,
+            decoration: TextDecoration.underline,
+            decorationColor: theme.colorScheme.primary,
+          ),
         ),
       ),
     );

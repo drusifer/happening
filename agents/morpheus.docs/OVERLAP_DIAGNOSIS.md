@@ -61,16 +61,29 @@ query work area at their own launch time but position themselves before the
 `ABN_POSCHANGED` round-trip completes, or ignore it entirely. This is a known Windows
 issue with certain Electron/CEF apps. We can't fix their behavior, but we can mitigate.
 
-### Proposed fix scope
+### Fix status
 
-| Priority | Fix | Effect |
+| Priority | Fix | Status |
 |----------|-----|--------|
-| **P0** | Handle `ABN_POSCHANGED` callback — re-call `_reserveCollapsedSpace()` | Re-asserts reservation after any system work-area change |
-| **P0** | Listen for `WM_DISPLAYCHANGE` / `WM_DPICHANGED` — update `_dpr`, `_screenWidth`, re-reserve | Fixes the DPI-change repro |
-| **P1** | Periodic re-assert (every 30–60s, re-call `ABM_SETPOS`) as a safety net | Catches edge cases where callbacks are missed |
-| **P1** | Refresh button re-asserts AppBar — call `ABM_REMOVE` + `ABM_NEW` + `_reserveCollapsedSpace()` | User-triggered escape hatch to recover overlapped windows without restarting |
-| **P2** | "Nudge down" — on strip click/hover, if strip detects a window overlapping, bring-to-front + flash | UX mitigation for apps that ignore work area (Zoom etc.) |
+| **P0** | Refresh button — `ABM_REMOVE` + `ABM_NEW` + `_reserveCollapsedSpace()` | ✅ SHIPPED |
+| **P0** | Display/DPI change — `didChangeMetrics()` in `WindowService`, refresh `_dpr` + `_screenWidth`, re-reserve on Windows | ✅ SHIPPED (2026-04-14) |
+| ~~P1~~ | ~~Periodic re-assert timer~~ | ❌ REMOVED — caused window to shrink to 136px on fire |
+| **P2** | "Nudge down" — detect overlapping window on hover | NOT in scope |
 
-### NOT in scope (same as secondary monitor plan)
+### Display change approach — 2026-04-14
+
+**Why `didChangeMetrics()`**: Flutter's `WidgetsBindingObserver.didChangeMetrics()` is
+platform-neutral. Fires on Windows (DPI change, resolution change, monitor
+connect/disconnect), Linux (scale factor change), and macOS (Retina switch). No Win32
+message subclassing, no platform channels — the Flutter framework handles detection.
+
+**What it does**: `WindowService` registers itself as a `WidgetsBindingObserver`. On
+`didChangeMetrics`, it refreshes `_dpr` and `_screenWidth` from the live display state.
+On Windows, it additionally calls `_reserveCollapsedSpace()` to re-assert the AppBar
+band with the updated physical-pixel values. Linux and Mac get correct sizing for
+expand/collapse after any display change.
+
+### NOT in scope
+- `ABN_POSCHANGED` Win32 callback handling (Win32 message subclassing — not needed now)
 - Live display switching without restart
 - Per-display DPR differences

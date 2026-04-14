@@ -64,7 +64,7 @@ typedef _SHDart = int Function(int dwMessage, Pointer<_AppBarData> pData);
 ///
 /// ---------------------------------------------------------------------------
 
-class WindowService {
+class WindowService with WidgetsBindingObserver {
   WindowService({
     required WindowManager windowManager,
     required ScreenRetriever screenRetriever,
@@ -118,6 +118,8 @@ class WindowService {
       titleBarStyle: TitleBarStyle.hidden,
     );
 
+    WidgetsBinding.instance.addObserver(this);
+
     await _wm.waitUntilReadyToShow(windowOptions, () async {
       if (Platform.isWindows) {
         await _registerAppBar();
@@ -130,10 +132,45 @@ class WindowService {
   }
 
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _strategy.dispose();
     if (Platform.isWindows && _appBarData != null) {
       _shAppBarMessage(_abmRemove, _appBarData!);
       calloc.free(_appBarData!);
+    }
+  }
+
+  @override
+  void didChangeMetrics() {
+    unawaited(_onDisplayChanged());
+  }
+
+  Future<void> _onDisplayChanged() async {
+    final newDpr = _wm.getDevicePixelRatio();
+    final display = await _sr.getPrimaryDisplay();
+    final newWidth = display.size.width;
+
+    if (newDpr == _dpr && newWidth == _screenWidth) return;
+
+    await AppLogger.debug(
+        'WindowService: display changed dpr=$_dpr→$newDpr width=$_screenWidth→$newWidth');
+    _dpr = newDpr;
+    _screenWidth = newWidth;
+
+    if (Platform.isWindows && _appBarData != null) {
+      // Re-assert AppBar band with updated physical-pixel values.
+      await _reserveCollapsedSpace();
+      // Re-anchor window position — display change can nudge the window.
+      // rcTop is trusted post-SETPOS for ABE_TOP.
+      await _wm.setPosition(Offset(0, _appBarData!.ref.rcTop / _dpr));
+    }
+
+    // Resize window to match new display dimensions via the strategy.
+    // _reserveCollapsedSpace alone is not sufficient — setBounds is unreliable.
+    if (isExpandedNotifier.value) {
+      await _doExpand();
+    } else {
+      await _doCollapse();
     }
   }
 

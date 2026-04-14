@@ -16,7 +16,8 @@
       "Bash(powershell -Command ':*)",
       "Bash(file /home/drusifer/Projects/happening/app/assets/images/*.png)",
       "Bash(make lint:*)",
-      "Read(//c/Users/drusi/Downloads/**)"
+      "Read(//c/Users/drusi/Downloads/**)",
+      "Bash(dart analyze *)"
     ]
   },
   "enabledMcpjsonServers": [
