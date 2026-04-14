@@ -1,19 +1,23 @@
 # AppBar Re-assertion Plan
 
+**Status**: Shipped 2026-04-14.
+
+Final implementation differs from the first plan: the periodic timer was removed after it caused the window to shrink to ~136px when it fired. The shipped self-healing path is `didChangeMetrics()` plus a manual refresh-button reassert.
+
 ## Goal
 Make the timeline strip's AppBar reservation self-healing:
 - Refresh button gives users a reliable escape hatch to recover overlapped windows
-- Periodic timer re-asserts the reservation as a background safety net
+- Flutter display-metric changes refresh screen width/DPI and re-assert the reservation
 
 ---
 
 ## Changes
 
-### 1. `window_service.dart` — two additions
+### 1. `window_service.dart` — shipped additions
 
 #### A. `reassertAppBar()` — public, Windows-only
 
-Full re-registration: `ABM_REMOVE` → `ABM_NEW` → `_reserveCollapsedSpace()`.
+Full re-registration: `ABM_REMOVE` -> `ABM_NEW` -> `_reserveCollapsedSpace()`.
 Forces Windows to re-broadcast updated work area to all running apps.
 
 ```dart
@@ -22,36 +26,55 @@ Forces Windows to re-broadcast updated work area to all running apps.
 /// No-op on non-Windows platforms.
 Future<void> reassertAppBar() async {
   if (!Platform.isWindows || _appBarData == null) return;
+  await _doCollapse();
   _shAppBarMessage(_abmRemove, _appBarData!);
   _shAppBarMessage(_abmNew, _appBarData!);
   await _reserveCollapsedSpace();
+  await _wm.setPosition(Offset(0, _appBarData!.ref.rcTop / _dpr));
+  await _doCollapse();
 }
 ```
 
-#### B. Periodic timer — Windows-only, 60s interval
+#### B. `didChangeMetrics()` — refresh screen size and DPI
 
-Re-calls `_reserveCollapsedSpace()` (softer than full re-registration — just `ABM_SETPOS`).
-Catches cases where callbacks are missed (DPI change, display change).
+`WindowService` observes Flutter display metric changes. On each event it refreshes:
+- DPR via `window_manager.getDevicePixelRatio()`
+- primary display width via `screen_retriever.getPrimaryDisplay().size.width`
 
-New field:
+If either changed, it updates cached `_dpr`/`_screenWidth`, reasserts the Windows AppBar band with updated physical-pixel values, repositions using trusted `rcTop / dpr`, then re-runs the current resize state.
+
 ```dart
-Timer? _appBarTimer;
-```
+@override
+void didChangeMetrics() {
+  unawaited(_onDisplayChanged());
+}
 
-Start in `initialize()` after `_registerAppBar()`:
-```dart
-if (Platform.isWindows) {
-  _appBarTimer = Timer.periodic(
-    const Duration(seconds: 60),
-    (_) => unawaited(_reserveCollapsedSpace()),
-  );
+Future<void> _onDisplayChanged() async {
+  final newDpr = _wm.getDevicePixelRatio();
+  final display = await _sr.getPrimaryDisplay();
+  final newWidth = display.size.width;
+
+  if (newDpr == _dpr && newWidth == _screenWidth) return;
+
+  _dpr = newDpr;
+  _screenWidth = newWidth;
+
+  if (Platform.isWindows && _appBarData != null) {
+    await _reserveCollapsedSpace();
+    await _wm.setPosition(Offset(0, _appBarData!.ref.rcTop / _dpr));
+  }
+
+  if (isExpandedNotifier.value) {
+    await _doExpand();
+  } else {
+    await _doCollapse();
+  }
 }
 ```
 
-Cancel in `dispose()`:
-```dart
-_appBarTimer?.cancel();
-```
+#### C. Periodic timer — removed
+
+The planned 60s Windows-only `_reserveCollapsedSpace()` timer was tested and removed because it caused the window to shrink to ~136px when it fired. Metrics-driven refresh plus manual refresh-button reassert is the current recovery strategy.
 
 ---
 
@@ -78,7 +101,7 @@ onTap: () {
 
 | File | Change |
 |------|--------|
-| `app/lib/core/window/window_service.dart` | Add `reassertAppBar()`, `_appBarTimer`, start/cancel timer |
+| `app/lib/core/window/window_service.dart` | Add `reassertAppBar()`, `didChangeMetrics()`, `_onDisplayChanged()` |
 | `app/lib/features/timeline/timeline_strip.dart` | Refresh `onTap` calls both `refresh()` + `reassertAppBar()` |
 
 ---
@@ -88,10 +111,12 @@ onTap: () {
 - AppBar reservation can go stale after DPI change or display change. Re-call `ABM_SETPOS` to restore.
 - Full re-registration (`ABM_REMOVE` + `ABM_NEW`) is the reliable recovery path — re-broadcasts work area to all running apps.
 - `ABM_REMOVE` + `ABM_NEW` is safe to call at runtime as long as the HWND is valid.
+- DPR and primary display width must be refreshed on `didChangeMetrics()`; do not rely on launch-time values.
+- Periodic AppBar reassert is not currently safe; the timer shrink regression makes it a rejected approach.
 
 ---
 
 ## Out of scope
 
-- Handling `WM_DISPLAYCHANGE` / `WM_DPICHANGED` / `ABN_POSCHANGED` via Win32 subclassing (future sprint — requires native plugin or message hook beyond current FFI scope)
+- Handling `ABN_POSCHANGED` via Win32 subclassing (future sprint — requires native plugin or message hook beyond current FFI scope)
 - Apps that actively ignore work area (Zoom etc.) — no workaround possible without a global keyboard hook

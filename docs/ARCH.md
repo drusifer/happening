@@ -1,8 +1,8 @@
 # ARCH: Happening — System Architecture
 
-**Version**: 0.5
+**Version**: 0.6
 **Author**: Morpheus (Tech Lead) / Ora (Knowledge Officer)
-**Date**: 2026-03-16
+**Date**: 2026-04-14
 **Status**: Approved
 
 ## TLDR
@@ -130,9 +130,18 @@ On Linux, the runner sets up the window as a top-of-screen panel before it is ma
 - **X11**: `_NET_WM_WINDOW_TYPE_DOCK` and `_NET_WM_STRUT_PARTIAL` are set via Xlib **before** `gtk_widget_show` to prevent the WM from placing the window in the wrong position on first map.
 - **Wayland**: `gtk-layer-shell` (`libgtk-layer-shell`) anchors the window to the top edge with `GTK_LAYER_SHELL_LAYER_TOP` and reserves exclusive screen space via `gtk_layer_set_exclusive_zone`. Requires `libgtk-layer-shell-dev` at build time (optional — gracefully skipped if absent).
 
+### Display/DPI Metric Refresh
+`WindowService` implements `WidgetsBindingObserver.didChangeMetrics()` to keep the strip's sizing contract synchronized with live display state. When Flutter reports a metrics change, the service refreshes:
+- `_dpr` from `window_manager.getDevicePixelRatio()`
+- `_screenWidth` from `screen_retriever.getPrimaryDisplay().size.width`
+
+If either value changes, `WindowService` resizes the window through the active `WindowResizeStrategy`. Expanded windows are re-expanded to the new width/height, and collapsed windows are re-collapsed to the new width/height.
+
+On Windows, display/DPI changes can also stale the shell AppBar work-area reservation because the AppBar rect is expressed in physical pixels. After refreshing DPR and width, Windows calls `_reserveCollapsedSpace()` so `ABM_QUERYPOS`/`ABM_SETPOS` reassert the reserved band with updated physical-pixel values, then repositions the Flutter window using the trusted `rcTop / dpr`. This covers DPI scaling changes, resolution changes, and primary-display size changes without Win32 message subclassing.
+
 ### Always-Visible Controls
 Three icon buttons are always painted on the strip regardless of auth state:
-- **Refresh** (left) — re-fetches calendar events
+- **Refresh** (left) — re-fetches calendar events and reasserts the Windows AppBar reservation
 - **Settings** (left) — opens the settings panel
 - **Quit** (right, power icon) — `exit(0)`, visible in loading, sign-in, and authenticated states
 
@@ -161,6 +170,7 @@ Google OAuth on desktop uses the **PKCE (Proof Key for Code Exchange)** flow to 
 | AOQ-7 | Interaction? | **Contextual Latching** | Standard hit-testing makes action buttons hard to click. |
 | AOQ-8 | Linux display server? | **Dual X11+Wayland** | X11 strut via Xlib; Wayland strut via gtk-layer-shell. Both in `my_application.cc`, guarded at compile and runtime. |
 | AOQ-9 | Background transparency? | **Solid color always** | Transparent windows render black without a compositor. Solid background eliminates the dependency. |
+| AOQ-10 | Display/DPI changes after launch? | **Refresh live metrics in `WindowService.didChangeMetrics()`** | DPR and primary-display width can change after launch; the window and Windows AppBar reservation must be recalculated from current display state. |
 
 ---
 

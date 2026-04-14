@@ -65,3 +65,28 @@ Coordination between event hit-testing, mouse coordinates, and window expansion 
 -   Hover logic is now 100% unit-testable without a Flutter environment.
 -   `TimelineStrip` is simplified; it merely feeds coordinates to the behavior and forwards the result to `WindowService`.
 -   Race conditions between mouse-enter/exit and async window resizing are eliminated by having a deterministic "intended" state.
+
+## DEC-004: Refresh Screen Size and DPI on Flutter Metrics Changes
+**Date**: 2026-04-14
+**Status**: Decided
+**Authors**: Morpheus (Lead), Neo (SWE), Oracle (Docs)
+
+### Context
+On Windows, the strip's AppBar reservation worked at launch, but could become stale after the user changed DPI scaling, changed resolution, or otherwise altered display metrics while Happening was running. Once stale, newly opened or repositioned windows could overlap the strip because the shell work area was still based on launch-time physical-pixel values.
+
+### Decision
+`WindowService` must observe Flutter display metric changes via `WidgetsBindingObserver.didChangeMetrics()` and refresh its cached display state from live APIs:
+
+1.  Read the current DPR from `window_manager.getDevicePixelRatio()`.
+2.  Read the current primary display width from `screen_retriever.getPrimaryDisplay().size.width`.
+3.  If either value changed, update `_dpr` and `_screenWidth`.
+4.  On Windows, re-run `_reserveCollapsedSpace()` so `ABM_QUERYPOS`/`ABM_SETPOS` reassert the AppBar band using updated physical-pixel values, then reposition the window from trusted `rcTop / dpr`.
+5.  Re-run the current resize state (`_doExpand()` or `_doCollapse()`) so the visible Flutter window matches the new display dimensions.
+
+Manual refresh also calls `WindowService.reassertAppBar()` from the strip refresh button. That path performs a full `ABM_REMOVE` -> `ABM_NEW` -> `_reserveCollapsedSpace()` cycle as a recovery tool when another app overlaps the strip.
+
+### Consequences
+-   Display scaling and screen width changes no longer require restarting the app.
+-   The Windows AppBar rect is recalculated in physical pixels after DPI changes.
+-   The refresh button now recovers both calendar data and stale Windows work-area reservations.
+-   A periodic AppBar reassert timer is not part of the solution; it caused width shrinkage in testing and was removed.

@@ -537,3 +537,35 @@ Makefile.prj:226: warning: ignoring old recipe for target 'tldr'
  Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
 Lost connection to device.
 make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-04-14 18:18:14</small>] [**Bob**]->[**all**] *protocol init*:
+ Bob protocol initialized. Loaded CHAT tail, Bob state files, Bob SKILL.md, and bob-protocol SKILL.md. Standing by for Drew's next directive.
+
+---
+[<small>2026-04-14 18:46:25</small>] [**User**]->[**all**] **request*:
+ bob-protocol init
+
+---
+[<small>2026-04-14 18:46:46</small>] [**Bob**]->[**all**] **protocol init*:
+ Bob protocol initialized. Loaded CHAT tail, Bob state, Bob SKILL.md, and bob-protocol SKILL.md. Standing by for Drew's next directive.
+
+---
+[<small>2026-04-14 18:50:55</small>] [**User**]->[**Oracle**] **request*:
+ TO=ora update docs with new info for refreshing screen size and dpi
+
+---
+[<small>2026-04-14 18:52:50</small>] [**Oracle**]->[**all**] **ora record*:
+ Docs updated: ARCH v0.6, DEC-004, LESSONS, and APPBAR_REASSERT_PLAN now record didChangeMetrics screen/DPI refresh plus refresh-button AppBar reassert; periodic timer noted as removed.
+
+---
+[<small>2026-04-14 18:54:21</small>] [**Oracle**]->[**all**] **ora record*:
+ README.md and USER_GUIDE.md updated for v0.4.0 display/DPI refresh: status/architecture overview updated, and Windows overlap troubleshooting now points users to Refresh reassert.
+
+---
+[<small>2026-04-14 18:56:11</small>] [**User**]->[**Neo**] **request*:
+ TO=neo swe small change - add version number and about link to the settings panel.
+
+---
+[<small>2026-04-14 18:56:21</small>] [**Neo**]->[**Oracle**] **swe ask*:
+ @Oracle *ora ask Where should version/about metadata live for a small settings panel addition?

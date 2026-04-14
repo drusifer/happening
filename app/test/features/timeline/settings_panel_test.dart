@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:happening/core/app_metadata.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/features/calendar/calendar_controller.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
@@ -56,13 +57,13 @@ void main() {
 
     // ── Rendering ────────────────────────────────────────────────────────────
 
-    testWidgets('renders SETTINGS header', (tester) async {
+    testWidgets('renders SETTINGS header with version', (tester) async {
       await tester.pumpWidget(_wrap(SettingsPanel(
         settingsService: fakeSettings,
         calendarController: CalendarController(_FakeCalendarService()),
         onSignOut: () {},
       )));
-      expect(find.text('SETTINGS'), findsOneWidget);
+      expect(find.text('SETTINGS  v. $appVersion'), findsOneWidget);
     });
 
     testWidgets('renders Font Size label', (tester) async {
@@ -92,6 +93,15 @@ void main() {
         onSignOut: () {},
       )));
       expect(find.text('LOGOUT'), findsOneWidget);
+    });
+
+    testWidgets('renders About link', (tester) async {
+      await tester.pumpWidget(_wrap(SettingsPanel(
+        settingsService: fakeSettings,
+        calendarController: CalendarController(_FakeCalendarService()),
+        onSignOut: () {},
+      )));
+      expect(find.text('ABOUT'), findsOneWidget);
     });
 
     // ── Interactions ─────────────────────────────────────────────────────────
@@ -136,6 +146,25 @@ void main() {
       )));
       await tester.tap(find.text('LOGOUT'));
       expect(fakeSettings.updates, isEmpty);
+    });
+
+    testWidgets('tapping About opens project URL', (tester) async {
+      Uri? openedUrl;
+
+      await tester.pumpWidget(_wrap(SettingsPanel(
+        settingsService: fakeSettings,
+        calendarController: CalendarController(_FakeCalendarService()),
+        onSignOut: () {},
+        launchAboutUrl: (url) async {
+          openedUrl = url;
+          return true;
+        },
+      )));
+
+      await tester.tap(find.text('ABOUT'));
+      await tester.pump();
+
+      expect(openedUrl, Uri.parse(appAboutUrl));
     });
 
     // ── Selection state ───────────────────────────────────────────────────────

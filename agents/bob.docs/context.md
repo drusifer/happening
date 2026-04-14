@@ -1,5 +1,10 @@
 # Bob Context
 
+## Session: 2026-04-14
+- Bob Protocol initialized on Windows workspace.
+- Loaded `agents/CHAT.md` tail, Bob `SKILL.md`, Bob state files, and `agents/skills/bob-protocol/SKILL.md`.
+- `make help` and `make chat` currently fail under PowerShell due Unix-shell assumptions in the Makefile (`grep`, `[ -n ... ]`). Direct `python agents/tools/chat.py ...` works for chat posting.
+
 ## Session: 2026-04-02
 - Calendar fetch: `Future.wait` on per-calendar calls — one 404 poisons all; fixed with `.catchError` per item in `calendar_controller.dart`.
 - Sign-out: added `selectedCalendarIds: const []` reset so stale calendar IDs don't bleed to next account (`app.dart`).
