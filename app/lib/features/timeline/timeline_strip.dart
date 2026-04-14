@@ -255,8 +255,8 @@ class _TimelineStripState extends State<TimelineStrip>
     }
 
     if (isOverStrip != _isHoveringStrip || hit?.id != _hoveredEvent?.id) {
-      unawaited(AppLogger.debug(
-          '${details.runtimeType}: ${hit?.title ?? (isOverStrip ? 'Strip' : 'Outside')}'));
+      // unawaited(AppLogger.debug(
+      //     '${details.runtimeType}: ${hit?.title ?? (isOverStrip ? 'Strip' : 'Outside')}'));
       setState(() {
         _isHoveringStrip = isOverStrip;
         _hoveredEvent = hit;
@@ -323,7 +323,7 @@ class _TimelineStripState extends State<TimelineStrip>
 
   @override
   Widget build(BuildContext context) {
-    unawaited(AppLogger.debug('Building $runtimeType'));
+    // unawaited(AppLogger.debug('Building $runtimeType'));
     final theme = Theme.of(context);
     final settings = widget.settingsService.current;
     final fontSize = settings.fontSize.px;
@@ -362,8 +362,8 @@ class _TimelineStripState extends State<TimelineStrip>
                 : CountdownMode.untilNext;
 
             final isExpanded = _windowService.isExpandedNotifier.value;
-            unawaited(AppLogger.debug(
-                'TimelineStrip: Layout isExpanded=$isExpanded _collapsedHeight=$_collapsedHeight maxHeight=${constraints.maxHeight}'));
+            // unawaited(AppLogger.debug(
+            //     'TimelineStrip: Layout isExpanded=$isExpanded _collapsedHeight=$_collapsedHeight maxHeight=${constraints.maxHeight}'));
 
             return MouseRegion(
               onEnter: _handleMouse,
@@ -539,7 +539,10 @@ class _TimelineStripState extends State<TimelineStrip>
                         children: [
                           _IconButton(
                             icon: Icons.refresh,
-                            onTap: widget.calendarController!.refresh,
+                            onTap: () {
+                              unawaited(widget.calendarController!.refresh());
+                              unawaited(_windowService.reassertAppBar());
+                            },
                             stripBackgroundColor: stripBackgroundColor,
                           ),
                           const SizedBox(width: 4),
@@ -616,7 +619,7 @@ class _IconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    unawaited(AppLogger.debug('Building $runtimeType'));
+    // unawaited(AppLogger.debug('Building $runtimeType'));
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     return GestureDetector(

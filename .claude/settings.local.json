@@ -15,7 +15,8 @@
       "Bash(wsl -- bash -c \"cd /mnt/c/Users/drusi/VSCode_Projects/happening/app && flutter test --no-pub 2>&1 | tail -20\")",
       "Bash(powershell -Command ':*)",
       "Bash(file /home/drusifer/Projects/happening/app/assets/images/*.png)",
-      "Bash(make lint:*)"
+      "Bash(make lint:*)",
+      "Read(//c/Users/drusi/Downloads/**)"
     ]
   },
   "enabledMcpjsonServers": [

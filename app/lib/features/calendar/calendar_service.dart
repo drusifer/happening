@@ -150,7 +150,7 @@ class GoogleCalendarService implements CalendarService {
     Color? calendarColor,
   }) {
     // Log raw API payload — copy from debug console to build test fixtures.
-    unawaited(AppLogger.debug('[CalendarAPI] ${jsonEncode(e.toJson())}'));
+    // unawaited(AppLogger.debug('[CalendarAPI] ${jsonEncode(e.toJson())}'));
     // Tasks synced from Google Tasks appear in the primary calendar feed
     // with eventType=="focusTime" rather than from a separate @tasks feed.
     if (e.eventType == 'focusTime') isTask = true;

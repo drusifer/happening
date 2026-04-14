@@ -84,6 +84,7 @@ class WindowService {
 
   Pointer<_AppBarData>? _appBarData;
   late final _SHDart _shAppBarMessage;
+  bool _appBarBusy = false; // guards against concurrent _reserveCollapsedSpace calls
 
   /// Notifier for the window's expansion state.
   final isExpandedNotifier = ValueNotifier<bool>(false);
@@ -153,6 +154,33 @@ class WindowService {
     await _reserveCollapsedSpace();
   }
 
+  /// Re-registers the AppBar with Windows, restoring the work area reservation.
+  ///
+  /// Triggers a full ABM_REMOVE → ABM_NEW → ABM_SETPOS cycle, which forces
+  /// Windows to re-broadcast the updated work area to all running apps. Call
+  /// this when the strip is observed overlapping other window title bars.
+  /// No-op on non-Windows platforms.
+  Future<void> reassertAppBar() async {
+    if (!Platform.isWindows || _appBarData == null) return;
+    unawaited(AppLogger.debug('WindowService: reassertAppBar() start'));
+    // Collapse first — the AppBar band equals the collapsed window height (55px).
+    // Running ABM_REMOVE/NEW/SETPOS while expanded (250px) causes Windows to
+    // push the window below the reserved band. Collapse before touching the
+    // AppBar registration so the window fits inside the band during negotiation.
+    await _doCollapse();
+    unawaited(AppLogger.debug('WindowService: reassertAppBar() collapsed, running ABM cycle'));
+    _shAppBarMessage(_abmRemove, _appBarData!);
+    _shAppBarMessage(_abmNew, _appBarData!);
+    await _reserveCollapsedSpace();
+    // rcTop is trusted post-SETPOS for ABE_TOP. Force window back into the
+    // band in case Windows nudged it during work-area contraction.
+    final double rcTop = _appBarData!.ref.rcTop / _dpr;
+    unawaited(AppLogger.debug('WindowService: reassertAppBar() rcTop=$rcTop, repositioning'));
+    await _wm.setPosition(Offset(0, rcTop));
+    await _doCollapse();
+    unawaited(AppLogger.debug('WindowService: reassertAppBar() done'));
+  }
+
   /// Updates the target heights for collapsed and expanded states.
   Future<void> updateHeights(FontSize fontSize) async {
     if (_fontSize == fontSize) return;
@@ -195,27 +223,35 @@ class WindowService {
   }
 
   Future<void> _reserveCollapsedSpace() async {
-    _appBarData!.ref.uEdge = _abeTop;
-    _appBarData!.ref.rcLeft = 0;
-    _appBarData!.ref.rcTop = 0;
-    _appBarData!.ref.rcRight = (_screenWidth * _dpr).round();
-    final targetHeight = (getCollapsedHeight() * _dpr).round();
-    _appBarData!.ref.rcBottom = targetHeight;
+    if (_appBarBusy) return;
+    _appBarBusy = true;
+    try {
+      _appBarData!.ref.uEdge = _abeTop;
+      _appBarData!.ref.rcLeft = 0;
+      _appBarData!.ref.rcTop = 0;
+      _appBarData!.ref.rcRight = (_screenWidth * _dpr).round();
+      final targetHeight = (getCollapsedHeight() * _dpr).round();
+      _appBarData!.ref.rcBottom = targetHeight;
 
-    unawaited(AppLogger.debug(
-        'WindowService:  reserved targetHeight is $targetHeight'));
-    _shAppBarMessage(_abmQuerypos, _appBarData!);
-    _shAppBarMessage(_abmSetpos, _appBarData!);
+      unawaited(AppLogger.debug(
+          'WindowService:  reserved targetHeight is $targetHeight'));
+      _shAppBarMessage(_abmQuerypos, _appBarData!);
+      _shAppBarMessage(_abmSetpos, _appBarData!);
 
-    if (!isExpandedNotifier.value) {
-      await _wm.setMinimumSize(Size.zero);
-      await _wm.setMaximumSize(Size.infinite);
-      await _wm.setBounds(Rect.fromLTWH(
-        _appBarData!.ref.rcLeft / _dpr,
-        _appBarData!.ref.rcTop / _dpr,
-        _screenWidth,
-        (_appBarData!.ref.rcBottom - _appBarData!.ref.rcTop) / _dpr,
-      ));
+      if (!isExpandedNotifier.value) {
+        await _wm.setMinimumSize(Size.zero);
+        await _wm.setMaximumSize(Size.infinite);
+        // rcLeft and rcBottom are mutated by ABM_SETPOS — use stored values instead.
+        // Only rcTop is trusted for ABE_TOP (Windows does not mutate it).
+        await _wm.setBounds(Rect.fromLTWH(
+          0,
+          _appBarData!.ref.rcTop / _dpr,
+          _screenWidth,
+          getCollapsedHeight(),
+        ));
+      }
+    } finally {
+      _appBarBusy = false;
     }
   }
 
