@@ -25,29 +25,24 @@ class _FakeScreenRetriever extends Mock implements ScreenRetriever {}
 /// Fake WindowService that counts expand/collapse calls without touching the OS.
 class _FakeWindowService extends WindowService {
   _FakeWindowService({bool initialExpanded = false})
-      : _wantsExpanded = initialExpanded,
-        super(
+      : super(
           windowManager: _FakeWindowManager(),
           screenRetriever: _FakeScreenRetriever(),
-        );
+        ) {
+    isExpandedNotifier.value = initialExpanded;
+  }
 
   int expandCalls = 0;
   int collapseCalls = 0;
-  bool _wantsExpanded = false;
-
-  @override
-  bool get isExpanded => _wantsExpanded;
 
   @override
   Future<void> expand({double? height}) async {
-    _wantsExpanded = true;
     expandCalls++;
     isExpandedNotifier.value = true;
   }
 
   @override
   Future<void> collapse({double? height}) async {
-    _wantsExpanded = false;
     collapseCalls++;
     isExpandedNotifier.value = false;
   }
@@ -463,14 +458,14 @@ void main() {
       await tester.tap(find.byIcon(Icons.settings));
       await tester.pump();
 
-      expect(windowService.isExpanded, isTrue);
+      expect(windowService.isExpandedNotifier.value, isTrue);
 
       // 2. Lose focus
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       await tester.pump();
 
       // Should STAY expanded because settings is open
-      expect(windowService.isExpanded, isTrue);
+      expect(windowService.isExpandedNotifier.value, isTrue);
     });
     group('focus/lifecycle', () {
       testWidgets('collapses when app loses focus if settings closed',
@@ -518,7 +513,7 @@ void main() {
         await gesture.moveTo(const Offset(140, 10));
         await tester.pump(const Duration(seconds: 10));
 
-        expect(windowService.isExpanded, isTrue);
+        expect(windowService.isExpandedNotifier.value, isTrue);
 
         // 2. Lose focus
         tester.binding
@@ -526,7 +521,7 @@ void main() {
         await tester.pump();
 
         // Should collapse
-        expect(windowService.isExpanded, isFalse);
+        expect(windowService.isExpandedNotifier.value, isFalse);
 
         await gesture.removePointer();
       });
@@ -576,7 +571,7 @@ void main() {
       await gesture.moveTo(const Offset(140, 10));
       await tester.pump(const Duration(seconds: 1));
 
-      expect(windowService.isExpanded, isTrue);
+      expect(windowService.isExpandedNotifier.value, isTrue);
       expect(find.byIcon(Icons.power_settings_new), findsOneWidget);
       await gesture.removePointer();
     });

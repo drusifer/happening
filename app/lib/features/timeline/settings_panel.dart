@@ -39,7 +39,7 @@ class _SettingsPanelState extends State<SettingsPanel> {
   @override
   void initState() {
     super.initState();
-    _loadCalendars();
+    unawaited(_loadCalendars());
   }
 
   Future<void> _loadCalendars() async {
@@ -85,13 +85,13 @@ class _SettingsPanelState extends State<SettingsPanel> {
       current.add(id);
     }
 
-    widget.settingsService.update(AppSettings(
+    unawaited(widget.settingsService.update(AppSettings(
       fontSize: settings.fontSize,
       theme: settings.theme,
       timeWindowHours: settings.timeWindowHours,
       selectedCalendarIds: current,
-    ));
-    widget.calendarController.refresh();
+    )));
+    unawaited(widget.calendarController.refresh());
   }
 
   @override

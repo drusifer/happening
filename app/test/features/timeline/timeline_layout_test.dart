@@ -133,7 +133,7 @@ void main() {
 
     // ── S4-19: Gap Labels ─────────────────────────────────────────────────
     group('gapsBetween', () {
-      CalendarEvent _evt(String id, int startHour, int endHour) =>
+      CalendarEvent evt(String id, int startHour, int endHour) =>
           CalendarEvent(
             id: id,
             title: id,
@@ -149,13 +149,13 @@ void main() {
       });
 
       test('returns empty when single event', () {
-        expect(layout.gapsBetween([_evt('a', 11, 12)], now), isEmpty);
+        expect(layout.gapsBetween([evt('a', 11, 12)], now), isEmpty);
       });
 
       test('returns gap between two events with enough pixel space', () {
         // Event A: 11:00–12:00, Event B: 13:00–14:00 → 1hr gap
         final gaps =
-            layout.gapsBetween([_evt('a', 11, 12), _evt('b', 13, 14)], now);
+            layout.gapsBetween([evt('a', 11, 12), evt('b', 13, 14)], now);
         expect(gaps, hasLength(1));
         expect(gaps.first.minutes, equals(60));
         // centerX should be between xForTime(12:00) and xForTime(13:00)
@@ -167,7 +167,7 @@ void main() {
       test('suppresses gap narrower than minPx', () {
         // Events only 5 min apart — gap will be very narrow in pixels
         final close = [
-          _evt('a', 11, 12),
+          evt('a', 11, 12),
           CalendarEvent(
             id: 'b',
             title: 'b',
@@ -182,13 +182,13 @@ void main() {
       });
 
       test('no gap when events are back-to-back', () {
-        final backToBack = [_evt('a', 11, 12), _evt('b', 12, 13)];
+        final backToBack = [evt('a', 11, 12), evt('b', 12, 13)];
         expect(layout.gapsBetween(backToBack, now), isEmpty);
       });
 
       test('returns two gaps for three spaced events', () {
         final gaps = layout.gapsBetween(
-            [_evt('a', 10, 11), _evt('b', 12, 13), _evt('c', 14, 15)], now);
+            [evt('a', 10, 11), evt('b', 12, 13), evt('c', 14, 15)], now);
         expect(gaps, hasLength(2));
       });
     });

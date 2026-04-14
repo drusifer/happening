@@ -133,7 +133,7 @@ class TimelinePainter extends CustomPainter {
       old.isSigningIn != isSigningIn;
 
   /// Semantic nodes for canvas content — makes ticks, events, and task
-  /// diamonds queryable by integration tests via [find.bySemanticsLabel].
+  /// diamonds queryable by integration tests via find.bySemanticsLabel.
   ///
   /// Uses the SAME pixel-bounds condition as [TickLayer] / [EventsLayer]
   /// so that a painting regression also breaks the semantics tree and the
@@ -191,14 +191,16 @@ class TimelinePainter extends CustomPainter {
         // ── Now indicator ──────────────────────────────────────────────────────
         nodes.add(CustomPainterSemantics(
           rect: Rect.fromLTWH(nowIndicatorX - 1, 0, 2, size.height),
-          properties: SemanticsProperties(
+          properties: const SemanticsProperties(
               label: 'now-indicator', textDirection: TextDirection.ltr),
         ));
 
         // ── Events and tasks ───────────────────────────────────────────────────
         for (final event in events) {
           if (!layout.isVisible(event.startTime) &&
-              !layout.isVisible(event.endTime)) continue;
+              !layout.isVisible(event.endTime)) {
+            continue;
+          }
           final x = layout.xForTime(event.startTime, now);
           final endX = layout.xForTime(event.endTime, now);
           final w = (endX - x).clamp(3.0, double.infinity);

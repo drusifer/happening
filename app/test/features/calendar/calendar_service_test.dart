@@ -174,7 +174,7 @@ void main() {
 
   group('CalendarMeta', () {
     test('parses colorHex correctly', () {
-      final meta = CalendarMeta(
+      const meta = CalendarMeta(
         id: 'c1',
         summary: 'Personal',
         colorHex: '#ff0000',
@@ -183,7 +183,7 @@ void main() {
     });
 
     test('defaults to blue on null colorHex', () {
-      final meta = CalendarMeta(
+      const meta = CalendarMeta(
         id: 'c1',
         summary: 'Personal',
         colorHex: null,

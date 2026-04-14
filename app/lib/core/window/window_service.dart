@@ -56,7 +56,7 @@ typedef _SHDart = int Function(int dwMessage, Pointer<_AppBarData> pData);
 /// Window management service for resizing the app between strip and hover states.
 ///
 /// TLDR:
-/// Overview: Controls physical OS window dimensions via [window_manager].
+/// Overview: Controls physical OS window dimensions via window_manager.
 /// Problem: High-frequency resizing causes OS flickering and race conditions.
 /// Solution: [AsyncGate] serialises expand/collapse; [WindowResizeStrategy]
 ///           isolates platform-specific resize sequences.

@@ -220,11 +220,6 @@ export-proxy-image: dist-proxy-linux ## Compile proxy + build container image + 
 	@echo "Image exported to $(PROXY_TAR)"
 	@echo "Deploy with: make -C /path/to/pi-patch/cluster deploy-happening TAR=$(CURDIR)/$(PROXY_TAR) VERSION=$(VERSION)"
 
-# ── TLDR ─────────────────────────────────────────────────────────────────────
-.PHONY: tldr
-tldr:
-	@rg "TL*DR" . -B2 -A6 --glob="*.{dart,md}"
-
 
 # ── Clean ────────────────────────────────────────────────────────────────────
 .PHONY: clean

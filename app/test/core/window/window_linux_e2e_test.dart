@@ -16,6 +16,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:happening/core/settings/settings_service.dart';
+import 'package:happening/core/util/logger.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
@@ -67,6 +68,7 @@ class _GtkStyleWindowManager extends Fake implements WindowManager {
   // We always ignore it to simulate the worst-case Linux behaviour.
   Future<void> setSize(Size size, {bool animate = false}) async {
     // intentionally no-op: compositor ignores our size request
+    AppLogger.debug('GTK WM: setSize($size) called — IGNORED (advisory request)'); 
   }
 
   @override
@@ -116,12 +118,12 @@ class _GtkStyleWindowManager extends Fake implements WindowManager {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-Display _fakeDisplay() => Display(
+Display _fakeDisplay() => const Display(
       id: '0',
       name: 'primary',
-      size: const Size(1920, 1080),
+      size: Size(1920, 1080),
       visiblePosition: Offset.zero,
-      visibleSize: const Size(1920, 1080),
+      visibleSize: Size(1920, 1080),
       scaleFactor: 1.0,
     );
 

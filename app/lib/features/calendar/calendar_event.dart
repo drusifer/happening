@@ -108,7 +108,7 @@ class CalendarEvent {
         'title': title,
         'startTime': startTime.toIso8601String(),
         'endTime': endTime.toIso8601String(),
-        'color': color.value,
+        'color': color.toARGB32(),
         'calendarEventUrl': calendarEventUrl,
         'videoCallUrl': videoCallUrl,
         'isTask': isTask,

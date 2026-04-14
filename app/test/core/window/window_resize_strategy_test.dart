@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:happening/core/window/resize_strategy/window_resize_strategy.dart';
 import 'package:mockito/mockito.dart';
 import 'package:screen_retriever/screen_retriever.dart';
-import 'package:window_manager/window_manager.dart';
 
 import 'window_service_test.mocks.dart';
 
@@ -15,12 +14,12 @@ void main() {
     mockWM = MockWindowManager();
     mockSR = MockScreenRetriever();
 
-    when(mockSR.getPrimaryDisplay()).thenAnswer((_) async => Display(
+    when(mockSR.getPrimaryDisplay()).thenAnswer((_) async => const Display(
           id: '0',
           name: 'primary',
-          size: const Size(1920, 1080),
+          size: Size(1920, 1080),
           visiblePosition: Offset.zero,
-          visibleSize: const Size(1920, 1080),
+          visibleSize: Size(1920, 1080),
           scaleFactor: 1.0,
         ));
     when(mockWM.setSize(any, animate: anyNamed('animate')))

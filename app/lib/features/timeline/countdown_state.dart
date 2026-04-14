@@ -3,8 +3,8 @@ import 'package:happening/features/timeline/countdown_display.dart';
 
 /// Immutable snapshot of the countdown timer's current state.
 ///
-/// Eliminates the ~30-line duplication between the two [StreamBuilder]s in
-/// [TimelineStrip] that independently computed active/target/mode/remaining.
+/// Eliminates the ~30-line duplication between the two StreamBuilders in
+/// TimelineStrip that independently computed active/target/mode/remaining.
 class CountdownState {
   const CountdownState({
     required this.activeEvent,

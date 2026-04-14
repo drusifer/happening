@@ -150,7 +150,7 @@ void main() {
   group('detectCollisions', () {
     final now = DateTime(2026, 3, 1, 10, 0);
 
-    CalendarEvent _ev(String id, DateTime start, DateTime end) => CalendarEvent(
+    CalendarEvent ev(String id, DateTime start, DateTime end) => CalendarEvent(
           id: id,
           title: id,
           startTime: start,
@@ -165,31 +165,31 @@ void main() {
     });
 
     test('returns empty set for non-overlapping events', () {
-      final e1 = _ev('e1', now, now.add(const Duration(minutes: 30)));
-      final e2 = _ev('e2', now.add(const Duration(minutes: 31)),
+      final e1 = ev('e1', now, now.add(const Duration(minutes: 30)));
+      final e2 = ev('e2', now.add(const Duration(minutes: 31)),
           now.add(const Duration(minutes: 60)));
       expect(detectCollisions([e1, e2]), isEmpty);
     });
 
     test('returns both IDs for overlapping events', () {
-      final e1 = _ev('e1', now, now.add(const Duration(minutes: 30)));
-      final e2 = _ev('e2', now.add(const Duration(minutes: 15)),
+      final e1 = ev('e1', now, now.add(const Duration(minutes: 30)));
+      final e2 = ev('e2', now.add(const Duration(minutes: 15)),
           now.add(const Duration(minutes: 45)));
       expect(detectCollisions([e1, e2]), equals({'e1', 'e2'}));
     });
 
     test('returns all IDs for triple overlap', () {
-      final e1 = _ev('e1', now, now.add(const Duration(minutes: 30)));
-      final e2 = _ev('e2', now.add(const Duration(minutes: 15)),
+      final e1 = ev('e1', now, now.add(const Duration(minutes: 30)));
+      final e2 = ev('e2', now.add(const Duration(minutes: 15)),
           now.add(const Duration(minutes: 45)));
-      final e3 = _ev('e3', now.add(const Duration(minutes: 20)),
+      final e3 = ev('e3', now.add(const Duration(minutes: 20)),
           now.add(const Duration(minutes: 25)));
       expect(detectCollisions([e1, e2, e3]), equals({'e1', 'e2', 'e3'}));
     });
 
     test('back-to-back events do NOT collide', () {
-      final e1 = _ev('e1', now, now.add(const Duration(minutes: 30)));
-      final e2 = _ev('e2', now.add(const Duration(minutes: 30)),
+      final e1 = ev('e1', now, now.add(const Duration(minutes: 30)));
+      final e2 = ev('e2', now.add(const Duration(minutes: 30)),
           now.add(const Duration(minutes: 60)));
       expect(detectCollisions([e1, e2]), isEmpty);
     });

@@ -1,0 +1,104 @@
+name: whats-happening
+base: core24
+version: '0.3.1'
+title: What's Happening?
+summary: Always-on-top calendar timeline strip
+description: |
+  ADHD-friendly time awareness tool.
+  Provides an always visible view of your calendar so you know "What's Happening?"
+
+license: GPL-3.0
+contact: happening@gs.works
+issues: https://github.com/drusifer/happening/issues
+source-code: https://github.com/drusifer/happening
+website: https://gs.works/happening
+donation: https://chadd.org
+
+grade: stable
+confinement: strict
+
+icon: app/assets/images/store_logo.png
+    
+platforms:
+  amd64:
+  arm64:
+
+apps:
+  whats-happening:
+    command: bin/launcher
+    extensions: [gnome]
+    plugs:
+      - x11
+      - network
+      - network-bind
+      - home
+      - password-manager-service
+    environment:
+      FLUTTER_ENGINE_SWITCH_IMPELLER: "0"
+      GDK_BACKEND: "x11"
+
+parts:
+  happening-app:
+    plugin: nil
+    source: .
+    build-packages:
+      - git
+      - curl
+      - unzip
+      - sed
+      - libtool
+      - clang-18
+      - cmake
+      - ninja-build
+      - pkg-config
+      - libgtk-3-dev
+      - liblzma-dev
+      - libstdc++-12-dev
+      - lld-18
+      - llvm-18
+    override-build: |
+      # 1. SDK and Path Setup
+      FLUTTER_SDK="${SNAPCRAFT_PROJECT_DIR}/.flutter/flutter"
+      export PATH="${FLUTTER_SDK}/bin:/usr/lib/llvm-18/bin:${PATH}"
+      
+      # 2. Build the Flutter project from the app/ directory
+      cd app
+      flutter --suppress-analytics clean
+      flutter --suppress-analytics pub get
+      flutter --suppress-analytics build linux --release
+
+      # 3. Setup Install Paths
+      ARCH=$(uname -m | sed 's/x86_64/x64/;s/aarch64/arm64/')
+      BUNDLE="build/linux/$ARCH/release/bundle"
+      
+      install -d "${SNAPCRAFT_PART_INSTALL}/bin"
+      install -d "${SNAPCRAFT_PART_INSTALL}/lib"
+      
+      # Copy the binary
+      install -m 0755 "${BUNDLE}/happening" "${SNAPCRAFT_PART_INSTALL}/bin/happening"
+      
+      # Copy Engine and Plugin libraries
+      cp -ra "${BUNDLE}/lib/." "${SNAPCRAFT_PART_INSTALL}/lib/"
+      
+      # Copy Data (assets + libapp.so)
+      cp -ra "${BUNDLE}/data" "${SNAPCRAFT_PART_INSTALL}/bin/"
+
+  launcher:
+    plugin: nil
+    after: [happening-app]
+    override-build: |
+      mkdir -p "${SNAPCRAFT_PART_INSTALL}/bin"
+      cat <<'EOF' > "${SNAPCRAFT_PART_INSTALL}/bin/launcher"
+      #!/bin/sh
+      # 1. Identify where plugin libraries are
+      export LD_LIBRARY_PATH="$SNAP/lib:$LD_LIBRARY_PATH"
+      
+      # 2. Match the successful manual start script logic
+      export GDK_BACKEND=x11
+
+      # 3. Execute from the bin directory with explicit AOT paths
+      cd "$SNAP/bin"
+      exec "./happening" --icu-data-path="./data/icudtl.dat" --aot-shared-library-name="./data/lib/libapp.so" "$@"
+      EOF
+      
+      chmod +x "${SNAPCRAFT_PART_INSTALL}/bin/launcher"
