@@ -102,11 +102,14 @@ static void set_wayland_layer(GtkWindow* window) {
 }
 
 // Called when first Flutter frame received.
+// Strut and DOCK type were set pre-show in my_application_activate.
+// This callback exists to defer the window show until Flutter has content,
+// avoiding a brief black flash during the loading state.
+// Note: window_manager's _wm.show() may also show the window before this
+// fires (it's a race). Both paths are safe because set_x11_strut was already
+// called before either show runs.
 static void first_frame_cb(MyApplication* self, FlView* view) {
   GtkWidget* toplevel = gtk_widget_get_toplevel(GTK_WIDGET(view));
-  // Set X11 DOCK type + strut BEFORE showing so the WM never positions the
-  // window as a normal window first (avoids race where it appears too low).
-  set_x11_strut(GTK_WINDOW(toplevel));
   gtk_widget_show(toplevel);
 }
 
@@ -170,9 +173,22 @@ static void my_application_activate(GApplication* application) {
 
   // Show the window when Flutter renders.
   // Requires the view to be realized so we can start rendering.
+  gtk_widget_realize(GTK_WIDGET(view));
+
+  // Set DOCK type and strut on the realized-but-not-yet-mapped window.
+  // X11 properties can be set before mapping; the WM (Mutter/XWayland) reads
+  // them at map time and sets up the correct ARGB compositing path.
+  //
+  // CRITICAL: do NOT change _NET_WM_WINDOW_TYPE_DOCK on an already-mapped
+  // window. Mutter re-classifies the XWayland window and destroys the ARGB
+  // compositing context → permanent black screen.
+  set_x11_strut(GTK_WINDOW(window));
+
+  // Show window after Flutter renders first frame so the user never sees an
+  // empty (black) window. The strut is already set above so first_frame_cb
+  // only needs to handle the show.
   g_signal_connect_swapped(view, "first-frame", G_CALLBACK(first_frame_cb),
                            self);
-  gtk_widget_realize(GTK_WIDGET(view));
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
 

@@ -569,3 +569,23 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
 ---
 [<small>2026-04-14 18:56:21</small>] [**Neo**]->[**Oracle**] **swe ask*:
  @Oracle *ora ask Where should version/about metadata live for a small settings panel addition?
+
+---
+[<small>2026-04-15 17:34:00</small>] [**User**]->[**all**] **request*:
+ bob-protocol init load morph
+
+---
+[<small>2026-04-15 17:34:03</small>] [**Morpheus**]->[**all**] **protocol init*:
+ Morpheus online. State loaded. Context: Loading State Refactor (ARCH-004) awaiting user approval; macOS build backlog on deck. Last team activity: Neo asked Oracle about version/about metadata for settings panel (2026-04-14). Ready for directives.
+
+---
+[<small>2026-04-15 17:44:18</small>] [**Morpheus**]->[**all**] **lead diagnose*:
+ Linux black screen diagnosis in LINUX_BLACK_SCREEN_DIAGNOSIS.md. Prime suspect: new didChangeMetrics on WindowService fires during LinuxResizeStrategy resize ops, bypasses _gate, races with expand/collapse. Adding debug logging to confirm.
+
+---
+[<small>2026-04-15 17:52:43</small>] [**Morpheus**]->[**all**] **lead diagnose*:
+ Debug logging added for 2 Linux bugs. Details in LINUX_BLACK_SCREEN_DIAGNOSIS.md. Run Linux build and reproduce both issues, then share debug.log.
+
+---
+[<small>2026-04-15 18:04:35</small>] [**Morpheus**]->[**all**] **lead fix*:
+ Root cause: set_x11_strut called AFTER window mapped. Fix: moved to post-realize pre-show in my_application.cc. Mutter no longer reclassifies XWayland window. Builds clean. Test needed.
