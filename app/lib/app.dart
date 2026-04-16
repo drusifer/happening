@@ -212,6 +212,12 @@ class _HappeningAppState extends State<HappeningApp> {
                   stream: _calendar!.events,
                   initialData: _calendar!.lastEvents,
                   builder: (context, eventSnapshot) {
+                    // [DBG] Trace StreamBuilder state to diagnose stuck-Fetching.
+                    unawaited(AppLogger.debug(
+                        'app StreamBuilder: state=${eventSnapshot.connectionState} '
+                        'hasData=${eventSnapshot.hasData} '
+                        'dataLen=${eventSnapshot.data?.length} '
+                        'lastEvents=${_calendar?.lastEvents?.length}'));
                     return TimelineStrip(
                       events: eventSnapshot.data ?? const [],
                       isLoading: eventSnapshot.data == null,

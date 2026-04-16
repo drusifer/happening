@@ -150,10 +150,17 @@ class WindowService with WidgetsBindingObserver {
     final display = await _sr.getPrimaryDisplay();
     final newWidth = display.size.width;
 
-    if (newDpr == _dpr && newWidth == _screenWidth) return;
+    // [DBG] Log every didChangeMetrics call to detect spurious Linux firings.
+    await AppLogger.debug(
+        'WindowService._onDisplayChanged: dpr=$_dpr→$newDpr width=$_screenWidth→$newWidth isExpanded=${isExpandedNotifier.value}');
+
+    if (newDpr == _dpr && newWidth == _screenWidth) {
+      await AppLogger.debug('WindowService._onDisplayChanged: no change, skipping');
+      return;
+    }
 
     await AppLogger.debug(
-        'WindowService: display changed dpr=$_dpr→$newDpr width=$_screenWidth→$newWidth');
+        'WindowService: display CHANGED — applying resize');
     _dpr = newDpr;
     _screenWidth = newWidth;
 
@@ -167,6 +174,8 @@ class WindowService with WidgetsBindingObserver {
 
     // Resize window to match new display dimensions via the strategy.
     // _reserveCollapsedSpace alone is not sufficient — setBounds is unreliable.
+    await AppLogger.debug(
+        'WindowService._onDisplayChanged: triggering resize isExpanded=${isExpandedNotifier.value}');
     if (isExpandedNotifier.value) {
       await _doExpand();
     } else {
@@ -223,14 +232,17 @@ class WindowService with WidgetsBindingObserver {
     if (_fontSize == fontSize) return;
     _fontSize = fontSize;
     await AppLogger.debug(
-        "updating hights; isExpanded: $isExpandedNotifier.value");
+        'WindowService.updateHeights: fontSize=$fontSize isExpanded=${isExpandedNotifier.value}');
     if (isExpandedNotifier.value) {
       await _doExpand();
-      await AppLogger.debug("updating hights; window expanded");
+      await AppLogger.debug('WindowService.updateHeights: _doExpand complete');
     } else {
       if (!Platform.isWindows) {
+        // NOTE: calls _doCollapse() directly, bypassing _gate — concurrent with
+        // gated collapse() calls from TimelineStrip.initState(). [DBG WATCH]
+        await AppLogger.debug('WindowService.updateHeights: calling _doCollapse (bypass gate)');
         await _doCollapse();
-        await AppLogger.debug("updating hights; window collaposed");
+        await AppLogger.debug('WindowService.updateHeights: _doCollapse complete');
       }
     }
   }
@@ -314,14 +326,20 @@ class WindowService with WidgetsBindingObserver {
 
   Future<void> _doExpand() async {
     final size = Size(_screenWidth, getExpandedHeight());
-    await AppLogger.debug('WindowService: _doExpand() target=${size.height}');
-    await _strategy.expand(size, () => isExpandedNotifier.value = true);
+    await AppLogger.debug(
+        'WindowService._doExpand() target=w${size.width}×h${size.height} isExpanded=${isExpandedNotifier.value}');
+    await _strategy.expand(size, () {
+      isExpandedNotifier.value = true;
+      unawaited(AppLogger.debug('WindowService._doExpand() onExpanded fired'));
+    });
   }
 
   Future<void> _doCollapse() async {
     final size = Size(_screenWidth, getCollapsedHeight());
-    await AppLogger.debug('WindowService: _doCollapse() target=${size.height}');
+    await AppLogger.debug(
+        'WindowService._doCollapse() target=w${size.width}×h${size.height} isExpanded=${isExpandedNotifier.value}');
     isExpandedNotifier.value = false;
     await _strategy.collapse(size);
+    await AppLogger.debug('WindowService._doCollapse() complete');
   }
 }

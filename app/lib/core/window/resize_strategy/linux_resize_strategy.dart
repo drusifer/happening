@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:happening/core/util/logger.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -41,22 +42,32 @@ class LinuxResizeStrategy extends WindowResizeStrategy {
 
   @override
   Future<void> expand(Size targetSize, void Function() onExpanded) async {
+    await AppLogger.debug(
+        'LinuxResizeStrategy.expand() START target=w${targetSize.width}×h${targetSize.height}');
     // Advisory — ignored by GTK when max-cap is still the collapsed height.
     await _wm.setSize(targetSize);
+    await AppLogger.debug('LinuxResizeStrategy.expand() setSize done');
     // min(target) > max(collapsed) = intentionally invalid constraint.
     // GTK resolves the conflict by growing the window to targetSize.
     await _wm.setMinimumSize(targetSize);
+    await AppLogger.debug('LinuxResizeStrategy.expand() setMinimumSize done');
     // Formalise: lift the max-cap now that the window has grown.
     await _wm.setMaximumSize(targetSize);
+    await AppLogger.debug('LinuxResizeStrategy.expand() setMaximumSize done — calling onExpanded');
     onExpanded();
   }
 
   @override
   Future<void> collapse(Size targetSize) async {
+    await AppLogger.debug(
+        'LinuxResizeStrategy.collapse() START target=w${targetSize.width}×h${targetSize.height}');
     await _wm.setSize(targetSize);
+    await AppLogger.debug('LinuxResizeStrategy.collapse() setSize done');
     // Lower the min-floor left by a previous expand before applying max-cap.
     await _wm.setMinimumSize(targetSize);
+    await AppLogger.debug('LinuxResizeStrategy.collapse() setMinimumSize done');
     // setMaximumSize forces the compositor to shrink when setSize was ignored.
     await _wm.setMaximumSize(targetSize);
+    await AppLogger.debug('LinuxResizeStrategy.collapse() setMaximumSize done');
   }
 }

@@ -1,7 +1,7 @@
 # Current Task
 
-## Linux Window Resize Fix — 2026-03-18
-**Status**: IN PROGRESS 🔴
+## Linux Black Screen + Stuck Fetching Diagnosis — 2026-04-15
+**Status**: IN PROGRESS 🔴 — debug logging added, awaiting log output from user
 
 ### Done
 - [x] Identified BUG-A (race condition) — fixed by AsyncGate ✅
