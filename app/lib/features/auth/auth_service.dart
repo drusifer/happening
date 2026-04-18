@@ -46,8 +46,7 @@ class _ProxyingClient extends http.BaseClient {
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
-    if (request.method == 'POST' &&
-        request.url.toString() == _googleTokenUrl) {
+    if (request.method == 'POST' && request.url.toString() == _googleTokenUrl) {
       final bytes = await request.finalize().toBytes();
       final proxied = http.Request('POST', Uri.parse('$_proxyUrl/token'))
         ..headers.addAll(request.headers)
@@ -154,7 +153,8 @@ class GoogleAuthService implements AuthService {
       // Verify state to prevent CSRF (RFC 6749 §10.12).
       final returnedState = request.uri.queryParameters['state'];
       if (returnedState != state) {
-        unawaited(AppLogger.debug('PKCE signIn: state mismatch — possible CSRF'));
+        unawaited(
+            AppLogger.debug('PKCE signIn: state mismatch — possible CSRF'));
         request.response
           ..statusCode = 400
           ..write('Bad request: state mismatch.');
@@ -190,8 +190,7 @@ class GoogleAuthService implements AuthService {
         },
       );
 
-      unawaited(AppLogger.debug(
-          'PKCE token response: ${response.statusCode}'));
+      unawaited(AppLogger.debug('PKCE token response: ${response.statusCode}'));
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       if (data.containsKey('error')) {
         unawaited(AppLogger.debug(

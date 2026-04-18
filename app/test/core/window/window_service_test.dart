@@ -14,6 +14,8 @@ import 'package:window_manager/window_manager.dart';
 import 'window_service_test.mocks.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('WindowService', () {
     late MockWindowManager mockWM;
     late MockScreenRetriever mockSR;
@@ -50,12 +52,15 @@ void main() {
       when(mockWM.setBackgroundColor(any)).thenAnswer((_) => Future.value());
       when(mockWM.show(inactive: anyNamed('inactive')))
           .thenAnswer((_) => Future.value());
+      when(mockWM.focus()).thenAnswer((_) => Future.value());
+      when(mockWM.waitUntilReadyToShow(any, any))
+          .thenAnswer((invocation) async {
+        final callback = invocation.positionalArguments[1] as VoidCallback?;
+        callback?.call();
+      });
     });
 
     test('initialize sets up the window with logical pixels', () async {
-      when(mockWM.waitUntilReadyToShow(any, any))
-          .thenAnswer((_) => Future.value());
-
       await service.initialize(initialFontSize: FontSize.medium);
 
       verify(mockWM.ensureInitialized()).called(1);
@@ -95,7 +100,8 @@ void main() {
     // BUG-A repro: expand/collapse interleave race (log-sample.txt lines 89-95)
     // Without AsyncGate: expand+collapse ran concurrently → window stuck at 200px
     // (setMaximumSize from collapse ran before setMaximumSize from expand)
-    test('BUG-A: concurrent expand then collapse does not leave window stuck', () async {
+    test('BUG-A: concurrent expand then collapse does not leave window stuck',
+        () async {
       await service.initialize(initialFontSize: FontSize.medium);
 
       // Fire expand and immediately fire collapse — pre-AsyncGate this would
@@ -118,7 +124,8 @@ void main() {
     });
 
     // BUG-A repro: expand-collapse-expand leaves window expanded
-    test('BUG-A: rapid expand-collapse-expand ends in expanded state', () async {
+    test('BUG-A: rapid expand-collapse-expand ends in expanded state',
+        () async {
       await service.initialize(initialFontSize: FontSize.medium);
 
       unawaited(service.expand());
@@ -138,12 +145,14 @@ void main() {
     // LinuxResizeStrategy currently calls setSize ONLY — no min/max fallback.
     // This test documents the gap: if setSize is a no-op on the running GTK
     // compositor, collapse() will silently fail to shrink the window.
-    test('BUG-B: Linux collapse — isExpandedNotifier false even if setSize is a no-op', () async {
+    test(
+        'BUG-B: Linux collapse — isExpandedNotifier false even if setSize is a no-op',
+        () async {
       if (!Platform.isLinux) return; // Linux-specific
 
       // Simulate setSize being a no-op (returns immediately but window stays big).
-      when(mockWM.setSize(any, animate: anyNamed('animate')))
-          .thenAnswer((_) => Future.value()); // mock already does this — no actual resize
+      when(mockWM.setSize(any, animate: anyNamed('animate'))).thenAnswer(
+          (_) => Future.value()); // mock already does this — no actual resize
 
       await service.initialize(initialFontSize: FontSize.medium);
       await service.expand();

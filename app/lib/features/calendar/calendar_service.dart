@@ -87,15 +87,24 @@ class GoogleCalendarService implements CalendarService {
 
     // Fetch calendar metadata to get the name and default color.
     String? calendarName;
+    String? calendarAccessRole = response.accessRole;
     Color? calendarColor;
     try {
       final meta = await _api.calendarList.get(calendarId);
       calendarName = meta.summary;
+      calendarAccessRole = meta.accessRole ?? calendarAccessRole;
       if (meta.backgroundColor != null) {
         calendarColor =
             Color(int.parse(meta.backgroundColor!.replaceFirst('#', '0xFF')));
       }
     } catch (_) {}
+
+    await _logFetchDiagnostics(
+      calendarId: calendarId,
+      response: response,
+      calendarName: calendarName,
+      calendarAccessRole: calendarAccessRole,
+    );
 
     return (response.items ?? [])
         .where((e) => e.start?.dateTime != null)
@@ -106,6 +115,45 @@ class GoogleCalendarService implements CalendarService {
               calendarColor: calendarColor,
             ))
         .toList();
+  }
+
+  static Future<void> _logFetchDiagnostics({
+    required String calendarId,
+    required gcal.Events response,
+    required String? calendarName,
+    required String? calendarAccessRole,
+  }) async {
+    final items = response.items ?? const <gcal.Event>[];
+    await AppLogger.debug(
+      '[CalendarDiag] calendar=$calendarId '
+      'metaSummary=${_logValue(calendarName)} '
+      'responseSummary=${_logValue(response.summary)} '
+      'accessRole=${_logValue(calendarAccessRole)} '
+      'responseAccessRole=${_logValue(response.accessRole)} '
+      'items=${items.length}',
+    );
+
+    for (final event in items) {
+      await AppLogger.debug(
+        '[CalendarDiag] event '
+        'calendar=$calendarId '
+        'id=${_logValue(event.id)} '
+        'summary=${_logValue(event.summary)} '
+        'visibility=${_logValue(event.visibility)} '
+        'status=${_logValue(event.status)} '
+        'eventType=${_logValue(event.eventType)} '
+        'creator=${_logValue(event.creator?.email)} '
+        'organizer=${_logValue(event.organizer?.email)} '
+        'startDateTime=${_logValue(event.start?.dateTime?.toIso8601String())} '
+        'startDate=${_logValue(event.start?.date?.toIso8601String())}',
+      );
+    }
+  }
+
+  static String _logValue(Object? value) {
+    final text = value?.toString();
+    if (text == null || text.isEmpty) return '<empty>';
+    return jsonEncode(text);
   }
 
   /// Appends [json] as one line to `test/fixtures/calendar_api_raw.jsonl`
@@ -161,7 +209,6 @@ class GoogleCalendarService implements CalendarService {
         .whereType<String>()
         .toList();
 
-    // S5-FIX: Tasks sometimes lack an end time but MUST have a start dateTime to be on the strip.
     final startTime = e.start!.dateTime!.toLocal();
     final endTime = e.end?.dateTime?.toLocal() ?? startTime;
 

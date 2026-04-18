@@ -45,7 +45,7 @@ void main() {
       expect(event.isPast(start), isFalse);
     });
 
-    test('equality is based on id', () {
+    test('equality is based on event id', () {
       final sameId = CalendarEvent(
         id: 'evt-1',
         title: 'Different Title',
@@ -56,9 +56,21 @@ void main() {
         videoCallUrl: null,
       );
       expect(event, equals(sameId));
+
+      final sameIdDifferentCalendar = CalendarEvent(
+        id: 'evt-1',
+        title: 'Different Calendar',
+        startTime: DateTime(2026, 1, 1),
+        endTime: DateTime(2026, 1, 1, 1),
+        color: Colors.red,
+        calendarEventUrl: null,
+        videoCallUrl: null,
+        calendarId: 'secondary',
+      );
+      expect(event, equals(sameIdDifferentCalendar));
     });
 
-    test('hashCode is based on id', () {
+    test('hashCode is based on event id', () {
       final sameId = CalendarEvent(
         id: 'evt-1',
         title: 'Other',
@@ -69,6 +81,18 @@ void main() {
         videoCallUrl: null,
       );
       expect(event.hashCode, equals(sameId.hashCode));
+
+      final sameIdDifferentCalendar = CalendarEvent(
+        id: 'evt-1',
+        title: 'Other',
+        startTime: DateTime(2026, 1, 1),
+        endTime: DateTime(2026, 1, 1, 1),
+        color: Colors.green,
+        calendarEventUrl: null,
+        videoCallUrl: null,
+        calendarId: 'secondary',
+      );
+      expect(event.hashCode, equals(sameIdDifferentCalendar.hashCode));
     });
 
     test('copyWith returns updated event', () {

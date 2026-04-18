@@ -48,9 +48,7 @@ class CountdownState {
     }
 
     // No active event: count down to next future event's start.
-    final next = (events
-            .where((e) => e.startTime.isAfter(now))
-            .toList()
+    final next = (events.where((e) => e.startTime.isAfter(now)).toList()
           ..sort((a, b) => a.startTime.compareTo(b.startTime)))
         .firstOrNull;
 

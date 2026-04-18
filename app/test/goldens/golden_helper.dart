@@ -39,6 +39,7 @@ Future<void> pumpTimelinePainter(
               pastOverlayColor: Colors.black26,
               nowLineColor: const Color(0xFFB71C1C),
               tickColor: Colors.white70,
+              alwaysUse24HourFormat: false,
             ),
           ),
         ),

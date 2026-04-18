@@ -18,6 +18,10 @@ abstract class HoverController {
     return DefaultHoverController(ws);
   }
 
-  void setIntent(ExpansionState state);
+  /// Applies an expansion intent.
+  ///
+  /// Returns false when the controller intentionally suppresses the intent,
+  /// such as Linux dropping a synthetic collapse during GTK resize.
+  bool setIntent(ExpansionState state);
   void dispose() {}
 }

@@ -14,7 +14,8 @@ void main() {
       expect(calls, [true]);
     });
 
-    test('queues last value when busy, fires after current completes', () async {
+    test('queues last value when busy, fires after current completes',
+        () async {
       final gate = AsyncGate<bool>();
       final calls = <bool>[];
       final completer = Completer<void>();
@@ -73,8 +74,10 @@ void main() {
       }));
 
       // GTK burst: collapse queued, then expand matches inflight → cancel collapse
-      unawaited(gate.request(false, (v) async => calls.add(v))); // pending=false
-      unawaited(gate.request(true, (v) async => calls.add(v))); // same as inflight → cancel pending
+      unawaited(
+          gate.request(false, (v) async => calls.add(v))); // pending=false
+      unawaited(gate.request(true,
+          (v) async => calls.add(v))); // same as inflight → cancel pending
 
       completer.complete();
       await Future<void>.delayed(Duration.zero);

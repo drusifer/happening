@@ -53,7 +53,8 @@ class LinuxResizeStrategy extends WindowResizeStrategy {
     await AppLogger.debug('LinuxResizeStrategy.expand() setMinimumSize done');
     // Formalise: lift the max-cap now that the window has grown.
     await _wm.setMaximumSize(targetSize);
-    await AppLogger.debug('LinuxResizeStrategy.expand() setMaximumSize done — calling onExpanded');
+    await AppLogger.debug(
+        'LinuxResizeStrategy.expand() setMaximumSize done — calling onExpanded');
     onExpanded();
   }
 

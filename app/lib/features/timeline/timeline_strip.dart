@@ -76,6 +76,8 @@ class _TimelineStripState extends State<TimelineStrip>
   CalendarEvent? _hoveredEvent;
   bool _isHoveringStrip = false;
   bool _isSettingsOpen = false;
+  late Stream<DateTime> _paintTicks;
+  late Stream<DateTime> _countdownTicks;
 
   void _updateAnimationTimer(Duration countdown) {
     if (!widget.enableAnimations) return;
@@ -97,6 +99,8 @@ class _TimelineStripState extends State<TimelineStrip>
   void initState() {
     super.initState();
     _windowService = widget.windowService;
+    _paintTicks = widget.clockService.tick10s;
+    _countdownTicks = widget.clockService.tick1s;
     _hoverController = HoverController.create(_windowService);
     _windowService.isExpandedNotifier.addListener(_onExpansionChanged);
 
@@ -129,6 +133,12 @@ class _TimelineStripState extends State<TimelineStrip>
 
     if (oldWidget.events != widget.events) {
       _collidingIds = detectCollisions(widget.events);
+    }
+
+    if (oldWidget.clockService != widget.clockService) {
+      _paintTicks = widget.clockService.tick10s;
+      _countdownTicks = widget.clockService.tick1s;
+      _now = widget.clockService.now;
     }
   }
 
@@ -254,6 +264,9 @@ class _TimelineStripState extends State<TimelineStrip>
       }
     }
 
+    final intentAccepted = _hoverController.setIntent(state);
+    if (!intentAccepted) return;
+
     if (isOverStrip != _isHoveringStrip || hit?.id != _hoveredEvent?.id) {
       // unawaited(AppLogger.debug(
       //     '${details.runtimeType}: ${hit?.title ?? (isOverStrip ? 'Strip' : 'Outside')}'));
@@ -266,7 +279,6 @@ class _TimelineStripState extends State<TimelineStrip>
     // 3. Window Execution — routed through HoverController.
     // On Linux, LinuxHoverController suppresses spurious collapses fired by
     // GTK's synthetic pointer-exit during window resize (300ms window).
-    _hoverController.setIntent(state);
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────
@@ -333,7 +345,7 @@ class _TimelineStripState extends State<TimelineStrip>
         : Colors.white;
 
     return StreamBuilder<DateTime>(
-      stream: widget.clockService.tick10s,
+      stream: _paintTicks,
       initialData: widget.clockService.now,
       builder: (context, snapshot) {
         final now = snapshot.data!;
@@ -407,13 +419,16 @@ class _TimelineStripState extends State<TimelineStrip>
                               ? Colors.black26
                               : Colors.black12,
                           nowLineColor: const Color(0xFFB71C1C),
+                          alwaysUse24HourFormat:
+                              MediaQuery.alwaysUse24HourFormatOf(context),
                           tickColor: theme.textTheme.bodySmall?.color
                                   ?.withValues(alpha: 0.75) ??
                               Colors.grey,
                           isLoading: widget.isLoading,
                           loadingTextColor:
                               theme.textTheme.bodyMedium?.color ?? Colors.white,
-                          isSignIn: widget.onSignIn != null || widget.onCancelSignIn != null,
+                          isSignIn: widget.onSignIn != null ||
+                              widget.onCancelSignIn != null,
                           isSigningIn: widget.onCancelSignIn != null,
                           signInTextColor:
                               theme.textTheme.bodyMedium?.color ?? Colors.white,
@@ -430,105 +445,109 @@ class _TimelineStripState extends State<TimelineStrip>
                       ),
                     ),
                   if (widget.onSignIn == null && widget.onCancelSignIn == null)
-                  Positioned(
-                    left: mode == CountdownMode.untilEnd
-                        ? nowIndicatorX + 8
-                        : null,
-                    right: mode == CountdownMode.untilNext
-                        ? stripWidth - nowIndicatorX + 8
-                        : null,
-                    top: 0,
-                    height: _collapsedHeight,
-                    child: StreamBuilder<DateTime>(
-                      stream: widget.clockService.tick1s,
-                      initialData: now,
-                      builder: (context, timeSnapshot) {
-                        final tickNow = timeSnapshot.data!;
+                    Positioned(
+                      left: mode == CountdownMode.untilEnd
+                          ? nowIndicatorX + 8
+                          : null,
+                      right: mode == CountdownMode.untilNext
+                          ? stripWidth - nowIndicatorX + 8
+                          : null,
+                      top: 0,
+                      height: _collapsedHeight,
+                      child: StreamBuilder<DateTime>(
+                        stream: _countdownTicks,
+                        initialData: now,
+                        builder: (context, timeSnapshot) {
+                          final tickNow = timeSnapshot.data!;
 
-                        // Recompute active/target/mode/color with fresh time so
-                        // event-boundary transitions (e.g. start → end) are
-                        // reflected within 1s instead of waiting for tick10s.
-                        final tickActive =
-                            _layout?.activeEvent(widget.events, tickNow);
-                        final tickNextOverlap = tickActive != null
-                            ? (widget.events
-                                    .where((e) =>
-                                        e.startTime.isAfter(tickNow) &&
-                                        e.startTime
-                                            .isBefore(tickActive.endTime))
-                                    .toList()
-                                  ..sort((a, b) =>
-                                      a.startTime.compareTo(b.startTime)))
-                                .firstOrNull
-                            : null;
-                        final tickNextToStart = tickActive == null
-                            ? (widget.events
-                                    .where((e) => e.startTime.isAfter(tickNow))
-                                    .toList()
-                                  ..sort((a, b) =>
-                                      a.startTime.compareTo(b.startTime)))
-                                .firstOrNull
-                            : null;
-                        final tickTarget = tickActive != null
-                            ? (tickNextOverlap?.startTime ?? tickActive.endTime)
-                            : tickNextToStart?.startTime;
-                        final tickMode = tickActive != null
-                            ? CountdownMode.untilEnd
-                            : CountdownMode.untilNext;
-                        final tickBaseColor = tickMode == CountdownMode.untilEnd
-                            ? (theme.brightness == Brightness.dark
-                                ? Colors.amber
-                                : Colors.orange[800]!)
-                            : theme.textTheme.bodyMedium?.color ?? Colors.white;
+                          // Recompute active/target/mode/color with fresh time so
+                          // event-boundary transitions (e.g. start → end) are
+                          // reflected within 1s instead of waiting for tick10s.
+                          final tickActive =
+                              _layout?.activeEvent(widget.events, tickNow);
+                          final tickNextOverlap = tickActive != null
+                              ? (widget.events
+                                      .where((e) =>
+                                          e.startTime.isAfter(tickNow) &&
+                                          e.startTime
+                                              .isBefore(tickActive.endTime))
+                                      .toList()
+                                    ..sort((a, b) =>
+                                        a.startTime.compareTo(b.startTime)))
+                                  .firstOrNull
+                              : null;
+                          final tickNextToStart = tickActive == null
+                              ? (widget.events
+                                      .where(
+                                          (e) => e.startTime.isAfter(tickNow))
+                                      .toList()
+                                    ..sort((a, b) =>
+                                        a.startTime.compareTo(b.startTime)))
+                                  .firstOrNull
+                              : null;
+                          final tickTarget = tickActive != null
+                              ? (tickNextOverlap?.startTime ??
+                                  tickActive.endTime)
+                              : tickNextToStart?.startTime;
+                          final tickMode = tickActive != null
+                              ? CountdownMode.untilEnd
+                              : CountdownMode.untilNext;
+                          final tickBaseColor =
+                              tickMode == CountdownMode.untilEnd
+                                  ? (theme.brightness == Brightness.dark
+                                      ? Colors.amber
+                                      : Colors.orange[800]!)
+                                  : theme.textTheme.bodyMedium?.color ??
+                                      Colors.white;
 
-                        final countdown = tickTarget != null
-                            ? layout.countdownTo(tickTarget, tickNow)
-                            : Duration.zero;
+                          final countdown = tickTarget != null
+                              ? layout.countdownTo(tickTarget, tickNow)
+                              : Duration.zero;
 
-                        _updateAnimationTimer(countdown);
+                          _updateAnimationTimer(countdown);
 
-                        return ValueListenableBuilder<double>(
-                          valueListenable: _flashNotifier,
-                          builder: (context, flashValue, _) {
-                            final countdownColor = _resolveCountdownColor(
-                                countdown, tickBaseColor, flashValue);
-                            double countdownScale = 1.0;
-                            Offset shakeOffset = Offset.zero;
-                            if (countdown.inSeconds > 0 &&
-                                widget.enableAnimations) {
-                              if (countdown.inSeconds <= 120 &&
-                                  countdown.inSeconds > 30) {
-                                countdownScale = 1.0 +
-                                    (120 - countdown.inSeconds) / 90.0 * 2.0;
-                              } else if (countdown.inSeconds <= 30) {
-                                countdownScale = 3.0;
+                          return ValueListenableBuilder<double>(
+                            valueListenable: _flashNotifier,
+                            builder: (context, flashValue, _) {
+                              final countdownColor = _resolveCountdownColor(
+                                  countdown, tickBaseColor, flashValue);
+                              double countdownScale = 1.0;
+                              Offset shakeOffset = Offset.zero;
+                              if (countdown.inSeconds > 0 &&
+                                  widget.enableAnimations) {
+                                if (countdown.inSeconds <= 120 &&
+                                    countdown.inSeconds > 30) {
+                                  countdownScale = 1.0 +
+                                      (120 - countdown.inSeconds) / 90.0 * 2.0;
+                                } else if (countdown.inSeconds <= 30) {
+                                  countdownScale = 3.0;
+                                }
+                                if (countdown.inSeconds <= 60) {
+                                  shakeOffset = Offset(
+                                      math.sin(flashValue * 8 * math.pi) * 2.0,
+                                      0);
+                                }
                               }
-                              if (countdown.inSeconds <= 60) {
-                                shakeOffset = Offset(
-                                    math.sin(flashValue * 8 * math.pi) * 2.0,
-                                    0);
-                              }
-                            }
-                            return Center(
-                              child: Transform.translate(
-                                offset: shakeOffset,
-                                child: Transform.scale(
-                                  scale: countdownScale,
-                                  child: CountdownDisplay(
-                                    remaining: countdown,
-                                    mode: tickMode,
-                                    color: countdownColor,
-                                    fontSize: fontSize,
-                                    backgroundColor: stripBackgroundColor,
+                              return Center(
+                                child: Transform.translate(
+                                  offset: shakeOffset,
+                                  child: Transform.scale(
+                                    scale: countdownScale,
+                                    child: CountdownDisplay(
+                                      remaining: countdown,
+                                      mode: tickMode,
+                                      color: countdownColor,
+                                      fontSize: fontSize,
+                                      backgroundColor: stripBackgroundColor,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            );
-                          },
-                        );
-                      },
+                              );
+                            },
+                          );
+                        },
+                      ),
                     ),
-                  ),
                   if (widget.onSignIn == null && widget.onCancelSignIn == null)
                     Positioned(
                       left: 8,
@@ -566,7 +585,8 @@ class _TimelineStripState extends State<TimelineStrip>
                       ),
                     ),
                   ),
-                  if (widget.onSignIn == null && widget.onCancelSignIn == null &&
+                  if (widget.onSignIn == null &&
+                      widget.onCancelSignIn == null &&
                       _windowService.isExpandedNotifier.value &&
                       !_isSettingsOpen &&
                       _hoveredEvent != null)
@@ -578,7 +598,9 @@ class _TimelineStripState extends State<TimelineStrip>
                         width: _cardWidth(stripWidth),
                       ),
                     ),
-                  if (widget.onSignIn == null && widget.onCancelSignIn == null && _isSettingsOpen)
+                  if (widget.onSignIn == null &&
+                      widget.onCancelSignIn == null &&
+                      _isSettingsOpen)
                     Positioned.fill(
                       child: GestureDetector(
                         onTap: _toggleSettings,
@@ -586,7 +608,9 @@ class _TimelineStripState extends State<TimelineStrip>
                         child: Container(color: Colors.transparent),
                       ),
                     ),
-                  if (widget.onSignIn == null && widget.onCancelSignIn == null && _isSettingsOpen)
+                  if (widget.onSignIn == null &&
+                      widget.onCancelSignIn == null &&
+                      _isSettingsOpen)
                     Positioned(
                       top: _collapsedHeight,
                       left: 8,

@@ -89,9 +89,12 @@ run-windows-simple: $(PUB_STAMP)
 	cd $(APP_DIR) && $(FLUTTER) run -d windows --target lib/simple_main.dart
 
 # ── Test ─────────────────────────────────────────────────────────────────────
-.PHONY: test
+.PHONY: test update-goldens
 test: $(PUB_STAMP)
 	cd $(APP_DIR) && $(FLUTTER) test --coverage
+
+update-goldens: $(PUB_STAMP)
+	cd $(APP_DIR) && $(FLUTTER) test --update-goldens test/goldens/
 
 .PHONY: test-watch
 test-watch: $(PUB_STAMP)

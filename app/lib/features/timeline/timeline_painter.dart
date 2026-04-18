@@ -32,6 +32,7 @@ class TimelinePainter extends CustomPainter {
     required this.pastOverlayColor,
     required this.nowLineColor,
     required this.tickColor,
+    required this.alwaysUse24HourFormat,
     this.hoveredEventId,
     this.collidingIds = const {},
     this.countdownColor = Colors.white,
@@ -58,6 +59,7 @@ class TimelinePainter extends CustomPainter {
   final Color pastOverlayColor;
   final Color nowLineColor;
   final Color tickColor;
+  final bool alwaysUse24HourFormat;
 
   final bool isLoading;
   final Color loadingTextColor;
@@ -87,6 +89,7 @@ class TimelinePainter extends CustomPainter {
         tickColor: tickColor,
         backgroundColor: backgroundColor,
         fontSize: fontSize,
+        alwaysUse24HourFormat: alwaysUse24HourFormat,
       ),
       EventsLayer(
         events: events,
@@ -128,7 +131,8 @@ class TimelinePainter extends CustomPainter {
       old.countdownColor != countdownColor ||
       old.isLoading != isLoading ||
       old.isSignIn != isSignIn ||
-      old.isSigningIn != isSigningIn;
+      old.isSigningIn != isSigningIn ||
+      old.alwaysUse24HourFormat != alwaysUse24HourFormat;
 
   /// Semantic nodes for canvas content — makes ticks, events, and task
   /// diamonds queryable by integration tests via find.bySemanticsLabel.
@@ -161,9 +165,10 @@ class TimelinePainter extends CustomPainter {
         while (!current.isAfter(windowEnd)) {
           final x = layout.xForTime(current, now);
           if (x >= 0 && x <= size.width) {
-            final h = current.hour;
-            final label =
-                '${h % 12 == 0 ? 12 : h % 12}${h < 12 || h >= 24 ? 'am' : 'pm'}';
+            final label = formatTimelineHourTickLabel(
+              current,
+              alwaysUse24HourFormat: alwaysUse24HourFormat,
+            );
             nodes.add(CustomPainterSemantics(
               rect: Rect.fromLTWH(x - 1, 0, 2, size.height),
               properties: SemanticsProperties(
@@ -175,11 +180,11 @@ class TimelinePainter extends CustomPainter {
             final tickTime = current.add(const Duration(minutes: 30));
             final tx = layout.xForTime(tickTime, now);
             if (tx >= 0 && tx <= size.width) {
-              final hh = current.hour.toString().padLeft(2, '0');
+              final label = formatTimelineHalfHourTickLabel();
               nodes.add(CustomPainterSemantics(
                 rect: Rect.fromLTWH(tx - 1, 0, 2, 15),
                 properties: SemanticsProperties(
-                    label: 'subtick-$hh:30', textDirection: TextDirection.ltr),
+                    label: 'subtick-$label', textDirection: TextDirection.ltr),
               ));
             }
           }

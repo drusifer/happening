@@ -26,9 +26,11 @@ class AppLogger {
 
   static Future<void> _emit(LogLevel msgLevel, String message) async {
     if (msgLevel.index < level.index) return;
-    final prefix = msgLevel == LogLevel.debug ? '[DBG]'
-        : msgLevel == LogLevel.warn ? '[WRN]'
-        : '';
+    final prefix = msgLevel == LogLevel.debug
+        ? '[DBG]'
+        : msgLevel == LogLevel.warn
+            ? '[WRN]'
+            : '';
     await _write(prefix.isEmpty ? message : '$prefix $message');
   }
 
@@ -36,7 +38,8 @@ class AppLogger {
     final line = '[${DateTime.now().toIso8601String()}] $message';
     debugPrint(line);
     try {
-      await _logFile?.writeAsString('$line\n', mode: FileMode.append, flush: true);
+      await _logFile?.writeAsString('$line\n',
+          mode: FileMode.append, flush: true);
     } catch (e) {
       debugPrint('Logging to file failed: $e');
     }

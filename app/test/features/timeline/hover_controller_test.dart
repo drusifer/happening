@@ -25,6 +25,7 @@ class _FakeWindowService extends WindowService {
 }
 
 class _NoopWM extends Mock implements WindowManager {}
+
 class _NoopSR extends Mock implements ScreenRetriever {}
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -41,25 +42,29 @@ void main() {
 
     test('setIntent(expanded) calls expand when collapsed', () {
       ws.isExpandedNotifier.value = false;
-      ctrl.setIntent(ExpansionState.expanded);
+      final accepted = ctrl.setIntent(ExpansionState.expanded);
+      expect(accepted, isTrue);
       expect(ws.calls, ['expand']);
     });
 
     test('setIntent(expanded) does nothing when already expanded', () {
       ws.isExpandedNotifier.value = true;
-      ctrl.setIntent(ExpansionState.expanded);
+      final accepted = ctrl.setIntent(ExpansionState.expanded);
+      expect(accepted, isTrue);
       expect(ws.calls, isEmpty);
     });
 
     test('setIntent(collapsed) calls collapse when expanded', () {
       ws.isExpandedNotifier.value = true;
-      ctrl.setIntent(ExpansionState.collapsed);
+      final accepted = ctrl.setIntent(ExpansionState.collapsed);
+      expect(accepted, isTrue);
       expect(ws.calls, ['collapse']);
     });
 
     test('setIntent(collapsed) does nothing when already collapsed', () {
       ws.isExpandedNotifier.value = false;
-      ctrl.setIntent(ExpansionState.collapsed);
+      final accepted = ctrl.setIntent(ExpansionState.collapsed);
+      expect(accepted, isTrue);
       expect(ws.calls, isEmpty);
     });
   });
@@ -77,30 +82,31 @@ void main() {
 
     test('expand then immediate collapse is suppressed', () async {
       ws.isExpandedNotifier.value = false;
-      ctrl.setIntent(ExpansionState.expanded);
+      expect(ctrl.setIntent(ExpansionState.expanded), isTrue);
       // Spurious collapse arrives before suppression window expires
       ws.isExpandedNotifier.value = true;
-      ctrl.setIntent(ExpansionState.collapsed);
+      expect(ctrl.setIntent(ExpansionState.collapsed), isFalse);
       expect(ws.calls, ['expand']); // collapse was suppressed
     });
 
     test('collapse after suppression window fires normally', () async {
       ws.isExpandedNotifier.value = false;
-      ctrl.setIntent(ExpansionState.expanded);
+      expect(ctrl.setIntent(ExpansionState.expanded), isTrue);
       ws.isExpandedNotifier.value = true;
 
       // Wait past 300ms suppression window
       await Future<void>.delayed(const Duration(milliseconds: 350));
 
-      ctrl.setIntent(ExpansionState.collapsed);
+      expect(ctrl.setIntent(ExpansionState.collapsed), isTrue);
       expect(ws.calls, ['expand', 'collapse']);
     });
 
     test('double expand does not double-call expand', () {
       ws.isExpandedNotifier.value = false;
-      ctrl.setIntent(ExpansionState.expanded);
+      expect(ctrl.setIntent(ExpansionState.expanded), isTrue);
       ws.isExpandedNotifier.value = true;
-      ctrl.setIntent(ExpansionState.expanded); // already expanded
+      expect(
+          ctrl.setIntent(ExpansionState.expanded), isTrue); // already expanded
       expect(ws.calls, ['expand']);
     });
   });

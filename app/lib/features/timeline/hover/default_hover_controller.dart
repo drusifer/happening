@@ -12,11 +12,12 @@ class DefaultHoverController extends HoverController {
   final WindowService _ws;
 
   @override
-  void setIntent(ExpansionState state) {
+  bool setIntent(ExpansionState state) {
     if (state == ExpansionState.expanded) {
       if (!_ws.isExpandedNotifier.value) unawaited(_ws.expand());
     } else {
       if (_ws.isExpandedNotifier.value) unawaited(_ws.collapse());
     }
+    return true;
   }
 }

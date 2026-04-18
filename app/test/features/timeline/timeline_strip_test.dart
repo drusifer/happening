@@ -65,6 +65,30 @@ class _FakeClock extends ClockService {
       );
 }
 
+class _CountingClock extends ClockService {
+  _CountingClock(this.fixedTime);
+  final DateTime fixedTime;
+  final Stream<DateTime> _tick1s = const Stream<DateTime>.empty();
+  final Stream<DateTime> _tick10s = const Stream<DateTime>.empty();
+  int tick1sReads = 0;
+  int tick10sReads = 0;
+
+  @override
+  DateTime get now => fixedTime;
+
+  @override
+  Stream<DateTime> get tick1s {
+    tick1sReads++;
+    return _tick1s;
+  }
+
+  @override
+  Stream<DateTime> get tick10s {
+    tick10sReads++;
+    return _tick10s;
+  }
+}
+
 class _FakeCalendarService extends CalendarController {
   _FakeCalendarService(super.service, {required super.settingsService});
   int fetchCalls = 0;
@@ -288,11 +312,57 @@ void main() {
       expect(fakeWS.expandCalls - baseExpand, equals(1),
           reason: 'expand called once despite jiggle');
 
-      await gesture.moveTo(const Offset(400, 10)); // Move to non-event area → collapse
+      await gesture
+          .moveTo(const Offset(400, 10)); // Move to non-event area → collapse
       await tester.pump(const Duration(seconds: 10));
 
       expect(fakeWS.collapseCalls - baseCollapse, equals(1),
           reason: 'collapse called once on exit');
+      await gesture.removePointer();
+    });
+
+    testWidgets('Linux: suppressed synthetic exit keeps hover card painted',
+        (tester) async {
+      if (!Platform.isLinux) return;
+
+      final fakeWS = _FakeWindowService();
+      final event = CalendarEvent(
+        id: 'e1',
+        title: 'Meeting',
+        startTime: now.add(const Duration(minutes: 30)),
+        endTime: now.add(const Duration(minutes: 60)),
+        color: Colors.blue,
+        calendarEventUrl: null,
+        videoCallUrl: null,
+      );
+
+      await tester.pumpWidget(wrap(
+        TimelineStrip(
+          events: [event],
+          clockService: clock,
+          calendarController: fakeController,
+          settingsService: fakeSettings,
+          windowService: fakeWS,
+          onSignOut: () {},
+        ),
+      ));
+      await tester.pump(Duration.zero);
+
+      final baseCollapse = fakeWS.collapseCalls;
+      final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await gesture.addPointer(location: Offset.zero);
+
+      await gesture.moveTo(const Offset(140, 10));
+      await tester.pump(Duration.zero);
+
+      expect(find.byType(HoverDetailOverlay), findsOneWidget);
+
+      await gesture.moveTo(const Offset(400, 10));
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.byType(HoverDetailOverlay), findsOneWidget);
+      expect(fakeWS.collapseCalls - baseCollapse, equals(0));
+
       await gesture.removePointer();
     });
 
@@ -529,7 +599,8 @@ void main() {
   });
 
   group('Quit button (always-visible)', () {
-    testWidgets('power icon is present on strip with no events', (tester) async {
+    testWidgets('power icon is present on strip with no events',
+        (tester) async {
       final windowService = _FakeWindowService();
       await tester.pumpWidget(wrap(TimelineStrip(
         events: const [],
@@ -544,7 +615,8 @@ void main() {
       expect(find.byIcon(Icons.power_settings_new), findsOneWidget);
     });
 
-    testWidgets('power icon is present when expanded with hover card', (tester) async {
+    testWidgets('power icon is present when expanded with hover card',
+        (tester) async {
       final windowService = _FakeWindowService();
       final event = CalendarEvent(
         id: 'e1',
@@ -663,8 +735,37 @@ void main() {
     });
   });
 
+  group('Clock stream subscriptions', () {
+    testWidgets('does not replace clock streams on parent rebuild',
+        (tester) async {
+      final countingClock = _CountingClock(now);
+      final windowService = _FakeWindowService();
+      TimelineStrip buildTimeline() => TimelineStrip(
+            events: const [],
+            clockService: countingClock,
+            calendarController: fakeController,
+            settingsService: fakeSettings,
+            windowService: windowService,
+            onSignOut: () {},
+            enableAnimations: false,
+          );
+
+      await tester.pumpWidget(wrap(buildTimeline()));
+      await tester.pump(Duration.zero);
+      expect(countingClock.tick10sReads, 1);
+      expect(countingClock.tick1sReads, 1);
+
+      await tester.pumpWidget(wrap(buildTimeline()));
+      await tester.pump(Duration.zero);
+
+      expect(countingClock.tick10sReads, 1);
+      expect(countingClock.tick1sReads, 1);
+    });
+  });
+
   group('Countdown tick1s precision (event boundary)', () {
-    testWidgets('countdown mode switches to untilEnd within 1s of event start', (tester) async {
+    testWidgets('countdown mode switches to untilEnd within 1s of event start',
+        (tester) async {
       // Event starts at `now` — active immediately.
       final activeEvent = CalendarEvent(
         id: 'active',

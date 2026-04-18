@@ -26,6 +26,7 @@ class CalendarController {
   final _eventsController = StreamController<List<CalendarEvent>>.broadcast();
   Timer? _pollTimer;
   List<CalendarEvent>? _lastEvents;
+  Future<void>? _inFlightFetch;
 
   CalendarService get service => _service;
   Stream<List<CalendarEvent>> get events => _eventsController.stream;
@@ -36,11 +37,11 @@ class CalendarController {
   /// Starts the polling loop.
   Future<void> start() async {
     await AppLogger.debug('CalendarController.start() called.');
-    unawaited(_fetch());
+    unawaited(_scheduleFetch());
     _pollTimer?.cancel();
     _pollTimer = Timer.periodic(
       const Duration(minutes: 5),
-      (_) => unawaited(_fetch()),
+      (_) => unawaited(_scheduleFetch()),
     );
   }
 
@@ -51,9 +52,24 @@ class CalendarController {
   }
 
   /// Manually triggers a refresh of the calendar events, bypassing the cache.
-  Future<void> refresh() => _fetch(forceRefresh: true);
+  Future<void> refresh() => _scheduleFetch(forceRefresh: true);
 
-  Future<void> _fetch({bool forceRefresh = false}) async {
+  Future<void> _scheduleFetch({bool forceRefresh = false}) {
+    final inFlight = _inFlightFetch;
+    if (inFlight != null) {
+      unawaited(AppLogger.debug(
+          'CalendarController._fetch() already in flight; ignoring request forceRefresh=$forceRefresh'));
+      return inFlight;
+    }
+
+    final fetch = _fetchOnce(forceRefresh: forceRefresh).whenComplete(() {
+      _inFlightFetch = null;
+    });
+    _inFlightFetch = fetch;
+    return fetch;
+  }
+
+  Future<void> _fetchOnce({bool forceRefresh = false}) async {
     await AppLogger.debug(
         'CalendarController._fetch() started (forceRefresh: $forceRefresh)');
     try {
@@ -67,14 +83,18 @@ class CalendarController {
       };
       await AppLogger.debug('Fetching calendars: $idsToFetch');
 
-      final List<List<CalendarEvent>> results = await Future.wait(
-        idsToFetch.map((id) => _service
-            .fetchEvents(id)
-            .catchError((e) {
-              unawaited(AppLogger.warn('fetchEvents($id) failed: $e'));
-              return <CalendarEvent>[];
-            })),
-      );
+      final results = <List<CalendarEvent>>[];
+      for (final id in idsToFetch) {
+        try {
+          final events = await _service.fetchEvents(id);
+          await AppLogger.debug(
+              'Fetched calendar $id: ${events.length} events');
+          results.add(events);
+        } catch (e) {
+          unawaited(AppLogger.warn('fetchEvents($id) failed: $e'));
+          results.add(<CalendarEvent>[]);
+        }
+      }
 
       final allEvents = results.expand((e) => e).toList();
       final deduped = _dedup(allEvents);

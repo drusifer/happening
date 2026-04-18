@@ -30,7 +30,8 @@ void main() {
 
     test('Rule 3: Mouse inside 2D Rect is Expanded', () {
       final state = ExpansionLogic.determineState(
-        details: const PointerMoveEvent(position: Offset(50, 100)), // Inside rect
+        details:
+            const PointerMoveEvent(position: Offset(50, 100)), // Inside rect
         eventBounds: [
           const EventBounds(left: 40, right: 60, top: 0, bottom: 190)
         ],
@@ -42,7 +43,8 @@ void main() {
 
     test('Rule 3: Mouse below 2D Rect is Collapsed', () {
       final state = ExpansionLogic.determineState(
-        details: const PointerMoveEvent(position: Offset(50, 200)), // Below rect (bottom is 190)
+        details: const PointerMoveEvent(
+            position: Offset(50, 200)), // Below rect (bottom is 190)
         eventBounds: [
           const EventBounds(left: 40, right: 60, top: 0, bottom: 190)
         ],
@@ -54,7 +56,8 @@ void main() {
 
     test('Rule 3: Mouse outside 2D Rect X-bounds is Collapsed', () {
       final state = ExpansionLogic.determineState(
-        details: const PointerMoveEvent(position: Offset(100, 100)), // Outside rect
+        details:
+            const PointerMoveEvent(position: Offset(100, 100)), // Outside rect
         eventBounds: [
           const EventBounds(left: 40, right: 60, top: 0, bottom: 190)
         ],

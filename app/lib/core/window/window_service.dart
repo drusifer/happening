@@ -84,7 +84,8 @@ class WindowService with WidgetsBindingObserver {
 
   Pointer<_AppBarData>? _appBarData;
   late final _SHDart _shAppBarMessage;
-  bool _appBarBusy = false; // guards against concurrent _reserveCollapsedSpace calls
+  bool _appBarBusy =
+      false; // guards against concurrent _reserveCollapsedSpace calls
 
   /// Notifier for the window's expansion state.
   final isExpandedNotifier = ValueNotifier<bool>(false);
@@ -155,12 +156,12 @@ class WindowService with WidgetsBindingObserver {
         'WindowService._onDisplayChanged: dpr=$_dpr→$newDpr width=$_screenWidth→$newWidth isExpanded=${isExpandedNotifier.value}');
 
     if (newDpr == _dpr && newWidth == _screenWidth) {
-      await AppLogger.debug('WindowService._onDisplayChanged: no change, skipping');
+      await AppLogger.debug(
+          'WindowService._onDisplayChanged: no change, skipping');
       return;
     }
 
-    await AppLogger.debug(
-        'WindowService: display CHANGED — applying resize');
+    await AppLogger.debug('WindowService: display CHANGED — applying resize');
     _dpr = newDpr;
     _screenWidth = newWidth;
 
@@ -214,14 +215,16 @@ class WindowService with WidgetsBindingObserver {
     // push the window below the reserved band. Collapse before touching the
     // AppBar registration so the window fits inside the band during negotiation.
     await _doCollapse();
-    unawaited(AppLogger.debug('WindowService: reassertAppBar() collapsed, running ABM cycle'));
+    unawaited(AppLogger.debug(
+        'WindowService: reassertAppBar() collapsed, running ABM cycle'));
     _shAppBarMessage(_abmRemove, _appBarData!);
     _shAppBarMessage(_abmNew, _appBarData!);
     await _reserveCollapsedSpace();
     // rcTop is trusted post-SETPOS for ABE_TOP. Force window back into the
     // band in case Windows nudged it during work-area contraction.
     final double rcTop = _appBarData!.ref.rcTop / _dpr;
-    unawaited(AppLogger.debug('WindowService: reassertAppBar() rcTop=$rcTop, repositioning'));
+    unawaited(AppLogger.debug(
+        'WindowService: reassertAppBar() rcTop=$rcTop, repositioning'));
     await _wm.setPosition(Offset(0, rcTop));
     await _doCollapse();
     unawaited(AppLogger.debug('WindowService: reassertAppBar() done'));
@@ -240,9 +243,11 @@ class WindowService with WidgetsBindingObserver {
       if (!Platform.isWindows) {
         // NOTE: calls _doCollapse() directly, bypassing _gate — concurrent with
         // gated collapse() calls from TimelineStrip.initState(). [DBG WATCH]
-        await AppLogger.debug('WindowService.updateHeights: calling _doCollapse (bypass gate)');
+        await AppLogger.debug(
+            'WindowService.updateHeights: calling _doCollapse (bypass gate)');
         await _doCollapse();
-        await AppLogger.debug('WindowService.updateHeights: _doCollapse complete');
+        await AppLogger.debug(
+            'WindowService.updateHeights: _doCollapse complete');
       }
     }
   }

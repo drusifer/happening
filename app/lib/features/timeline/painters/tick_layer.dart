@@ -15,6 +15,7 @@ class TickLayer implements TimelineLayer {
     required this.tickColor,
     required this.backgroundColor,
     required this.fontSize,
+    required this.alwaysUse24HourFormat,
   });
 
   final TimelineLayout layout;
@@ -25,6 +26,14 @@ class TickLayer implements TimelineLayer {
   final Color tickColor;
   final Color backgroundColor;
   final double fontSize;
+  final bool alwaysUse24HourFormat;
+
+  String _formatHourLabel(DateTime time) {
+    return formatTimelineHourTickLabel(
+      time,
+      alwaysUse24HourFormat: alwaysUse24HourFormat,
+    );
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -47,11 +56,11 @@ class TickLayer implements TimelineLayer {
             Offset(x, 0), Offset(x, size.height), tickPaint..strokeWidth = 2.0);
 
         if ((x - nowIndicatorX).abs() > suppressionThreshold) {
-          final h = current.hour;
-          final label =
-              '${h % 12 == 0 ? 12 : h % 12}${h < 12 || h >= 24 ? 'am' : 'pm'}';
           TimelinePaintUtils.paintText(
-            canvas, label, x + 4, 1,
+            canvas,
+            _formatHourLabel(current),
+            x + 4,
+            1,
             fontSize: fontSize * 10 / 11,
             color: tickColor.withValues(alpha: 1.0),
             backgroundColor: backgroundColor,
@@ -67,7 +76,10 @@ class TickLayer implements TimelineLayer {
               tickPaint..strokeWidth = 0.75);
           if ((tx - nowIndicatorX).abs() > suppressionThreshold * 0.6) {
             TimelinePaintUtils.paintText(
-              canvas, ':30', tx + 2, 1,
+              canvas,
+              formatTimelineHalfHourTickLabel(),
+              tx + 2,
+              1,
               fontSize: fontSize * 8 / 11,
               color: tickColor.withValues(alpha: 0.85),
               backgroundColor: backgroundColor,
@@ -103,3 +115,18 @@ class TickLayer implements TimelineLayer {
     }
   }
 }
+
+String formatTimelineHourTickLabel(
+  DateTime time, {
+  required bool alwaysUse24HourFormat,
+}) {
+  if (alwaysUse24HourFormat) {
+    return time.hour.toString().padLeft(2, '0');
+  }
+
+  final hour = time.hour % 12 == 0 ? 12 : time.hour % 12;
+  final suffix = time.hour < 12 ? 'am' : 'pm';
+  return '$hour$suffix';
+}
+
+String formatTimelineHalfHourTickLabel() => '30';

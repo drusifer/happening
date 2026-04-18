@@ -133,8 +133,7 @@ void main() {
 
     // ── S4-19: Gap Labels ─────────────────────────────────────────────────
     group('gapsBetween', () {
-      CalendarEvent evt(String id, int startHour, int endHour) =>
-          CalendarEvent(
+      CalendarEvent evt(String id, int startHour, int endHour) => CalendarEvent(
             id: id,
             title: id,
             startTime: DateTime(2026, 2, 26, startHour),

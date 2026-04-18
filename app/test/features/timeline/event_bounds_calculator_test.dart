@@ -61,8 +61,8 @@ void main() {
 
       expect(bounds['e1'], isNotNull);
       final b = bounds['e1']!;
-      expect(b.top, 55);          // starts at strip bottom
-      expect(b.bottom, 175);      // fixed card zone
+      expect(b.top, 55); // starts at strip bottom
+      expect(b.bottom, 175); // fixed card zone
       expect(b.left, greaterThanOrEqualTo(4.0)); // clamped
     });
 

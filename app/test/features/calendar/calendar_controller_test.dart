@@ -1,4 +1,5 @@
 // Hermetic integration tests for CalendarController (S4-12).
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -46,12 +47,59 @@ class _PerCalendarFakeService implements CalendarService {
 
   @override
   Future<List<CalendarEvent>> fetchEvents(String calendarId) async {
-    if (throwingIds.contains(calendarId)) throw Exception('cal $calendarId failed');
+    if (throwingIds.contains(calendarId))
+      throw Exception('cal $calendarId failed');
     return eventsForGoodCals;
   }
 
   @override
   Future<List<CalendarEvent>> fetchTodayEvents() async => eventsForGoodCals;
+}
+
+class _BlockingCalendarService implements CalendarService {
+  final _completers = <Completer<List<CalendarEvent>>>[];
+  final requestedCalendarIds = <String>[];
+  int fetchCalls = 0;
+
+  int get pendingCalls => _completers.length;
+
+  void completeNext(List<CalendarEvent> events) {
+    _completers.removeAt(0).complete(events);
+  }
+
+  @override
+  Future<List<CalendarMeta>> fetchCalendarList() async => [];
+
+  @override
+  Future<List<CalendarEvent>> fetchEvents(String calendarId) {
+    fetchCalls++;
+    requestedCalendarIds.add(calendarId);
+    final completer = Completer<List<CalendarEvent>>();
+    _completers.add(completer);
+    return completer.future;
+  }
+
+  @override
+  Future<List<CalendarEvent>> fetchTodayEvents() => fetchEvents('primary');
+}
+
+class _MappedCalendarService implements CalendarService {
+  _MappedCalendarService(this.eventsByCalendarId);
+
+  final Map<String, List<CalendarEvent>> eventsByCalendarId;
+  final requestedCalendarIds = <String>[];
+
+  @override
+  Future<List<CalendarMeta>> fetchCalendarList() async => [];
+
+  @override
+  Future<List<CalendarEvent>> fetchEvents(String calendarId) async {
+    requestedCalendarIds.add(calendarId);
+    return eventsByCalendarId[calendarId] ?? [];
+  }
+
+  @override
+  Future<List<CalendarEvent>> fetchTodayEvents() => fetchEvents('primary');
 }
 
 // ── Fixture ───────────────────────────────────────────────────────────────────
@@ -67,6 +115,9 @@ CalendarEvent _event(String id) => CalendarEvent(
       calendarEventUrl: null,
       videoCallUrl: null,
     );
+
+CalendarEvent _calendarEvent(String id, String calendarId) =>
+    _event(id).copyWith(calendarId: calendarId, calendarName: calendarId);
 
 void main() {
   group('CalendarController', () {
@@ -149,6 +200,61 @@ void main() {
       expect(result, hasLength(1));
     });
 
+    test('overlapping refresh calls are ignored and return active future',
+        () async {
+      final blockingService = _BlockingCalendarService();
+      final ctrl = CalendarController(blockingService);
+      addTearDown(ctrl.dispose);
+
+      final firstRefresh = ctrl.refresh();
+      await Future<void>.delayed(Duration.zero);
+      expect(blockingService.fetchCalls, 1);
+      expect(blockingService.pendingCalls, 1);
+
+      final secondRefresh = ctrl.refresh();
+      final thirdRefresh = ctrl.refresh();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(blockingService.fetchCalls, 1);
+      blockingService.completeNext([_event('e1')]);
+      await Future<void>.delayed(Duration.zero);
+
+      await Future.wait([firstRefresh, secondRefresh, thirdRefresh]);
+      expect(blockingService.fetchCalls, 1);
+    });
+
+    test('selected calendars are fetched sequentially after primary', () async {
+      final tmp = Directory.systemTemp.createTempSync();
+      final settingsSvc = SettingsService(directory: tmp);
+      await settingsSvc.load();
+      await settingsSvc
+          .update(const AppSettings(selectedCalendarIds: ['secondary']));
+
+      final blockingService = _BlockingCalendarService();
+      final ctrl =
+          CalendarController(blockingService, settingsService: settingsSvc);
+      addTearDown(ctrl.dispose);
+
+      final refresh = ctrl.refresh();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(blockingService.fetchCalls, 1);
+      expect(blockingService.pendingCalls, 1);
+      expect(blockingService.requestedCalendarIds, ['primary']);
+
+      blockingService.completeNext([_event('primary-event')]);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(blockingService.fetchCalls, 2);
+      expect(blockingService.pendingCalls, 1);
+      expect(blockingService.requestedCalendarIds, ['primary', 'secondary']);
+
+      blockingService.completeNext([_event('secondary-event')]);
+      await refresh;
+
+      expect(blockingService.fetchCalls, 2);
+    });
+
     // ── Error handling ────────────────────────────────────────────────────────
 
     test('service error on start → stream emits empty list to unblock UI',
@@ -164,7 +270,9 @@ void main() {
       expect(controller.lastEvents, isEmpty);
     });
 
-    test('service error on refresh → stream emits empty list (per-cal isolation)', () async {
+    test(
+        'service error on refresh → stream emits empty list (per-cal isolation)',
+        () async {
       // With catchError per-calendar, a failing fetch returns [] for that calendar
       // rather than propagating — so the combined result IS emitted (as []).
       fakeService.mockEvents = [_event('e1')];
@@ -210,18 +318,21 @@ void main() {
       expect(fakeService.fetchCalls, 1);
     });
 
-    test('per-calendar error: failing calendar does not block successful ones', () async {
+    test('per-calendar error: failing calendar does not block successful ones',
+        () async {
       // 'primary' succeeds, 'secondary' throws — stream must still emit primary events.
       final tmp = Directory.systemTemp.createTempSync();
       final settingsSvc = SettingsService(directory: tmp);
       await settingsSvc.load();
-      await settingsSvc.update(const AppSettings(selectedCalendarIds: ['secondary']));
+      await settingsSvc
+          .update(const AppSettings(selectedCalendarIds: ['secondary']));
 
       final isolationService = _PerCalendarFakeService(
         throwingIds: {'secondary'},
         eventsForGoodCals: [_event('primary-event')],
       );
-      final ctrl = CalendarController(isolationService, settingsService: settingsSvc);
+      final ctrl =
+          CalendarController(isolationService, settingsService: settingsSvc);
       addTearDown(ctrl.dispose);
 
       final nextEmission = ctrl.events.first;
@@ -247,6 +358,30 @@ void main() {
       await controller2.refresh();
       // Should fetch 'primary' (Set default) and 'secondary' (selected)
       expect(fakeService.fetchCalls, 2);
+    });
+
+    test('dedup removes same recurring event id from selected calendars',
+        () async {
+      final tmp = Directory.systemTemp.createTempSync();
+      final settingsSvc = SettingsService(directory: tmp);
+      await settingsSvc.load();
+      await settingsSvc
+          .update(const AppSettings(selectedCalendarIds: ['secondary']));
+
+      final mappedService = _MappedCalendarService({
+        'primary': [_calendarEvent('same-id', 'primary')],
+        'secondary': [_calendarEvent('same-id', 'secondary')],
+      });
+      final ctrl =
+          CalendarController(mappedService, settingsService: settingsSvc);
+      addTearDown(ctrl.dispose);
+
+      final nextEmission = ctrl.events.first;
+      await ctrl.refresh();
+      final result = await nextEmission;
+
+      expect(mappedService.requestedCalendarIds, ['primary', 'secondary']);
+      expect(result.map((e) => '${e.calendarId}:${e.id}'), ['primary:same-id']);
     });
   });
 }

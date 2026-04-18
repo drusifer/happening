@@ -14,7 +14,16 @@ CalendarEvent _event({String? videoCallUrl, String? calendarEventUrl}) =>
       videoCallUrl: videoCallUrl,
     );
 
-Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
+Widget _wrap(
+  Widget child, {
+  bool alwaysUse24HourFormat = false,
+}) =>
+    MaterialApp(
+      home: MediaQuery(
+        data: MediaQueryData(alwaysUse24HourFormat: alwaysUse24HourFormat),
+        child: Scaffold(body: child),
+      ),
+    );
 
 void main() {
   group('HoverDetailOverlay', () {
@@ -23,20 +32,27 @@ void main() {
       expect(find.text('Team Standup'), findsOneWidget);
     });
 
-    testWidgets('shows formatted time range', (tester) async {
+    testWidgets('uses localized 12-hour time range by default', (tester) async {
       await tester.pumpWidget(_wrap(HoverDetailOverlay(event: _event())));
+      expect(find.text('10:00 AM – 10:30 AM'), findsOneWidget);
+    });
+
+    testWidgets('uses platform 24-hour time range when requested',
+        (tester) async {
+      await tester.pumpWidget(_wrap(
+        HoverDetailOverlay(event: _event()),
+        alwaysUse24HourFormat: true,
+      ));
       expect(find.text('10:00 – 10:30'), findsOneWidget);
     });
 
-    testWidgets('shows JOIN button when videoCallUrl present',
-        (tester) async {
+    testWidgets('shows JOIN button when videoCallUrl present', (tester) async {
       await tester.pumpWidget(_wrap(HoverDetailOverlay(
           event: _event(videoCallUrl: 'https://meet.google.com/abc'))));
       expect(find.text('JOIN'), findsOneWidget);
     });
 
-    testWidgets('hides JOIN button when videoCallUrl absent',
-        (tester) async {
+    testWidgets('hides JOIN button when videoCallUrl absent', (tester) async {
       await tester.pumpWidget(_wrap(HoverDetailOverlay(event: _event())));
       expect(find.text('JOIN'), findsNothing);
     });
