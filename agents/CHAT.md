@@ -744,3 +744,9 @@ make[1]: *** [Makefile:17: test] Error 1
 ---
 [<small>2026-04-17 21:54:19</small>] [**Neo**]->[**all**] *swe impl*:
  Timeline strip compact time labels done: hour ticks use 12/24h preference (11pm/23), half ticks show 30. Golden refreshed; tests PASS 243/243.
+
+---
+[<small>2026-04-17 22:16:16</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make dist-linux | /home/drusifer/Projects/happening/build/build.out
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:94: warning: ignoring old recipe for target 'test'
