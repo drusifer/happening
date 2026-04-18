@@ -1,5 +1,17 @@
 # Morpheus Context
 
+## Calendar Fetch Threading Architecture — 2026-04-17
+- User asked for architecture before implementation: fetch calendars through a queue, but do not queue refresh requests while a refresh/fetch is pending.
+- Binding decision: two-level concurrency model.
+  - Controller-level single-flight via `_inFlightFetch`.
+  - Per-calendar sequential queue inside the active fetch.
+- `refresh()` remains the completion signal: ignored refresh calls return the currently active `Future<void>`.
+- `events` stream remains the data signal: emit once after queued calendar fetches complete and are deduped.
+- No `_queuedForceRefresh`, no `while (true)`, no `Future.wait` fan-out for selected calendars.
+- Details documented in `agents/morpheus.docs/CALENDAR_FETCH_THREADING_ARCH_2026-04-17T19:59.md`.
+- Implementation review complete: approved. `CalendarController` now uses `_inFlightFetch` for single-flight, a sequential `for`/`await` calendar loop, and tests for ignored refreshes plus selected-calendar queue order.
+- Full suite remains red from unrelated window binding initialization failures; calendar threading UAT passed for scope.
+
 ## Active: Linux Black Screen Fix — 2026-04-15
 
 ### Root Cause (CONFIRMED)

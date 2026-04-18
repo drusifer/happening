@@ -236,4 +236,3 @@ class _HappeningAppState extends State<HappeningApp> {
     );
   }
 }
-

@@ -17,7 +17,7 @@ class LinuxHoverController extends HoverController {
   Timer? _suppressTimer;
 
   @override
-  void setIntent(ExpansionState state) {
+  bool setIntent(ExpansionState state) {
     if (state == ExpansionState.expanded) {
       if (!_ws.isExpandedNotifier.value) {
         // Start suppression only on actual expand transition, not on every
@@ -30,9 +30,11 @@ class LinuxHoverController extends HoverController {
         );
         unawaited(_ws.expand());
       }
+      return true;
     } else {
-      if (_suppressTimer != null) return; // drop spurious collapse
+      if (_suppressTimer != null) return false; // drop spurious collapse
       if (_ws.isExpandedNotifier.value) unawaited(_ws.collapse());
+      return true;
     }
   }
 

@@ -23,14 +23,18 @@ class HoverDetailOverlay extends StatelessWidget {
   final CalendarEvent event;
   final double width;
 
-  static String _fmt(DateTime t) =>
-      '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
-
   String _stripHtml(String html) {
     return html
         .replaceAll(RegExp(r'<[^>]*>|&nbsp;'), ' ')
         .replaceAll(RegExp(r'\s+'), ' ')
         .trim();
+  }
+
+  String _fmt(BuildContext context, DateTime t) {
+    return MaterialLocalizations.of(context).formatTimeOfDay(
+      TimeOfDay.fromDateTime(t),
+      alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context),
+    );
   }
 
   static const _kShadows = [
@@ -110,7 +114,7 @@ class HoverDetailOverlay extends StatelessWidget {
             ),
             const SizedBox(height: 2),
             Text(
-              '${_fmt(event.startTime)} – ${_fmt(event.endTime)}',
+              '${_fmt(context, event.startTime)} – ${_fmt(context, event.endTime)}',
               style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 12, // S5-FIX: Increased from 12

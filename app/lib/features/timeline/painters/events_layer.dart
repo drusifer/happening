@@ -44,14 +44,13 @@ class EventsLayer implements TimelineLayer {
 
       final x = layout.xForTime(event.startTime, now);
       final endX = layout.xForTime(event.endTime, now);
-      final w = (endX - x).abs().clamp(event.isTask ? 0.0 : 12.0, double.infinity);
+      final w =
+          (endX - x).abs().clamp(event.isTask ? 0.0 : 12.0, double.infinity);
 
       final isHovered = event.id == hoveredEventId;
       final isColliding = collidingIds.contains(event.id);
 
-      Color color = event.isCompleted
-          ? const Color(0xFF51B749)
-          : event.color;
+      Color color = event.isCompleted ? const Color(0xFF51B749) : event.color;
 
       final double targetOpacity = isHovered ? 1.0 : (isColliding ? 0.5 : 0.82);
       color = color.withValues(alpha: targetOpacity);
@@ -59,7 +58,11 @@ class EventsLayer implements TimelineLayer {
       if (event.isTask) {
         final taskEndX = event.endTime.isAfter(event.startTime) ? endX : x;
         TimelinePaintUtils.paintTaskMarker(
-          canvas, x, taskEndX, top + blockHeight * 0.4, color,
+          canvas,
+          x,
+          taskEndX,
+          top + blockHeight * 0.4,
+          color,
           fontSize: fontSize,
         );
       } else {
@@ -109,7 +112,12 @@ class EventsLayer implements TimelineLayer {
 
         if (labelWidth > 10) {
           TimelinePaintUtils.paintEventLabel(
-            canvas, event.title, labelX, top, labelWidth, blockHeight,
+            canvas,
+            event.title,
+            labelX,
+            top,
+            labelWidth,
+            blockHeight,
             fontSize: fontSize,
             backgroundColor: backgroundColor,
             isTask: event.isTask,
@@ -125,7 +133,10 @@ class EventsLayer implements TimelineLayer {
           : '${gap.minutes}m';
       final labelFontSize = fontSize * 9 / 11;
       TimelinePaintUtils.paintText(
-        canvas, label, gap.centerX, size.height - labelFontSize - 12.0,
+        canvas,
+        label,
+        gap.centerX,
+        size.height - labelFontSize - 12.0,
         fontSize: labelFontSize,
         color: tickColor.withValues(alpha: 1.0),
         backgroundColor: backgroundColor,

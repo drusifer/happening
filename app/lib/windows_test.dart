@@ -64,7 +64,8 @@ final class _AppBarData extends Struct {
 
 // ── SHAppBarMessage via shell32.dll ──────────────────────────────────────────
 
-typedef _SHNative = IntPtr Function(Uint32 dwMessage, Pointer<_AppBarData> pData);
+typedef _SHNative = IntPtr Function(
+    Uint32 dwMessage, Pointer<_AppBarData> pData);
 typedef _SHDart = int Function(int dwMessage, Pointer<_AppBarData> pData);
 
 final _shAppBarMessage = DynamicLibrary.open('shell32.dll')
@@ -205,7 +206,8 @@ class __WindowsResizeWidgetState extends State<_WindowsResizeWidget> {
         height: _isExpanded ? _expandedHeight : _collapsedHeight,
         color: color,
         child: Center(
-          child: Text(text, style: const TextStyle(color: Colors.white, fontSize: 24)),
+          child: Text(text,
+              style: const TextStyle(color: Colors.white, fontSize: 24)),
         ),
       ),
     );

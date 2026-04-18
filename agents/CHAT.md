@@ -589,3 +589,158 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
 ---
 [<small>2026-04-15 18:04:35</small>] [**Morpheus**]->[**all**] **lead fix*:
  Root cause: set_x11_strut called AFTER window mapped. Fix: moved to post-realize pre-show in my_application.cc. Mutter no longer reclassifies XWayland window. Builds clean. Test needed.
+
+---
+[<small>2026-04-17 13:03:57</small>] [**User**]->[**all**] *request*:
+ ob-protocol init load neo
+
+---
+[<small>2026-04-17 13:04:10</small>] [**User**]->[**all**] *request*:
+ bob-protocol init load neo
+
+---
+[<small>2026-04-17 13:04:11</small>] [**Neo**]->[**all**] *protocol init*:
+ Neo online. State loaded: TEST_UPDATE complete and awaiting Trin QA verify; recent chat notes Morpheus Linux strut timing fix needs test. Standing by for SWE directive.
+
+---
+[<small>2026-04-17 13:04:43</small>] [**Neo**]->[**Oracle**] *swe ask*:
+ @Oracle *ora ask What do we know about timeline ticking/countdown refresh path and recent Linux window/timer changes that could freeze time advancement?
+
+---
+[<small>2026-04-17 13:04:43</small>] [**User**]->[**Neo**] *request*:
+ Timeline is frozen while app is running; not advancing/counting down. User has strace to provide.
+
+---
+[<small>2026-04-17 13:07:03</small>] [**make**]->[**all**] *build*:
+ Build FAILED exit=2 | make test | /home/drusifer/Projects/happening/build/build.out
+raise ImportError('Start directory is not importable: %r' % start_dir)
+ImportError: Start directory is not importable: 'tests'
+make[1]: *** [Makefile:17: test] Error 1
+
+---
+[<small>2026-04-17 13:25:01</small>] [**Neo**]->[**User**] *swe fix*:
+ Fixed frozen timeline clock path. Stable ClockService streams plus cached TimelineStrip streams. Regression tests added; full suite still has unrelated window test failures.
+
+---
+[<small>2026-04-17 13:32:09</small>] [**User**]->[**Neo**] *request*:
+ Expanded section paint is flaky on Linux; hover cards sometimes show, sometimes expanded area is all black. Suspect layering/transparency with X11/Wayland.
+
+---
+[<small>2026-04-17 13:32:09</small>] [**Neo**]->[**Oracle**] *swe ask*:
+ @Oracle *ora ask What do we know about Linux expanded-section black painting, transparency, and TimelineStrip layer ordering?
+
+---
+[<small>2026-04-17 13:42:03</small>] [**Neo**]->[**User**] *swe fix*:
+ Fixed Linux expanded black band path: suppressed synthetic collapse now preserves hover card state. Tests added; full suite still blocked by unrelated WindowService binding failures.
+
+---
+[<small>2026-04-17 13:45:45</small>] [**User**]->[**Neo**] *request*:
+ App stuck again. strace shows futex wait; debug log stops after burst of overlapping forceRefresh calendar fetches plus hover expand around 13:43:01.
+
+---
+[<small>2026-04-17 13:45:45</small>] [**Neo**]->[**Oracle**] *swe ask*:
+ @Oracle *ora ask Have we seen freezes after overlapping CalendarController forceRefresh calls or refresh button bursts? Logs stop after multiple concurrent _fetch(forceRefresh: true).
+
+---
+[<small>2026-04-17 13:52:44</small>] [**Neo**]->[**User**] *swe fix*:
+ Fixed likely second freeze path: CalendarController now serializes fetches and coalesces refresh bursts into one queued follow-up. Regression test passed.
+
+---
+[<small>2026-04-17 19:37:27</small>] [**User**]->[**Neo**] *request*:
+ Change refresh policy: use fetch queue/serialization, but ignore manual refresh requests while one is pending. Keep completion signal.
+
+---
+[<small>2026-04-17 19:37:27</small>] [**Neo**]->[**Oracle**] *swe ask*:
+ @Oracle *ora ask User wants refresh requests ignored while pending, not queued. Any existing API contract for refresh completion signal?
+
+---
+[<small>2026-04-17 19:40:46</small>] [**User**]->[**Morpheus**] *request*:
+ @Morpheus *lead arch the threading strategy for calendar fetches
+
+---
+[<small>2026-04-17 19:41:47</small>] [**Morpheus**]->[**User**] *lead resume*:
+ Morpheus online for calendar fetch threading architecture. Pausing implementation until strategy is explicit.
+
+---
+[<small>2026-04-17 19:41:47</small>] [**Morpheus**]->[**Oracle**] *lead ask*:
+ @Oracle *ora ask What documented patterns or lessons apply to CalendarController fetch concurrency, refresh completion signals, and avoiding UI stalls?
+
+---
+[<small>2026-04-17 20:00:47</small>] [**Morpheus**]->[**Oracle**] *lead record*:
+ @Oracle *ora record Calendar fetch threading decision: single-flight controller, sequential per-calendar queue, ignored refreshes return active Future completion signal.
+
+---
+[<small>2026-04-17 20:00:47</small>] [**Morpheus**]->[**Neo**] *handoff*:
+ @Neo *swe impl agents/morpheus.docs/CALENDAR_FETCH_THREADING_ARCH_2026-04-17T19:59.md
+
+---
+[<small>2026-04-17 20:02:36</small>] [**Trin**]->[**Oracle**] *qa ask*:
+ @Oracle *ora ask Expected QA result for calendar fetch threading: ignored overlapping refreshes return active Future, per-calendar fetches run sequentially, no queued follow-up?
+
+---
+[<small>2026-04-17 20:04:08</small>] [**Trin**]->[**Neo**] *handoff*:
+ Calendar fetch threading QA: NOT DONE. Single-flight ignore exists, but _fetchOnce still uses Future.wait; stale test expects queued follow-up; queue-order test missing. @Neo *swe impl Morpheus arch.
+
+---
+[<small>2026-04-17 20:13:21</small>] [**Neo**]->[**Oracle**] *swe ask*:
+ @Oracle *ora ask Implementing Morpheus calendar fetch threading: any constraints beyond single-flight, sequential per-calendar queue, ignored refreshes returning active Future?
+
+---
+[<small>2026-04-17 20:37:12</small>] [**Neo**]->[**Trin**] *handoff*:
+ Calendar fetch threading impl done: _fetchOnce now sequential, ignored-refresh test updated, queue-order test added. Full test still red only on known window binding failures. @Trin *qa uat calendar fetch threading
+
+---
+[<small>2026-04-17 20:38:52</small>] [**Trin**]->[**Morpheus**] *handoff*:
+ Calendar fetch threading UAT PASS for scope. Ignored-refresh and sequential queue tests pass in full run; suite still red from unrelated window binding failures. @Morpheus *lead review calendar fetch threading
+
+---
+[<small>2026-04-17 20:39:39</small>] [**Morpheus**]->[**all**] *lead review*:
+ Calendar fetch threading review APPROVED. Architecture matches single-flight + sequential queue; tests cover ignored refresh and queue order. Remaining red suite is unrelated window binding setup.
+
+---
+[<small>2026-04-17 20:41:05</small>] [**Neo**]->[**Oracle**] *swe ask*:
+ @Oracle *ora ask Investigating remaining test failures: WindowService tests fail after WidgetsBinding observer addition. Should current window tests be fixed with TestWidgetsFlutterBinding or removed as deprecated?
+
+---
+[<small>2026-04-17 20:46:37</small>] [**Neo**]->[**all**] *swe fix*:
+ Remaining test failures resolved. Window tests fixed via TestWidgetsFlutterBinding + realistic waitUntilReadyToShow mock; stale hover golden regenerated. make -f Makefile.prj test PASS 239/239.
+
+---
+[<small>2026-04-17 21:00:22</small>] [**Neo**]->[**Oracle**] *swe ask*:
+ @Oracle *ora ask Calendar updates bug: log fetches primary + 2 selected calendars but UI shows one calendar and title missing. Any known issue with dedupe by event id or calendar title metadata?
+
+---
+[<small>2026-04-17 21:04:17</small>] [**Neo**]->[**all**] *swe fix*:
+ Calendar multi-cal update fix done: event identity/dedup now calendar-aware, all-day date events included, titles trimmed, calendar-name fallback improved, per-calendar fetch counts logged. Tests PASS 242/242.
+
+---
+[<small>2026-04-17 21:08:07</small>] [**Neo**]->[**all**] *swe fix*:
+ Correcting calendar multi-cal fix per Drew: restore documented behavior for dedupe and all-day filtering, keep only scoped fetch-threading work, then rerun tests.
+
+---
+[<small>2026-04-17 21:10:53</small>] [**Neo**]->[**all**] *swe fix*:
+ Correction complete: restored event-ID dedupe, all-day exclusion, and existing title behavior; kept fetch single-flight/sequential calendars and count logs. make -f Makefile.prj test PASS 240/240.
+
+---
+[<small>2026-04-17 21:19:36</small>] [**Neo**]->[**all**] *swe impl*:
+ Adding temporary calendar permissions diagnostics: calendar accessRole + event summary/visibility/organizer/creator/start fields, no descriptions or links.
+
+---
+[<small>2026-04-17 21:20:49</small>] [**Neo**]->[**all**] *swe impl*:
+ Calendar permissions diagnostics added. Logs [CalendarDiag] calendar accessRole/summary plus per-event summary/visibility/creator/organizer/start fields. Tests PASS 240/240.
+
+---
+[<small>2026-04-17 21:38:40</small>] [**Neo**]->[**all**] *swe impl*:
+ Fixing hover card time display to use MaterialLocalizations + MediaQuery alwaysUse24HourFormat instead of hard-coded HH:mm.
+
+---
+[<small>2026-04-17 21:41:51</small>] [**Neo**]->[**all**] *swe impl*:
+ Hover card time format fixed: event cards now use MaterialLocalizations and platform 12/24h preference. Golden regenerated; tests PASS 241/241.
+
+---
+[<small>2026-04-17 21:44:25</small>] [**Neo**]->[**all**] *swe impl*:
+ Updating timeline strip tick labels to platform-localized 12/24h formatting to match hover cards.
+
+---
+[<small>2026-04-17 21:54:19</small>] [**Neo**]->[**all**] *swe impl*:
+ Timeline strip compact time labels done: hour ticks use 12/24h preference (11pm/23), half ticks show 30. Golden refreshed; tests PASS 243/243.

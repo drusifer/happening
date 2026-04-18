@@ -156,8 +156,7 @@ class _SettingsPanelState extends State<SettingsPanel> {
                   values: AppTheme.values,
                   current: settings.theme,
                   fontSize: baseSize * 0.65,
-                  onSelect: (val) =>
-                      widget.settingsService.update(AppSettings(
+                  onSelect: (val) => widget.settingsService.update(AppSettings(
                     fontSize: settings.fontSize,
                     theme: val,
                     timeWindowHours: settings.timeWindowHours,
@@ -176,8 +175,7 @@ class _SettingsPanelState extends State<SettingsPanel> {
                   values: const [8, 12, 24],
                   current: settings.timeWindowHours,
                   fontSize: baseSize * 0.65,
-                  onSelect: (val) =>
-                      widget.settingsService.update(AppSettings(
+                  onSelect: (val) => widget.settingsService.update(AppSettings(
                     fontSize: settings.fontSize,
                     theme: settings.theme,
                     timeWindowHours: val,
@@ -206,16 +204,13 @@ class _SettingsPanelState extends State<SettingsPanel> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 _SectionHeader(
-                    theme: theme,
-                    title: 'Font Size',
-                    fontSize: baseSize * 0.7),
+                    theme: theme, title: 'Font Size', fontSize: baseSize * 0.7),
                 const SizedBox(height: 6),
                 _PickerRow<FontSize>(
                   values: FontSize.values,
                   current: settings.fontSize,
                   fontSize: baseSize * 0.65,
-                  onSelect: (val) =>
-                      widget.settingsService.update(AppSettings(
+                  onSelect: (val) => widget.settingsService.update(AppSettings(
                     fontSize: val,
                     theme: settings.theme,
                     timeWindowHours: settings.timeWindowHours,
@@ -254,8 +249,7 @@ class _SettingsPanelState extends State<SettingsPanel> {
                             child: SizedBox(
                               width: 12,
                               height: 12,
-                              child:
-                                  CircularProgressIndicator(strokeWidth: 2),
+                              child: CircularProgressIndicator(strokeWidth: 2),
                             ),
                           )
                         : ListView.separated(
@@ -303,9 +297,8 @@ class _SettingsPanelState extends State<SettingsPanel> {
                                             color: theme
                                                 .textTheme.bodyMedium?.color
                                                 ?.withValues(
-                                                    alpha: isSelected
-                                                        ? 1.0
-                                                        : 0.6),
+                                                    alpha:
+                                                        isSelected ? 1.0 : 0.6),
                                             fontSize: baseSize * 0.65,
                                           ),
                                           maxLines: 1,
@@ -315,8 +308,7 @@ class _SettingsPanelState extends State<SettingsPanel> {
                                       if (isSelected)
                                         Icon(Icons.check,
                                             size: baseSize * 0.65,
-                                            color:
-                                                theme.colorScheme.primary),
+                                            color: theme.colorScheme.primary),
                                     ],
                                   ),
                                 ),

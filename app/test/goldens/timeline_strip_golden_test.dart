@@ -68,7 +68,8 @@ void main() {
   final now = DateTime(2026, 2, 27, 10, 0);
   final clock = _FakeClock(now);
   final settings = _FakeSettings();
-  final calendar = CalendarController(_MockCalendarService(), settingsService: settings);
+  final calendar =
+      CalendarController(_MockCalendarService(), settingsService: settings);
 
   group('TimelineStrip Goldens', () {
     testWidgets('S4-31: hover card follows mouse X (BUG-13 regression)',

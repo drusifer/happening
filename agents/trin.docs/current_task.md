@@ -1,5 +1,38 @@
 # Current Task
 
+## Calendar Fetch Threading UAT — 2026-04-17
+**Status**: PASSED for scope / handed to Morpheus
+**Progress**: 100%
+
+### Completed
+- [x] Reviewed Neo implementation.
+- [x] Confirmed `_inFlightFetch` ignored-refresh completion signal.
+- [x] Confirmed `Future.wait` calendar fan-out was removed.
+- [x] Confirmed sequential queue-order test exists.
+- [x] Ran `make -f Makefile.prj test`.
+
+### Result
+- [x] Calendar threading tests passed.
+- [ ] Full suite still red from unrelated window binding initialization failures.
+
+## Calendar Fetch Threading QA — 2026-04-17
+**Status**: FAILED / handed back to Neo
+**Progress**: 100% QA assessment complete
+
+### Completed
+- [x] Loaded Trin state and Morpheus calendar fetch architecture.
+- [x] Asked Oracle for expected behavior via CHAT.
+- [x] Inspected `CalendarController` implementation.
+- [x] Inspected calendar controller tests.
+- [x] Ran `make -f Makefile.prj test`.
+- [x] Confirmed feature is not complete against architecture.
+
+### Findings
+- [x] Single-flight ignored refresh behavior exists.
+- [x] Per-calendar queue is missing; implementation still uses `Future.wait`.
+- [x] Overlapping refresh test is stale and failing.
+- [x] Queue-order test is missing.
+
 ## Sprint 6 QA Gate — Phase 1 — 2026-03-18
 **Status**: PASSED ✅ — 195/195 GREEN (1 pre-existing golden skip)
 

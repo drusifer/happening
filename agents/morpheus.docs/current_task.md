@@ -1,5 +1,32 @@
 # Current Task
 
+## Calendar Fetch Threading Review — 2026-04-17
+**Status**: APPROVED
+
+### Done
+- [x] Reviewed Neo implementation diff.
+- [x] Verified `_inFlightFetch` single-flight behavior.
+- [x] Verified no queued follow-up state/drain loop.
+- [x] Verified per-calendar fetches are sequential.
+- [x] Verified Trin UAT accepted calendar scope.
+
+### Caveat
+- [ ] Full test suite still blocked by unrelated window binding initialization failures.
+
+## Calendar Fetch Threading Architecture — 2026-04-17
+**Status**: COMPLETE — handoff to Neo
+
+### Done
+- [x] Loaded Morpheus state and recent chat.
+- [x] Consulted Oracle via chat.
+- [x] Reviewed current `CalendarController` state and refresh callers.
+- [x] Issued binding architecture: single-flight controller + per-calendar sequential queue.
+- [x] Documented implementation constraints in `CALENDAR_FETCH_THREADING_ARCH_2026-04-17T19:59.md`.
+
+### Handoff
+- [ ] @Neo implement the documented architecture.
+- [ ] @Trin verify ignored refresh behavior and sequential calendar queue tests after Neo.
+
 ## Linux Black Screen + Stuck Fetching Diagnosis — 2026-04-15
 **Status**: IN PROGRESS 🔴 — debug logging added, awaiting log output from user
 

@@ -68,7 +68,8 @@ class _GtkStyleWindowManager extends Fake implements WindowManager {
   // We always ignore it to simulate the worst-case Linux behaviour.
   Future<void> setSize(Size size, {bool animate = false}) async {
     // intentionally no-op: compositor ignores our size request
-    AppLogger.debug('GTK WM: setSize($size) called — IGNORED (advisory request)'); 
+    AppLogger.debug(
+        'GTK WM: setSize($size) called — IGNORED (advisory request)');
   }
 
   @override
@@ -136,6 +137,8 @@ class _FakeScreenRetriever extends Fake implements ScreenRetriever {
 // Tests
 // ---------------------------------------------------------------------------
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   if (!Platform.isLinux) {
     // These tests are Linux-specific — skip on other platforms.
     return;
@@ -248,7 +251,8 @@ void main() {
       expect(
         actualHeight,
         lessThanOrEqualTo(service.getCollapsedHeight()),
-        reason: 'BUG-B mismatch: notifier=collapsed but OS window=${actualHeight}px. '
+        reason:
+            'BUG-B mismatch: notifier=collapsed but OS window=${actualHeight}px. '
             'State and visual are out of sync.',
       );
     });

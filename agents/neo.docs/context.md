@@ -1,5 +1,91 @@
 # Neo Context
 
+## Timeline Strip Compact Platform Time Format — 2026-04-17
+- Drew clarified the time strip should stay compact: hour ticks only show the hour, and half-hour ticks show `30`.
+- Updated `TickLayer` to use the platform 12/24-hour preference without full minute text:
+  - 12-hour mode renders hour ticks like `11pm`;
+  - 24-hour mode renders hour ticks like `23`;
+  - half-hour ticks render `30`.
+- `TimelinePainter` semantics now use the same compact labels as the painted ticks, keeping integration-test labels aligned with the canvas.
+- Hover/event cards remain on full `MaterialLocalizations.formatTimeOfDay()` output from the prior fix.
+- Validation: `make -f Makefile.prj format`, `make -f Makefile.prj update-goldens`, and `make -f Makefile.prj test` pass, 243/243.
+
+## Calendar Fetch Threading Implementation — 2026-04-17
+- Completed Morpheus architecture update after Trin QA found partial implementation.
+- `CalendarController._scheduleFetch()` remains a single-flight guard: overlapping requests return active `_inFlightFetch` and do not enqueue follow-up work.
+- `CalendarController._fetchOnce()` now fetches selected calendar IDs sequentially with a `for` loop instead of `Future.wait`.
+- Per-calendar failures still log a warning and contribute an empty event list.
+- Updated calendar controller tests:
+  - stale queued-follow-up refresh test now asserts ignored overlapping refreshes and one fetch.
+  - `_BlockingCalendarService` records requested calendar IDs.
+  - added selected-calendar sequential order coverage: `primary` starts first, `secondary` starts only after primary completes.
+- Validation: `make -f Makefile.prj test` shows calendar threading tests pass; full suite remains red from unrelated window binding initialization failures.
+
+## Remaining Test Failures Fix — 2026-04-17
+- Investigated the remaining red suite after calendar threading.
+- Window tests were not deprecated. They failed because `WindowService.initialize()` now calls `WidgetsBinding.instance.addObserver(this)`, so the test harness must initialize `TestWidgetsFlutterBinding`.
+- Fixed `window_service_test.dart` and `window_linux_e2e_test.dart` by initializing the test binding.
+- Updated `window_service_test.dart` mock setup so `waitUntilReadyToShow()` invokes the callback and `focus()` returns a completed future.
+- Golden failure was not deprecated. Regenerated stale `hover_card_alignment.png` after verifying current/failure image kept the intended hover-card layout.
+- Added Makefile target `update-goldens` for future Flutter golden refreshes.
+- Validation: `make -f Makefile.prj test` passes, 239/239.
+
+## Calendar Multi-Calendar Correction — 2026-04-17
+- Drew corrected the multi-calendar diagnosis: repeated events should be deduped, event titles are valid, and all-day events must not be displayed.
+- Restored documented calendar contracts from story/archive history:
+  - all-day events are excluded by requiring `start.dateTime`;
+  - `CalendarEvent` equality/hash are event-ID based;
+  - `CalendarController._dedup()` dedupes by event ID across selected calendars;
+  - title parsing is back to the existing summary behavior.
+- Kept the earlier fetch-threading work: ignored overlapping refresh requests return the active `_inFlightFetch`, and selected calendars fetch sequentially.
+- Kept only scoped per-calendar count logging: `Fetched calendar <id>: <n> events`.
+- Validation: `make -f Makefile.prj format` passes; `make -f Makefile.prj test` passes, 240/240.
+
+## Calendar Permissions Diagnostics — 2026-04-17
+- Drew suspects missing titles may be a Google Calendar permissions/visibility issue for meetings owned by `[USER_EMAIL_1]` and shared with `[USER_EMAIL_2]`.
+- Added temporary `[CalendarDiag]` logging in `GoogleCalendarService.fetchEvents()` before the timed-event filter.
+- Calendar diagnostics log: calendar ID, metadata summary, events response summary, `calendarList.accessRole`, response `accessRole`, and raw item count.
+- Event diagnostics log: event ID, summary, visibility, status, eventType, creator email, organizer email, `start.dateTime`, and `start.date`.
+- Intentionally does not log descriptions, locations, html links, conference links, or full raw JSON.
+- Validation: `make -f Makefile.prj format` and `make -f Makefile.prj test` pass, 240/240.
+
+## Hover Card Platform Time Format — 2026-04-17
+- Drew reported the time strip used AM/PM labels while event hover cards used hard-coded 24-hour `HH:mm`.
+- Updated `HoverDetailOverlay` to format event start/end times through `MaterialLocalizations.formatTimeOfDay()`.
+- The formatter now honors `MediaQuery.alwaysUse24HourFormatOf(context)`, so platform 12/24-hour preference controls the card.
+- Added widget coverage for default localized 12-hour output and forced 24-hour output.
+- Regenerated `hover_card_alignment.png` golden because the card text changed from `10:00 - 10:30` to localized AM/PM text in the default test environment.
+- Validation: `make -f Makefile.prj format`, `make -f Makefile.prj update-goldens`, and `make -f Makefile.prj test` pass, 241/241.
+
+## Protocol Init — 2026-04-17
+- Loaded Neo via bob-protocol on 2026-04-17T13:04.
+- Recent team context: TEST_UPDATE remains complete and awaiting Trin QA verification.
+- Recent team context: Morpheus diagnosed/fixed Linux X11 strut timing by moving `set_x11_strut` to post-realize pre-show in `my_application.cc`; testing is still needed.
+- Project capability: `via` is enabled; use `mcp__via__via_query` for symbol navigation before implementation/refactor work.
+
+## Timeline Frozen Fix — 2026-04-17
+- User reported running app timeline was frozen/not counting down and provided `strace`.
+- `strace` showed the process was alive and Flutter timers were firing (`timerfd_settime` roughly every second), pointing to app stream/subscription behavior rather than a native deadlock.
+- Fix: `ClockService` now owns stable broadcast `tick1s`/`tick10s` streams instead of returning new `Stream.periodic` instances on every getter read.
+- Fix: `TimelineStrip` caches the injected clock streams in state and refreshes them only if `clockService` changes, preventing parent rebuilds from replacing active stream subscriptions.
+- Tests added for stable clock stream identity and TimelineStrip not replacing clock streams on parent rebuild.
+- Validation: `make -f Makefile.prj test V=-vv` compiled and ran changed tests, which passed, but full suite remains red from unrelated `WindowService.initialize` tests missing `WidgetsBinding` initialization. `make -f Makefile.prj analyze V=-vv` failed from Flutter analyzer `Too many open files`. `make format` formatted app files before failing on Flutter telemetry; user accepted formatting diffs.
+
+## Linux Expanded Paint Fix — 2026-04-17
+- User reported expanded hover section is flaky on Linux: cards sometimes show, sometimes expanded area is all black.
+- Docs/log history say Linux should keep a solid background; relying on compositor transparency causes black pixels on X11/Wayland.
+- Root cause addressed: LinuxHoverController suppressed GTK synthetic collapse requests, but TimelineStrip still cleared `_hoveredEvent` before suppression, leaving expanded solid background without a card.
+- Fix: `HoverController.setIntent()` now returns whether an intent was accepted. Linux returns `false` for suppressed collapses. TimelineStrip preserves hover UI state when an intent is suppressed.
+- Tests updated: hover controller now asserts accepted/suppressed intent return values; TimelineStrip has Linux regression coverage that a suppressed synthetic exit keeps `HoverDetailOverlay` painted.
+- Validation: `make -f Makefile.prj test V=-vv` ran with the new regression test passing; full suite still fails on unrelated WindowService binding initialization tests.
+
+## Calendar Fetch Coalescing Fix — 2026-04-17
+- User reported another app stuck state. `strace -p 55392` showed a futex wait and the debug log stopped after a burst of overlapping `CalendarController._fetch(forceRefresh: true)` calls around 13:43:00 plus a hover expand.
+- Root cause addressed: `CalendarController.refresh()` could start unbounded parallel fetches. Each fetch fans out across all selected calendars, so rapid refresh taps created many simultaneous Google API calls and event emissions.
+- Fix: `CalendarController` now serializes fetch work. If a fetch is already in flight, new requests coalesce into one queued follow-up forced refresh.
+- Added regression coverage with a blocking fake calendar service: three overlapping refresh calls produce exactly two fetches (active + one queued follow-up), not three concurrent fetches.
+- Validation: `make -f Makefile.prj test V=-vv` ran and the coalescing regression test passed; full suite remains red only on unrelated WindowService binding initialization tests.
+
 ## Windows Sprint — 2026-03-19
 - WIN collapse 140px bug: `_reserveCollapsedSpace()` called on every collapse, `ABM_SETPOS` mutates `rcLeft` to ~3700, window placed off-screen. Fix: remove redundant call from `_doCollapse()`.
 - WIN expanded transparency: background Container used opaque `stripBackgroundColor`. Fix: `Colors.transparent` when `isExpanded && Platform.isWindows`.
