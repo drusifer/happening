@@ -10,6 +10,7 @@
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:googleapis_auth/auth_io.dart';
@@ -44,17 +45,33 @@ class HappeningApp extends StatefulWidget {
     super.key,
     required this.settingsService,
     required this.windowService,
+    @visibleForTesting this.authServiceOverride,
+    @visibleForTesting this.calendarControllerOverride,
+    @visibleForTesting this.clockServiceOverride,
+    @visibleForTesting this.enableAnimations = true,
   });
 
   final SettingsService settingsService;
   final WindowService windowService;
+
+  /// Injected auth service, used only in tests.
+  final AuthService? authServiceOverride;
+
+  /// Injected calendar controller, used only in tests (avoids real API calls).
+  final CalendarController? calendarControllerOverride;
+
+  /// Injected clock service, used only in tests (avoids real periodic timers).
+  final ClockService? clockServiceOverride;
+
+  /// Disable repeating animations so tests can pumpAndSettle.
+  final bool enableAnimations;
 
   @override
   State<HappeningApp> createState() => _HappeningAppState();
 }
 
 class _HappeningAppState extends State<HappeningApp> {
-  final _clock = ClockService();
+  late final ClockService _clock;
   late final AuthService _auth;
   CalendarController? _calendar;
 
@@ -66,6 +83,7 @@ class _HappeningAppState extends State<HappeningApp> {
   @override
   void initState() {
     super.initState();
+    _clock = widget.clockServiceOverride ?? ClockService();
     unawaited(_initServices());
   }
 
@@ -80,14 +98,17 @@ class _HappeningAppState extends State<HappeningApp> {
   Future<void> _initServices() async {
     await AppLogger.debug('HappeningApp._initServices starting...');
     try {
-      final tokenStore = FlutterSecureTokenStore();
-      await AppLogger.debug('OAuth Client ID loaded.');
-
-      _auth = GoogleAuthService(
-        clientId: ClientId(_kGoogleClientId, ''),
-        scopes: _scopes,
-        tokenStore: tokenStore,
-      );
+      if (widget.authServiceOverride != null) {
+        _auth = widget.authServiceOverride!;
+      } else {
+        final tokenStore = FlutterSecureTokenStore();
+        await AppLogger.debug('OAuth Client ID loaded.');
+        _auth = GoogleAuthService(
+          clientId: ClientId(_kGoogleClientId, ''),
+          scopes: _scopes,
+          tokenStore: tokenStore,
+        );
+      }
 
       await AppLogger.debug('AuthService initialized. Attempting restore...');
       if (await _auth.tryRestore()) {
@@ -126,11 +147,15 @@ class _HappeningAppState extends State<HappeningApp> {
 
   Future<void> _startCalendar() async {
     await AppLogger.debug('HappeningApp._startCalendar called.');
-    _calendar?.dispose();
-    _calendar = CalendarController(
-      GoogleCalendarService(gcal.CalendarApi(_auth.client!)),
-      settingsService: widget.settingsService,
-    );
+    if (widget.calendarControllerOverride == null) {
+      _calendar?.dispose();
+      _calendar = CalendarController(
+        GoogleCalendarService(gcal.CalendarApi(_auth.client!)),
+        settingsService: widget.settingsService,
+      );
+    } else {
+      _calendar = widget.calendarControllerOverride;
+    }
     unawaited(_calendar!.start());
     await AppLogger.debug('CalendarController started.');
 
@@ -207,6 +232,7 @@ class _HappeningAppState extends State<HappeningApp> {
                   onSignOut: _signOut,
                   onSignIn: _isSigningIn ? null : _signIn,
                   onCancelSignIn: _isSigningIn ? _cancelSignIn : null,
+                  enableAnimations: widget.enableAnimations,
                 ),
               _AuthState.authenticated => StreamBuilder<List<CalendarEvent>>(
                   stream: _calendar!.events,
@@ -226,6 +252,7 @@ class _HappeningAppState extends State<HappeningApp> {
                       settingsService: widget.settingsService,
                       windowService: widget.windowService,
                       onSignOut: _signOut,
+                      enableAnimations: widget.enableAnimations,
                     );
                   },
                 ),

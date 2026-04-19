@@ -1,5 +1,19 @@
 # Current Task
 
+## WINDOW_SERVICE_ZERO_WIDTH_FIX — 2026-04-18
+**Status**: COMPLETE / handed to Trin
+**Progress**: 100%
+
+### Completed
+- [x] Added `_displayChangeInProgress` flag to serialize concurrent `_onDisplayChanged()` calls.
+- [x] Split `_onDisplayChanged()` into outer (serialisation) + `_onDisplayChangedInner()` (logic).
+- [x] Added zero-width guard: `if (newWidth <= 0) return;` before updating `_screenWidth`.
+- [x] Added `didChangeAppLifecycleState` override: re-asserts window size on `AppLifecycleState.resumed`.
+- [x] Added 5 new tests covering zero-width guard, concurrency, and resume re-assert.
+
+### Validation
+- [x] `make -f Makefile.prj test` passes: 249/249 (244 prior + 5 new).
+
 ## TIMELINE_STRIP_COMPACT_PLATFORM_TIME_FORMAT — 2026-04-17
 **Status**: COMPLETE
 

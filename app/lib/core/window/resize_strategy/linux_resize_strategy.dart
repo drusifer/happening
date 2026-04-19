@@ -70,5 +70,11 @@ class LinuxResizeStrategy extends WindowResizeStrategy {
     // setMaximumSize forces the compositor to shrink when setSize was ignored.
     await _wm.setMaximumSize(targetSize);
     await AppLogger.debug('LinuxResizeStrategy.collapse() setMaximumSize done');
+    // Re-anchor to (0,0) of the primary display. On Linux the window manager
+    // may rescue/move the window to an arbitrary position when a monitor is
+    // disconnected (build/tmp line 2054: 3840→2944 display change). Without
+    // this call the strip drifts away from the top-left corner.
+    await _wm.setPosition(Offset.zero);
+    await AppLogger.debug('LinuxResizeStrategy.collapse() setPosition done');
   }
 }

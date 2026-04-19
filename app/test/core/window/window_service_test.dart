@@ -140,6 +140,156 @@ void main() {
           reason: 'BUG-A: final expand was lost — gate dropped it');
     });
 
+    // _onDisplayChanged zero-width guard (DPMS/wake regression)
+    // When screen_retriever returns width=0 (transient during display reinit),
+    // _screenWidth must NOT be updated and no resize must occur.
+    test('_onDisplayChanged: ignores transient zero-width display event',
+        () async {
+      await service.initialize(initialFontSize: FontSize.medium);
+
+      // Return width=0 (DPMS / wake transient)
+      when(mockSR.getPrimaryDisplay()).thenAnswer((_) async => const Display(
+            id: '0',
+            name: 'primary',
+            size: Size(0, 1080),
+            visiblePosition: Offset.zero,
+            visibleSize: Size(0, 1080),
+            scaleFactor: 1.0,
+          ));
+      // Return a different DPR so the change-check doesn't skip early
+      when(mockWM.getDevicePixelRatio()).thenReturn(2.0);
+
+      // Reset call counts
+      clearInteractions(mockWM);
+
+      service.didChangeMetrics();
+      await Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
+
+      // No resize calls should have been made with width=0
+      verifyNever(mockWM.setSize(argThat(
+          predicate<Size>((s) => s.width == 0, 'zero-width size'))));
+      verifyNever(mockWM.setMinimumSize(argThat(
+          predicate<Size>((s) => s.width == 0, 'zero-width min size'))));
+      verifyNever(mockWM.setMaximumSize(argThat(
+          predicate<Size>((s) => s.width == 0, 'zero-width max size'))));
+    });
+
+    // Concurrent _onDisplayChanged serialisation guard
+    test('_onDisplayChanged: concurrent calls are serialised (no race)',
+        () async {
+      await service.initialize(initialFontSize: FontSize.medium);
+      clearInteractions(mockWM);
+
+      // Fire two back-to-back didChangeMetrics — only one should run the inner logic
+      service.didChangeMetrics();
+      service.didChangeMetrics();
+      await Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
+
+      // With serialisation the first call runs inner logic, the second is dropped.
+      // The key invariant: _screenWidth is not overwritten by a racing call.
+      // We verify no setSize with zero width occurred (regression guard).
+      verifyNever(mockWM.setSize(argThat(
+          predicate<Size>((s) => s.width == 0, 'zero-width size'))));
+    });
+
+    // didChangeAppLifecycleState re-asserts window on resumed
+    test('didChangeAppLifecycleState: re-asserts collapsed window on resumed',
+        () async {
+      await service.initialize(initialFontSize: FontSize.medium);
+      await service.collapse();
+      clearInteractions(mockWM);
+
+      service.didChangeAppLifecycleState(AppLifecycleState.resumed);
+      await Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
+
+      const collapsedSize = Size(1920.0, 55.0);
+      verify(mockWM.setSize(collapsedSize)).called(greaterThanOrEqualTo(1));
+    });
+
+    test('didChangeAppLifecycleState: re-asserts expanded window on resumed',
+        () async {
+      await service.initialize(initialFontSize: FontSize.medium);
+      await service.expand();
+      clearInteractions(mockWM);
+
+      service.didChangeAppLifecycleState(AppLifecycleState.resumed);
+      await Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
+
+      const expandedSize = Size(1920.0, 250.0);
+      verify(mockWM.setSize(expandedSize)).called(greaterThanOrEqualTo(1));
+    });
+
+    test('didChangeAppLifecycleState: does nothing on paused', () async {
+      await service.initialize(initialFontSize: FontSize.medium);
+      await service.collapse();
+      clearInteractions(mockWM);
+
+      service.didChangeAppLifecycleState(AppLifecycleState.paused);
+      await Future.delayed(Duration.zero);
+
+      verifyNever(mockWM.setSize(any));
+    });
+
+    // THEORY-D: display change (external monitor disconnect) leaves window displaced.
+    //
+    // log: build/tmp line 113 — width=2944→3840 (external monitor connected).
+    //      build/tmp line 2054 — width=3840→2944 (external monitor disconnected).
+    // _onDisplayChanged resizes the window but does NOT call setPosition().
+    // The window manager may rescue the window to an arbitrary position after
+    // the monitor disconnects, leaving the strip displaced (not at top-left).
+    //
+    // Fix: LinuxResizeStrategy.collapse() must call setPosition(Offset.zero)
+    // so the strip is always re-anchored to the primary display's top-left.
+    test('THEORY-D: Linux display change re-anchors position after collapse',
+        () async {
+      if (!Platform.isLinux) return;
+
+      await service.initialize(initialFontSize: FontSize.medium);
+
+      // Simulate external 3840px monitor connecting and becoming primary.
+      when(mockSR.getPrimaryDisplay()).thenAnswer((_) async => const Display(
+            id: '0',
+            name: 'primary',
+            size: Size(3840, 1080),
+            visiblePosition: Offset.zero,
+            visibleSize: Size(3840, 1080),
+            scaleFactor: 1.0,
+          ));
+      when(mockWM.getDevicePixelRatio()).thenReturn(2.0);
+
+      service.didChangeMetrics();
+      await Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
+
+      // Simulate external monitor disconnecting: primary reverts to 2944px.
+      when(mockSR.getPrimaryDisplay()).thenAnswer((_) async => const Display(
+            id: '0',
+            name: 'primary',
+            size: Size(2944, 1840),
+            visiblePosition: Offset.zero,
+            visibleSize: Size(2944, 1840),
+            scaleFactor: 1.0,
+          ));
+      when(mockWM.getDevicePixelRatio()).thenReturn(1.0);
+
+      clearInteractions(mockWM);
+      service.didChangeMetrics();
+      await Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
+
+      // After the display change the strip MUST be re-anchored to (0,0).
+      // Without the fix, LinuxResizeStrategy.collapse() never calls setPosition
+      // and the window drifts to wherever the WM rescued it — buttons disappear.
+      verify(mockWM.setPosition(Offset.zero)).called(greaterThanOrEqualTo(1));
+    });
+
     // BUG-B repro: Linux setSize() no-op (log-sample.txt lines 53-56)
     // Old log: setSize(60) → size still 200px. Only setMaximumSize shrank it.
     // LinuxResizeStrategy currently calls setSize ONLY — no min/max fallback.

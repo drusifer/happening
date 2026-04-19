@@ -1,5 +1,7 @@
 # Next Steps
 
+- [x] DIAGNOSED: buttons-disappear-after-sleep bug → WindowService._onDisplayChanged() zero-width race. Handed to Neo.
+- [ ] Trin: After Neo fixes WindowService, re-run `make -f Makefile.prj test` and verify no regressions.
 - [ ] Morpheus: Review calendar fetch threading implementation for architecture compliance.
 - [ ] Neo/Trin later: Fix unrelated window binding tests so full suite can be green.
 - [ ] Neo: Implement Morpheus calendar fetch threading architecture:
