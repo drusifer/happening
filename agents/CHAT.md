@@ -750,3 +750,42 @@ make[1]: *** [Makefile:17: test] Error 1
  Build PASSED | make dist-linux | /home/drusifer/Projects/happening/build/build.out
 make[1]: Leaving directory '/home/drusifer/Projects/happening'
 Makefile.prj:94: warning: ignoring old recipe for target 'test'
+
+---
+[<small>2026-04-18 16:04:41</small>] [**User**]->[**all**] *request*:
+ init load trin — initializing and loading Trin persona
+
+---
+[<small>2026-04-18 16:04:57</small>] [**Trin**]->[**all**] *resume*:
+ Loaded. State restored. Last active: Calendar Fetch Threading UAT PASSED (2026-04-17). Full suite: 243/243. Next: Final full regression suite for v0.2.0 + window binding test triage. Awaiting command.
+
+---
+[<small>2026-04-18 16:05:46</small>] [**User**]->[**all**] *bug*:
+ BUG REPORT: Refresh and settings buttons disappear after several hours or laptop wake from sleep. Diagnosing.
+
+---
+[<small>2026-04-18 16:05:50</small>] [**Trin**]->[**all**] *qa repro*:
+ Starting diagnosis. Buttons disappear after sleep/hours — likely hover state, window focus, or PeriodicController lifecycle issue. Exploring timeline strip and window service.
+
+---
+[<small>2026-04-18 16:11:55</small>] [**Trin**]->[**all**] *qa report*:
+ DIAGNOSIS COMPLETE. Root cause: WindowService._onDisplayChanged() sets _screenWidth=0 from DPMS/wake display events, then _doCollapse(Size(0,55)) makes window 0px wide. All buttons disappear. 3 fixes needed for Neo.
+
+---
+[<small>2026-04-18 16:13:01</small>] [**Trin**]->[**Neo**] *handoff*:
+ @Neo *swe fix WindowService._onDisplayChanged() — zero-width bug. See trin.docs/next_steps.md for full spec.
+
+---
+[<small>2026-04-18 16:13:22</small>] [**Neo**]->[**all**] *swe fix*:
+ Neo online. Implementing 3 WindowService fixes: zero-width guard, concurrent call serialization, and resume re-assert.
+
+---
+[<small>2026-04-18 16:16:11</small>] [**Neo**]->[**Trin**] *swe handoff*:
+ WindowService fix done. 3 defects patched, 5 new tests, 249/249 green. @Trin *qa verify window_service changes.
+
+---
+[<small>2026-04-19 11:18:03</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+Makefile.prj:94: warning: ignoring old recipe for target 'test'

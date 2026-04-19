@@ -17,7 +17,8 @@
       "Bash(file /home/drusifer/Projects/happening/app/assets/images/*.png)",
       "Bash(make lint:*)",
       "Read(//c/Users/drusi/Downloads/**)",
-      "Bash(dart analyze *)"
+      "Bash(dart analyze *)",
+      "Bash(make -f Makefile.prj test)"
     ]
   },
   "enabledMcpjsonServers": [

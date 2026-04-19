@@ -86,6 +86,7 @@ class WindowService with WidgetsBindingObserver {
   late final _SHDart _shAppBarMessage;
   bool _appBarBusy =
       false; // guards against concurrent _reserveCollapsedSpace calls
+  bool _displayChangeInProgress = false; // serialises _onDisplayChanged calls
 
   /// Notifier for the window's expansion state.
   final isExpandedNotifier = ValueNotifier<bool>(false);
@@ -146,7 +147,40 @@ class WindowService with WidgetsBindingObserver {
     unawaited(_onDisplayChanged());
   }
 
+  /// Re-asserts the window size after the app resumes from background/sleep.
+  ///
+  /// On Linux, waking from sleep or DPMS display-off can leave the window at
+  /// a corrupt size (e.g., 0px wide from a transient zero-width display event).
+  /// Re-applying the correct size on resume ensures the strip is always visible.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(AppLogger.debug(
+          'WindowService.didChangeAppLifecycleState: resumed — re-asserting window size'));
+      if (isExpandedNotifier.value) {
+        unawaited(_doExpand());
+      } else {
+        unawaited(_doCollapse());
+      }
+    }
+  }
+
   Future<void> _onDisplayChanged() async {
+    // Serialise: drop concurrent calls fired by GTK spurious didChangeMetrics.
+    if (_displayChangeInProgress) {
+      await AppLogger.debug(
+          'WindowService._onDisplayChanged: already in progress, skipping');
+      return;
+    }
+    _displayChangeInProgress = true;
+    try {
+      await _onDisplayChangedInner();
+    } finally {
+      _displayChangeInProgress = false;
+    }
+  }
+
+  Future<void> _onDisplayChangedInner() async {
     final newDpr = _wm.getDevicePixelRatio();
     final display = await _sr.getPrimaryDisplay();
     final newWidth = display.size.width;
@@ -154,6 +188,15 @@ class WindowService with WidgetsBindingObserver {
     // [DBG] Log every didChangeMetrics call to detect spurious Linux firings.
     await AppLogger.debug(
         'WindowService._onDisplayChanged: dpr=$_dpr→$newDpr width=$_screenWidth→$newWidth isExpanded=${isExpandedNotifier.value}');
+
+    // Guard against transient zero-width from DPMS wake / display reinit.
+    // If width is 0 we must not update _screenWidth or resize, as that would
+    // collapse the window to 0px and make all UI invisible.
+    if (newWidth <= 0) {
+      await AppLogger.debug(
+          'WindowService._onDisplayChanged: invalid width ($newWidth), skipping');
+      return;
+    }
 
     if (newDpr == _dpr && newWidth == _screenWidth) {
       await AppLogger.debug(
