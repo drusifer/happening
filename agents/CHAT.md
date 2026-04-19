@@ -784,8 +784,7 @@ Makefile.prj:94: warning: ignoring old recipe for target 'test'
  WindowService fix done. 3 defects patched, 5 new tests, 249/249 green. @Trin *qa verify window_service changes.
 
 ---
-[<small>2026-04-19 11:18:03</small>] [**make**]->[**all**] *build*:
- Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
-Lost connection to device.
+[<small>2026-04-19 11:19:37</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make dist-linux | /home/drusifer/Projects/happening/build/build.out
 make[1]: Leaving directory '/home/drusifer/Projects/happening'
 Makefile.prj:94: warning: ignoring old recipe for target 'test'
