@@ -30,7 +30,7 @@ Happening is a persistent, always-on-top horizontal timeline strip that reads yo
 
 ## Installing (End Users)
 
-Download the latest release for your platform from the [releases page](https://github.com/drussell/happening/releases).
+Download the latest release for your platform from the [releases page](https://github.com/drusifer/happening/releases).
 
 > **No extra setup required.** Authentication uses PKCE OAuth via a hosted proxy — no API keys or client secrets needed.
 
