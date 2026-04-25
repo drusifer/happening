@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:hotkey_manager/hotkey_manager.dart';
 
 typedef TimelineFocusHotkeyHandler = void Function();
@@ -22,10 +23,10 @@ class HotkeyManagerTimelineFocusHotkeyBinding
     await unregister();
 
     final modifiers = _platform == TargetPlatform.macOS
-        ? [KeyModifier.meta, KeyModifier.shift]
-        : [KeyModifier.control, KeyModifier.shift];
+        ? [HotKeyModifier.meta, HotKeyModifier.shift]
+        : [HotKeyModifier.control, HotKeyModifier.shift];
     final hotKey = HotKey(
-      KeyCode.space,
+      key: PhysicalKeyboardKey.space,
       modifiers: modifiers,
       scope: HotKeyScope.system,
     );

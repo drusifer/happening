@@ -130,11 +130,9 @@ class _FakeCalendarController extends CalendarController {
 class _FakeAuthService implements AuthService {
   _FakeAuthService({
     this.tryRestoreResult = true,
-    this.signInResult = true,
   });
 
   final bool tryRestoreResult;
-  final bool signInResult;
   bool _signedIn = false;
   bool cancelCalled = false;
 
@@ -146,8 +144,8 @@ class _FakeAuthService implements AuthService {
 
   @override
   Future<bool> signIn() async {
-    if (signInResult) _signedIn = true;
-    return signInResult;
+    _signedIn = true;
+    return true;
   }
 
   @override

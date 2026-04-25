@@ -12,7 +12,6 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:happening/core/settings/settings_service.dart';
@@ -235,7 +234,8 @@ class _TimelineStripState extends State<TimelineStrip>
   }
 
   void _syncInteractionHold() {
-    _focusController.setInteractionHold(_isSettingsOpen || _hoveredEvent != null);
+    _focusController
+        .setInteractionHold(_isSettingsOpen || _hoveredEvent != null);
   }
 
   void _onFocusChanged() {
@@ -506,307 +506,315 @@ class _TimelineStripState extends State<TimelineStrip>
             //     'TimelineStrip: Layout isExpanded=$isExpanded _collapsedHeight=$_collapsedHeight maxHeight=${constraints.maxHeight}'));
 
             return Focus(
-              focusNode: _keyboardFocusNode,
-              autofocus: true,
-              onKey: (node, event) {
-                if (event is RawKeyDownEvent &&
-                    event.logicalKey == LogicalKeyboardKey.escape) {
-                  unawaited(_focusController.handleEscape());
-                  return KeyEventResult.handled;
-                }
-                return KeyEventResult.ignored;
-              },
-              child: MouseRegion(
-              onEnter: _handleMouse,
-              onHover: _handleMouse,
-              onExit: _handleMouse,
-              hitTestBehavior: HitTestBehavior.translucent,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: isExpanded
-                        ? _windowService.getExpandedHeight()
-                        : constraints.maxHeight,
-                    child: Container(
-                      color: isExpanded && Platform.isWindows
-                          ? Colors.transparent
-                          : painterBackgroundColor,
-                    ),
-                  ),
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: _collapsedHeight,
-                    child: RepaintBoundary(
-                      child: CustomPaint(
-                        painter: TimelinePainter(
-                          events: widget.events,
-                          now: now,
-                          nowIndicatorX: nowIndicatorX,
-                          windowStart: layout.windowStart,
-                          windowEnd: layout.windowEnd,
-                          hoveredEventId: _hoveredEvent?.id,
-                          collidingIds: _collidingIds,
-                          fontSize: fontSize,
-                          backgroundColor: painterBackgroundColor,
-                          pastOverlayColor: theme.brightness == Brightness.dark
-                              ? Colors.black26
-                              : Colors.black12,
-                          nowLineColor: const Color(0xFFB71C1C),
-                          alwaysUse24HourFormat:
-                              MediaQuery.alwaysUse24HourFormatOf(context),
-                          tickColor: theme.textTheme.bodySmall?.color
-                                  ?.withValues(alpha: 0.75) ??
-                              Colors.grey,
-                          isLoading: widget.isLoading,
-                          loadingTextColor:
-                              theme.textTheme.bodyMedium?.color ?? Colors.white,
-                          isSignIn: widget.onSignIn != null ||
-                              widget.onCancelSignIn != null,
-                          isSigningIn: widget.onCancelSignIn != null,
-                          signInTextColor:
-                              theme.textTheme.bodyMedium?.color ?? Colors.white,
-                          surfaceOpacity: _surfaceOpacity,
-                          emphasisOpacity: _emphasisOpacity,
+                focusNode: _keyboardFocusNode,
+                autofocus: true,
+                onKeyEvent: (node, event) {
+                  if (event is KeyDownEvent &&
+                      event.logicalKey == LogicalKeyboardKey.escape) {
+                    unawaited(_focusController.handleEscape());
+                    return KeyEventResult.handled;
+                  }
+                  return KeyEventResult.ignored;
+                },
+                child: MouseRegion(
+                  onEnter: _handleMouse,
+                  onHover: _handleMouse,
+                  onExit: _handleMouse,
+                  hitTestBehavior: HitTestBehavior.translucent,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: isExpanded
+                            ? _windowService.getExpandedHeight()
+                            : constraints.maxHeight,
+                        child: Container(
+                          color: isExpanded && Platform.isWindows
+                              ? Colors.transparent
+                              : painterBackgroundColor,
                         ),
                       ),
-                    ),
-                  ),
-                  if ((widget.onSignIn != null || widget.onCancelSignIn != null) &&
-                      _canInteract)
-                    Positioned.fill(
-                      child: GestureDetector(
-                        onTap: () {
-                          _focusController.registerUserActivity();
-                          (widget.onCancelSignIn ?? widget.onSignIn)?.call();
-                        },
-                        behavior: HitTestBehavior.opaque,
-                        child: const SizedBox.expand(),
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: _collapsedHeight,
+                        child: RepaintBoundary(
+                          child: CustomPaint(
+                            painter: TimelinePainter(
+                              events: widget.events,
+                              now: now,
+                              nowIndicatorX: nowIndicatorX,
+                              windowStart: layout.windowStart,
+                              windowEnd: layout.windowEnd,
+                              hoveredEventId: _hoveredEvent?.id,
+                              collidingIds: _collidingIds,
+                              fontSize: fontSize,
+                              backgroundColor: painterBackgroundColor,
+                              pastOverlayColor:
+                                  theme.brightness == Brightness.dark
+                                      ? Colors.black26
+                                      : Colors.black12,
+                              nowLineColor: const Color(0xFFB71C1C),
+                              alwaysUse24HourFormat:
+                                  MediaQuery.alwaysUse24HourFormatOf(context),
+                              tickColor: theme.textTheme.bodySmall?.color
+                                      ?.withValues(alpha: 0.75) ??
+                                  Colors.grey,
+                              isLoading: widget.isLoading,
+                              loadingTextColor:
+                                  theme.textTheme.bodyMedium?.color ??
+                                      Colors.white,
+                              isSignIn: widget.onSignIn != null ||
+                                  widget.onCancelSignIn != null,
+                              isSigningIn: widget.onCancelSignIn != null,
+                              signInTextColor:
+                                  theme.textTheme.bodyMedium?.color ??
+                                      Colors.white,
+                              surfaceOpacity: _surfaceOpacity,
+                              emphasisOpacity: _emphasisOpacity,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  if (widget.onSignIn == null &&
-                      widget.onCancelSignIn == null &&
-                      _canInteract)
-                    Positioned(
-                      left: mode == CountdownMode.untilEnd
-                          ? nowIndicatorX + 8
-                          : null,
-                      right: mode == CountdownMode.untilNext
-                          ? stripWidth - nowIndicatorX + 8
-                          : null,
-                      top: 0,
-                      height: _collapsedHeight,
-                      child: StreamBuilder<DateTime>(
-                        stream: _countdownTicks,
-                        initialData: now,
-                        builder: (context, timeSnapshot) {
-                          final tickNow = timeSnapshot.data!;
-
-                          // Recompute active/target/mode/color with fresh time so
-                          // event-boundary transitions (e.g. start → end) are
-                          // reflected within 1s instead of waiting for tick10s.
-                          final tickActive =
-                              _layout?.activeEvent(widget.events, tickNow);
-                          final tickNextOverlap = tickActive != null
-                              ? (widget.events
-                                      .where((e) =>
-                                          e.startTime.isAfter(tickNow) &&
-                                          e.startTime
-                                              .isBefore(tickActive.endTime))
-                                      .toList()
-                                    ..sort((a, b) =>
-                                        a.startTime.compareTo(b.startTime)))
-                                  .firstOrNull
-                              : null;
-                          final tickNextToStart = tickActive == null
-                              ? (widget.events
-                                      .where(
-                                          (e) => e.startTime.isAfter(tickNow))
-                                      .toList()
-                                    ..sort((a, b) =>
-                                        a.startTime.compareTo(b.startTime)))
-                                  .firstOrNull
-                              : null;
-                          final tickTarget = tickActive != null
-                              ? (tickNextOverlap?.startTime ??
-                                  tickActive.endTime)
-                              : tickNextToStart?.startTime;
-                          final tickMode = tickActive != null
-                              ? CountdownMode.untilEnd
-                              : CountdownMode.untilNext;
-                          final tickBaseColor =
-                              tickMode == CountdownMode.untilEnd
-                                  ? (theme.brightness == Brightness.dark
-                                      ? Colors.amber
-                                      : Colors.orange[800]!)
-                                  : theme.textTheme.bodyMedium?.color ??
-                                      Colors.white;
-
-                          final countdown = tickTarget != null
-                              ? layout.countdownTo(tickTarget, tickNow)
-                              : Duration.zero;
-
-                          _updateAnimationTimer(countdown);
-
-                          return ValueListenableBuilder<double>(
-                            valueListenable: _flashNotifier,
-                            builder: (context, flashValue, _) {
-                              final countdownColor = _resolveCountdownColor(
-                                  countdown, tickBaseColor, flashValue);
-                              double countdownScale = 1.0;
-                              Offset shakeOffset = Offset.zero;
-                              if (countdown.inSeconds > 0 &&
-                                  widget.enableAnimations) {
-                                if (countdown.inSeconds <= 120 &&
-                                    countdown.inSeconds > 30) {
-                                  countdownScale = 1.0 +
-                                      (120 - countdown.inSeconds) / 90.0 * 2.0;
-                                } else if (countdown.inSeconds <= 30) {
-                                  countdownScale = 3.0;
-                                }
-                                if (countdown.inSeconds <= 60) {
-                                  shakeOffset = Offset(
-                                      math.sin(flashValue * 8 * math.pi) * 2.0,
-                                      0);
-                                }
-                              }
-                              return Center(
-                                child: Transform.translate(
-                                  offset: shakeOffset,
-                                  child: Transform.scale(
-                                    scale: countdownScale,
-                                    child: CountdownDisplay(
-                                      remaining: countdown,
-                                      mode: tickMode,
-                                      color: countdownColor,
-                                      fontSize: fontSize,
-                                      backgroundColor: stripBackgroundColor
-                                          .withValues(alpha: _emphasisOpacity),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  if (widget.onSignIn == null &&
-                      widget.onCancelSignIn == null &&
-                      _canInteract)
-                    Positioned(
-                      left: 8,
-                      top: 0,
-                      height: _collapsedHeight,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _IconButton(
-                            icon: Icons.refresh,
+                      if ((widget.onSignIn != null ||
+                              widget.onCancelSignIn != null) &&
+                          _canInteract)
+                        Positioned.fill(
+                          child: GestureDetector(
                             onTap: () {
                               _focusController.registerUserActivity();
-                              unawaited(widget.calendarController!.refresh());
-                              unawaited(_windowService.reassertAppBar());
+                              (widget.onCancelSignIn ?? widget.onSignIn)
+                                  ?.call();
                             },
-                            stripBackgroundColor: stripBackgroundColor,
+                            behavior: HitTestBehavior.opaque,
+                            child: const SizedBox.expand(),
                           ),
-                          const SizedBox(width: 4),
-                          _IconButton(
-                            icon: Icons.settings,
-                            onTap: _toggleSettings,
-                            stripBackgroundColor: stripBackgroundColor,
-                          ),
-                        ],
-                      ),
-                    ),
-                  if (widget.onSignIn == null &&
-                      widget.onCancelSignIn == null &&
-                      _canInteract)
-                    Positioned(
-                      right: 8,
-                      top: 0,
-                      height: _collapsedHeight,
-                      child: Center(
-                        child: _IconButton(
-                          icon: Icons.power_settings_new,
-                          onTap: () {
-                            _focusController.registerUserActivity();
-                            exit(0);
-                          },
-                          stripBackgroundColor: stripBackgroundColor,
                         ),
-                      ),
-                    ),
-                  if (_showFocusIndicator && _canInteract)
-                    Positioned(
-                      top: 2,
-                      left: 2,
-                      right: 2,
-                      height: _collapsedHeight - 4,
-                      child: IgnorePointer(
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: theme.colorScheme.primary
-                                  .withValues(alpha: 0.55),
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                color: theme.colorScheme.primary
-                                    .withValues(alpha: 0.18),
-                                blurRadius: 14,
+                      if (widget.onSignIn == null &&
+                          widget.onCancelSignIn == null &&
+                          _canInteract)
+                        Positioned(
+                          left: mode == CountdownMode.untilEnd
+                              ? nowIndicatorX + 8
+                              : null,
+                          right: mode == CountdownMode.untilNext
+                              ? stripWidth - nowIndicatorX + 8
+                              : null,
+                          top: 0,
+                          height: _collapsedHeight,
+                          child: StreamBuilder<DateTime>(
+                            stream: _countdownTicks,
+                            initialData: now,
+                            builder: (context, timeSnapshot) {
+                              final tickNow = timeSnapshot.data!;
+
+                              // Recompute active/target/mode/color with fresh time so
+                              // event-boundary transitions (e.g. start → end) are
+                              // reflected within 1s instead of waiting for tick10s.
+                              final tickActive =
+                                  _layout?.activeEvent(widget.events, tickNow);
+                              final tickNextOverlap = tickActive != null
+                                  ? (widget.events
+                                          .where((e) =>
+                                              e.startTime.isAfter(tickNow) &&
+                                              e.startTime
+                                                  .isBefore(tickActive.endTime))
+                                          .toList()
+                                        ..sort((a, b) =>
+                                            a.startTime.compareTo(b.startTime)))
+                                      .firstOrNull
+                                  : null;
+                              final tickNextToStart = tickActive == null
+                                  ? (widget.events
+                                          .where((e) =>
+                                              e.startTime.isAfter(tickNow))
+                                          .toList()
+                                        ..sort((a, b) =>
+                                            a.startTime.compareTo(b.startTime)))
+                                      .firstOrNull
+                                  : null;
+                              final tickTarget = tickActive != null
+                                  ? (tickNextOverlap?.startTime ??
+                                      tickActive.endTime)
+                                  : tickNextToStart?.startTime;
+                              final tickMode = tickActive != null
+                                  ? CountdownMode.untilEnd
+                                  : CountdownMode.untilNext;
+                              final tickBaseColor =
+                                  tickMode == CountdownMode.untilEnd
+                                      ? (theme.brightness == Brightness.dark
+                                          ? Colors.amber
+                                          : Colors.orange[800]!)
+                                      : theme.textTheme.bodyMedium?.color ??
+                                          Colors.white;
+
+                              final countdown = tickTarget != null
+                                  ? layout.countdownTo(tickTarget, tickNow)
+                                  : Duration.zero;
+
+                              _updateAnimationTimer(countdown);
+
+                              return ValueListenableBuilder<double>(
+                                valueListenable: _flashNotifier,
+                                builder: (context, flashValue, _) {
+                                  final countdownColor = _resolveCountdownColor(
+                                      countdown, tickBaseColor, flashValue);
+                                  double countdownScale = 1.0;
+                                  Offset shakeOffset = Offset.zero;
+                                  if (countdown.inSeconds > 0 &&
+                                      widget.enableAnimations) {
+                                    if (countdown.inSeconds <= 120 &&
+                                        countdown.inSeconds > 30) {
+                                      countdownScale = 1.0 +
+                                          (120 - countdown.inSeconds) /
+                                              90.0 *
+                                              2.0;
+                                    } else if (countdown.inSeconds <= 30) {
+                                      countdownScale = 3.0;
+                                    }
+                                    if (countdown.inSeconds <= 60) {
+                                      shakeOffset = Offset(
+                                          math.sin(flashValue * 8 * math.pi) *
+                                              2.0,
+                                          0);
+                                    }
+                                  }
+                                  return Center(
+                                    child: Transform.translate(
+                                      offset: shakeOffset,
+                                      child: Transform.scale(
+                                        scale: countdownScale,
+                                        child: CountdownDisplay(
+                                          remaining: countdown,
+                                          mode: tickMode,
+                                          color: countdownColor,
+                                          fontSize: fontSize,
+                                          backgroundColor:
+                                              stripBackgroundColor.withValues(
+                                                  alpha: _emphasisOpacity),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      if (widget.onSignIn == null &&
+                          widget.onCancelSignIn == null &&
+                          _canInteract)
+                        Positioned(
+                          left: 8,
+                          top: 0,
+                          height: _collapsedHeight,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _IconButton(
+                                icon: Icons.refresh,
+                                onTap: () {
+                                  _focusController.registerUserActivity();
+                                  unawaited(
+                                      widget.calendarController!.refresh());
+                                  unawaited(_windowService.reassertAppBar());
+                                },
+                                stripBackgroundColor: stripBackgroundColor,
+                              ),
+                              const SizedBox(width: 4),
+                              _IconButton(
+                                icon: Icons.settings,
+                                onTap: _toggleSettings,
+                                stripBackgroundColor: stripBackgroundColor,
                               ),
                             ],
                           ),
                         ),
-                      ),
-                    ),
-                  if (widget.onSignIn == null &&
-                      widget.onCancelSignIn == null &&
-                      _windowService.isExpandedNotifier.value &&
-                      !_isSettingsOpen &&
-                      _hoveredEvent != null)
-                    Positioned(
-                      top: _collapsedHeight,
-                      left: _cardLeft(stripWidth),
-                      child: HoverDetailOverlay(
-                        event: _hoveredEvent!,
-                        width: _cardWidth(stripWidth),
-                      ),
-                    ),
-                  if (widget.onSignIn == null &&
-                      widget.onCancelSignIn == null &&
-                      _isSettingsOpen)
-                    Positioned.fill(
-                      child: GestureDetector(
-                        onTap: _toggleSettings,
-                        behavior: HitTestBehavior.opaque,
-                        child: Container(color: Colors.transparent),
-                      ),
-                    ),
-                  if (widget.onSignIn == null &&
-                      widget.onCancelSignIn == null &&
-                      _isSettingsOpen)
-                    Positioned(
-                      top: _collapsedHeight,
-                      left: 8,
-                      bottom: 8,
-                      child: SettingsPanel(
-                        settingsService: widget.settingsService,
-                        calendarController: widget.calendarController!,
-                        onSignOut: widget.onSignOut,
-                        platformOverride: _targetPlatform,
-                      ),
-                    ),
-                ],
-              ),
-            ));
+                      if (_canInteract)
+                        Positioned(
+                          right: 8,
+                          top: 0,
+                          height: _collapsedHeight,
+                          child: Center(
+                            child: _IconButton(
+                              icon: Icons.power_settings_new,
+                              onTap: () {
+                                _focusController.registerUserActivity();
+                                exit(0);
+                              },
+                              stripBackgroundColor: stripBackgroundColor,
+                            ),
+                          ),
+                        ),
+                      if (_showFocusIndicator && _canInteract)
+                        Positioned(
+                          top: 2,
+                          left: 2,
+                          right: 2,
+                          height: _collapsedHeight - 4,
+                          child: IgnorePointer(
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: theme.colorScheme.primary
+                                      .withValues(alpha: 0.55),
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: theme.colorScheme.primary
+                                        .withValues(alpha: 0.18),
+                                    blurRadius: 14,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      if (widget.onSignIn == null &&
+                          widget.onCancelSignIn == null &&
+                          _windowService.isExpandedNotifier.value &&
+                          !_isSettingsOpen &&
+                          _hoveredEvent != null)
+                        Positioned(
+                          top: _collapsedHeight,
+                          left: _cardLeft(stripWidth),
+                          child: HoverDetailOverlay(
+                            event: _hoveredEvent!,
+                            width: _cardWidth(stripWidth),
+                          ),
+                        ),
+                      if (widget.onSignIn == null &&
+                          widget.onCancelSignIn == null &&
+                          _isSettingsOpen)
+                        Positioned.fill(
+                          child: GestureDetector(
+                            onTap: _toggleSettings,
+                            behavior: HitTestBehavior.opaque,
+                            child: Container(color: Colors.transparent),
+                          ),
+                        ),
+                      if (widget.onSignIn == null &&
+                          widget.onCancelSignIn == null &&
+                          _isSettingsOpen)
+                        Positioned(
+                          top: _collapsedHeight,
+                          left: 8,
+                          bottom: 8,
+                          child: SettingsPanel(
+                            settingsService: widget.settingsService,
+                            calendarController: widget.calendarController!,
+                            onSignOut: widget.onSignOut,
+                            platformOverride: _targetPlatform,
+                          ),
+                        ),
+                    ],
+                  ),
+                ));
           },
         );
       },

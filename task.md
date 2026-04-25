@@ -118,9 +118,10 @@ Make Happening visible without trapping the user behind the strip. macOS uses tr
   - `app/test/features/timeline/timeline_focus_controller_test.dart` ✦
 - **Risk**: Medium
 - **Tests**: focus, unfocus, Escape, timeout suppression while settings/details are active
-- **Status**: [ ] todo
+- **Status**: [x] done
 - **Assigned**: @Neo
 - **Depends on**: TT-C1
+- **Phase D Result**: Added `TimelineFocusController` to own transparent idle/focused state, Escape dismissal, focus-loss dismissal, inactivity timeout, and interaction holds for settings/details.
 
 ### TT-D2: Wire Global Focus Hotkey
 - **Goal**: Hotkey focuses Happening from idle pass-through mode.
@@ -128,9 +129,10 @@ Make Happening visible without trapping the user behind the strip. macOS uses tr
   - target files depend on TT-A2 decision
 - **Risk**: High
 - **Tests**: unit/widget test where possible; manual platform smoke required
-- **Status**: [ ] todo
+- **Status**: [x] done
 - **Assigned**: @Neo
 - **Depends on**: TT-A2, TT-D1
+- **Phase D Result**: Added `HotkeyManagerTimelineFocusHotkeyBinding` using `hotkey_manager` and wired Ctrl/Cmd+Shift+Space to focus the strip from transparent idle mode.
 
 ### TT-D3: Make Timeline Interaction Focus-Gated
 - **Goal**: Idle transparent mode passes clicks through; focused mode enables settings/refresh/quit/event details.
@@ -139,9 +141,10 @@ Make Happening visible without trapping the user behind the strip. macOS uses tr
   - `app/test/features/timeline/timeline_strip_test.dart` ✎
 - **Risk**: High
 - **Tests**: idle ignores event/settings interactions; focused preserves existing interactions
-- **Status**: [ ] todo
+- **Status**: [x] done
 - **Assigned**: @Neo
 - **Depends on**: TT-D1, TT-D2
+- **Phase D Result**: `TimelineStrip` now hides interactive controls and suppresses hover expansion while transparent mode is idle; global hotkey focus restores controls and Escape returns to click-through idle.
 
 ---
 
@@ -157,9 +160,10 @@ Make Happening visible without trapping the user behind the strip. macOS uses tr
   - `app/lib/features/timeline/painters/now_indicator_layer.dart` ✎
 - **Risk**: Medium
 - **Tests**: painter unit/golden coverage for idle transparent and focused opaque states
-- **Status**: [ ] todo
+- **Status**: [x] done
 - **Assigned**: @Neo
 - **Depends on**: TT-B1, TT-D3
+- **Phase E Result**: `TimelineStrip` computes idle surface/emphasis opacity from settings, and `TimelinePainter` applies opacity through background, past overlay, ticks, events, now indicator, loading, and sign-in layers.
 
 ### TT-E2: Add Focused-State Visual Feedback
 - **Goal**: Focused mode is visibly distinct and reversible.
@@ -183,9 +187,10 @@ Make Happening visible without trapping the user behind the strip. macOS uses tr
   - `app/test/features/timeline/settings_panel_test.dart` ✎
 - **Risk**: Medium
 - **Tests**: macOS hides reserved mode; Linux hides transparent when unavailable; Windows shows available choices
-- **Status**: [ ] todo
+- **Status**: [x] done
 - **Assigned**: @Neo
 - **Depends on**: TT-C1
+- **Phase F Result**: `SettingsPanel` shows platform-supported window behavior choices only: macOS transparent, Linux reserved, and Windows both reserved/transparent.
 
 ### TT-F2: Add Transparency Slider
 - **Goal**: Add labeled idle transparency slider with live preview and clamped range.
@@ -194,9 +199,10 @@ Make Happening visible without trapping the user behind the strip. macOS uses tr
   - `app/test/features/timeline/settings_panel_test.dart` ✎
 - **Risk**: Medium
 - **Tests**: labels, persistence, clamp bounds, preview update
-- **Status**: [ ] todo
+- **Status**: [x] done
 - **Assigned**: @Neo
 - **Depends on**: TT-B1, TT-E1
+- **Phase F Result**: `SettingsPanel` exposes the idle transparency slider, persists updates through `SettingsService`, and keeps the expanded panel within test viewport constraints.
 
 ---
 

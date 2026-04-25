@@ -129,7 +129,8 @@ void main() {
       expect(find.text('Reserve space at top'), findsNothing);
     });
 
-    testWidgets('linux hides transparent window behavior option', (tester) async {
+    testWidgets('linux hides transparent window behavior option',
+        (tester) async {
       await tester.pumpWidget(_wrap(SettingsPanel(
         settingsService: fakeSettings,
         calendarController: CalendarController(_FakeCalendarService()),

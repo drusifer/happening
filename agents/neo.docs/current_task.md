@@ -1,5 +1,29 @@
 # Current Task
 
+## BUILD_FIX_PHASE_D_RECONCILE — 2026-04-25
+**Status**: COMPLETE / handed to Trin
+**Progress**: 100%
+
+### Completed
+- [x] Consulted Oracle via chat before implementation/debugging.
+- [x] Reproduced current `make build-linux` failures after dependency upgrades.
+- [x] Fixed Flutter/Dart compile errors from `defaultTargetPlatform`, `win32`, and `hotkey_manager` API changes.
+- [x] Removed unused direct `keybinder` dependency.
+- [x] Fixed Linux CMake install prefix regression so release build writes to the bundle directory.
+- [x] Reconciled Transparent Timestrip board with implemented Phase D/E/F code.
+- [x] Fixed test fallout from hotkey binding, sign-in quit button visibility, and settings-panel overflow.
+- [x] Updated `task.md` for TT-D1, TT-D2, TT-D3, TT-E1, TT-F1, and TT-F2.
+
+### Validation
+- [x] `make format` passes.
+- [x] `make test` passes: 289/289.
+- [x] `make build-linux` passes: `app/build/linux/arm64/release/bundle/happening`.
+- [ ] `make analyze` blocked by Flutter analysis server `Too many open files` crash after source diagnostics were fixed.
+
+### Next
+- [ ] Trin: UAT completed board items and run full regression.
+- [ ] Neo or Trin: add TT-E2 focused-state visual feedback golden/widget coverage before final release gate.
+
 ## TRANSPARENT_TIMESTRIP_PHASE_C — 2026-04-24
 **Status**: COMPLETE / handed to Trin
 **Progress**: 100%

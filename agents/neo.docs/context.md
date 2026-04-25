@@ -8,6 +8,17 @@
 - Added direct tests for interaction strategies and `WindowService` delegation behavior.
 - Validation: `make test` passes 275/275.
 
+## Build Fix + Transparent Timestrip Reconcile — 2026-04-25
+- Current Flutter/dependency upgrade resolved `win32` to 5.15 and `hotkey_manager` to 0.2.x.
+- Fixed compile compatibility:
+  - `FindWindow` now returns `int` and accepts `Pointer<Utf16>` directly in resolved `win32`; no `PCWSTR` wrapper or `.value`.
+  - `hotkey_manager` 0.2.x uses `HotKey(key: PhysicalKeyboardKey.space, modifiers: [HotKeyModifier...])`.
+  - `defaultTargetPlatform` needs explicit `flutter/foundation.dart` import in `main.dart`.
+- Removed unused direct `keybinder` dependency; global hotkey path uses `hotkey_manager`.
+- Linux CMake release install must force `/usr/local` back to `${PROJECT_BINARY_DIR}/bundle` to keep `flutter build linux --release` non-root.
+- Closed board items TT-D1, TT-D2, TT-D3, TT-E1, TT-F1, TT-F2 after `make test` 289/289 and `make build-linux` green.
+- `make analyze` remains blocked by Flutter analysis server `Too many open files` crash after code diagnostics were fixed. `analysis_options.yaml` now excludes generated artifacts, but the Flutter tool still crashes before a clean analyzer result.
+
 ## Transparent Timestrip Phase B — 2026-04-24
 - Added `WindowMode` and `idleTimelineOpacity` to `AppSettings`.
 - Added `AppSettings.copyWith(...)` so settings updates preserve newly introduced fields.

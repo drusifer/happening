@@ -5,6 +5,12 @@ analyzer:
     - dart_code_linter
   exclude:
     - "**/*.mocks.dart"
+    - ".dart_tool/**"
+    - "build/**"
+    - "coverage/**"
+    - "linux/flutter/ephemeral/**"
+    - "macos/Flutter/ephemeral/**"
+    - "windows/flutter/ephemeral/**"
   errors:
     # Dead Code & Performance
     unused_element: ignore

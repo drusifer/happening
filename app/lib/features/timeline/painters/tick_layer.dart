@@ -40,8 +40,8 @@ class TickLayer implements TimelineLayer {
   @override
   void paint(Canvas canvas, Size size) {
     final pixelsPerHour = layout.pixelsPerSecond * 3600;
-    final tickPaint =
-        Paint()..color = tickColor.withValues(alpha: tickColor.a * surfaceOpacity);
+    final tickPaint = Paint()
+      ..color = tickColor.withValues(alpha: tickColor.a * surfaceOpacity);
 
     var current = DateTime(
       windowStart.year,
