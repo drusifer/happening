@@ -1,6 +1,6 @@
 name: happening
 description: Always-on-top calendar timeline strip for ADHD-friendly time awareness.
-version: 0.4.0
+version: 0.5.0
 publish_to: none
 
 environment:
@@ -20,7 +20,7 @@ dependencies:
   flutter_secure_storage: any
   win32: any
   ffi: any
-  hotkey_manager: ^0.1.8
+  hotkey_manager: any
 
 dev_dependencies:
   flutter_test:
@@ -31,8 +31,8 @@ dev_dependencies:
   mockito: any
   build_runner: any
   dart_code_linter: any
-  msix: ^3.16.13
-  flutter_launcher_icons: ^0.14.0
+  msix: ">=3.16.13"
+  flutter_launcher_icons: ">=0.14.0"
 
 flutter_launcher_icons:
   image_path: "assets/images/store_logo.png"
@@ -54,7 +54,7 @@ msix_config:
     publisher_display_name: Gutstein Security Works, LLC
     identity_name: GutsteinSecurityWorksLLC.WhatsHappening # From Product Identity
     publisher: CN=1BCC9C93-9384-4EDD-BC44-CAC345171F9F     # From Product Identity
-    msix_version: 1.0.4.0                        # Four-part Store version; keep in sync with version above
+    msix_version: 1.0.5.0                        # Four-part Store version; keep in sync with version above
     logo_path: assets/images/store_logo.png      # High-res square icon
     store: true                                  # Crucial: Tells the tool this is for the Store
     capabilities: "internetClient"

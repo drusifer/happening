@@ -161,173 +161,181 @@ class _SettingsPanelState extends State<SettingsPanel> {
           mainAxisSize: MainAxisSize.min,
           children: [
             // ── Left: controls + LOGOUT ──────────────────────────────────
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'SETTINGS  v. $appVersion',
-                  style: TextStyle(
-                    color: theme.textTheme.bodySmall?.color
-                        ?.withValues(alpha: 0.5),
-                    fontSize: baseSize * 0.6,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.0,
+            SizedBox(
+              width: 240 * scale,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'SETTINGS  v. $appVersion',
+                    style: TextStyle(
+                      color: theme.textTheme.bodySmall?.color
+                          ?.withValues(alpha: 0.5),
+                      fontSize: baseSize * 0.6,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.0,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 10),
-                _SectionHeader(
-                    theme: theme, title: 'Theme', fontSize: baseSize * 0.7),
-                const SizedBox(height: 6),
-                _PickerRow<AppTheme>(
-                  values: AppTheme.values,
-                  current: settings.theme,
-                  fontSize: baseSize * 0.65,
-                  onSelect: (val) =>
-                      widget.settingsService.update(settings.copyWith(
-                    theme: val,
-                  )),
-                  labelBuilder: (v) =>
-                      v.name[0].toUpperCase() + v.name.substring(1),
-                ),
-                const SizedBox(height: 10),
-                _SectionHeader(
-                    theme: theme,
-                    title: 'Time Window',
-                    fontSize: baseSize * 0.7),
-                const SizedBox(height: 6),
-                _PickerRow<int>(
-                  values: const [8, 12, 24],
-                  current: settings.timeWindowHours,
-                  fontSize: baseSize * 0.65,
-                  onSelect: (val) =>
-                      widget.settingsService.update(settings.copyWith(
-                    timeWindowHours: val,
-                  )),
-                  labelBuilder: (v) => '${v}h',
-                ),
-                const SizedBox(height: 10),
-                _SectionHeader(
-                    theme: theme,
-                    title: 'Window behavior',
-                    fontSize: baseSize * 0.7),
-                const SizedBox(height: 6),
-                _PickerRow<WindowMode>(
-                  values: _supportedWindowModes,
-                  current: settings.effectiveWindowMode(_platform),
-                  fontSize: baseSize * 0.65,
-                  onSelect: (val) =>
-                      widget.settingsService.update(settings.copyWith(
-                    windowMode: val,
-                  )),
-                  labelBuilder: _windowModeLabel,
-                ),
-                const Spacer(),
-                _MiniButton(
-                  label: 'LOGOUT',
-                  onTap: widget.onSignOut,
-                  color: Colors.redAccent.withValues(alpha: 0.15),
-                  textColor: Colors.redAccent.withValues(alpha: 0.8),
-                  fontSize: baseSize * 0.55,
-                ),
-              ],
+                  const SizedBox(height: 10),
+                  _SectionHeader(
+                      theme: theme, title: 'Theme', fontSize: baseSize * 0.7),
+                  const SizedBox(height: 6),
+                  _PickerRow<AppTheme>(
+                    values: AppTheme.values,
+                    current: settings.theme,
+                    fontSize: baseSize * 0.65,
+                    onSelect: (val) =>
+                        widget.settingsService.update(settings.copyWith(
+                      theme: val,
+                    )),
+                    labelBuilder: (v) =>
+                        v.name[0].toUpperCase() + v.name.substring(1),
+                  ),
+                  const SizedBox(height: 10),
+                  _SectionHeader(
+                      theme: theme,
+                      title: 'Time Window',
+                      fontSize: baseSize * 0.7),
+                  const SizedBox(height: 6),
+                  _PickerRow<int>(
+                    values: const [8, 12, 24],
+                    current: settings.timeWindowHours,
+                    fontSize: baseSize * 0.65,
+                    onSelect: (val) =>
+                        widget.settingsService.update(settings.copyWith(
+                      timeWindowHours: val,
+                    )),
+                    labelBuilder: (v) => '${v}h',
+                  ),
+                  const SizedBox(height: 10),
+                  _SectionHeader(
+                      theme: theme,
+                      title: 'Window behavior',
+                      fontSize: baseSize * 0.7),
+                  const SizedBox(height: 6),
+                  _PickerRow<WindowMode>(
+                    values: _supportedWindowModes,
+                    current: settings.effectiveWindowMode(_platform),
+                    fontSize: baseSize * 0.65,
+                    onSelect: (val) =>
+                        widget.settingsService.update(settings.copyWith(
+                      windowMode: val,
+                    )),
+                    labelBuilder: _windowModeLabel,
+                  ),
+                  const Spacer(),
+                  _MiniButton(
+                    label: 'LOGOUT',
+                    onTap: widget.onSignOut,
+                    color: Colors.redAccent.withValues(alpha: 0.15),
+                    textColor: Colors.redAccent.withValues(alpha: 0.8),
+                    fontSize: baseSize * 0.55,
+                  ),
+                ],
+              ),
             ),
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 12),
+              margin: const EdgeInsets.symmetric(horizontal: 8),
               width: 1,
               color: theme.dividerColor.withValues(alpha: 0.1),
             ),
             // ── Middle: Font Size ────────────────────────────────────────
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _SectionHeader(
-                    theme: theme, title: 'Font Size', fontSize: baseSize * 0.7),
-                const SizedBox(height: 6),
-                _PickerRow<FontSize>(
-                  values: FontSize.values,
-                  current: settings.fontSize,
-                  fontSize: baseSize * 0.65,
-                  onSelect: (val) =>
-                      widget.settingsService.update(settings.copyWith(
-                    fontSize: val,
-                  )),
-                  labelBuilder: (v) =>
-                      v.name[0].toUpperCase() + v.name.substring(1),
-                ),
-                const SizedBox(height: 10),
-                _SectionHeader(
-                    theme: theme,
-                    title: 'Transparency',
-                    fontSize: baseSize * 0.7),
-                const SizedBox(height: 6),
-                SizedBox(
-                  width: 220 * scale,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Slider(
-                        value: settings.idleTimelineOpacity,
-                        min: kMinIdleTimelineOpacity,
-                        max: kMaxIdleTimelineOpacity,
-                        divisions: 8,
-                        label:
-                            '${(settings.idleTimelineOpacity * 100).round()}%',
-                        onChanged: (value) => widget.settingsService.update(
-                          settings.copyWith(idleTimelineOpacity: value),
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: _SliderLabel(
-                                label: 'More visible',
-                                fontSize: baseSize * 0.55,
-                                textAlign: TextAlign.left,
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: _SliderLabel(
-                              label: 'Balanced',
-                              fontSize: baseSize * 0.55,
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          Expanded(
-                            child: Align(
-                              alignment: Alignment.centerRight,
-                              child: _SliderLabel(
-                                label: 'More transparent',
-                                fontSize: baseSize * 0.55,
-                                textAlign: TextAlign.right,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+            SizedBox(
+              width: 190 * scale,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _SectionHeader(
+                      theme: theme,
+                      title: 'Font Size',
+                      fontSize: baseSize * 0.7),
+                  const SizedBox(height: 6),
+                  _PickerRow<FontSize>(
+                    values: FontSize.values,
+                    current: settings.fontSize,
+                    fontSize: baseSize * 0.65,
+                    onSelect: (val) =>
+                        widget.settingsService.update(settings.copyWith(
+                      fontSize: val,
+                    )),
+                    labelBuilder: (v) =>
+                        v.name[0].toUpperCase() + v.name.substring(1),
                   ),
-                ),
-                const Spacer(),
-                _TextLink(
-                  label: 'ABOUT',
-                  onTap: () => unawaited(_openAbout()),
-                  fontSize: baseSize * 0.55,
-                ),
-              ],
+                  const SizedBox(height: 10),
+                  _SectionHeader(
+                      theme: theme,
+                      title: 'Transparency',
+                      fontSize: baseSize * 0.7),
+                  const SizedBox(height: 6),
+                  SizedBox(
+                    width: 190 * scale,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Slider(
+                          value: settings.idleTimelineOpacity,
+                          min: kMinIdleTimelineOpacity,
+                          max: kMaxIdleTimelineOpacity,
+                          divisions: 8,
+                          label:
+                              '${(settings.idleTimelineOpacity * 100).round()}%',
+                          onChanged: (value) => widget.settingsService.update(
+                            settings.copyWith(idleTimelineOpacity: value),
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: _SliderLabel(
+                                  label: 'More visible',
+                                  fontSize: baseSize * 0.55,
+                                  textAlign: TextAlign.left,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: _SliderLabel(
+                                label: 'Balanced',
+                                fontSize: baseSize * 0.55,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: _SliderLabel(
+                                  label: 'More transparent',
+                                  fontSize: baseSize * 0.55,
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Spacer(),
+                  _TextLink(
+                    label: 'ABOUT',
+                    onTap: () => unawaited(_openAbout()),
+                    fontSize: baseSize * 0.55,
+                  ),
+                ],
+              ),
             ),
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 12),
+              margin: const EdgeInsets.symmetric(horizontal: 8),
               width: 1,
               color: theme.dividerColor.withValues(alpha: 0.1),
             ),
             // ── Right: Calendars spanning full height ────────────────────
             SizedBox(
-              width: 180 * scale,
+              width: 150 * scale,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

@@ -1,12 +1,12 @@
 # Next Steps
 
-- @Trin: UAT Transparent Timestrip Phase C:
-  - Verify `WindowInteractionStrategy` exists separately from `WindowResizeStrategy`.
-  - Verify `WindowService` delegates interaction behavior to the new strategy layer.
-  - Verify Windows AppBar reservation is gated to reserved mode only.
-  - Use `make test`; expected full suite: 275/275 green.
-- @Morpheus: Review Phase C after Trin UAT.
-- Phase D is next only after Trin and Morpheus approve Phase C.
+- @Trin: UAT build fix + Transparent Timestrip reconciled scope:
+  - Verify `make test` remains 289/289 green.
+  - Verify `make build-linux` builds `app/build/linux/arm64/release/bundle/happening`.
+  - Verify `task.md` completed items TT-D1, TT-D2, TT-D3, TT-E1, TT-F1, TT-F2 match implementation and tests.
+  - Note `make analyze` is blocked by Flutter analysis server `Too many open files`; code diagnostics seen before the crash were fixed.
+- @Neo/@Trin: Complete TT-E2 focused-state visual feedback coverage before final Phase G gate.
+- @Trin/@Smith: Later manual platform smoke for macOS/Windows transparent-mode behavior once real hosts are available.
 - @Trin: UAT Transparent Timestrip Phase B:
   - Verify `AppSettings` persists `windowMode` and `idleTimelineOpacity`.
   - Verify opacity is clamped on load/update.

@@ -85,8 +85,8 @@ class TimelinePainter extends CustomPainter {
       BackgroundLayer(color: backgroundColor),
       PastOverlayLayer(
         nowIndicatorX: nowIndicatorX,
-        color:
-            pastOverlayColor.withValues(alpha: pastOverlayColor.a * surfaceOpacity),
+        color: pastOverlayColor.withValues(
+            alpha: pastOverlayColor.a * surfaceOpacity),
       ),
       TickLayer(
         layout: layout,
@@ -117,8 +117,8 @@ class TimelinePainter extends CustomPainter {
       ),
       FetchingLayer(
         isLoading: isLoading,
-        backgroundColor:
-            backgroundColor.withValues(alpha: backgroundColor.a * emphasisOpacity),
+        backgroundColor: backgroundColor.withValues(
+            alpha: backgroundColor.a * emphasisOpacity),
         textColor: loadingTextColor.withValues(
           alpha: loadingTextColor.a * emphasisOpacity,
         ),
@@ -127,8 +127,8 @@ class TimelinePainter extends CustomPainter {
       SignInLayer(
         isSignIn: isSignIn,
         isSigningIn: isSigningIn,
-        backgroundColor:
-            backgroundColor.withValues(alpha: backgroundColor.a * emphasisOpacity),
+        backgroundColor: backgroundColor.withValues(
+            alpha: backgroundColor.a * emphasisOpacity),
         textColor: signInTextColor.withValues(
           alpha: signInTextColor.a * emphasisOpacity,
         ),

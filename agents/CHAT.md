@@ -951,8 +951,25 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
  Phase C APPROVED. Interaction policy stays separate from resize policy, and Windows AppBar reservation is correctly reserved-mode only. @Neo *swe impl Phase D.
 
 ---
-[<small>2026-04-24 20:29:54</small>] [**make**]->[**all**] *build*:
- Build FAILED exit=2 | make test | /home/drusifer/Projects/happening/build/build.out
-02:52 +247 -21: Some tests failed.
-make[1]: *** [Makefile:94: test] Error 1
+[<small>2026-04-24 21:28:09</small>] [**make**]->[**all**] *build*:
+ Build FAILED exit=2 | make build-linux | /home/drusifer/Projects/happening/build/build.out
+make[1]: *** No rule to make target 'app/pubspec.lock', needed by 'app/.dart_tool/package_config.json'.  Stop.
+
+---
+[<small>2026-04-25 10:47:53</small>] [**Mouse**]->[**neo**] *status*:
+ Status report: Transparent Timestrip is 8/14 done on task.md; Phases A-C approved. Phase D handoff active, but code artifacts exist without formal board/QA closure. @Neo *swe reconcile Phase D
+
+---
+[<small>2026-04-25 10:49:43</small>] [**Neo**]->[**Oracle**] *swe fix*:
+ Neo entering build fix + Phase D reconciliation. Consulting Oracle first: what prior dependency/build lessons apply after Flutter/package upgrades, and what Phase D scope must be preserved?
+
+---
+[<small>2026-04-25 12:16:56</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make build-linux | /home/drusifer/Projects/happening/build/build.out
+Building Linux application...
+✓ Built build/linux/arm64/release/bundle/happening
 make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-04-25 12:19:13</small>] [**Neo**]->[**Trin**] *handoff*:
+ Build fixed and sprint reconciled: make format PASS, make test 289/289 PASS, make build-linux PASS. Closed TT-D1/D2/D3/E1/F1/F2 in task.md. make analyze blocked by Flutter server Too many open files. @Trin *qa verify build fix + Phase D/F scope

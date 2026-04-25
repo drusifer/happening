@@ -49,8 +49,7 @@ const double kMinIdleTimelineOpacity = 0.35;
 const double kMaxIdleTimelineOpacity = 0.75;
 
 double _clampIdleTimelineOpacity(double value) {
-  return value.clamp(kMinIdleTimelineOpacity, kMaxIdleTimelineOpacity)
-      as double;
+  return value.clamp(kMinIdleTimelineOpacity, kMaxIdleTimelineOpacity);
 }
 
 /// App-wide settings model.

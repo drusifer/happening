@@ -47,8 +47,9 @@ class _PerCalendarFakeService implements CalendarService {
 
   @override
   Future<List<CalendarEvent>> fetchEvents(String calendarId) async {
-    if (throwingIds.contains(calendarId))
+    if (throwingIds.contains(calendarId)) {
       throw Exception('cal $calendarId failed');
+    }
     return eventsForGoodCals;
   }
 

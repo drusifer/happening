@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/window/interaction_strategy/window_interaction_strategy.dart';
 import 'package:mockito/mockito.dart';
-import 'package:window_manager/window_manager.dart';
 
 import 'window_service_test.mocks.dart';
 
