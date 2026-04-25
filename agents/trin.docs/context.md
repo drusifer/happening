@@ -1,5 +1,27 @@
 # Trin Context
 
+## Transparent Timestrip Phase C UAT — 2026-04-24
+- `WindowInteractionStrategy` is now the interaction-policy seam parallel to `WindowResizeStrategy`.
+- `WindowService` delegates pass-through and focus behavior through the strategy and initializes it with the effective `WindowMode`.
+- Windows AppBar reservation/reassertion now runs only in reserved mode; switching to transparent disposes the AppBar registration.
+- Coverage now includes strategy factory behavior plus WindowService delegation/mode-switch tests.
+- Latest complete validation run recorded in chat: `make test` passed 275/275.
+
+## Transparent Timestrip Phase B UAT — 2026-04-24
+- `AppSettings` persistence now covers `windowMode` and `idleTimelineOpacity`.
+- Backward-compatible defaults remain intact for older settings files.
+- Idle opacity clamp behavior is covered in settings tests.
+- Settings update call sites now use `copyWith(...)`, so new fields are preserved instead of reset.
+- `main.dart` resolves effective window mode before `WindowService.initialize(...)`.
+- Validation: `make test` passes 264/264.
+
+## Transparent Timestrip Phase A UAT — 2026-04-24
+- Neo's Phase A scope matches the sprint board: a pass-through probe API, Linux hidden by default, and a documented hotkey implementation target.
+- `WindowService.setPassThroughEnabled(bool)` uses `setIgnoreMouseEvents(enabled, forward: true)` only when transparent pass-through is supported.
+- Unsupported platform behavior is a no-op; Linux default availability is false.
+- `make test` from the merged main `Makefile` passed 259/259, so the Makefile merge did not regress the suite.
+- Manual macOS/Windows click-through behavior is still a later smoke-test item, not a blocker for Phase A UAT.
+
 ## Calendar Fetch Threading QA — 2026-04-17
 - Expected behavior from Morpheus architecture: single-flight `_inFlightFetch`, ignored overlapping refreshes return the active Future, per-calendar fetches run sequentially, no queued follow-up.
 - QA verdict: NOT DONE. `CalendarController._scheduleFetch()` has the ignore/active-Future behavior, but `_fetchOnce()` still uses `Future.wait` across selected calendars.

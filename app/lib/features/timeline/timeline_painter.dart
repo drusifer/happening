@@ -42,6 +42,8 @@ class TimelinePainter extends CustomPainter {
     this.isSignIn = false,
     this.isSigningIn = false,
     this.signInTextColor = Colors.white,
+    this.surfaceOpacity = 1.0,
+    this.emphasisOpacity = 1.0,
   });
 
   final List<CalendarEvent> events;
@@ -66,6 +68,8 @@ class TimelinePainter extends CustomPainter {
   final bool isSignIn;
   final bool isSigningIn;
   final Color signInTextColor;
+  final double surfaceOpacity;
+  final double emphasisOpacity;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -79,7 +83,11 @@ class TimelinePainter extends CustomPainter {
 
     final layers = [
       BackgroundLayer(color: backgroundColor),
-      PastOverlayLayer(nowIndicatorX: nowIndicatorX, color: pastOverlayColor),
+      PastOverlayLayer(
+        nowIndicatorX: nowIndicatorX,
+        color:
+            pastOverlayColor.withValues(alpha: pastOverlayColor.a * surfaceOpacity),
+      ),
       TickLayer(
         layout: layout,
         now: now,
@@ -90,6 +98,7 @@ class TimelinePainter extends CustomPainter {
         backgroundColor: backgroundColor,
         fontSize: fontSize,
         alwaysUse24HourFormat: alwaysUse24HourFormat,
+        surfaceOpacity: surfaceOpacity,
       ),
       EventsLayer(
         events: events,
@@ -100,19 +109,29 @@ class TimelinePainter extends CustomPainter {
         tickColor: tickColor,
         backgroundColor: backgroundColor,
         fontSize: fontSize,
+        surfaceOpacity: surfaceOpacity,
       ),
-      NowIndicatorLayer(nowIndicatorX: nowIndicatorX, color: nowLineColor),
+      NowIndicatorLayer(
+        nowIndicatorX: nowIndicatorX,
+        color: nowLineColor.withValues(alpha: nowLineColor.a * emphasisOpacity),
+      ),
       FetchingLayer(
         isLoading: isLoading,
-        backgroundColor: backgroundColor,
-        textColor: loadingTextColor,
+        backgroundColor:
+            backgroundColor.withValues(alpha: backgroundColor.a * emphasisOpacity),
+        textColor: loadingTextColor.withValues(
+          alpha: loadingTextColor.a * emphasisOpacity,
+        ),
         fontSize: fontSize,
       ),
       SignInLayer(
         isSignIn: isSignIn,
         isSigningIn: isSigningIn,
-        backgroundColor: backgroundColor,
-        textColor: signInTextColor,
+        backgroundColor:
+            backgroundColor.withValues(alpha: backgroundColor.a * emphasisOpacity),
+        textColor: signInTextColor.withValues(
+          alpha: signInTextColor.a * emphasisOpacity,
+        ),
         fontSize: fontSize,
       ),
     ];
@@ -132,7 +151,9 @@ class TimelinePainter extends CustomPainter {
       old.isLoading != isLoading ||
       old.isSignIn != isSignIn ||
       old.isSigningIn != isSigningIn ||
-      old.alwaysUse24HourFormat != alwaysUse24HourFormat;
+      old.alwaysUse24HourFormat != alwaysUse24HourFormat ||
+      old.surfaceOpacity != surfaceOpacity ||
+      old.emphasisOpacity != emphasisOpacity;
 
   /// Semantic nodes for canvas content — makes ticks, events, and task
   /// diamonds queryable by integration tests via find.bySemanticsLabel.

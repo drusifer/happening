@@ -1,5 +1,31 @@
 # Morpheus Context
 
+## Transparent Timestrip Architecture — 2026-04-24
+- Smith Gate 1 approved transparent timestrip sprint stories with UX constraints:
+  - global hotkey primary focus path
+  - idle click-through by default
+  - hide macOS reserved/statusbar mode
+  - bounded transparency slider
+- Architecture decision: keep `WindowResizeStrategy` for geometry and add a separate `WindowInteractionStrategy` for pass-through/focus/window-mode availability.
+- Detailed architecture saved at `agents/morpheus.docs/TRANSPARENT_TIMESTRIP_ARCH_2026-04-24T15:08.md`.
+- Linux transparent mode must be capability-gated; reserved mode remains fallback/default unless verified.
+- Sprint plan approved:
+  - Root `task.md` contains Transparent Timestrip Sprint with 7 phases and 14 tasks.
+  - Review saved at `agents/morpheus.docs/transparent_timestrip_sprint_plan_review_2026-04-24T15:11.md`.
+- Phase A review complete:
+  - pass-through probe API in `WindowService` is sufficient as the interaction seam before Phase C.
+  - Linux transparent mode remains correctly capability-gated/hidden.
+  - `hotkey_manager` is an acceptable implementation target for TT-D2 and does not need to be added during Phase A.
+  - `task.md` and architecture notes now reflect the implemented spike outputs.
+- Phase B review complete:
+  - persisted `windowMode` and `idleTimelineOpacity` satisfy the settings-foundation requirement.
+  - effective mode is now available before `WindowService.initialize(...)`.
+  - `copyWith(...)` reduces risk of resetting newly introduced settings at existing update sites.
+- Phase C review complete:
+  - `WindowInteractionStrategy` now owns pass-through/focus/window-mode interaction policy separately from `WindowResizeStrategy`.
+  - `WindowService` is the orchestration point for effective mode init and interaction delegation.
+  - Windows AppBar reservation is correctly restricted to reserved mode and is disposed when mode switches to transparent.
+
 ## Calendar Fetch Threading Architecture — 2026-04-17
 - User asked for architecture before implementation: fetch calendars through a queue, but do not queue refresh requests while a refresh/fetch is pending.
 - Binding decision: two-level concurrency model.

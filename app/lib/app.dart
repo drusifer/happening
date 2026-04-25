@@ -173,12 +173,8 @@ class _HappeningAppState extends State<HappeningApp> {
     _calendar = null;
     // Clear persisted calendar selections so they don't bleed into the next account.
     final s = widget.settingsService.current;
-    widget.settingsService.update(AppSettings(
-      fontSize: s.fontSize,
-      theme: s.theme,
-      timeWindowHours: s.timeWindowHours,
-      selectedCalendarIds: const [],
-    ));
+    widget.settingsService
+        .update(s.copyWith(selectedCalendarIds: const <String>[]));
     if (mounted) setState(() => _authState = _AuthState.unauthenticated);
   }
 

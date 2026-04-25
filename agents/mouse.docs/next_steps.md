@@ -1,5 +1,5 @@
 # Next Steps
 
-- [ ] Morpheus: Tag v0.2.0 release.
-- [ ] Cypher: Assess Sprint 5 velocity and plan Sprint 6.
-- [ ] Neo: Stand by for Sprint 6 kick-off.
+- [ ] Morpheus: Review Transparent Timestrip Sprint board in `task.md` against architecture.
+- [ ] If Morpheus approves: @Neo start `*impl Phase A — Capability Spike`.
+- [ ] Mouse: Track phase-level status and keep `task.md` current after each implementation loop.

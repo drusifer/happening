@@ -1,5 +1,32 @@
 # Current Task
 
+## Transparent Timestrip Architecture — 2026-04-24
+**Status**: PHASE C APPROVED
+
+### Done
+- [x] Loaded Morpheus state and recent chat.
+- [x] Consulted Oracle via chat for prior transparency/window lessons.
+- [x] Reviewed Cypher stories and Smith Gate 1 review.
+- [x] Mapped existing `WindowService`, resize strategies, settings service, settings panel, and timeline painter structure.
+- [x] Wrote architecture plan: `agents/morpheus.docs/TRANSPARENT_TIMESTRIP_ARCH_2026-04-24T15:08.md`.
+- [x] Smith Gate 2 approved architecture.
+- [x] Mouse wrote `task.md` sprint board.
+- [x] Reviewed and approved sprint plan.
+
+### Next
+- [x] @Neo completed Phase A — Capability Spike.
+- [x] @Trin passed Phase A UAT.
+- [x] Morpheus reviewed and approved Phase A.
+- [x] @Neo completed Phase B — Settings Foundation.
+- [x] @Trin passed Phase B UAT.
+- [x] Morpheus reviewed and approved Phase B.
+- [x] @Neo completed Phase C — Window Interaction Strategy.
+- [x] @Trin passed Phase C UAT.
+- [x] Morpheus reviewed and approved Phase C.
+
+### Next
+- [ ] @Neo begin Phase D — Focus Model.
+
 ## Calendar Fetch Threading Review — 2026-04-17
 **Status**: APPROVED
 

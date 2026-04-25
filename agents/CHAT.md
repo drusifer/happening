@@ -788,3 +788,171 @@ Makefile.prj:94: warning: ignoring old recipe for target 'test'
  Build PASSED | make dist-linux | /home/drusifer/Projects/happening/build/build.out
 make[1]: Leaving directory '/home/drusifer/Projects/happening'
 Makefile.prj:94: warning: ignoring old recipe for target 'test'
+
+---
+[<small>2026-04-24 14:44:42</small>] [**User**]->[**all**] *request*:
+ ob-protocol init and load cypher
+
+---
+[<small>2026-04-24 14:45:13</small>] [**Cypher**]->[**User**] *pm resume*:
+ Cypher loaded. PM state restored: Sprint 5 planning pending; waiting on Drew answers for click-to-expand, macOS/Windows timeline, and multi-calendar UI.
+
+---
+[<small>2026-04-24 14:45:45</small>] [**Cypher**]->[**User**] *handoff*:
+ Cypher state saved. @User please answer Sprint 5 decisions: click-to-expand behavior, macOS/Windows timeline scope, and multi-calendar UI placement.
+
+---
+[<small>2026-04-24 14:59:22</small>] [**User**]->[**all**] *request*:
+ ypher *nreq transparent timestrip direction for macOS plus platform toggle and transparency slider
+
+---
+[<small>2026-04-24 14:59:54</small>] [**Cypher**]->[**Oracle**] *pm ask*:
+ @Oracle *ora ask What prior decisions/lessons exist for macOS strip reservation, click-through/transparent windows, and platform-specific reserved-space behavior?
+
+---
+[<small>2026-04-24 15:00:58</small>] [**Cypher**]->[**Smith**] *handoff*:
+ Transparent timestrip req drafted: PRD F-26/US-06 added + PM note saved. @Smith *user review focus trigger, click-through controls, macOS setting treatment, opacity slider guardrails.
+
+---
+[<small>2026-04-24 15:03:45</small>] [**User**]->[**all**] *request*:
+  *plan transparent_timestrip SPRINT
+
+---
+[<small>2026-04-24 15:05:19</small>] [**Cypher**]->[**Smith**] *pm handoff*:
+ Sprint stories ready: agents/cypher.docs/transparent_timestrip_sprint_stories_2026-04-24T15:04.md. @Smith *user review Gate 1 transparent_timestrip stories.
+
+---
+[<small>2026-04-24 15:06:03</small>] [**Smith**]->[**Morpheus**] *user approve*:
+ Gate 1 APPROVED with UX constraints: hotkey primary focus, idle pass-through by default, hide macOS reserved mode, bounded opacity slider. @Morpheus *lead arch transparent_timestrip sprint.
+
+---
+[<small>2026-04-24 15:06:21</small>] [**Morpheus**]->[**Oracle**] *lead ask*:
+ @Oracle *ora ask Before transparent_timestrip architecture: what prior patterns/lessons exist for WindowResizeStrategy, click-through, Linux transparency failures, and settings-before-window-init?
+
+---
+[<small>2026-04-24 15:07:46</small>] [**Morpheus**]->[**Smith**] *lead handoff*:
+ Architecture ready: WindowInteractionStrategy separate from resize, TimelineFocusController, settings migration, Linux capability-gate. @Smith *user feedback Gate 2 transparent_timestrip architecture.
+
+---
+[<small>2026-04-24 15:08:53</small>] [**Smith**]->[**Mouse**] *user approve*:
+ Gate 2 APPROVED. Architecture preserves UX model; notes: hotkey required, no idle clickable affordance until proven, user-facing labels, Escape dismissal, Linux transparent hidden unless verified. @Mouse *sm plan transparent_timestrip sprint.
+
+---
+[<small>2026-04-24 15:09:13</small>] [**Mouse**]->[**Oracle**] *sm ask*:
+ @Oracle *ora ask Mouse planning transparent_timestrip: current task.md is completed Sprint 6. Any active tasks/blockers that should remain on the board before replacing it?
+
+---
+[<small>2026-04-24 15:10:23</small>] [**Mouse**]->[**Morpheus**] *sm handoff*:
+ Transparent Timestrip Sprint board written to task.md: 7 phases, 14 tasks, short implementation loops and QA/UX gates. @Morpheus *lead review sprint plan.
+
+---
+[<small>2026-04-24 15:11:20</small>] [**Morpheus**]->[**Neo**] *lead approve*:
+ Sprint plan APPROVED. Transparent Timestrip Sprint is ready in task.md. Next: @Neo/@Morpheus *impl Phase A — Capability Spike.
+
+---
+[<small>2026-04-24 15:18:43</small>] [**User**]->[**all**] *request*:
+ *impl phase A
+
+---
+[<small>2026-04-24 15:19:06</small>] [**Neo**]->[**Oracle**] *swe impl*:
+ Neo entering Phase A capability spike. Consulting Oracle before implementation per protocol.
+
+---
+[<small>2026-04-24 16:56:45</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make dist-linux | /home/drusifer/Projects/happening/build/build.out
+-C app/build/linux/arm64/release bundle
+Linux package: dist/happening-0.4.0-linux-arm64.tar.gz
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-04-24 17:14:55</small>] [**Neo**]->[**Trin**] *handoff*:
+ Phase A complete: pass-through API + tests, Linux hidden, hotkey target selected, Makefile merged, make test 259/259 green. @Trin *qa uat Phase A.
+
+---
+[<small>2026-04-24 18:23:54</small>] [**Trin**]->[**Oracle**] *qa ask*:
+ @Oracle *ora ask For Transparent Timestrip Phase A UAT, confirm expected outcomes for pass-through probe behavior, Linux availability, and hotkey decision scope.
+
+---
+[<small>2026-04-24 18:23:54</small>] [**Morpheus**]->[**Oracle**] *lead ask*:
+ @Oracle *ora ask For Transparent Timestrip Phase A review, confirm whether a pass-through probe API plus deferred hotkey dependency is architecturally sufficient before Phase B/C.
+
+---
+[<small>2026-04-24 18:24:30</small>] [**Trin**]->[**Morpheus**] *handoff*:
+ Phase A UAT PASS: pass-through probe matches sprint scope, Linux stays hidden, hotkey choice remains feasibility-only, make test 259/259 green. @Morpheus *lead review Phase A.
+
+---
+[<small>2026-04-24 18:25:03</small>] [**Morpheus**]->[**Neo**] *lead approve*:
+ Phase A APPROVED. Pass-through seam is narrow and sufficient, Linux remains capability-gated, and the hotkey decision is documented without premature dependency churn. @Neo *swe impl Phase B.
+
+---
+[<small>2026-04-24 18:32:51</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+02:04 +264: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-04-24 18:33:48</small>] [**Neo**]->[**Trin**] *handoff*:
+ Phase B complete: persisted window mode + idle opacity, startup effective mode resolved before window init, make test 264/264 green. @Trin *qa uat Phase B.
+
+---
+[<small>2026-04-24 18:33:58</small>] [**Trin**]->[**Oracle**] *qa ask*:
+ @Oracle *ora ask For Transparent Timestrip Phase B UAT, confirm expected persistence/migration behavior for windowMode, idle opacity clamping, and effective mode before window init.
+
+---
+[<small>2026-04-24 18:33:58</small>] [**Morpheus**]->[**Oracle**] *lead ask*:
+ @Oracle *ora ask For Transparent Timestrip Phase B review, confirm whether persisting window mode/opacity and resolving effective mode before window init is the right architectural stop before Phase C.
+
+---
+[<small>2026-04-24 18:34:29</small>] [**Trin**]->[**Morpheus**] *handoff*:
+ Phase B UAT PASS: settings persistence/migration is correct, startup effective mode is resolved before window init, make test 264/264 green. @Morpheus *lead review Phase B.
+
+---
+[<small>2026-04-24 18:35:03</small>] [**Morpheus**]->[**Neo**] *lead approve*:
+ Phase B APPROVED. Settings foundation is sufficient: persisted mode/opacity, safe startup mode resolution, and preserved update paths. @Neo *swe impl Phase C.
+
+---
+[<small>2026-04-24 19:42:43</small>] [**User**]->[**all**] *request*:
+ *bloop tdd impl phase C
+
+---
+[<small>2026-04-24 19:42:54</small>] [**Neo**]->[**Oracle**] *swe impl*:
+ Neo entering Phase C. Consulting Oracle before introducing WindowInteractionStrategy and Windows AppBar mode gating.
+
+---
+[<small>2026-04-24 19:50:43</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+01:52 +275: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-04-24 19:51:37</small>] [**Neo**]->[**Trin**] *handoff*:
+ Phase C complete: interaction strategy layer added, WindowService delegates focus/pass-through, Windows AppBar is reserved-mode only, make test 275/275 green. @Trin *qa uat Phase C.
+
+---
+[<small>2026-04-24 19:52:56</small>] [**Trin**]->[**Oracle**] *qa ask*:
+ @Oracle *ora ask For Transparent Timestrip Phase C UAT, what behavior should QA assert for WindowInteractionStrategy and Windows AppBar mode gating?
+
+---
+[<small>2026-04-24 19:52:56</small>] [**Morpheus**]->[**Oracle**] *lead ask*:
+ @Oracle *ora ask For Transparent Timestrip Phase C architecture review, confirm the intended boundaries: interaction policy stays separate from resize policy and Windows AppBar reservation is reserved-mode only.
+
+---
+[<small>2026-04-24 19:55:17</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+01:54 +275: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-04-24 19:55:33</small>] [**Trin**]->[**Morpheus**] *handoff*:
+ Phase C UAT PASS: interaction policy is isolated in WindowInteractionStrategy, WindowService delegates focus/pass-through, Windows AppBar is reserved-mode only, make test 275/275 green. @Morpheus *lead review Phase C.
+
+---
+[<small>2026-04-24 19:55:33</small>] [**Morpheus**]->[**Neo**] *lead approve*:
+ Phase C APPROVED. Interaction policy stays separate from resize policy, and Windows AppBar reservation is correctly reserved-mode only. @Neo *swe impl Phase D.
+
+---
+[<small>2026-04-24 20:29:54</small>] [**make**]->[**all**] *build*:
+ Build FAILED exit=2 | make test | /home/drusifer/Projects/happening/build/build.out
+02:52 +247 -21: Some tests failed.
+make[1]: *** [Makefile:94: test] Error 1
+make[1]: Leaving directory '/home/drusifer/Projects/happening'

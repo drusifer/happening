@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:happening/core/settings/settings_service.dart';
 
@@ -69,6 +70,24 @@ void main() {
       expect(svc.current.theme, AppTheme.dark);
       expect(svc.current.timeWindowHours, 8);
       expect(svc.current.selectedCalendarIds, isEmpty);
+      expect(svc.current.windowMode, WindowMode.reserved);
+      expect(svc.current.idleTimelineOpacity, 0.55);
+    });
+
+    test('load() clamps idle opacity below supported range', () async {
+      File('${tmpDir.path}/settings.json').writeAsStringSync(jsonEncode({
+        'idleTimelineOpacity': 0.10,
+      }));
+      await svc.load();
+      expect(svc.current.idleTimelineOpacity, kMinIdleTimelineOpacity);
+    });
+
+    test('load() clamps idle opacity above supported range', () async {
+      File('${tmpDir.path}/settings.json').writeAsStringSync(jsonEncode({
+        'idleTimelineOpacity': 0.95,
+      }));
+      await svc.load();
+      expect(svc.current.idleTimelineOpacity, kMaxIdleTimelineOpacity);
     });
 
     // ── Update ────────────────────────────────────────────────────────────
@@ -92,6 +111,8 @@ void main() {
         theme: AppTheme.light,
         timeWindowHours: 12,
         selectedCalendarIds: ['cal-1', 'cal-2'],
+        windowMode: WindowMode.transparent,
+        idleTimelineOpacity: 0.70,
       );
       await svc.update(settings);
 
@@ -101,6 +122,8 @@ void main() {
       expect(json['theme'], 'light');
       expect(json['timeWindowHours'], 12);
       expect(json['selectedCalendarIds'], ['cal-1', 'cal-2']);
+      expect(json['windowMode'], 'transparent');
+      expect(json['idleTimelineOpacity'], 0.70);
     });
 
     test('reload after update returns all persisted values', () async {
@@ -109,6 +132,8 @@ void main() {
         theme: AppTheme.system,
         timeWindowHours: 24,
         selectedCalendarIds: ['primary'],
+        windowMode: WindowMode.transparent,
+        idleTimelineOpacity: 0.40,
       );
       await svc.update(settings);
 
@@ -119,6 +144,32 @@ void main() {
       expect(svc2.current.theme, AppTheme.system);
       expect(svc2.current.timeWindowHours, 24);
       expect(svc2.current.selectedCalendarIds, ['primary']);
+      expect(svc2.current.windowMode, WindowMode.transparent);
+      expect(svc2.current.idleTimelineOpacity, 0.40);
+    });
+
+    test('effectiveWindowMode forces transparent on macOS', () {
+      const settings = AppSettings(windowMode: WindowMode.reserved);
+      expect(
+        settings.effectiveWindowMode(TargetPlatform.macOS),
+        WindowMode.transparent,
+      );
+    });
+
+    test('effectiveWindowMode forces reserved on Linux', () {
+      const settings = AppSettings(windowMode: WindowMode.transparent);
+      expect(
+        settings.effectiveWindowMode(TargetPlatform.linux),
+        WindowMode.reserved,
+      );
+    });
+
+    test('effectiveWindowMode preserves user choice on Windows', () {
+      const settings = AppSettings(windowMode: WindowMode.transparent);
+      expect(
+        settings.effectiveWindowMode(TargetPlatform.windows),
+        WindowMode.transparent,
+      );
     });
 
     // ── FontSize enum ─────────────────────────────────────────────────────

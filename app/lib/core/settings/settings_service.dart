@@ -36,6 +36,23 @@ enum AppTheme {
       .firstWhere((e) => e.name == val, orElse: () => AppTheme.dark);
 }
 
+/// Persisted window interaction mode preference.
+enum WindowMode {
+  transparent,
+  reserved;
+
+  static WindowMode fromString(String val) => WindowMode.values
+      .firstWhere((e) => e.name == val, orElse: () => WindowMode.reserved);
+}
+
+const double kMinIdleTimelineOpacity = 0.35;
+const double kMaxIdleTimelineOpacity = 0.75;
+
+double _clampIdleTimelineOpacity(double value) {
+  return value.clamp(kMinIdleTimelineOpacity, kMaxIdleTimelineOpacity)
+      as double;
+}
+
 /// App-wide settings model.
 class AppSettings {
   const AppSettings({
@@ -43,18 +60,49 @@ class AppSettings {
     this.theme = AppTheme.dark,
     this.timeWindowHours = 8,
     this.selectedCalendarIds = const [],
+    this.windowMode = WindowMode.reserved,
+    this.idleTimelineOpacity = 0.55,
   });
 
   final FontSize fontSize;
   final AppTheme theme;
   final int timeWindowHours;
   final List<String> selectedCalendarIds;
+  final WindowMode windowMode;
+  final double idleTimelineOpacity;
+
+  /// Effective mode after platform reliability rules are applied.
+  WindowMode effectiveWindowMode(TargetPlatform platform) {
+    if (platform == TargetPlatform.macOS) return WindowMode.transparent;
+    if (platform == TargetPlatform.linux) return WindowMode.reserved;
+    return windowMode;
+  }
+
+  AppSettings copyWith({
+    FontSize? fontSize,
+    AppTheme? theme,
+    int? timeWindowHours,
+    List<String>? selectedCalendarIds,
+    WindowMode? windowMode,
+    double? idleTimelineOpacity,
+  }) {
+    return AppSettings(
+      fontSize: fontSize ?? this.fontSize,
+      theme: theme ?? this.theme,
+      timeWindowHours: timeWindowHours ?? this.timeWindowHours,
+      selectedCalendarIds: selectedCalendarIds ?? this.selectedCalendarIds,
+      windowMode: windowMode ?? this.windowMode,
+      idleTimelineOpacity: idleTimelineOpacity ?? this.idleTimelineOpacity,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         'fontSize': fontSize.name,
         'theme': theme.name,
         'timeWindowHours': timeWindowHours,
         'selectedCalendarIds': selectedCalendarIds,
+        'windowMode': windowMode.name,
+        'idleTimelineOpacity': idleTimelineOpacity,
       };
 
   factory AppSettings.fromJson(Map<String, dynamic> json) => AppSettings(
@@ -65,6 +113,11 @@ class AppSettings {
                 ?.map((e) => e.toString())
                 .toList() ??
             const [],
+        windowMode:
+            WindowMode.fromString(json['windowMode'] as String? ?? 'reserved'),
+        idleTimelineOpacity: _clampIdleTimelineOpacity(
+          (json['idleTimelineOpacity'] as num? ?? 0.55).toDouble(),
+        ),
       );
 }
 
@@ -102,7 +155,11 @@ class SettingsService extends ChangeNotifier {
 
   /// Updates settings and saves to disk.
   Future<void> update(AppSettings newSettings) async {
-    _current = newSettings;
+    _current = newSettings.copyWith(
+      idleTimelineOpacity: _clampIdleTimelineOpacity(
+        newSettings.idleTimelineOpacity,
+      ),
+    );
     _controller.add(_current);
     notifyListeners();
     try {

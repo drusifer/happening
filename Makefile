@@ -1,20 +1,213 @@
 .DEFAULT_GOAL := help
 
+# ── Bob Protocol Configuration ───────────────────────────────────────────────
+# Detect if this file is being run directly as Makefile.bob
+_IS_BOB_ENTRY := $(filter %Makefile.bob,$(firstword $(MAKEFILE_LIST)))
+
 ifdef MKF_ACTIVE
 
-# ── Project targets (invoked by mkf via re-invocation) ───────────────────────
-# Included here so mkf can find them when it re-runs: make MKF_ACTIVE=1 <target>
--include Makefile.prj
+# ── Re-invocation Layer ──────────────────────────────────────────────────────
+# Included by mkf.py to run the actual target.
 
-# ── Real recipes (invoked by mkf, not directly by the user) ─────────────────
+# ── Happening Project Targets ────────────────────────────────────────────────
 
-.PHONY: tldr test via_index install_bob update_bob pull_bob clean_bob diff_bob
+ifneq ($(OS),Windows_NT)
+  SHELL := /bin/bash
+endif
+
+FLUTTER_SDK  := $(CURDIR)/.flutter/flutter
+FLUTTER      := $(FLUTTER_SDK)/bin/flutter
+DART         := $(FLUTTER_SDK)/bin/dart
+APP_DIR      := app
+PROXY_DIR    := proxy
+DIST_DIR     := dist
+
+ifeq ($(OS),Windows_NT)
+  VERSION    := $(shell powershell -Command "(Select-String -Path $(APP_DIR)/pubspec.yaml -Pattern '^version:').Line.Split(' ')[1]")
+else
+  VERSION    := $(shell grep '^version:' $(APP_DIR)/pubspec.yaml | awk '{print $$2}')
+endif
+
+ifeq ($(OS),Windows_NT)
+  ARCH       := x64
+else
+  UNAME_ARCH := $(shell uname -m)
+  ifeq ($(UNAME_ARCH),aarch64)
+    ARCH     := arm64
+  else ifeq ($(UNAME_ARCH),arm64)
+    ARCH     := arm64
+  else
+    ARCH     := x64
+  endif
+endif
+
+LLVM_BIN     := /usr/lib/llvm-20/bin
+PUB_STAMP    := $(APP_DIR)/.dart_tool/package_config.json
+
+$(FLUTTER):
+ifeq ($(OS),Windows_NT)
+	@powershell -Command "if (-not (Test-Path '$(FLUTTER)')) { Write-Host '==> Flutter SDK not found — cloning stable into .flutter/flutter ...'; mkdir -p .flutter; git clone https://github.com/flutter/flutter.git --branch stable --depth 1 .flutter/flutter; Write-Host '✓ flutter SDK cloned' }"
+else
+	./scripts/setup.sh
+endif
+
+.PHONY: setup install-hooks
+setup: install-hooks
+	./scripts/setup.sh
+	cd $(APP_DIR) && $(FLUTTER) pub get
+
+$(PUB_STAMP): $(FLUTTER) $(APP_DIR)/pubspec.yaml $(APP_DIR)/pubspec.lock
+	cd $(APP_DIR) && $(FLUTTER) pub get
+
+install-hooks:
+ifeq ($(OS),Windows_NT)
+	@powershell -Command "Copy-Item -Force scripts/pre-commit .git/hooks/pre-commit"
+	@echo "Git hooks installed."
+else
+	@cp scripts/pre-commit .git/hooks/pre-commit
+	@chmod +x .git/hooks/pre-commit
+	@echo "Git hooks installed."
+endif
+
+.PHONY: run run-linux run-macos run-windows run-windows-test run-windows-simple
+run:
+	@echo "Please specify a platform: make run-linux, run-macos, or run-windows"
+
+run-linux: $(PUB_STAMP)
+	cd $(APP_DIR) && PATH="$(FLUTTER_SDK)\bin:$(LLVM_BIN):$$PATH" GDK_BACKEND=x11 XAUTHORITY=$$(ls /run/user/$$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1) $(FLUTTER) run -d linux
+
+run-macos: $(PUB_STAMP)
+	cd $(APP_DIR) && $(FLUTTER) run -d macos
+
+run-windows: $(PUB_STAMP)
+	@powershell -Command "if (Test-Path $(APP_DIR)/windows/flutter/ephemeral) { Remove-Item -Recurse -Force $(APP_DIR)/windows/flutter/ephemeral }"
+	cd $(APP_DIR) && $(FLUTTER) run -d windows
+
+run-windows-test: $(PUB_STAMP)
+	cd $(APP_DIR) && $(FLUTTER) run -d windows --target lib/windows_test.dart
+
+run-windows-simple: $(PUB_STAMP)
+	cd $(APP_DIR) && $(FLUTTER) run -d windows --target lib/simple_main.dart
+
+.PHONY: test update-goldens test-watch
+test: $(PUB_STAMP)
+	cd $(APP_DIR) && $(FLUTTER) test --coverage
+
+update-goldens: $(PUB_STAMP)
+	cd $(APP_DIR) && $(FLUTTER) test --update-goldens test/goldens/
+
+test-watch: $(PUB_STAMP)
+	cd $(APP_DIR) && $(FLUTTER) test --coverage --watch
+
+.PHONY: integration-test integration-test-linux integration-test-macos integration-test-windows
+integration-test:
+	@echo "Please specify a platform: make integration-test-linux, integration-test-macos, or integration-test-windows"
+
+integration-test-linux: $(PUB_STAMP)
+	cd $(APP_DIR) && PATH="$(FLUTTER_SDK)\bin:$(LLVM_BIN):$$PATH" GDK_BACKEND=x11 XAUTHORITY=$$(ls /run/user/$$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1) $(FLUTTER) test integration_test/ -d linux
+
+integration-test-macos: $(PUB_STAMP)
+	cd $(APP_DIR) && $(FLUTTER) test integration_test/ -d macos
+
+integration-test-windows: $(PUB_STAMP)
+	cd $(APP_DIR) && $(FLUTTER) test integration_test/ -d windows
+
+.PHONY: build-linux build-macos build-windows
+build-linux: $(PUB_STAMP)
+	cd $(APP_DIR) && PATH="$(FLUTTER_SDK)\bin:$(LLVM_BIN):$$PATH" $(FLUTTER) build linux --release
+
+build-macos: $(PUB_STAMP)
+	cd $(APP_DIR) && $(FLUTTER) build macos --release
+
+build-windows: $(PUB_STAMP)
+	cd $(APP_DIR) && $(FLUTTER) build windows --release
+
+.PHONY: dist dist-linux dist-macos dist-windows dist-windows-msix dist-proxy-linux
+dist: dist-linux
+	@echo "Done. Artifacts in $(DIST_DIR)/"
+
+dist-linux: build-linux
+	@mkdir -p $(DIST_DIR)
+	tar -czf $(DIST_DIR)/happening-$(VERSION)-linux-$(ARCH).tar.gz \
+	    -C $(APP_DIR)/build/linux/$(ARCH)/release bundle
+	@echo "Linux package: $(DIST_DIR)/happening-$(VERSION)-linux-$(ARCH).tar.gz"
+
+dist-macos: build-macos
+	@mkdir -p $(DIST_DIR)
+	$(eval DMG := $(DIST_DIR)/happening-$(VERSION)-macos-$(ARCH).dmg)
+	hdiutil create -volname "Happening $(VERSION)" \
+	    -srcfolder $(APP_DIR)/build/macos/Build/Products/Release/happening.app \
+	    -ov -format UDZO \
+	    $(DMG)
+	@echo "macOS package: $(DMG)"
+
+dist-windows: build-windows
+	@cmd /c if not exist $(DIST_DIR) mkdir $(DIST_DIR)
+	cd $(APP_DIR)/build/windows/x64/runner && zip -r $(CURDIR)/$(DIST_DIR)/happening-$(VERSION)-windows-x64.zip Release
+	@echo "Windows package: $(DIST_DIR)/happening-$(VERSION)-windows-x64.zip"
+
+dist-windows-msix: build-windows
+	@cmd /c if not exist $(DIST_DIR) mkdir $(DIST_DIR)
+	cd $(APP_DIR) && $(DART) run msix:create
+	@powershell -Command "Copy-Item -Path '$(APP_DIR)/build/windows/x64/runner/Release/happening.msix' -Destination '$(DIST_DIR)/happening-$(VERSION)-windows-x64.msix' -Force"
+	@echo "Windows MSIX package: $(DIST_DIR)/happening-$(VERSION)-windows-x64.msix"
+
+dist-proxy-linux: proxy-setup
+	@mkdir -p $(DIST_DIR)
+	$(DART) compile exe $(PROXY_DIR)/bin/server.dart \
+	    -o $(DIST_DIR)/happening-proxy-$(VERSION)-linux-$(ARCH)
+	@echo "Proxy binary: $(DIST_DIR)/happening-proxy-$(VERSION)-linux-$(ARCH)"
+
+.PHONY: format analyze lint lint-style lint-metrics lint-format
+format: $(PUB_STAMP)
+	cd $(APP_DIR) && $(DART) format lib/ test/
+
+analyze: $(PUB_STAMP)
+	cd $(APP_DIR) && $(FLUTTER) analyze
+
+lint: lint-style lint-metrics lint-format
+
+lint-style: $(PUB_STAMP)
+	cd $(APP_DIR) && $(FLUTTER) analyze --fatal-warnings
+
+lint-metrics: $(PUB_STAMP)
+	cd $(APP_DIR) && $(DART) run dart_code_linter:metrics check-unused-files lib
+	cd $(APP_DIR) && $(DART) run dart_code_linter:metrics analyze lib --fatal-style --fatal-performance --fatal-warnings
+
+lint-format: $(PUB_STAMP)
+	cd $(APP_DIR) && $(DART) format --output=none --set-exit-if-changed lib/ test/
+
+PROXY_IMAGE  := localhost/happening-proxy
+PROXY_BIN    := $(DIST_DIR)/happening-proxy-$(VERSION)-linux-$(ARCH)
+PROXY_TAR    := $(DIST_DIR)/happening-proxy-$(VERSION).tar
+
+.PHONY: proxy proxy-setup export-proxy-image
+proxy-setup: $(DART)
+	cd $(PROXY_DIR) && $(DART) pub get
+
+proxy: proxy-setup
+	@test -n "$$GOOGLE_CLIENT_SECRET" || \
+		(echo "Error: GOOGLE_CLIENT_SECRET is not set. Run: export GOOGLE_CLIENT_SECRET=<secret>"; exit 1)
+	cd $(PROXY_DIR) && $(DART) run bin/server.dart
+
+export-proxy-image: dist-proxy-linux ## Compile proxy + build container image + export tar to dist/
+	cp $(PROXY_BIN) $(PROXY_DIR)/bin/happening-proxy
+	docker build -t $(PROXY_IMAGE):$(VERSION) $(PROXY_DIR)
+	docker save -o $(PROXY_TAR) $(PROXY_IMAGE):$(VERSION)
+	rm $(PROXY_DIR)/bin/happening-proxy
+	@echo "Image exported to $(PROXY_TAR)"
+	@echo "Deploy with: make -C /path/to/pi-patch/cluster deploy-happening TAR=$(CURDIR)/$(PROXY_TAR) VERSION=$(VERSION)"
+
+.PHONY: clean
+clean:
+	cd $(APP_DIR) && $(FLUTTER) clean
+
+# ── Bob Protocol Targets ─────────────────────────────────────────────────────
+
+.PHONY: tldr via_index install_bob update_bob pull_bob clean_bob diff_bob
 
 tldr: ## Show TL;DR summaries from all project files (quick orientation for agents)
 	@rg --no-heading "TL;DR:" --glob "*.md" -N | sed 's|^\./||' | sort
-
-test: ## Run unit tests
-	@python -m unittest discover -s tests
 
 via_index: ## Build the via index required by the via MCP server
 	@via index "$(CURDIR)"
@@ -37,10 +230,19 @@ install_bob: ## Copy agents into a project and set up skill links (usage: make i
 	done
 	@cp agents/templates/_template_CHAT.md $(TARGET)/agents/CHAT.md
 	@echo "Installing Makefile into $(TARGET)..."
-	@if [ -f "$(TARGET)/Makefile" ] && ! grep -q "MKF_ACTIVE" "$(TARGET)/Makefile"; then \
-		mv "$(TARGET)/Makefile" "$(TARGET)/Makefile.prj" && echo "  Renamed: Makefile -> Makefile.prj (project targets preserved)"; \
+	@if [ -f "$(TARGET)/Makefile" ]; then \
+		if grep -q "MKF_ACTIVE" "$(TARGET)/Makefile"; then \
+			cp Makefile "$(TARGET)/Makefile" && echo "  Updated: Makefile (bob-managed)"; \
+		else \
+			cp Makefile "$(TARGET)/Makefile.bob" && echo "  Installed: Makefile.bob"; \
+			if ! grep -q "include Makefile.bob" "$(TARGET)/Makefile"; then \
+				echo "include Makefile.bob" | cat - "$(TARGET)/Makefile" > "$(TARGET)/Makefile.tmp" && mv "$(TARGET)/Makefile.tmp" "$(TARGET)/Makefile"; \
+				echo "  Modified: Makefile (included Makefile.bob at top)"; \
+			fi; \
+		fi; \
+	else \
+		cp Makefile "$(TARGET)/Makefile" && echo "  Installed: Makefile (bob-managed)"; \
 	fi
-	@cp Makefile "$(TARGET)/Makefile" && echo "  Installed: Makefile (bob-managed, includes Makefile.prj)"
 	@echo "Setting up Claude skill links..."
 	@python $(TARGET)/agents/tools/setup_agent_links.py
 	@echo ""
@@ -65,10 +267,19 @@ update_bob: ## Update bob-protocol personas, skills, tools, and templates in a t
 	done
 	@[ -f $(TARGET)/agents/CHAT.md ] || cp agents/templates/_template_CHAT.md $(TARGET)/agents/CHAT.md
 	@echo "Updating Makefile in $(TARGET)..."
-	@if [ -f "$(TARGET)/Makefile" ] && ! grep -q "MKF_ACTIVE" "$(TARGET)/Makefile"; then \
-		mv "$(TARGET)/Makefile" "$(TARGET)/Makefile.prj" && echo "  Renamed: Makefile -> Makefile.prj (project targets preserved)"; \
+	@if [ -f "$(TARGET)/Makefile" ]; then \
+		if grep -q "MKF_ACTIVE" "$(TARGET)/Makefile"; then \
+			cp Makefile "$(TARGET)/Makefile" && echo "  Updated: Makefile (bob-managed)"; \
+		else \
+			cp Makefile "$(TARGET)/Makefile.bob" && echo "  Updated: Makefile.bob"; \
+			if ! grep -q "include Makefile.bob" "$(TARGET)/Makefile"; then \
+				echo "include Makefile.bob" | cat - "$(TARGET)/Makefile" > "$(TARGET)/Makefile.tmp" && mv "$(TARGET)/Makefile.tmp" "$(TARGET)/Makefile"; \
+				echo "  Modified: Makefile (included Makefile.bob at top)"; \
+			fi; \
+		fi; \
+	else \
+		cp Makefile "$(TARGET)/Makefile" && echo "  Updated: Makefile (bob-managed)"; \
 	fi
-	@cp Makefile "$(TARGET)/Makefile" && echo "  Updated: Makefile"
 	@echo "Updating Claude skill links..."
 	@python $(TARGET)/agents/tools/setup_agent_links.py
 	@echo ""
@@ -135,7 +346,16 @@ else
 #   make tldr V=-vv        stderr + filtered failures to terminal
 #   make tldr V=-vvv       stderr + full stdout to terminal
 
-.PHONY: help chat test via_index install_bob update_bob pull_bob clean_bob diff_bob
+.PHONY: help chat install_bob update_bob pull_bob clean_bob diff_bob
+.PHONY: setup install-hooks run run-linux run-macos run-windows run-windows-test run-windows-simple
+.PHONY: test update-goldens test-watch integration-test integration-test-linux integration-test-macos integration-test-windows
+.PHONY: build-linux build-macos build-windows dist dist-linux dist-macos dist-windows dist-windows-msix dist-proxy-linux
+.PHONY: format analyze lint lint-style lint-metrics lint-format proxy proxy-setup export-proxy-image clean tldr via_index
+
+MKF_TARGETS := setup install-hooks run run-linux run-macos run-windows run-windows-test run-windows-simple \
+	test update-goldens test-watch integration-test integration-test-linux integration-test-macos integration-test-windows \
+	build-linux build-macos build-windows dist dist-linux dist-macos dist-windows dist-windows-msix dist-proxy-linux \
+	format analyze lint lint-style lint-metrics lint-format proxy proxy-setup export-proxy-image clean tldr via_index
 
 install_bob: ## Copy agents into a project and set up skill links (usage: make install_bob TARGET=/path/to/project)
 	@$(MAKE) MKF_ACTIVE=1 install_bob TARGET="$(TARGET)"
@@ -168,13 +388,10 @@ help: ## Show available make targets
 	@echo "    make update_bob V=-vvv # full output"
 	@echo ""
 	@echo "  Targets:"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "    \033[36m%-22s\033[0m %s\n", $$1, $$2}'
-	@if [ -f Makefile.prj ]; then \
-		echo ""; \
-		echo "  Project targets (Makefile.prj):"; \
-		grep -E '^[a-zA-Z][a-zA-Z0-9_-]*:' Makefile.prj | \
-		awk 'BEGIN {FS = ":.*?## "}; /##/ {printf "    \033[36m%-22s\033[0m %s\n", $$1, $$2} !/##/ {split($$0,a,":"); printf "    \033[36m%-22s\033[0m\n", a[1]}'; \
-	fi
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / && !seen[$$1]++ {printf "    \033[36m%-22s\033[0m %s\n", $$1, $$2}' $(firstword $(MAKEFILE_LIST))
+	@echo ""
+	@echo "  Project targets:"
+	@for target in $(MKF_TARGETS); do printf "    \033[36m%-22s\033[0m\n" "$$target"; done
 	@echo ""
 
 chat: ## Post a message to CHAT.md (usage: make chat MSG="<msg>" [PERSONA="<name>"] [CMD="<cmd>"] [TO="<recipient>"])
@@ -184,13 +401,17 @@ chat: ## Post a message to CHAT.md (usage: make chat MSG="<msg>" [PERSONA="<name
 		$(if $(CMD),--cmd "$(CMD)") \
 		$(if $(TO),--to "$(TO)")
 
-test: ## Run unit tests
+$(MKF_TARGETS):
 	@./agents/tools/mkf.py $(V) $@
 
-via_index: ## Build the via index required by the via MCP server
-	@./agents/tools/mkf.py $(V) $@
-
+# Interception logic: 
+# If we are the entry point (direct make call), intercept everything.
+# If we are included, we only provide targets, unless specified.
+ifeq ($(MKF_ACTIVE),)
+ifdef _IS_BOB_ENTRY
 %:
 	@./agents/tools/mkf.py $(V) $@
+endif
+endif
 
 endif

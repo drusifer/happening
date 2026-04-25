@@ -1,5 +1,35 @@
 # Neo Context
 
+## Transparent Timestrip Phase C — 2026-04-24
+- Added `WindowInteractionStrategy` and platform implementations for macOS, Windows, and Linux.
+- `WindowService` now owns both resize and interaction strategies without mixing their responsibilities.
+- Added `setInteractionFocused(bool)` and `setWindowMode(WindowMode)` to `WindowService`.
+- Windows AppBar registration now runs only in reserved mode; switching to transparent disposes the AppBar registration.
+- Added direct tests for interaction strategies and `WindowService` delegation behavior.
+- Validation: `make test` passes 275/275.
+
+## Transparent Timestrip Phase B — 2026-04-24
+- Added `WindowMode` and `idleTimelineOpacity` to `AppSettings`.
+- Added `AppSettings.copyWith(...)` so settings updates preserve newly introduced fields.
+- Added `effectiveWindowMode(TargetPlatform)` to centralize platform-safe startup mode resolution:
+  - macOS forces transparent
+  - Linux forces reserved
+  - Windows preserves persisted user choice
+- `main.dart` now resolves the effective mode before `WindowService.initialize()`.
+- `WindowService.initialize(...)` accepts and stores `initialWindowMode` without changing interaction/geometry behavior yet.
+- Settings tests now cover backward-compatible migration, opacity clamping, persisted round-trip, and effective mode resolution.
+- Validation: `make test` passes 264/264.
+
+## Transparent Timestrip Phase A — 2026-04-24
+- Phase A capability spike implemented and handed to Trin.
+- `WindowService` now has `supportsTransparentPassThrough()` and `setPassThroughEnabled(bool)`.
+- `setPassThroughEnabled()` calls `window_manager.setIgnoreMouseEvents(enabled, forward: true)` only when transparent pass-through is supported.
+- Linux transparent mode stays unavailable by default this sprint due prior real-session failure evidence: static transparent/click-through attempt produced an unusable black bar.
+- Unit coverage added for pass-through enable, disable, unsupported no-op, and Linux default availability.
+- Hotkey decision: use `hotkey_manager` in TT-D2; defer adding dependency until global focus hotkey wiring starts.
+- `Makefile.prj` targets were merged into `Makefile`; `make test` now routes to Flutter tests through mkf and passes.
+- Validation: `make format` passes; `make test` passes 259/259.
+
 ## Timeline Strip Compact Platform Time Format — 2026-04-17
 - Drew clarified the time strip should stay compact: hour ticks only show the hour, and half-hour ticks show `30`.
 - Updated `TickLayer` to use the platform 12/24-hour preference without full minute text:

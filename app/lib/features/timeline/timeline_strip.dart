@@ -14,6 +14,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/time/clock_service.dart';
 import 'package:happening/core/util/logger.dart';
@@ -22,6 +23,8 @@ import 'package:happening/features/calendar/calendar_controller.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/timeline/countdown_display.dart';
 import 'package:happening/features/timeline/expansion_logic.dart';
+import 'package:happening/features/timeline/focus/timeline_focus_controller.dart';
+import 'package:happening/features/timeline/focus/timeline_focus_hotkey.dart';
 import 'package:happening/features/timeline/hover/hover_controller.dart';
 import 'package:happening/features/timeline/hover_detail_overlay.dart';
 import 'package:happening/features/timeline/settings_panel.dart';
@@ -42,6 +45,8 @@ class TimelineStrip extends StatefulWidget {
     this.onCancelSignIn,
     this.isLoading = false,
     this.enableAnimations = true,
+    this.focusHotkeyBinding,
+    this.platformOverride,
   });
 
   final List<CalendarEvent> events;
@@ -62,6 +67,8 @@ class TimelineStrip extends StatefulWidget {
 
   /// Whether to run repeating animations. Disable in tests to allow pumpAndSettle.
   final bool enableAnimations;
+  final TimelineFocusHotkeyBinding? focusHotkeyBinding;
+  final TargetPlatform? platformOverride;
 
   @override
   State<TimelineStrip> createState() => _TimelineStripState();
@@ -71,11 +78,17 @@ class _TimelineStripState extends State<TimelineStrip>
     with WidgetsBindingObserver {
   late final WindowService _windowService;
   late final HoverController _hoverController;
+  late final TimelineFocusController _focusController;
+  late final TimelineFocusHotkeyBinding _focusHotkeyBinding;
+  late final FocusNode _keyboardFocusNode;
   final _flashNotifier = ValueNotifier<double>(0.0);
   Timer? _flashTimer;
+  Timer? _focusIndicatorTimer;
   CalendarEvent? _hoveredEvent;
   bool _isHoveringStrip = false;
   bool _isSettingsOpen = false;
+  bool _showFocusIndicator = false;
+  bool _focusInitialized = false;
   late Stream<DateTime> _paintTicks;
   late Stream<DateTime> _countdownTicks;
 
@@ -102,22 +115,35 @@ class _TimelineStripState extends State<TimelineStrip>
     _paintTicks = widget.clockService.tick10s;
     _countdownTicks = widget.clockService.tick1s;
     _hoverController = HoverController.create(_windowService);
+    _keyboardFocusNode = FocusNode(debugLabel: 'TimelineStripFocus');
+    _focusController = TimelineFocusController(
+      windowService: _windowService,
+      initialWindowMode: _effectiveWindowMode(),
+    );
+    _focusHotkeyBinding = widget.focusHotkeyBinding ??
+        HotkeyManagerTimelineFocusHotkeyBinding(
+          platformOverride: _targetPlatform,
+        );
     _windowService.isExpandedNotifier.addListener(_onExpansionChanged);
+    _focusController.isFocusedNotifier.addListener(_onFocusChanged);
 
     // S5-FIX: Listen to settings changes to update heights and trigger rebuild
     widget.settingsService.addListener(_onSettingsChanged);
 
     WidgetsBinding.instance.addObserver(this);
     _updateHeights();
+    unawaited(_syncWindowBehavior());
     _collidingIds = detectCollisions(widget.events);
     unawaited(AppLogger.debug('TimelineStrip: Initializing'));
     // ALWAYS call collapse on init to force initial state regardless of OS/service previous state.
     unawaited(_windowService.collapse());
+    unawaited(_focusHotkeyBinding.register(_focusFromHotkey));
   }
 
   void _onSettingsChanged() {
     if (mounted) {
       _updateHeights();
+      unawaited(_syncWindowBehavior());
       setState(() {});
     }
   }
@@ -145,11 +171,16 @@ class _TimelineStripState extends State<TimelineStrip>
   @override
   void dispose() {
     _windowService.isExpandedNotifier.removeListener(_onExpansionChanged);
+    _focusController.isFocusedNotifier.removeListener(_onFocusChanged);
     widget.settingsService.removeListener(_onSettingsChanged);
     WidgetsBinding.instance.removeObserver(this);
     _hoverController.dispose();
     _flashTimer?.cancel();
+    _focusIndicatorTimer?.cancel();
     _flashNotifier.dispose();
+    _keyboardFocusNode.dispose();
+    unawaited(_focusHotkeyBinding.unregister());
+    _focusController.dispose();
     super.dispose();
   }
 
@@ -157,6 +188,94 @@ class _TimelineStripState extends State<TimelineStrip>
     if (mounted) {
       setState(() {});
     }
+  }
+
+  TargetPlatform get _targetPlatform {
+    if (widget.platformOverride != null) return widget.platformOverride!;
+    if (Platform.isMacOS) return TargetPlatform.macOS;
+    if (Platform.isWindows) return TargetPlatform.windows;
+    if (Platform.isLinux) return TargetPlatform.linux;
+    return TargetPlatform.linux;
+  }
+
+  WindowMode _effectiveWindowMode() =>
+      widget.settingsService.current.effectiveWindowMode(_targetPlatform);
+
+  bool get _canInteract =>
+      !_focusController.usesTransparentFocusModel || _focusController.isFocused;
+
+  double get _surfaceOpacity {
+    if (_focusController.usesTransparentFocusModel &&
+        !_focusController.isFocused) {
+      return widget.settingsService.current.idleTimelineOpacity;
+    }
+    return 1.0;
+  }
+
+  double get _emphasisOpacity {
+    if (_focusController.usesTransparentFocusModel &&
+        !_focusController.isFocused) {
+      return (_surfaceOpacity + 0.3).clamp(0.0, 1.0);
+    }
+    return 1.0;
+  }
+
+  Future<void> _syncWindowBehavior() async {
+    final effectiveMode = _effectiveWindowMode();
+    if (!_focusInitialized) {
+      _focusInitialized = true;
+      if (_focusController.windowMode != effectiveMode) {
+        await _focusController.setWindowMode(effectiveMode);
+      }
+      await _focusController.initialize();
+    } else {
+      await _focusController.setWindowMode(effectiveMode);
+    }
+    _syncInteractionHold();
+  }
+
+  void _syncInteractionHold() {
+    _focusController.setInteractionHold(_isSettingsOpen || _hoveredEvent != null);
+  }
+
+  void _onFocusChanged() {
+    if (!_focusController.isFocused) {
+      _clearInteractiveState();
+    } else if (_focusController.usesTransparentFocusModel) {
+      _keyboardFocusNode.requestFocus();
+      _showFocusedStateIndicator();
+    }
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _showFocusedStateIndicator() {
+    if (!mounted) return;
+    _focusIndicatorTimer?.cancel();
+    setState(() => _showFocusIndicator = true);
+    _focusIndicatorTimer = Timer(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() => _showFocusIndicator = false);
+      }
+    });
+  }
+
+  void _clearInteractiveState() {
+    if (!mounted) return;
+    setState(() {
+      _isSettingsOpen = false;
+      _isHoveringStrip = false;
+      _hoveredEvent = null;
+    });
+    _syncInteractionHold();
+    if (_windowService.isExpandedNotifier.value) {
+      unawaited(_windowService.collapse());
+    }
+  }
+
+  void _focusFromHotkey() {
+    unawaited(_focusController.focus());
   }
 
   TimelineLayout? _layout;
@@ -183,6 +302,7 @@ class _TimelineStripState extends State<TimelineStrip>
     // S5-FIX: Focus-based expansion logic is fragile on Linux.
     // We only use this to trigger a collapse if settings are closed and we lose focus.
     if (state != AppLifecycleState.resumed && !_isSettingsOpen) {
+      unawaited(_focusController.handleWindowFocusLost());
       if (_windowService.isExpandedNotifier.value) {
         setState(() {
           _isHoveringStrip = false;
@@ -198,6 +318,7 @@ class _TimelineStripState extends State<TimelineStrip>
   void _handleMouse(PointerEvent details) {
     final layout = _layout;
     if (layout == null) return;
+    if (!_canInteract) return;
 
     // 1. Calculate Dynamic Bounds
     final mouseX = details.localPosition.dx;
@@ -266,6 +387,7 @@ class _TimelineStripState extends State<TimelineStrip>
 
     final intentAccepted = _hoverController.setIntent(state);
     if (!intentAccepted) return;
+    _focusController.registerUserActivity();
 
     if (isOverStrip != _isHoveringStrip || hit?.id != _hoveredEvent?.id) {
       // unawaited(AppLogger.debug(
@@ -274,6 +396,7 @@ class _TimelineStripState extends State<TimelineStrip>
         _isHoveringStrip = isOverStrip;
         _hoveredEvent = hit;
       });
+      _syncInteractionHold();
     }
 
     // 3. Window Execution — routed through HoverController.
@@ -303,10 +426,13 @@ class _TimelineStripState extends State<TimelineStrip>
   }
 
   void _toggleSettings() {
+    if (!_canInteract) return;
+    _focusController.registerUserActivity();
     setState(() {
       _isSettingsOpen = !_isSettingsOpen;
       _hoveredEvent = null;
     });
+    _syncInteractionHold();
     if (_isSettingsOpen) {
       if (!_windowService.isExpandedNotifier.value) {
         unawaited(_windowService.expand());
@@ -343,6 +469,8 @@ class _TimelineStripState extends State<TimelineStrip>
     final stripBackgroundColor = theme.brightness == Brightness.dark
         ? const Color(0xFF1A1A2E)
         : Colors.white;
+    final painterBackgroundColor =
+        stripBackgroundColor.withValues(alpha: _surfaceOpacity);
 
     return StreamBuilder<DateTime>(
       stream: _paintTicks,
@@ -377,7 +505,18 @@ class _TimelineStripState extends State<TimelineStrip>
             // unawaited(AppLogger.debug(
             //     'TimelineStrip: Layout isExpanded=$isExpanded _collapsedHeight=$_collapsedHeight maxHeight=${constraints.maxHeight}'));
 
-            return MouseRegion(
+            return Focus(
+              focusNode: _keyboardFocusNode,
+              autofocus: true,
+              onKey: (node, event) {
+                if (event is RawKeyDownEvent &&
+                    event.logicalKey == LogicalKeyboardKey.escape) {
+                  unawaited(_focusController.handleEscape());
+                  return KeyEventResult.handled;
+                }
+                return KeyEventResult.ignored;
+              },
+              child: MouseRegion(
               onEnter: _handleMouse,
               onHover: _handleMouse,
               onExit: _handleMouse,
@@ -395,7 +534,7 @@ class _TimelineStripState extends State<TimelineStrip>
                     child: Container(
                       color: isExpanded && Platform.isWindows
                           ? Colors.transparent
-                          : stripBackgroundColor,
+                          : painterBackgroundColor,
                     ),
                   ),
                   Positioned(
@@ -414,7 +553,7 @@ class _TimelineStripState extends State<TimelineStrip>
                           hoveredEventId: _hoveredEvent?.id,
                           collidingIds: _collidingIds,
                           fontSize: fontSize,
-                          backgroundColor: stripBackgroundColor,
+                          backgroundColor: painterBackgroundColor,
                           pastOverlayColor: theme.brightness == Brightness.dark
                               ? Colors.black26
                               : Colors.black12,
@@ -432,19 +571,27 @@ class _TimelineStripState extends State<TimelineStrip>
                           isSigningIn: widget.onCancelSignIn != null,
                           signInTextColor:
                               theme.textTheme.bodyMedium?.color ?? Colors.white,
+                          surfaceOpacity: _surfaceOpacity,
+                          emphasisOpacity: _emphasisOpacity,
                         ),
                       ),
                     ),
                   ),
-                  if (widget.onSignIn != null || widget.onCancelSignIn != null)
+                  if ((widget.onSignIn != null || widget.onCancelSignIn != null) &&
+                      _canInteract)
                     Positioned.fill(
                       child: GestureDetector(
-                        onTap: widget.onCancelSignIn ?? widget.onSignIn,
+                        onTap: () {
+                          _focusController.registerUserActivity();
+                          (widget.onCancelSignIn ?? widget.onSignIn)?.call();
+                        },
                         behavior: HitTestBehavior.opaque,
                         child: const SizedBox.expand(),
                       ),
                     ),
-                  if (widget.onSignIn == null && widget.onCancelSignIn == null)
+                  if (widget.onSignIn == null &&
+                      widget.onCancelSignIn == null &&
+                      _canInteract)
                     Positioned(
                       left: mode == CountdownMode.untilEnd
                           ? nowIndicatorX + 8
@@ -538,7 +685,8 @@ class _TimelineStripState extends State<TimelineStrip>
                                       mode: tickMode,
                                       color: countdownColor,
                                       fontSize: fontSize,
-                                      backgroundColor: stripBackgroundColor,
+                                      backgroundColor: stripBackgroundColor
+                                          .withValues(alpha: _emphasisOpacity),
                                     ),
                                   ),
                                 ),
@@ -548,7 +696,9 @@ class _TimelineStripState extends State<TimelineStrip>
                         },
                       ),
                     ),
-                  if (widget.onSignIn == null && widget.onCancelSignIn == null)
+                  if (widget.onSignIn == null &&
+                      widget.onCancelSignIn == null &&
+                      _canInteract)
                     Positioned(
                       left: 8,
                       top: 0,
@@ -559,6 +709,7 @@ class _TimelineStripState extends State<TimelineStrip>
                           _IconButton(
                             icon: Icons.refresh,
                             onTap: () {
+                              _focusController.registerUserActivity();
                               unawaited(widget.calendarController!.refresh());
                               unawaited(_windowService.reassertAppBar());
                             },
@@ -573,18 +724,49 @@ class _TimelineStripState extends State<TimelineStrip>
                         ],
                       ),
                     ),
-                  Positioned(
-                    right: 8,
-                    top: 0,
-                    height: _collapsedHeight,
-                    child: Center(
-                      child: _IconButton(
-                        icon: Icons.power_settings_new,
-                        onTap: () => exit(0),
-                        stripBackgroundColor: stripBackgroundColor,
+                  if (widget.onSignIn == null &&
+                      widget.onCancelSignIn == null &&
+                      _canInteract)
+                    Positioned(
+                      right: 8,
+                      top: 0,
+                      height: _collapsedHeight,
+                      child: Center(
+                        child: _IconButton(
+                          icon: Icons.power_settings_new,
+                          onTap: () {
+                            _focusController.registerUserActivity();
+                            exit(0);
+                          },
+                          stripBackgroundColor: stripBackgroundColor,
+                        ),
                       ),
                     ),
-                  ),
+                  if (_showFocusIndicator && _canInteract)
+                    Positioned(
+                      top: 2,
+                      left: 2,
+                      right: 2,
+                      height: _collapsedHeight - 4,
+                      child: IgnorePointer(
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: theme.colorScheme.primary
+                                  .withValues(alpha: 0.55),
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: [
+                              BoxShadow(
+                                color: theme.colorScheme.primary
+                                    .withValues(alpha: 0.18),
+                                blurRadius: 14,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   if (widget.onSignIn == null &&
                       widget.onCancelSignIn == null &&
                       _windowService.isExpandedNotifier.value &&
@@ -619,11 +801,12 @@ class _TimelineStripState extends State<TimelineStrip>
                         settingsService: widget.settingsService,
                         calendarController: widget.calendarController!,
                         onSignOut: widget.onSignOut,
+                        platformOverride: _targetPlatform,
                       ),
                     ),
                 ],
               ),
-            );
+            ));
           },
         );
       },
