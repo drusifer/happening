@@ -11,6 +11,7 @@ import 'package:happening/features/calendar/calendar_controller.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/calendar/calendar_service.dart';
 import 'package:happening/features/timeline/countdown_display.dart';
+import 'package:happening/features/timeline/focus/timeline_focus_hotkey.dart';
 import 'package:happening/features/timeline/hover_detail_overlay.dart';
 import 'package:happening/features/timeline/settings_panel.dart';
 import 'package:happening/features/timeline/timeline_strip.dart';
@@ -34,6 +35,9 @@ class _FakeWindowService extends WindowService {
 
   int expandCalls = 0;
   int collapseCalls = 0;
+  final List<bool> focusedCalls = [];
+  final List<bool> passThroughCalls = [];
+  final List<WindowMode> windowModeCalls = [];
 
   @override
   Future<void> expand({double? height}) async {
@@ -45,6 +49,21 @@ class _FakeWindowService extends WindowService {
   Future<void> collapse({double? height}) async {
     collapseCalls++;
     isExpandedNotifier.value = false;
+  }
+
+  @override
+  Future<void> setInteractionFocused(bool focused) async {
+    focusedCalls.add(focused);
+  }
+
+  @override
+  Future<void> setPassThroughEnabled(bool enabled) async {
+    passThroughCalls.add(enabled);
+  }
+
+  @override
+  Future<void> setWindowMode(WindowMode mode) async {
+    windowModeCalls.add(mode);
   }
 }
 
@@ -108,11 +127,38 @@ class _MockService implements CalendarService {
 }
 
 class _FakeSettingsService extends SettingsService {
-  _FakeSettingsService() : super(directory: Directory.systemTemp);
+  _FakeSettingsService([this._current = const AppSettings()])
+      : super(directory: Directory.systemTemp);
+
+  AppSettings _current;
+
   @override
-  AppSettings get current => const AppSettings();
+  AppSettings get current => _current;
+
+  @override
+  Future<void> update(AppSettings newSettings) async {
+    _current = newSettings;
+    notifyListeners();
+  }
+
   @override
   Stream<AppSettings> get settings => const Stream.empty();
+}
+
+class _FakeFocusHotkeyBinding implements TimelineFocusHotkeyBinding {
+  VoidCallback? callback;
+
+  @override
+  Future<void> register(TimelineFocusHotkeyHandler onTriggered) async {
+    callback = onTriggered;
+  }
+
+  @override
+  Future<void> unregister() async {
+    callback = null;
+  }
+
+  void trigger() => callback?.call();
 }
 
 void main() {
@@ -793,6 +839,90 @@ void main() {
       expect(countdownFinder, findsOneWidget);
       final widget = tester.widget<CountdownDisplay>(countdownFinder);
       expect(widget.mode, CountdownMode.untilEnd);
+    });
+  });
+
+  group('Transparent focus gating', () {
+    testWidgets('idle transparent mode hides interactive controls and hover',
+        (tester) async {
+      final hotkeyBinding = _FakeFocusHotkeyBinding();
+      final windowService = _FakeWindowService();
+      final settings = _FakeSettingsService(
+        const AppSettings(windowMode: WindowMode.transparent),
+      );
+      final event = CalendarEvent(
+        id: 'e1',
+        title: 'Meeting',
+        startTime: now.add(const Duration(minutes: 30)),
+        endTime: now.add(const Duration(minutes: 60)),
+        color: Colors.blue,
+        calendarEventUrl: null,
+        videoCallUrl: null,
+      );
+
+      await tester.pumpWidget(wrap(TimelineStrip(
+        events: [event],
+        clockService: clock,
+        calendarController: fakeController,
+        settingsService: settings,
+        windowService: windowService,
+        onSignOut: () {},
+        enableAnimations: false,
+        platformOverride: TargetPlatform.macOS,
+        focusHotkeyBinding: hotkeyBinding,
+      )));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.byIcon(Icons.refresh), findsNothing);
+      expect(find.byIcon(Icons.settings), findsNothing);
+      expect(find.byIcon(Icons.power_settings_new), findsNothing);
+
+      final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await gesture.addPointer(location: Offset.zero);
+      await gesture.moveTo(const Offset(140, 10));
+      await tester.pump(const Duration(milliseconds: 50));
+
+      expect(find.byType(HoverDetailOverlay), findsNothing);
+      expect(windowService.expandCalls, 0);
+      expect(windowService.passThroughCalls.last, isTrue);
+    });
+
+    testWidgets('global hotkey focuses transparent mode and enables controls',
+        (tester) async {
+      final hotkeyBinding = _FakeFocusHotkeyBinding();
+      final windowService = _FakeWindowService();
+      final settings = _FakeSettingsService(
+        const AppSettings(windowMode: WindowMode.transparent),
+      );
+
+      await tester.pumpWidget(wrap(TimelineStrip(
+        events: const [],
+        clockService: clock,
+        calendarController: fakeController,
+        settingsService: settings,
+        windowService: windowService,
+        onSignOut: () {},
+        enableAnimations: false,
+        platformOverride: TargetPlatform.macOS,
+        focusHotkeyBinding: hotkeyBinding,
+      )));
+      await tester.pump();
+      await tester.pump();
+
+      hotkeyBinding.trigger();
+      await tester.pump();
+
+      expect(find.byIcon(Icons.refresh), findsOneWidget);
+      expect(find.byIcon(Icons.settings), findsOneWidget);
+      expect(find.byIcon(Icons.power_settings_new), findsOneWidget);
+      expect(windowService.passThroughCalls.last, isFalse);
+
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.escape);
+      await tester.pump();
+
+      expect(find.byIcon(Icons.refresh), findsNothing);
+      expect(windowService.passThroughCalls.last, isTrue);
     });
   });
 }

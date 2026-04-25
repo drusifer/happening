@@ -1,5 +1,53 @@
 # Current Task
 
+## TRANSPARENT_TIMESTRIP_PHASE_C — 2026-04-24
+**Status**: COMPLETE / handed to Trin
+**Progress**: 100%
+
+### Completed
+- [x] Added `WindowInteractionStrategy` abstraction and platform strategy files.
+- [x] Wired `WindowService` to the interaction strategy.
+- [x] Added `setInteractionFocused(bool)` and `setWindowMode(WindowMode)`.
+- [x] Gated Windows AppBar reservation to reserved mode only.
+- [x] Added interaction strategy tests and updated `WindowService` tests.
+
+### Validation
+- [x] `make test` passes: 275/275.
+
+## TRANSPARENT_TIMESTRIP_PHASE_B — 2026-04-24
+**Status**: COMPLETE / handed to Trin
+**Progress**: 100%
+
+### Completed
+- [x] Added persisted `WindowMode` to `AppSettings`.
+- [x] Added persisted `idleTimelineOpacity` to `AppSettings`.
+- [x] Added clamp normalization for persisted idle opacity.
+- [x] Added `AppSettings.copyWith(...)` and updated settings mutation call sites.
+- [x] Added `effectiveWindowMode(TargetPlatform)` for pre-window-init startup decisions.
+- [x] Threaded effective startup mode into `WindowService.initialize(...)`.
+- [x] Added settings tests for migration, clamp behavior, persistence, and effective mode resolution.
+
+### Validation
+- [x] `make test` passes: 264/264.
+
+## TRANSPARENT_TIMESTRIP_PHASE_A — 2026-04-24
+**Status**: COMPLETE / handed to Trin
+**Progress**: 100%
+
+### Completed
+- [x] Consulted project history and architecture before implementation.
+- [x] Added `WindowService.supportsTransparentPassThrough()`.
+- [x] Added `WindowService.setPassThroughEnabled(bool)` using forwarded ignored mouse events.
+- [x] Kept Linux transparent pass-through unavailable by default.
+- [x] Added window service tests for enable, disable, unsupported no-op, and Linux default availability.
+- [x] Chose `hotkey_manager` as the Phase D global hotkey target.
+- [x] Updated `task.md` Phase A statuses and Morpheus architecture findings.
+- [x] Merged `Makefile.prj` project targets into `Makefile` and fixed `make test` routing.
+
+### Validation
+- [x] `make format` passes.
+- [x] `make test` passes: 259/259.
+
 ## WINDOW_SERVICE_ZERO_WIDTH_FIX — 2026-04-18
 **Status**: COMPLETE / handed to Trin
 **Progress**: 100%

@@ -1,5 +1,27 @@
 # Next Steps
 
+- @Trin: UAT Transparent Timestrip Phase C:
+  - Verify `WindowInteractionStrategy` exists separately from `WindowResizeStrategy`.
+  - Verify `WindowService` delegates interaction behavior to the new strategy layer.
+  - Verify Windows AppBar reservation is gated to reserved mode only.
+  - Use `make test`; expected full suite: 275/275 green.
+- @Morpheus: Review Phase C after Trin UAT.
+- Phase D is next only after Trin and Morpheus approve Phase C.
+- @Trin: UAT Transparent Timestrip Phase B:
+  - Verify `AppSettings` persists `windowMode` and `idleTimelineOpacity`.
+  - Verify opacity is clamped on load/update.
+  - Verify settings mutation call sites preserve the new fields instead of resetting them.
+  - Verify `main.dart` resolves `effectiveWindowMode(defaultTargetPlatform)` before `WindowService.initialize()`.
+  - Use `make test`; expected full suite: 264/264 green.
+- @Morpheus: Review Phase B after Trin UAT.
+- Phase C is next only after Trin and Morpheus approve Phase B.
+- @Trin: UAT Transparent Timestrip Phase A:
+  - Verify `WindowService.setPassThroughEnabled()` uses `setIgnoreMouseEvents(enabled, forward: true)`.
+  - Verify unsupported platforms no-op and Linux default availability is false.
+  - Verify `task.md` Phase A statuses and architecture findings are consistent with sprint acceptance criteria.
+  - Use `make test` from the merged main `Makefile`; expected full suite: 259/259 green.
+- @Morpheus: Review Phase A architecture after Trin UAT.
+- Phase B is next only after Trin and Morpheus approve Phase A.
 - Restart the running Happening app to load the compact timeline strip time labels. Expected: hour ticks show `11pm`/`23` depending on OS 12/24-hour preference, and half-hour ticks show `30`.
 - Event hover cards should still show full platform-localized start/end times.
 - Ask Drew to restart the running Happening app and refresh calendars.

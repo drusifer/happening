@@ -16,6 +16,7 @@ class TickLayer implements TimelineLayer {
     required this.backgroundColor,
     required this.fontSize,
     required this.alwaysUse24HourFormat,
+    required this.surfaceOpacity,
   });
 
   final TimelineLayout layout;
@@ -27,6 +28,7 @@ class TickLayer implements TimelineLayer {
   final Color backgroundColor;
   final double fontSize;
   final bool alwaysUse24HourFormat;
+  final double surfaceOpacity;
 
   String _formatHourLabel(DateTime time) {
     return formatTimelineHourTickLabel(
@@ -38,7 +40,8 @@ class TickLayer implements TimelineLayer {
   @override
   void paint(Canvas canvas, Size size) {
     final pixelsPerHour = layout.pixelsPerSecond * 3600;
-    final tickPaint = Paint()..color = tickColor;
+    final tickPaint =
+        Paint()..color = tickColor.withValues(alpha: tickColor.a * surfaceOpacity);
 
     var current = DateTime(
       windowStart.year,
@@ -62,7 +65,7 @@ class TickLayer implements TimelineLayer {
             x + 4,
             1,
             fontSize: fontSize * 10 / 11,
-            color: tickColor.withValues(alpha: 1.0),
+            color: tickColor.withValues(alpha: 1.0 * surfaceOpacity),
             backgroundColor: backgroundColor,
           );
         }
@@ -81,7 +84,7 @@ class TickLayer implements TimelineLayer {
               tx + 2,
               1,
               fontSize: fontSize * 8 / 11,
-              color: tickColor.withValues(alpha: 0.85),
+              color: tickColor.withValues(alpha: 0.85 * surfaceOpacity),
               backgroundColor: backgroundColor,
             );
           }

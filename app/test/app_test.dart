@@ -160,7 +160,8 @@ class _FakeAuthService implements AuthService {
   bool get isSignedIn => _signedIn;
 
   @override
-  AutoRefreshingAuthClient? get client => null; // not used when controller is injected
+  AutoRefreshingAuthClient? get client =>
+      null; // not used when controller is injected
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -185,12 +186,10 @@ void main() {
   group('BUG-C: auth-state → button visibility', () {
     // ── happy path ──────────────────────────────────────────────────────────
 
-    testWidgets(
-        'buttons visible when tryRestore succeeds (authenticated)',
+    testWidgets('buttons visible when tryRestore succeeds (authenticated)',
         (tester) async {
       final fakeAuth = _FakeAuthService(tryRestoreResult: true);
-      final fakeController =
-          _FakeCalendarController(_FakeCalendarService());
+      final fakeController = _FakeCalendarController(_FakeCalendarService());
 
       await tester.pumpWidget(_wrap(HappeningApp(
         settingsService: fakeSettings,
@@ -213,8 +212,7 @@ void main() {
 
     // ── unauthenticated path ────────────────────────────────────────────────
 
-    testWidgets(
-        'buttons hidden when tryRestore fails (unauthenticated)',
+    testWidgets('buttons hidden when tryRestore fails (unauthenticated)',
         (tester) async {
       final fakeAuth = _FakeAuthService(tryRestoreResult: false);
 
@@ -269,12 +267,10 @@ void main() {
 
       // Auth state must NOT have changed — buttons must still be visible.
       expect(find.byIcon(Icons.refresh), findsOneWidget,
-          reason:
-              'BUG-C: refresh button disappeared after network error — '
+          reason: 'BUG-C: refresh button disappeared after network error — '
               'auth state was incorrectly set to unauthenticated');
       expect(find.byIcon(Icons.settings), findsOneWidget,
-          reason:
-              'BUG-C: settings button disappeared after network error');
+          reason: 'BUG-C: settings button disappeared after network error');
     });
 
     // ── refresh tap regression ──────────────────────────────────────────────
@@ -283,8 +279,7 @@ void main() {
         'BUG-C: tapping refresh while authenticated does not change auth state',
         (tester) async {
       final fakeAuth = _FakeAuthService(tryRestoreResult: true);
-      final fakeController =
-          _FakeCalendarController(_FakeCalendarService());
+      final fakeController = _FakeCalendarController(_FakeCalendarService());
 
       await tester.pumpWidget(_wrap(HappeningApp(
         settingsService: fakeSettings,
@@ -312,8 +307,7 @@ void main() {
 
     // ── sign-in prompt shown when unauthenticated ───────────────────────────
 
-    testWidgets(
-        'sign-in tap-to-sign-in overlay shown when unauthenticated',
+    testWidgets('sign-in tap-to-sign-in overlay shown when unauthenticated',
         (tester) async {
       final fakeAuth = _FakeAuthService(tryRestoreResult: false);
 

@@ -1,5 +1,13 @@
 # Next Steps
 
+- [x] Transparent Timestrip Phase C UAT complete.
+- [ ] Morpheus: review Phase C for architectural sufficiency before Phase D.
+- [ ] Later platform QA: manual macOS/Windows transparent-mode smoke once real hosts are available.
+- [x] Transparent Timestrip Phase B UAT complete.
+- [ ] Morpheus: review Phase B for architectural sufficiency before Phase C.
+- [x] Transparent Timestrip Phase A UAT complete.
+- [ ] Morpheus: review Phase A for architectural sufficiency before Phase B/C.
+- [ ] Later platform QA: manual macOS/Windows click-through smoke once real hosts are available.
 - [x] DIAGNOSED: buttons-disappear-after-sleep bug → WindowService._onDisplayChanged() zero-width race. Handed to Neo.
 - [ ] Trin: After Neo fixes WindowService, re-run `make -f Makefile.prj test` and verify no regressions.
 - [ ] Morpheus: Review calendar fetch threading implementation for architecture compliance.

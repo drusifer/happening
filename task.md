@@ -1,142 +1,240 @@
-# Task Board — Sprint 6: Refactor Sprint
-**Updated**: 2026-03-18 | **Owner**: @Neo | **QA**: @Trin | **Arch**: @Morpheus
+# Task Board — Transparent Timestrip Sprint
+**Updated**: 2026-04-24 | **Owner**: @Neo | **QA**: @Trin | **Arch**: @Morpheus | **UX**: @Smith
 
 ---
 
 ## Sprint Goal
-Refactor codebase into clean, testable abstractions — zero behavior change, all tests green after each step.
+Make Happening visible without trapping the user behind the strip. macOS uses transparent click-through idle mode; Windows/Linux expose only reliable window modes. Focused mode makes Happening opaque and interactive.
+
+## Source Artifacts
+- Product stories: `agents/cypher.docs/transparent_timestrip_sprint_stories_2026-04-24T15:04.md`
+- UX Gate 1: `agents/smith.docs/transparent_timestrip_gate1_review_2026-04-24T15:06.md`
+- Architecture: `agents/morpheus.docs/TRANSPARENT_TIMESTRIP_ARCH_2026-04-24T15:08.md`
+- UX Gate 2: `agents/smith.docs/transparent_timestrip_gate2_review_2026-04-24T15:09.md`
 
 ---
 
-## Phase 1 — Foundations
+## Phase A — Capability Spike
 
-### T-01: `AsyncGate<T>`
-- **File**: `lib/core/util/async_gate.dart` ✦ NEW
-- **Risk**: Low
-- **Tests**: Unit test (gate queues pending, fires on release)
-- **Status**: [x] done ✅ (4/4 tests)
-- **Assigned**: @Neo
-
-### T-02: `PeriodicController<T>` abstract
-- **File**: `lib/core/schedule/periodic_controller.dart` ✦ NEW
-- **Risk**: Low
-- **Tests**: None needed (abstract interface)
-- **Status**: [x] done ✅
-- **Assigned**: @Neo
-
----
-
-## Phase 2 — Platform Strategies
-
-### T-03: `WindowResizeStrategy` + `WindowService` refactor
+### TT-A1: Verify Platform Click-Through
+- **Goal**: Prove `setIgnoreMouseEvents(forward: true)` behavior for supported platforms.
 - **Files**:
-  - `lib/core/window/resize_strategy/window_resize_strategy.dart` ✦ NEW
-  - `lib/core/window/resize_strategy/linux_resize_strategy.dart` ✦ NEW
-  - `lib/core/window/resize_strategy/windows_resize_strategy.dart` ✦ NEW
-  - `lib/core/window/resize_strategy/macos_resize_strategy.dart` ✦ NEW
-  - `lib/core/window/window_service.dart` ✎ MODIFIED
+  - `app/lib/core/window/window_service.dart` ✎
+  - `app/test/core/window/window_service_test.dart` ✎
+- **Risk**: High
+- **Tests**: mock coverage for pass-through toggling; manual macOS/Windows notes required
+- **Status**: [x] done
+- **Assigned**: @Neo
+- **Phase A Result**: `WindowService.setPassThroughEnabled()` now wraps `setIgnoreMouseEvents(enabled, forward: true)` behind platform availability, with unit coverage for enable, disable, and unsupported no-op behavior.
+
+### TT-A2: Decide Hotkey Mechanism
+- **Goal**: Choose package or native bridge for global focus hotkey.
+- **Files**:
+  - `app/pubspec.yaml` ✎ if dependency needed
+  - `agents/morpheus.docs/TRANSPARENT_TIMESTRIP_ARCH_2026-04-24T15:08.md` ✎ if decision changes
 - **Risk**: Medium
-- **Tests**: Existing window_service_test.dart must stay green
-- **Status**: [x] done ✅ (13 strategy tests + 3 existing)
-- **Assigned**: @Neo
-- **Depends on**: T-01
+- **Tests**: feasibility note plus implementation target
+- **Status**: [x] done
+- **Assigned**: @Morpheus/@Neo
+- **Phase A Result**: Use `hotkey_manager` as the Phase D implementation target. It is purpose-built for desktop global hotkeys and supports macOS, Windows, and Linux; defer adding the dependency until TT-D2.
 
-### T-04: `HoverController` + Linux focus-follows-mouse suppression
+### TT-A3: Linux Availability Decision
+- **Goal**: Decide whether Linux transparent mode is exposed or hidden this sprint.
 - **Files**:
-  - `lib/features/timeline/hover/hover_controller.dart` ✦ NEW
-  - `lib/features/timeline/hover/default_hover_controller.dart` ✦ NEW
-  - `lib/features/timeline/hover/linux_hover_controller.dart` ✦ NEW
-  - `lib/features/timeline/timeline_strip.dart` ✎ MODIFIED (wired in Phase 3)
+  - `agents/morpheus.docs/TRANSPARENT_TIMESTRIP_ARCH_2026-04-24T15:08.md` ✎ if decision changes
 - **Risk**: Medium
-- **Tests**: Unit test suppression timer (expand → immediate collapse → suppressed)
-- **Status**: [x] done ✅ (7 tests)
-- **Assigned**: @Neo
-- **Depends on**: T-03
+- **Tests**: real-session or documented fallback; default to hidden if unproven
+- **Status**: [x] done
+- **Assigned**: @Trin/@Morpheus
+- **Phase A Result**: Linux transparent mode remains hidden this sprint. Prior real-session evidence showed a `setIgnoreMouseEvents` transparent/static-window attempt produced an unusable black bar, and no new real-session proof supersedes that.
 
 ---
 
-## Phase 3 — Timeline Abstractions
+## Phase B — Settings Foundation
 
-### T-05: `EventBoundsCalculator`
-- **File**: `lib/features/timeline/event_bounds_calculator.dart` ✦ NEW
-- **Risk**: Low
-- **Tests**: Unit test bounds computation
-- **Status**: [x] done ✅ (4 tests)
-- **Assigned**: @Neo
-- **Note**: `_handleMouse` drops from ~90 lines to ~40
-
-### T-06: `CountdownState` VO
-- **File**: `lib/features/timeline/countdown_state.dart` ✦ NEW
-- **Risk**: Low
-- **Tests**: Unit test `CountdownState.compute` factory
-- **Status**: [x] done ✅ (5 tests)
-- **Assigned**: @Neo
-- **Note**: Kills ~30-line duplication in both StreamBuilders
-
-### T-07: `CountdownController`
-- **File**: `lib/core/schedule/countdown_controller.dart` ✦ NEW
-- **Risk**: Low
-- **Tests**: Unit test 1Hz stream, 0Hz when idle
-- **Status**: [x] done ✅
-- **Assigned**: @Neo
-- **Depends on**: T-02, T-06
-
-### T-08: `PaintTickController`
-- **File**: `lib/core/schedule/paint_tick_controller.dart` ✦ NEW
-- **Risk**: Low
-- **Tests**: Unit test 10s tick
-- **Status**: [x] done ✅
-- **Assigned**: @Neo
-- **Depends on**: T-02
-
-### T-09: `CalendarRefreshController`
-- **File**: `lib/core/schedule/calendar_refresh_controller.dart` ✦ NEW
-- **Risk**: Low
-- **Tests**: Unit test 5min refresh, AsyncGate dedup
-- **Status**: [x] done ✅
-- **Assigned**: @Neo
-- **Depends on**: T-01, T-02
-
----
-
-## Phase 4 — Painter Decomposition
-
-### T-10: `TimelineLayer` + 5 painter layers
+### TT-B1: Add Window Mode Settings
+- **Goal**: Add `WindowMode` and `idleTimelineOpacity` to persisted settings.
 - **Files**:
-  - `lib/features/timeline/painters/timeline_layer.dart` ✦ NEW
-  - `lib/features/timeline/painters/timeline_paint_utils.dart` ✦ NEW
-  - `lib/features/timeline/painters/background_layer.dart` ✦ NEW
-  - `lib/features/timeline/painters/past_overlay_layer.dart` ✦ NEW
-  - `lib/features/timeline/painters/tick_layer.dart` ✦ NEW
-  - `lib/features/timeline/painters/events_layer.dart` ✦ NEW
-  - `lib/features/timeline/painters/now_indicator_layer.dart` ✦ NEW
-  - `lib/features/timeline/timeline_painter.dart` ✎ MODIFIED (compositor only)
-- **Risk**: Low
-- **Tests**: All goldens pass, constructor/shouldRepaint/semanticsBuilder unchanged
-- **Status**: [x] done ✅
+  - `app/lib/core/settings/settings_service.dart` ✎
+  - `app/test/core/settings/settings_service_test.dart` ✎
+- **Risk**: Medium
+- **Tests**: default values, JSON migration, clamp invalid opacity, preserve existing settings
+- **Status**: [x] done
 - **Assigned**: @Neo
-- **Depends on**: T-05
+- **Phase B Result**: `AppSettings` now persists `windowMode` and `idleTimelineOpacity`, clamps persisted opacity into the approved range, and exposes `effectiveWindowMode()` for platform-safe startup behavior.
+
+### TT-B2: Load Effective Mode Before Window Init
+- **Goal**: Ensure effective platform mode is available before `WindowService.initialize()`.
+- **Files**:
+  - `app/lib/app.dart` ✎
+  - `app/lib/main.dart` ✎ if init order lives there
+  - `app/lib/core/window/window_service.dart` ✎
+- **Risk**: High
+- **Tests**: init-order regression test; no startup height/width regression
+- **Status**: [x] done
+- **Assigned**: @Neo
+- **Depends on**: TT-B1
+- **Phase B Result**: `main.dart` resolves `effectiveWindowMode(defaultTargetPlatform)` before `WindowService.initialize()`, and `WindowService` stores the initial mode without changing geometry behavior yet.
+
+---
+
+## Phase C — Window Interaction Strategy
+
+### TT-C1: Add `WindowInteractionStrategy`
+- **Goal**: Implement platform strategy for pass-through/focus availability separate from resize strategy.
+- **Files**:
+  - `app/lib/core/window/interaction_strategy/window_interaction_strategy.dart` ✦
+  - `app/lib/core/window/interaction_strategy/macos_window_interaction_strategy.dart` ✦
+  - `app/lib/core/window/interaction_strategy/windows_window_interaction_strategy.dart` ✦
+  - `app/lib/core/window/interaction_strategy/linux_window_interaction_strategy.dart` ✦
+  - `app/lib/core/window/window_service.dart` ✎
+- **Risk**: High
+- **Tests**: platform strategy factory tests; `setIgnoreMouseEvents` call order tests
+- **Status**: [x] done
+- **Assigned**: @Neo
+- **Depends on**: TT-A1, TT-B2
+- **Phase C Result**: Added platform-specific interaction strategies and wired `WindowService` to them for pass-through and focus toggling without touching `WindowResizeStrategy`.
+
+### TT-C2: Gate Windows AppBar Reservation By Mode
+- **Goal**: Register/reassert Windows AppBar only in reserved mode.
+- **Files**:
+  - `app/lib/core/window/window_service.dart` ✎
+  - `app/test/core/window/window_service_test.dart` ✎
+- **Risk**: High
+- **Tests**: transparent mode does not reserve; reserved mode preserves current AppBar behavior
+- **Status**: [x] done
+- **Assigned**: @Neo
+- **Depends on**: TT-C1
+- **Phase C Result**: Windows AppBar registration/reassertion now runs only in reserved mode; transparent mode skips reservation and disposes any existing AppBar registration when switching modes.
+
+---
+
+## Phase D — Focus Model
+
+### TT-D1: Add `TimelineFocusController`
+- **Goal**: Own idle/focused state, Escape dismissal, and safe inactivity handling.
+- **Files**:
+  - `app/lib/features/timeline/focus/timeline_focus_controller.dart` ✦
+  - `app/test/features/timeline/timeline_focus_controller_test.dart` ✦
+- **Risk**: Medium
+- **Tests**: focus, unfocus, Escape, timeout suppression while settings/details are active
+- **Status**: [ ] todo
+- **Assigned**: @Neo
+- **Depends on**: TT-C1
+
+### TT-D2: Wire Global Focus Hotkey
+- **Goal**: Hotkey focuses Happening from idle pass-through mode.
+- **Files**:
+  - target files depend on TT-A2 decision
+- **Risk**: High
+- **Tests**: unit/widget test where possible; manual platform smoke required
+- **Status**: [ ] todo
+- **Assigned**: @Neo
+- **Depends on**: TT-A2, TT-D1
+
+### TT-D3: Make Timeline Interaction Focus-Gated
+- **Goal**: Idle transparent mode passes clicks through; focused mode enables settings/refresh/quit/event details.
+- **Files**:
+  - `app/lib/features/timeline/timeline_strip.dart` ✎
+  - `app/test/features/timeline/timeline_strip_test.dart` ✎
+- **Risk**: High
+- **Tests**: idle ignores event/settings interactions; focused preserves existing interactions
+- **Status**: [ ] todo
+- **Assigned**: @Neo
+- **Depends on**: TT-D1, TT-D2
+
+---
+
+## Phase E — Visual Transparency
+
+### TT-E1: Add Idle Opacity To Painter Layers
+- **Goal**: Apply idle opacity to background/ticks/events while preserving stronger now/countdown affordances.
+- **Files**:
+  - `app/lib/features/timeline/timeline_painter.dart` ✎
+  - `app/lib/features/timeline/painters/background_layer.dart` ✎
+  - `app/lib/features/timeline/painters/tick_layer.dart` ✎
+  - `app/lib/features/timeline/painters/events_layer.dart` ✎
+  - `app/lib/features/timeline/painters/now_indicator_layer.dart` ✎
+- **Risk**: Medium
+- **Tests**: painter unit/golden coverage for idle transparent and focused opaque states
+- **Status**: [ ] todo
+- **Assigned**: @Neo
+- **Depends on**: TT-B1, TT-D3
+
+### TT-E2: Add Focused-State Visual Feedback
+- **Goal**: Focused mode is visibly distinct and reversible.
+- **Files**:
+  - `app/lib/features/timeline/timeline_strip.dart` ✎
+  - `app/test/goldens/timeline_strip_golden_test.dart` ✎
+- **Risk**: Medium
+- **Tests**: golden test for focused mode
+- **Status**: [ ] todo
+- **Assigned**: @Neo
+- **Depends on**: TT-E1
+
+---
+
+## Phase F — Settings UI
+
+### TT-F1: Add Window Behavior Picker
+- **Goal**: Show reliable platform modes only, with user-facing labels.
+- **Files**:
+  - `app/lib/features/timeline/settings_panel.dart` ✎
+  - `app/test/features/timeline/settings_panel_test.dart` ✎
+- **Risk**: Medium
+- **Tests**: macOS hides reserved mode; Linux hides transparent when unavailable; Windows shows available choices
+- **Status**: [ ] todo
+- **Assigned**: @Neo
+- **Depends on**: TT-C1
+
+### TT-F2: Add Transparency Slider
+- **Goal**: Add labeled idle transparency slider with live preview and clamped range.
+- **Files**:
+  - `app/lib/features/timeline/settings_panel.dart` ✎
+  - `app/test/features/timeline/settings_panel_test.dart` ✎
+- **Risk**: Medium
+- **Tests**: labels, persistence, clamp bounds, preview update
+- **Status**: [ ] todo
+- **Assigned**: @Neo
+- **Depends on**: TT-B1, TT-E1
+
+---
+
+## Phase G — QA And Release Gate
+
+### TT-G1: Full Regression
+- **Goal**: Verify no regression to countdown, refresh, auth, settings, and existing timeline behavior.
+- **Files**: test suite
+- **Risk**: Medium
+- **Tests**: `make test`
+- **Status**: [ ] todo
+- **Assigned**: @Trin
+- **Depends on**: TT-F2
+
+### TT-G2: Manual Platform Smoke
+- **Goal**: Verify real platform behavior.
+- **Checks**:
+  - macOS: idle strip lets titlebar clicks through; hotkey focuses; Escape dismisses
+  - Windows: transparent vs reserved modes behave as selected
+  - Linux: unavailable transparent mode stays hidden unless verified
+- **Risk**: High
+- **Tests**: manual report
+- **Status**: [ ] todo
+- **Assigned**: @Trin/@Smith
+- **Depends on**: TT-G1
 
 ---
 
 ## Execution Order
 
-| Step | Task | Status |
-|------|------|--------|
-| 1 | T-01 AsyncGate | [x] ✅ |
-| 2 | T-02 PeriodicController abstract | [x] ✅ |
-| 3 | T-03 WindowResizeStrategy | [x] ✅ |
-| 4 | T-04 HoverController | [x] ✅ |
-| 5 | T-05 EventBoundsCalculator | [x] ✅ |
-| 6 | T-06 CountdownState VO | [x] ✅ |
-| 7 | T-07 CountdownController | [x] ✅ |
-| 8 | T-08 PaintTickController | [x] ✅ |
-| 9 | T-09 CalendarRefreshController | [x] ✅ |
-| 10 | T-10 Painter layers | [x] ✅ |
+| Step | Phase | Gate |
+|------|-------|------|
+| 1 | Phase A — Capability Spike | Morpheus decision before Phase C |
+| 2 | Phase B — Settings Foundation | Trin tests |
+| 3 | Phase C — Window Interaction Strategy | Morpheus review |
+| 4 | Phase D — Focus Model | Smith usability check |
+| 5 | Phase E — Visual Transparency | Golden/widget tests |
+| 6 | Phase F — Settings UI | Smith usability check |
+| 7 | Phase G — QA And Release Gate | Trin + Smith |
 
-**Rule**: All tests green after each step before proceeding to next.
-
----
-
-## QA Gate (per step)
-@Trin runs `flutter test` after each Neo step. Green = proceed. Red = Neo fixes before next step.
+**Rule**: Use short `*impl <phase>` loops. Do not start the next phase until tests for the current phase pass or the blocker is posted in chat.

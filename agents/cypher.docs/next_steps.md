@@ -1,8 +1,18 @@
 # Next Steps
 
-- [x] Neo: Tag v0.1.0 release on GitHub.
-- [x] Cypher: Sprint 5 assessment complete (sprint5_assessment.md).
-- [ ] Drew: Answer 3 open questions (click-to-expand, macOS, multi-cal UI).
-- [ ] Morpheus: Arch review Sprint 5 features.
-- [ ] Mouse: Sprint 5 board setup after arch review.
-- [ ] Cypher: Write Sprint 5 user stories once Drew answers Qs.
+## Immediate Next Action
+Smith Gate 1 review of `agents/cypher.docs/transparent_timestrip_sprint_stories_2026-04-24T15:04.md`.
+
+## Waiting On
+- Smith UX review of transparent pass-through mode.
+
+## Planned Work
+- [x] Consult Oracle for existing decisions once Drew provides direction.
+- [x] Update `docs/PRD.md` with transparent pass-through mode.
+- [x] Write draft acceptance criteria.
+- [x] Write sprint stories for transparent timestrip.
+- [x] Send requirement to Smith for UX/user review.
+- [ ] Hand off approved requirements to Morpheus for architecture review.
+
+---
+*Last updated: 2026-04-24T15:04*

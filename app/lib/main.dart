@@ -37,7 +37,12 @@ void main() async {
     windowManager: windowManager,
     screenRetriever: screenRetriever,
   );
-  await windowService.initialize(initialFontSize: settingsSvc.current.fontSize);
+  final effectiveWindowMode =
+      settingsSvc.current.effectiveWindowMode(defaultTargetPlatform);
+  await windowService.initialize(
+    initialFontSize: settingsSvc.current.fontSize,
+    initialWindowMode: effectiveWindowMode,
+  );
   await AppLogger.debug('WindowService initialized.');
 
   // 5. Launch app with pre-loaded settings and window service.

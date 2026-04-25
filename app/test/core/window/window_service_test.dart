@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:happening/core/settings/settings_service.dart';
+import 'package:happening/core/window/interaction_strategy/window_interaction_strategy.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -13,6 +14,33 @@ import 'package:window_manager/window_manager.dart';
 @GenerateNiceMocks([MockSpec<WindowManager>(), MockSpec<ScreenRetriever>()])
 import 'window_service_test.mocks.dart';
 
+class _FakeInteractionStrategy extends WindowInteractionStrategy {
+  WindowMode? initializedMode;
+  final List<bool> focusedCalls = [];
+  final List<bool> passThroughCalls = [];
+
+  @override
+  WindowModeAvailability get availability => const WindowModeAvailability(
+        supportsTransparent: true,
+        supportsReserved: true,
+      );
+
+  @override
+  Future<void> initialize(WindowMode effectiveMode) async {
+    initializedMode = effectiveMode;
+  }
+
+  @override
+  Future<void> setFocused(bool focused) async {
+    focusedCalls.add(focused);
+  }
+
+  @override
+  Future<void> setPassThrough(bool enabled) async {
+    passThroughCalls.add(enabled);
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -20,11 +48,17 @@ void main() {
     late MockWindowManager mockWM;
     late MockScreenRetriever mockSR;
     late WindowService service;
+    late _FakeInteractionStrategy fakeInteractionStrategy;
 
     setUp(() {
       mockWM = MockWindowManager();
       mockSR = MockScreenRetriever();
-      service = WindowService(windowManager: mockWM, screenRetriever: mockSR);
+      fakeInteractionStrategy = _FakeInteractionStrategy();
+      service = WindowService(
+        windowManager: mockWM,
+        screenRetriever: mockSR,
+        interactionStrategy: fakeInteractionStrategy,
+      );
 
       // Default mock behavior for initialization
       when(mockSR.getPrimaryDisplay()).thenAnswer((_) async => const Display(
@@ -50,13 +84,17 @@ void main() {
       when(mockWM.setAlwaysOnTop(any)).thenAnswer((_) => Future.value());
       when(mockWM.setAsFrameless()).thenAnswer((_) => Future.value());
       when(mockWM.setBackgroundColor(any)).thenAnswer((_) => Future.value());
+      when(mockWM.setIgnoreMouseEvents(any, forward: anyNamed('forward')))
+          .thenAnswer((_) => Future.value());
       when(mockWM.show(inactive: anyNamed('inactive')))
           .thenAnswer((_) => Future.value());
       when(mockWM.focus()).thenAnswer((_) => Future.value());
       when(mockWM.waitUntilReadyToShow(any, any))
           .thenAnswer((invocation) async {
-        final callback = invocation.positionalArguments[1] as VoidCallback?;
-        callback?.call();
+        final callback = invocation.positionalArguments[1] as dynamic;
+        if (callback != null) {
+          await callback();
+        }
       });
     });
 
@@ -66,6 +104,81 @@ void main() {
       verify(mockWM.ensureInitialized()).called(1);
       verify(mockWM.getDevicePixelRatio()).called(1);
       verify(mockWM.waitUntilReadyToShow(any, any)).called(1);
+    });
+
+    test('initialize passes initial window mode to interaction strategy',
+        () async {
+      await service.initialize(
+        initialFontSize: FontSize.medium,
+        initialWindowMode: WindowMode.transparent,
+      );
+
+      expect(fakeInteractionStrategy.initializedMode, WindowMode.transparent);
+      expect(service.windowMode, WindowMode.transparent);
+    });
+
+    test('setPassThroughEnabled enables click-through with forwarded events',
+        () async {
+      service = WindowService(
+        windowManager: mockWM,
+        screenRetriever: mockSR,
+        supportsTransparentPassThroughForTesting: true,
+        platformOverride: TargetPlatform.windows,
+        enableWindowsAppBar: false,
+      );
+
+      await service.setPassThroughEnabled(true);
+
+      verify(mockWM.setIgnoreMouseEvents(true, forward: true)).called(1);
+    });
+
+    test('setPassThroughEnabled disables click-through with forwarded events',
+        () async {
+      service = WindowService(
+        windowManager: mockWM,
+        screenRetriever: mockSR,
+        supportsTransparentPassThroughForTesting: true,
+        platformOverride: TargetPlatform.windows,
+        enableWindowsAppBar: false,
+      );
+
+      await service.setPassThroughEnabled(false);
+
+      verify(mockWM.setIgnoreMouseEvents(false, forward: true)).called(1);
+    });
+
+    test('setPassThroughEnabled is a no-op on unsupported platforms', () async {
+      service = WindowService(
+        windowManager: mockWM,
+        screenRetriever: mockSR,
+        supportsTransparentPassThroughForTesting: false,
+      );
+
+      await service.setPassThroughEnabled(true);
+
+      verifyNever(
+          mockWM.setIgnoreMouseEvents(any, forward: anyNamed('forward')));
+    });
+
+    test('supportsTransparentPassThrough defaults to unavailable on Linux',
+        () async {
+      service = WindowService(windowManager: mockWM, screenRetriever: mockSR);
+      expect(await service.supportsTransparentPassThrough(), !Platform.isLinux);
+    });
+
+    test('setInteractionFocused delegates to interaction strategy', () async {
+      await service.setInteractionFocused(true);
+      await service.setInteractionFocused(false);
+
+      expect(fakeInteractionStrategy.focusedCalls, [true, false]);
+    });
+
+    test('setWindowMode updates stored mode and reinitializes interaction',
+        () async {
+      await service.setWindowMode(WindowMode.transparent);
+
+      expect(service.windowMode, WindowMode.transparent);
+      expect(fakeInteractionStrategy.initializedMode, WindowMode.transparent);
     });
 
     test('expand resizes to expanded height', () async {
@@ -167,8 +280,8 @@ void main() {
       await Future.delayed(Duration.zero);
 
       // No resize calls should have been made with width=0
-      verifyNever(mockWM.setSize(argThat(
-          predicate<Size>((s) => s.width == 0, 'zero-width size'))));
+      verifyNever(mockWM.setSize(
+          argThat(predicate<Size>((s) => s.width == 0, 'zero-width size'))));
       verifyNever(mockWM.setMinimumSize(argThat(
           predicate<Size>((s) => s.width == 0, 'zero-width min size'))));
       verifyNever(mockWM.setMaximumSize(argThat(
@@ -191,8 +304,8 @@ void main() {
       // With serialisation the first call runs inner logic, the second is dropped.
       // The key invariant: _screenWidth is not overwritten by a racing call.
       // We verify no setSize with zero width occurred (regression guard).
-      verifyNever(mockWM.setSize(argThat(
-          predicate<Size>((s) => s.width == 0, 'zero-width size'))));
+      verifyNever(mockWM.setSize(
+          argThat(predicate<Size>((s) => s.width == 0, 'zero-width size'))));
     });
 
     // didChangeAppLifecycleState re-asserts window on resumed

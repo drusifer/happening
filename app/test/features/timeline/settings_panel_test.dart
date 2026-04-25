@@ -104,6 +104,57 @@ void main() {
       expect(find.text('ABOUT'), findsOneWidget);
     });
 
+    testWidgets('renders window behavior labels for Windows', (tester) async {
+      await tester.pumpWidget(_wrap(SettingsPanel(
+        settingsService: fakeSettings,
+        calendarController: CalendarController(_FakeCalendarService()),
+        onSignOut: () {},
+        platformOverride: TargetPlatform.windows,
+      )));
+
+      expect(find.text('Window behavior'), findsOneWidget);
+      expect(find.text('Let clicks pass through'), findsOneWidget);
+      expect(find.text('Reserve space at top'), findsOneWidget);
+    });
+
+    testWidgets('macOS hides reserved window behavior option', (tester) async {
+      await tester.pumpWidget(_wrap(SettingsPanel(
+        settingsService: fakeSettings,
+        calendarController: CalendarController(_FakeCalendarService()),
+        onSignOut: () {},
+        platformOverride: TargetPlatform.macOS,
+      )));
+
+      expect(find.text('Let clicks pass through'), findsOneWidget);
+      expect(find.text('Reserve space at top'), findsNothing);
+    });
+
+    testWidgets('linux hides transparent window behavior option', (tester) async {
+      await tester.pumpWidget(_wrap(SettingsPanel(
+        settingsService: fakeSettings,
+        calendarController: CalendarController(_FakeCalendarService()),
+        onSignOut: () {},
+        platformOverride: TargetPlatform.linux,
+      )));
+
+      expect(find.text('Let clicks pass through'), findsNothing);
+      expect(find.text('Reserve space at top'), findsOneWidget);
+    });
+
+    testWidgets('renders transparency slider labels', (tester) async {
+      await tester.pumpWidget(_wrap(SettingsPanel(
+        settingsService: fakeSettings,
+        calendarController: CalendarController(_FakeCalendarService()),
+        onSignOut: () {},
+      )));
+
+      expect(find.text('Transparency'), findsOneWidget);
+      expect(find.text('More visible'), findsOneWidget);
+      expect(find.text('Balanced'), findsOneWidget);
+      expect(find.text('More transparent'), findsOneWidget);
+      expect(find.byType(Slider), findsOneWidget);
+    });
+
     // ── Interactions ─────────────────────────────────────────────────────────
 
     testWidgets('tapping Small calls update(FontSize.small)', (tester) async {
@@ -146,6 +197,34 @@ void main() {
       )));
       await tester.tap(find.text('LOGOUT'));
       expect(fakeSettings.updates, isEmpty);
+    });
+
+    testWidgets('tapping transparent behavior updates window mode',
+        (tester) async {
+      await tester.pumpWidget(_wrap(SettingsPanel(
+        settingsService: fakeSettings,
+        calendarController: CalendarController(_FakeCalendarService()),
+        onSignOut: () {},
+        platformOverride: TargetPlatform.windows,
+      )));
+
+      await tester.tap(find.text('Let clicks pass through'));
+
+      expect(fakeSettings.updates.last.windowMode, WindowMode.transparent);
+    });
+
+    testWidgets('moving transparency slider updates idle opacity',
+        (tester) async {
+      await tester.pumpWidget(_wrap(SettingsPanel(
+        settingsService: fakeSettings,
+        calendarController: CalendarController(_FakeCalendarService()),
+        onSignOut: () {},
+      )));
+
+      final slider = tester.widget<Slider>(find.byType(Slider));
+      slider.onChanged!(0.75);
+
+      expect(fakeSettings.updates.last.idleTimelineOpacity, 0.75);
     });
 
     testWidgets('tapping About opens project URL', (tester) async {

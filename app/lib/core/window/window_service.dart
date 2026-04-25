@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/util/async_gate.dart';
 import 'package:happening/core/util/logger.dart';
+import 'package:happening/core/window/interaction_strategy/window_interaction_strategy.dart';
 import 'package:happening/core/window/resize_strategy/window_resize_strategy.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:win32/win32.dart';
@@ -68,8 +69,21 @@ class WindowService with WidgetsBindingObserver {
   WindowService({
     required WindowManager windowManager,
     required ScreenRetriever screenRetriever,
+    bool? supportsTransparentPassThroughForTesting,
+    TargetPlatform? platformOverride,
+    bool enableWindowsAppBar = true,
+    WindowInteractionStrategy? interactionStrategy,
   })  : _wm = windowManager,
         _sr = screenRetriever,
+        _platformOverride = platformOverride,
+        _enableWindowsAppBar = enableWindowsAppBar,
+        _interactionStrategy = interactionStrategy ??
+            WindowInteractionStrategy.create(
+              wm: windowManager,
+              supportsTransparentPassThrough:
+                  supportsTransparentPassThroughForTesting ?? !Platform.isLinux,
+              platformOverride: platformOverride,
+            ),
         _strategy = WindowResizeStrategy.create(
           wm: windowManager,
           sr: screenRetriever,
@@ -77,10 +91,14 @@ class WindowService with WidgetsBindingObserver {
 
   final WindowManager _wm;
   final ScreenRetriever _sr;
+  final TargetPlatform? _platformOverride;
+  final bool _enableWindowsAppBar;
+  final WindowInteractionStrategy _interactionStrategy;
   final WindowResizeStrategy _strategy;
   final _gate = AsyncGate<bool>();
 
   FontSize _fontSize = FontSize.medium;
+  WindowMode _windowMode = WindowMode.reserved;
 
   Pointer<_AppBarData>? _appBarData;
   late final _SHDart _shAppBarMessage;
@@ -94,12 +112,22 @@ class WindowService with WidgetsBindingObserver {
   double _dpr = 1.0;
   double _screenWidth = 0;
 
+  bool get _isWindows =>
+      _platformOverride == TargetPlatform.windows ||
+      (_platformOverride == null && Platform.isWindows);
+
+  bool get _isLinux =>
+      _platformOverride == TargetPlatform.linux ||
+      (_platformOverride == null && Platform.isLinux);
+
   /// Call once, before [runApp], to set up the window.
   Future<void> initialize({
     FontSize initialFontSize = FontSize.medium,
+    WindowMode initialWindowMode = WindowMode.reserved,
   }) async {
     await _wm.ensureInitialized();
     _fontSize = initialFontSize;
+    _windowMode = initialWindowMode;
 
     final double realDpr = _wm.getDevicePixelRatio();
     _dpr = realDpr;
@@ -123,23 +151,23 @@ class WindowService with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
 
     await _wm.waitUntilReadyToShow(windowOptions, () async {
-      if (Platform.isWindows) {
+      if (_isWindows &&
+          _enableWindowsAppBar &&
+          _windowMode == WindowMode.reserved) {
         await _registerAppBar();
       }
       await _strategy.initialize(size, _dpr);
       await _wm.setAsFrameless();
       await _wm.show();
       await _wm.focus();
+      await _interactionStrategy.initialize(_windowMode);
     });
   }
 
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _strategy.dispose();
-    if (Platform.isWindows && _appBarData != null) {
-      _shAppBarMessage(_abmRemove, _appBarData!);
-      calloc.free(_appBarData!);
-    }
+    _disposeAppBar();
   }
 
   @override
@@ -163,6 +191,53 @@ class WindowService with WidgetsBindingObserver {
         unawaited(_doCollapse());
       }
     }
+  }
+
+  /// Whether this platform should expose transparent click-through mode.
+  ///
+  /// Phase A deliberately keeps Linux unavailable: an earlier real-session
+  /// attempt produced an unusable black bar, and current reliable behavior is
+  /// only established for macOS/Windows.
+  Future<bool> supportsTransparentPassThrough() async {
+    return _interactionStrategy.availability.supportsTransparent;
+  }
+
+  WindowMode get windowMode => _windowMode;
+
+  /// Enables or disables whole-window click-through behavior.
+  ///
+  /// Uses `forward: true` so supported native platforms pass ignored mouse
+  /// events to whatever is behind the strip instead of swallowing them.
+  Future<void> setPassThroughEnabled(bool enabled) async {
+    if (!_interactionStrategy.availability.supportsTransparent) {
+      await AppLogger.debug(
+          'WindowService.setPassThroughEnabled($enabled): unsupported platform');
+      return;
+    }
+    await _interactionStrategy.setPassThrough(enabled);
+  }
+
+  Future<void> setInteractionFocused(bool focused) async {
+    await _interactionStrategy.setFocused(focused);
+  }
+
+  Future<void> setWindowMode(WindowMode mode) async {
+    if (_windowMode == mode) return;
+    _windowMode = mode;
+
+    if (_isWindows && _enableWindowsAppBar) {
+      if (_windowMode == WindowMode.reserved) {
+        if (_appBarData == null) {
+          await _registerAppBar();
+        } else {
+          await reassertAppBar();
+        }
+      } else {
+        _disposeAppBar();
+      }
+    }
+
+    await _interactionStrategy.initialize(_windowMode);
   }
 
   Future<void> _onDisplayChanged() async {
@@ -208,7 +283,9 @@ class WindowService with WidgetsBindingObserver {
     _dpr = newDpr;
     _screenWidth = newWidth;
 
-    if (Platform.isWindows && _appBarData != null) {
+    if (_isWindows &&
+        _windowMode == WindowMode.reserved &&
+        _appBarData != null) {
       // Re-assert AppBar band with updated physical-pixel values.
       await _reserveCollapsedSpace();
       // Re-anchor window position — display change can nudge the window.
@@ -251,7 +328,11 @@ class WindowService with WidgetsBindingObserver {
   /// this when the strip is observed overlapping other window title bars.
   /// No-op on non-Windows platforms.
   Future<void> reassertAppBar() async {
-    if (!Platform.isWindows || _appBarData == null) return;
+    if (!_isWindows ||
+        _windowMode != WindowMode.reserved ||
+        _appBarData == null) {
+      return;
+    }
     unawaited(AppLogger.debug('WindowService: reassertAppBar() start'));
     // Collapse first — the AppBar band equals the collapsed window height (55px).
     // Running ABM_REMOVE/NEW/SETPOS while expanded (250px) causes Windows to
@@ -283,7 +364,7 @@ class WindowService with WidgetsBindingObserver {
       await _doExpand();
       await AppLogger.debug('WindowService.updateHeights: _doExpand complete');
     } else {
-      if (!Platform.isWindows) {
+      if (!_isWindows) {
         // NOTE: calls _doCollapse() directly, bypassing _gate — concurrent with
         // gated collapse() calls from TimelineStrip.initState(). [DBG WATCH]
         await AppLogger.debug(
@@ -349,6 +430,14 @@ class WindowService with WidgetsBindingObserver {
       }
     } finally {
       _appBarBusy = false;
+    }
+  }
+
+  void _disposeAppBar() {
+    if (_isWindows && _appBarData != null) {
+      _shAppBarMessage(_abmRemove, _appBarData!);
+      calloc.free(_appBarData!);
+      _appBarData = null;
     }
   }
 

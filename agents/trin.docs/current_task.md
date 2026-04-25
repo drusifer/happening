@@ -1,5 +1,42 @@
 # Current Task
 
+## Transparent Timestrip Phase C UAT — 2026-04-24
+**Status**: PASSED / handed to Morpheus
+**Progress**: 100%
+
+### Completed
+- [x] Loaded Trin state and recent chat.
+- [x] Consulted Oracle via chat for the expected Phase C behavior.
+- [x] Reviewed the Phase C implementation diff and architecture constraints.
+- [x] Verified `WindowInteractionStrategy` owns interaction policy separately from resize strategy.
+- [x] Verified Windows AppBar reservation is restricted to reserved mode.
+- [x] Verified Phase C tests cover strategy factory behavior and WindowService delegation.
+- [x] Confirmed latest complete `make test` run passed 275/275.
+
+## Transparent Timestrip Phase B UAT — 2026-04-24
+**Status**: PASSED / handed to Morpheus
+**Progress**: 100%
+
+### Completed
+- [x] Reviewed Phase B implementation diff.
+- [x] Verified persistence/migration for `windowMode` and `idleTimelineOpacity`.
+- [x] Verified clamp behavior and preserved-settings call sites.
+- [x] Verified effective mode is resolved before window initialization.
+- [x] Confirmed `make test` passed 264/264.
+
+## Transparent Timestrip Phase A UAT — 2026-04-24
+**Status**: PASSED / handed to Morpheus
+**Progress**: 100%
+
+### Completed
+- [x] Loaded Trin state and recent chat.
+- [x] Reviewed Phase A implementation diff.
+- [x] Verified pass-through probe behavior and unsupported-platform no-op behavior.
+- [x] Verified Linux default transparent availability remains false.
+- [x] Verified hotkey decision stayed at feasibility/target level only.
+- [x] Verified `task.md` Phase A statuses align with delivered scope.
+- [x] Confirmed `make test` passed 259/259.
+
 ## Calendar Fetch Threading UAT — 2026-04-17
 **Status**: PASSED for scope / handed to Morpheus
 **Progress**: 100%

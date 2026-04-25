@@ -17,6 +17,7 @@ class EventsLayer implements TimelineLayer {
     required this.tickColor,
     required this.backgroundColor,
     required this.fontSize,
+    required this.surfaceOpacity,
   });
 
   final List<CalendarEvent> events;
@@ -27,6 +28,7 @@ class EventsLayer implements TimelineLayer {
   final Color tickColor;
   final Color backgroundColor;
   final double fontSize;
+  final double surfaceOpacity;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -52,7 +54,8 @@ class EventsLayer implements TimelineLayer {
 
       Color color = event.isCompleted ? const Color(0xFF51B749) : event.color;
 
-      final double targetOpacity = isHovered ? 1.0 : (isColliding ? 0.5 : 0.82);
+      final double targetOpacity =
+          (isHovered ? 1.0 : (isColliding ? 0.5 : 0.82)) * surfaceOpacity;
       color = color.withValues(alpha: targetOpacity);
 
       if (event.isTask) {
@@ -138,7 +141,7 @@ class EventsLayer implements TimelineLayer {
         gap.centerX,
         size.height - labelFontSize - 12.0,
         fontSize: labelFontSize,
-        color: tickColor.withValues(alpha: 1.0),
+        color: tickColor.withValues(alpha: 1.0 * surfaceOpacity),
         backgroundColor: backgroundColor,
         centered: true,
       );
