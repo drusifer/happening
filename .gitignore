@@ -1,6 +1,8 @@
 # Local Flutter SDK (downloaded by make setup, not committed)
 .flutter/
 
+node_modules
+
 # Miscellaneous
 *.class
 # *.lock — intentionally NOT ignored: pubspec.lock is committed for reproducible builds
