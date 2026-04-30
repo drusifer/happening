@@ -54,6 +54,16 @@ add_subdirectory(${FLUTTER_MANAGED_DIR})
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(GTK REQUIRED IMPORTED_TARGET gtk+-3.0)
 
+# Optional: gtk-layer-shell for Wayland panel anchoring + transparent click-through.
+# If absent, the app builds normally but transparent mode is unavailable on Wayland.
+pkg_check_modules(LAYER_SHELL IMPORTED_TARGET gtk-layer-shell-0)
+if(LAYER_SHELL_FOUND)
+  message(STATUS "gtk-layer-shell found — Wayland transparent mode enabled")
+  add_definitions(-DLAYER_SHELL_AVAILABLE=1)
+else()
+  message(STATUS "gtk-layer-shell not found — Wayland transparent mode disabled")
+endif()
+
 # Application build; see runner/CMakeLists.txt.
 add_subdirectory("runner")
 

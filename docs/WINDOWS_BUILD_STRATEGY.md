@@ -72,8 +72,8 @@ ifeq ($(OS),Windows_NT)
     RUN_COMMAND = $(FLUTTER) run -d windows
     TEST_COMMAND = $(FLUTTER) test integration_test/ -d windows
 else
-    RUN_COMMAND = PATH="$(LLVM_BIN):$$PATH" GDK_BACKEND=x11 XAUTHORITY=$$(ls /run/user/$$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1) $(FLUTTER) run -d linux
-    TEST_COMMAND = PATH="$(LLVM_BIN):$$PATH" GDK_BACKEND=x11 XAUTHORITY=$$(ls /run/user/$$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1) $(FLUTTER) test integration_test/ -d linux
+    RUN_COMMAND = PATH="$(LLVM_BIN):$$PATH" $(FLUTTER) run -d linux
+    TEST_COMMAND = PATH="$(LLVM_BIN):$$PATH" $(FLUTTER) test integration_test/ -d linux
 endif
 
 # ...

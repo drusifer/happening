@@ -26,7 +26,9 @@ class HotkeyManagerTimelineFocusHotkeyBinding
         ? [HotKeyModifier.meta, HotKeyModifier.shift]
         : [HotKeyModifier.control, HotKeyModifier.shift];
     final hotKey = HotKey(
-      key: PhysicalKeyboardKey.space,
+      key: _platform == TargetPlatform.linux
+          ? PhysicalKeyboardKey.keyH
+          : PhysicalKeyboardKey.space,
       modifiers: modifiers,
       scope: HotKeyScope.system,
     );

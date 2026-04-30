@@ -5,7 +5,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-FLUTTER_SDK="$PROJECT_ROOT/.flutter/flutter"
+FLUTTER_SDK="${HOME}/flutter"
 
 ERRORS=()
 
@@ -14,7 +14,7 @@ if [ -x "$FLUTTER_SDK/bin/flutter" ]; then
   echo "✓ flutter SDK ($FLUTTER_SDK)"
 else
   echo "==> Flutter SDK not found — cloning stable into .flutter/flutter ..."
-  mkdir -p "$PROJECT_ROOT/.flutter"
+  mkdir -p "${HOME}/flutter"
   git clone https://github.com/flutter/flutter.git --branch stable --depth 1 "$FLUTTER_SDK"
   echo "✓ flutter SDK cloned"
 fi

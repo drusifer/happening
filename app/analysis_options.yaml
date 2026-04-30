@@ -11,6 +11,17 @@ analyzer:
     - "linux/flutter/ephemeral/**"
     - "macos/Flutter/ephemeral/**"
     - "windows/flutter/ephemeral/**"
+    - "**/build/**"
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "../.flutter/**" # Reach up and ignore the local SDK
+    - "../.venv/**"
+    - "**/.git/**"
+    - "../agents/**"
+    - "../.history/**"
+    - "../.claude/**"
+    - "**/node_modules/**"
+
   errors:
     # Dead Code & Performance
     unused_element: ignore

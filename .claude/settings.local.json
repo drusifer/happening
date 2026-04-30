@@ -18,7 +18,14 @@
       "Bash(make lint:*)",
       "Read(//c/Users/drusi/Downloads/**)",
       "Bash(dart analyze *)",
-      "Bash(make -f Makefile.prj test)"
+      "Bash(make -f Makefile.prj test)",
+      "Bash(flutter --version)",
+      "Bash(flutter pub *)",
+      "Bash(flutter build *)",
+      "Bash(make format *)",
+      "Bash(make build-linux *)",
+      "Bash(pkg-config --modversion gtk-layer-shell-0)",
+      "Read(//usr/include/gtk-layer-shell/**)"
     ]
   },
   "enabledMcpjsonServers": [

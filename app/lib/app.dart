@@ -48,6 +48,7 @@ class HappeningApp extends StatefulWidget {
     @visibleForTesting this.calendarControllerOverride,
     @visibleForTesting this.clockServiceOverride,
     @visibleForTesting this.enableAnimations = true,
+    @visibleForTesting this.linuxTransparentSupported = false,
   });
 
   final SettingsService settingsService;
@@ -64,6 +65,9 @@ class HappeningApp extends StatefulWidget {
 
   /// Disable repeating animations so tests can pumpAndSettle.
   final bool enableAnimations;
+
+  /// Debug/smoke-test gate for Linux transparent mode. Defaults off.
+  final bool linuxTransparentSupported;
 
   @override
   State<HappeningApp> createState() => _HappeningAppState();
@@ -228,6 +232,7 @@ class _HappeningAppState extends State<HappeningApp> {
                   onSignIn: _isSigningIn ? null : _signIn,
                   onCancelSignIn: _isSigningIn ? _cancelSignIn : null,
                   enableAnimations: widget.enableAnimations,
+                  linuxTransparentSupported: widget.linuxTransparentSupported,
                 ),
               _AuthState.authenticated => StreamBuilder<List<CalendarEvent>>(
                   stream: _calendar!.events,
@@ -248,6 +253,8 @@ class _HappeningAppState extends State<HappeningApp> {
                       windowService: widget.windowService,
                       onSignOut: _signOut,
                       enableAnimations: widget.enableAnimations,
+                      linuxTransparentSupported:
+                          widget.linuxTransparentSupported,
                     );
                   },
                 ),

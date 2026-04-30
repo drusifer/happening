@@ -1,18 +1,18 @@
 # Next Steps
 
 ## Immediate Next Action
-Smith Gate 1 review of `agents/cypher.docs/transparent_timestrip_sprint_stories_2026-04-24T15:04.md`.
+Linux Wayland Simplification stories are approved. Product waits for implementation results and Linux smoke findings.
 
 ## Waiting On
-- Smith UX review of transparent pass-through mode.
+- Neo/Trin implementation and UAT of the Linux Wayland Simplification sprint.
 
 ## Planned Work
 - [x] Consult Oracle for existing decisions once Drew provides direction.
 - [x] Update `docs/PRD.md` with transparent pass-through mode.
-- [x] Write draft acceptance criteria.
 - [x] Write sprint stories for transparent timestrip.
-- [x] Send requirement to Smith for UX/user review.
-- [ ] Hand off approved requirements to Morpheus for architecture review.
+- [x] Draft Linux Wayland Simplification stories.
+- [x] Smith Gate 1 approval for Linux Wayland Simplification.
+- [ ] Product review after Linux smoke results decide whether transparent Linux mode can be described as supported.
 
 ---
-*Last updated: 2026-04-24T15:04*
+*Last updated: 2026-04-25T16:41*

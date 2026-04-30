@@ -126,9 +126,22 @@ The window resizes between two heights driven by hover state:
 The background is always a solid color — no compositor transparency required. This avoids the common GTK/Wayland black-area bug where transparent pixels render as black when the compositor does not composite the window.
 
 ### Linux Platform Layer (`my_application.cc`)
-On Linux, the runner sets up the window as a top-of-screen panel before it is mapped:
-- **X11**: `_NET_WM_WINDOW_TYPE_DOCK` and `_NET_WM_STRUT_PARTIAL` are set via Xlib **before** `gtk_widget_show` to prevent the WM from placing the window in the wrong position on first map.
-- **Wayland**: `gtk-layer-shell` (`libgtk-layer-shell`) anchors the window to the top edge with `GTK_LAYER_SHELL_LAYER_TOP` and reserves exclusive screen space via `gtk_layer_set_exclusive_zone`. Requires `libgtk-layer-shell-dev` at build time (optional — gracefully skipped if absent).
+On Linux, the runner stays close to the standard Flutter GTK startup path. It sets
+the app title/icon, creates the Flutter view, gives the view a transparent
+background before first frame, and defers showing the window until Flutter has
+content.
+
+Linux no longer uses Happening-owned shell-reservation code. The runner does not
+set X11 `_NET_WM_STRUT_PARTIAL`, does not mark the window as an X11 DOCK, and
+does not use Wayland `gtk-layer-shell`. Linux transparent behavior is exposed
+only when the Dart capability layer has real-session evidence that pass-through
+works for the current window stack.
+
+Current Linux development runs prefer X11/XWayland (`GDK_BACKEND=x11`) because
+standard native Wayland clients cannot reliably request absolute top-of-screen
+placement through Flutter/GTK window APIs. Native Wayland is treated as
+unsupported for the strip behavior until Happening either adopts a compositor
+protocol such as layer-shell or implements a separate conservative Wayland mode.
 
 ### Display/DPI Metric Refresh
 `WindowService` implements `WidgetsBindingObserver.didChangeMetrics()` to keep the strip's sizing contract synchronized with live display state. When Flutter reports a metrics change, the service refreshes:
@@ -168,7 +181,7 @@ Google OAuth on desktop uses the **PKCE (Proof Key for Code Exchange)** flow to 
 | AOQ-5 | CPU Bottlenecks? | **Tiered Frequency** | Repainting a 3000px canvas at 1Hz is too heavy for idle. |
 | AOQ-6 | Resizing? | **KISS Protocol** | Asynchronous queues were prone to "stuck" windows. Use direct UI-gated calls. |
 | AOQ-7 | Interaction? | **Contextual Latching** | Standard hit-testing makes action buttons hard to click. |
-| AOQ-8 | Linux display server? | **Dual X11+Wayland** | X11 strut via Xlib; Wayland strut via gtk-layer-shell. Both in `my_application.cc`, guarded at compile and runtime. |
+| AOQ-8 | Linux display server? | **No shell reservation** | Linux uses the standard Flutter GTK runner plus Dart window APIs. X11 struts and Wayland layer-shell reservation were removed because transparent non-reserving mode is the preferred product path and shell reservation is compositor-specific. |
 | AOQ-9 | Background transparency? | **Solid color always** | Transparent windows render black without a compositor. Solid background eliminates the dependency. |
 | AOQ-10 | Display/DPI changes after launch? | **Refresh live metrics in `WindowService.didChangeMetrics()`** | DPR and primary-display width can change after launch; the window and Windows AppBar reservation must be recalculated from current display state. |
 

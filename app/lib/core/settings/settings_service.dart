@@ -71,9 +71,14 @@ class AppSettings {
   final double idleTimelineOpacity;
 
   /// Effective mode after platform reliability rules are applied.
-  WindowMode effectiveWindowMode(TargetPlatform platform) {
+  WindowMode effectiveWindowMode(
+    TargetPlatform platform, {
+    bool linuxTransparentSupported = false,
+  }) {
     if (platform == TargetPlatform.macOS) return WindowMode.transparent;
-    if (platform == TargetPlatform.linux) return WindowMode.reserved;
+    if (platform == TargetPlatform.linux && !linuxTransparentSupported) {
+      return WindowMode.reserved;
+    }
     return windowMode;
   }
 

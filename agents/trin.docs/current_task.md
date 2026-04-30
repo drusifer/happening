@@ -1,5 +1,65 @@
 # Current Task
 
+## Linux Wayland Simplification Phase A UAT — 2026-04-25
+**Status**: PASSED / handed to Morpheus
+**Progress**: 100%
+
+### Completed
+- [x] Loaded Trin state and recent chat.
+- [x] Consulted Oracle via chat for expected Phase A behavior.
+- [x] Reviewed Phase A implementation diff.
+- [x] Verified Linux transparent support remains hidden by default.
+- [x] Verified verified Linux support path is explicit and opt-in.
+- [x] Verified settings panel availability matches capability.
+- [x] Verified smoke matrix covers X11/XWayland and Wayland support gates.
+- [x] Ran `make test`.
+
+### Validation
+- [x] `make test` passes: 293/293.
+- [x] Neo validation: `make format` passed.
+- [x] Neo validation: `make build-linux` passed.
+- [ ] `make analyze` remains blocked by Flutter analysis server crash.
+
+## Linux Wayland Simplification Phase B/C UAT — 2026-04-25
+**Status**: PASSED / handed to Morpheus
+**Progress**: 100%
+
+### Completed
+- [x] Consulted Oracle via chat for expected Phase B/C behavior.
+- [x] Verified native reservation symbols are absent from `app/linux`.
+- [x] Verified CMake no longer links direct X11 or detects layer-shell.
+- [x] Verified docs no longer present Linux shell reservation as current product path.
+- [x] Reviewed minimal runner startup responsibilities.
+
+### Validation
+- [x] Neo validation: `make format` passed.
+- [x] Neo validation: `make test` passed 293/293.
+- [x] Neo validation: `make build-linux` passed.
+- [ ] `make analyze` remains blocked by Flutter analysis server crash.
+
+## Linux Wayland Simplification Phase D Gate — 2026-04-25
+**Status**: PASSED for X11/XWayland support scope / native Wayland and transparent not claimed
+**Progress**: 100%
+
+### Completed
+- [x] Consulted Oracle via chat for expected Phase D behavior.
+- [x] Ran `make format`.
+- [x] Ran `make test`.
+- [x] Ran `make build-linux`.
+- [x] Ran `make analyze` and confirmed known Flutter analysis server crash.
+- [x] Updated `task.md` with verification results and blockers.
+- [x] Reviewed user's 2026-04-25 17:14 rerun in `build/build.out`; analyzer blocker reproduced with `Too many open files` / `Bad state: Future already completed`.
+- [x] Reviewed user's report that host-side `make analyze` is fixed; Codex sandbox rerun at 2026-04-25 19:12 still fails due local inotify instance cap.
+- [x] Recorded user smoke: X11/XWayland placement works; native Wayland appears centered and disconnects with GTK protocol error during interaction.
+- [x] Verified `make run-linux` now forces `GDK_BACKEND=x11`.
+- [x] Ran `make format`: pass, 0 changed.
+- [x] Ran `make test`: pass 293/293.
+- [x] Ran clean sequential `make build-linux`: pass, built Linux arm64 release bundle.
+
+### Not Claimed
+- [ ] Native Wayland strip behavior is not supported: centered placement and GTK protocol disconnect during interaction.
+- [ ] Linux transparent mode remains hidden until separately validated.
+
 ## Transparent Timestrip Phase C UAT — 2026-04-24
 **Status**: PASSED / handed to Morpheus
 **Progress**: 100%

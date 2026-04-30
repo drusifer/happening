@@ -1,5 +1,12 @@
 # Next Steps
 
+- [x] Linux Wayland Simplification Phase A UAT complete.
+- [ ] Morpheus: review Phase A for architectural sufficiency before Phase B.
+- [x] Linux Wayland Simplification Phase B/C UAT complete.
+- [ ] Morpheus: review Phase B/C for architectural sufficiency before verification gate.
+- [x] Phase D automated gate complete for current scope: format/test/build pass; user reports host-side analyze is clean, Codex sandbox analyze remains environment-limited by inotify watcher cap.
+- [x] Execute Linux smoke matrix enough to choose backend: X11/XWayland selected for stable placement.
+- [ ] Do not claim native Wayland or Linux transparent support; keep transparent hidden until separately validated.
 - [x] Transparent Timestrip Phase C UAT complete.
 - [ ] Morpheus: review Phase C for architectural sufficiency before Phase D.
 - [ ] Later platform QA: manual macOS/Windows transparent-mode smoke once real hosts are available.
