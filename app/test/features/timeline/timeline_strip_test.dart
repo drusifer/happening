@@ -584,6 +584,114 @@ void main() {
       // Should STAY expanded because settings is open
       expect(windowService.isExpandedNotifier.value, isTrue);
     });
+    group('hover-to-focus (CT-C1)', () {
+      testWidgets('transparent mode: 300ms hover triggers focus',
+          (tester) async {
+        final fakeWS = _FakeWindowService();
+        // macOS platform override forces transparent mode regardless of stored setting
+        await tester.pumpWidget(wrap(
+          TimelineStrip(
+            events: const [],
+            clockService: clock,
+            calendarController: fakeController,
+            settingsService: fakeSettings,
+            windowService: fakeWS,
+            onSignOut: () {},
+            platformOverride: TargetPlatform.macOS,
+            enableAnimations: false,
+          ),
+        ));
+        await tester.pump(Duration.zero);
+
+        final baseTrue = fakeWS.focusedCalls.where((f) => f).length;
+
+        final gesture =
+            await tester.createGesture(kind: PointerDeviceKind.mouse);
+        await gesture.addPointer(location: Offset.zero);
+        await gesture.moveTo(const Offset(100, 10));
+        await tester.pump(const Duration(milliseconds: 100));
+
+        // Not focused yet — timer still pending
+        expect(fakeWS.focusedCalls.where((f) => f).length, equals(baseTrue));
+
+        // After 300ms delay elapses
+        await tester.pump(const Duration(milliseconds: 300));
+        expect(
+          fakeWS.focusedCalls.where((f) => f).length,
+          greaterThan(baseTrue),
+        );
+
+        await gesture.removePointer();
+      });
+
+      testWidgets('transparent mode: exit before 300ms cancels pending focus',
+          (tester) async {
+        final fakeWS = _FakeWindowService();
+        await tester.pumpWidget(wrap(
+          TimelineStrip(
+            events: const [],
+            clockService: clock,
+            calendarController: fakeController,
+            settingsService: fakeSettings,
+            windowService: fakeWS,
+            onSignOut: () {},
+            platformOverride: TargetPlatform.macOS,
+            enableAnimations: false,
+          ),
+        ));
+        await tester.pump(Duration.zero);
+
+        final gesture =
+            await tester.createGesture(kind: PointerDeviceKind.mouse);
+        await gesture.addPointer(location: Offset.zero);
+
+        // Enter strip
+        await gesture.moveTo(const Offset(100, 10));
+        await tester.pump(const Duration(milliseconds: 100));
+
+        // Remove pointer — fires onExit, cancels the pending 300ms timer
+        await gesture.removePointer();
+        await tester.pump(const Duration(milliseconds: 400));
+
+        // Timer was cancelled — no focus call
+        expect(fakeWS.focusedCalls.where((f) => f).length, equals(0));
+      });
+
+      testWidgets(
+          'reserved mode: hover does not trigger focus (no-op for non-transparent)',
+          (tester) async {
+        final fakeWS = _FakeWindowService();
+        await tester.pumpWidget(wrap(
+          TimelineStrip(
+            events: const [],
+            clockService: clock,
+            calendarController: fakeController,
+            settingsService: fakeSettings,
+            windowService: fakeWS,
+            onSignOut: () {},
+            enableAnimations: false,
+          ),
+        ));
+        await tester.pump(Duration.zero);
+
+        final baseTrue = fakeWS.focusedCalls.where((f) => f).length;
+
+        final gesture =
+            await tester.createGesture(kind: PointerDeviceKind.mouse);
+        await gesture.addPointer(location: Offset.zero);
+        await gesture.moveTo(const Offset(100, 10));
+        await tester.pump(const Duration(milliseconds: 500));
+
+        expect(
+          fakeWS.focusedCalls.where((f) => f).length,
+          equals(baseTrue),
+          reason: 'reserved mode hover should not call setInteractionFocused',
+        );
+
+        await gesture.removePointer();
+      });
+    });
+
     group('focus/lifecycle', () {
       testWidgets('collapses when app loses focus if settings closed',
           (tester) async {
@@ -844,7 +952,8 @@ void main() {
   });
 
   group('Transparent focus gating', () {
-    testWidgets('idle transparent mode hides interactive controls and hover',
+    testWidgets(
+        'idle transparent mode keeps chrome visible and suppresses hover',
         (tester) async {
       final hotkeyBinding = _FakeFocusHotkeyBinding();
       final windowService = _FakeWindowService();
@@ -875,9 +984,9 @@ void main() {
       await tester.pump();
       await tester.pump();
 
-      expect(find.byIcon(Icons.refresh), findsNothing);
-      expect(find.byIcon(Icons.settings), findsNothing);
-      expect(find.byIcon(Icons.power_settings_new), findsNothing);
+      expect(find.byIcon(Icons.refresh), findsOneWidget);
+      expect(find.byIcon(Icons.settings), findsOneWidget);
+      expect(find.byIcon(Icons.power_settings_new), findsOneWidget);
 
       final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
       await gesture.addPointer(location: Offset.zero);
@@ -922,8 +1031,52 @@ void main() {
       await tester.sendKeyDownEvent(LogicalKeyboardKey.escape);
       await tester.pump();
 
-      expect(find.byIcon(Icons.refresh), findsNothing);
+      expect(find.byIcon(Icons.refresh), findsOneWidget);
       expect(windowService.passThroughCalls.last, isTrue);
+    });
+
+    testWidgets('verified linux transparent smoke keeps controls interactive',
+        (tester) async {
+      final hotkeyBinding = _FakeFocusHotkeyBinding();
+      final windowService = _FakeWindowService();
+      final settings = _FakeSettingsService(
+        const AppSettings(windowMode: WindowMode.transparent),
+      );
+      final event = CalendarEvent(
+        id: 'linux-e1',
+        title: 'Linux Meeting',
+        startTime: now.add(const Duration(minutes: 30)),
+        endTime: now.add(const Duration(minutes: 60)),
+        color: Colors.blue,
+        calendarEventUrl: null,
+        videoCallUrl: null,
+      );
+
+      await tester.pumpWidget(wrap(TimelineStrip(
+        events: [event],
+        clockService: clock,
+        calendarController: fakeController,
+        settingsService: settings,
+        windowService: windowService,
+        onSignOut: () {},
+        enableAnimations: false,
+        platformOverride: TargetPlatform.linux,
+        linuxTransparentSupported: true,
+        focusHotkeyBinding: hotkeyBinding,
+      )));
+      await tester.pump();
+      await tester.pump();
+
+      expect(find.byIcon(Icons.refresh), findsOneWidget);
+      expect(find.byIcon(Icons.settings), findsOneWidget);
+      expect(find.byIcon(Icons.power_settings_new), findsOneWidget);
+
+      final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await gesture.addPointer(location: Offset.zero);
+      await gesture.moveTo(const Offset(140, 10));
+      await tester.pump(const Duration(milliseconds: 50));
+
+      expect(windowService.expandCalls, greaterThan(0));
     });
   });
 }

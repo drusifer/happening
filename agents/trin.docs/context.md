@@ -7,6 +7,37 @@
 - Coverage now includes strategy factory behavior plus WindowService delegation/mode-switch tests.
 - Latest complete validation run recorded in chat: `make test` passed 275/275.
 
+## Linux Wayland Simplification Phase A UAT — 2026-04-25
+- Expected behavior: Linux transparent remains hidden/unsupported by default; verified transparent behavior is opt-in only; manual smoke matrix gates any Linux transparent support claim.
+- Verified `AppSettings.effectiveWindowMode(...)` keeps Linux reserved unless `linuxTransparentSupported` is true.
+- Verified `LinuxWindowInteractionStrategy` is no-op by default and can toggle forwarded ignored mouse events only when constructed with verified support.
+- Verified `SettingsPanel` hides Linux transparent mode by default and shows it only with `linuxTransparentSupported: true`.
+- Verified smoke matrix exists at `agents/trin.docs/linux_wayland_simplification_smoke_matrix_2026-04-25T16:55.md`.
+- Validation: `make test` passes 293/293. Neo also recorded `make format` and `make build-linux` pass; `make analyze` remains blocked by Flutter analysis server crash.
+
+## Linux Wayland Simplification Phase B/C UAT — 2026-04-25
+- Verified Linux runner no longer contains X11 strut/DOCK hooks, `gtk-layer-shell`, direct X11 linkage, or C++ settings parsing.
+- Verified minimal Linux runner still keeps Flutter startup, icon loading, transparent view background, and first-frame show.
+- Verified docs now describe Linux as non-reserving and validation-gated: `docs/ARCH.md`, `docs/DECISIONS.md`, `docs/PRD.md`, `README.md`, `docs/WINDOWS_BUILD_STRATEGY.md`, and `agents/oracle.docs/LESSONS.md`.
+- Validation from Neo: `make format` pass, `make test` pass 293/293, `make build-linux` pass. `make analyze` remains a Flutter analysis server crash.
+
+## Linux Wayland Simplification Phase D Gate — 2026-04-25
+- Automated checks:
+  - `make format` passed.
+  - `make test` passed 293/293.
+  - `make build-linux` passed.
+  - `make analyze` failed from Flutter analysis server crash, same tool blocker as previous runs.
+  - User reran `make analyze` at 2026-04-25 17:14; `build/build.out` still shows analysis server watcher failure: `OS Error: Too many open files, errno = 24`, then `Bad state: Future already completed`, before any source diagnostics.
+  - User reports the host-side `make analyze` issue is fixed after excluding `.flutter`.
+  - Codex sandbox rerun at 2026-04-25 19:12 still fails before diagnostics because the sandbox has `fs.inotify.max_user_instances=128`.
+  - 2026-04-25 19:27/19:28 continuation: `make format` passed with 0 changed files; `make test` passed 293/293; clean sequential `make build-linux` passed and built `build/linux/arm64/release/bundle/happening`.
+- Real-session UAT:
+  - Smoke matrix exists and now includes user-supported results.
+  - X11/XWayland placement works without shell reservation and is the preferred Linux backend.
+  - Native Wayland launches but appears centered and later disconnects with a GTK protocol error during interaction.
+  - Linux transparent support must not be claimed yet; unsupported Linux transparent mode remains hidden.
+  - `make run-linux` now forces `GDK_BACKEND=x11`.
+
 ## Transparent Timestrip Phase B UAT — 2026-04-24
 - `AppSettings` persistence now covers `windowMode` and `idleTimelineOpacity`.
 - Backward-compatible defaults remain intact for older settings files.

@@ -1,54 +1,15 @@
 # Next Steps
 
-- @Trin: UAT build fix + Transparent Timestrip reconciled scope:
-  - Verify `make test` remains 289/289 green.
-  - Verify `make build-linux` builds `app/build/linux/arm64/release/bundle/happening`.
-  - Verify `task.md` completed items TT-D1, TT-D2, TT-D3, TT-E1, TT-F1, TT-F2 match implementation and tests.
-  - Note `make analyze` is blocked by Flutter analysis server `Too many open files`; code diagnostics seen before the crash were fixed.
-- @Neo/@Trin: Complete TT-E2 focused-state visual feedback coverage before final Phase G gate.
-- @Trin/@Smith: Later manual platform smoke for macOS/Windows transparent-mode behavior once real hosts are available.
-- @Trin: UAT Transparent Timestrip Phase B:
-  - Verify `AppSettings` persists `windowMode` and `idleTimelineOpacity`.
-  - Verify opacity is clamped on load/update.
-  - Verify settings mutation call sites preserve the new fields instead of resetting them.
-  - Verify `main.dart` resolves `effectiveWindowMode(defaultTargetPlatform)` before `WindowService.initialize()`.
-  - Use `make test`; expected full suite: 264/264 green.
-- @Morpheus: Review Phase B after Trin UAT.
-- Phase C is next only after Trin and Morpheus approve Phase B.
-- @Trin: UAT Transparent Timestrip Phase A:
-  - Verify `WindowService.setPassThroughEnabled()` uses `setIgnoreMouseEvents(enabled, forward: true)`.
-  - Verify unsupported platforms no-op and Linux default availability is false.
-  - Verify `task.md` Phase A statuses and architecture findings are consistent with sprint acceptance criteria.
-  - Use `make test` from the merged main `Makefile`; expected full suite: 259/259 green.
-- @Morpheus: Review Phase A architecture after Trin UAT.
-- Phase B is next only after Trin and Morpheus approve Phase A.
-- Restart the running Happening app to load the compact timeline strip time labels. Expected: hour ticks show `11pm`/`23` depending on OS 12/24-hour preference, and half-hour ticks show `30`.
-- Event hover cards should still show full platform-localized start/end times.
-- Ask Drew to restart the running Happening app and refresh calendars.
-- Restart the running Happening app to load the hover-card platform time formatting change. Event cards should now match the OS/user 12-hour vs 24-hour preference.
-- Check `~/.config/happening/debug.log` after restart for lines prefixed with `[CalendarDiag]`.
-- For the `[USER_EMAIL_1]` shared meetings, inspect `accessRole`, `summary`, `visibility`, `creator`, `organizer`, `startDateTime`, and `startDate`.
-- Expected behavior: all-day events are still excluded; repeated/duplicate event IDs dedupe across selected calendars; event titles come from Google `summary` as before.
-- If a selected timed event still has a missing visible title, investigate the UI render path next rather than changing calendar parsing/dedupe behavior.
-- Full unit/widget/golden suite is now green: `make -f Makefile.prj test` passes 240/240.
-- Optional cleanup: decide whether tracked files under `app/test/goldens/failures/` should remain in version control; they are generated diagnostics and not needed for the green suite.
-- @Trin: UAT calendar fetch threading implementation:
-  - Verify ignored overlapping refresh requests return the active Future and do not trigger another fetch.
-  - Verify selected calendars are fetched sequentially after `primary`.
-  - Note that full `make -f Makefile.prj test` still has unrelated window binding failures.
-- @Morpheus: Review architecture after Trin UAT.
-- Restart the running Happening app before retesting the stuck/freeze behavior.
-- During manual test, tap refresh repeatedly and hover during refresh. Expected: logs show at most one active `_fetch()` and, if needed, one `draining queued forceRefresh=true` follow-up instead of multiple overlapping `forceRefresh: true` starts.
-- If the app still hard-stalls with a futex wait, capture `tail -200 ~/.config/happening/debug.log` and `strace -tt -f -p <pid>` for 5-10 seconds to identify which thread is blocked.
-- Restart the running Happening app and hover an event on Linux/X11/Wayland. Expected: during GTK synthetic exit suppression, the hover card remains visible instead of the expanded area becoming a plain black band.
-- If black expanded area persists, collect `~/.config/happening/debug.log` immediately after reproducing and inspect whether GTK actually grew the window height during `LinuxResizeStrategy.expand()`.
-- Ask user to restart the running Happening app so the new clock stream fix is loaded.
-- If the timeline still freezes after restart, capture `agents`/app debug log around one frozen minute and inspect whether `TimelineStrip` clock StreamBuilders receive ticks.
-- Optional cleanup: fix unrelated `WindowService.initialize` test binding setup and analyzer `Too many open files` environment issue.
-- If the next directive is implementation or debugging, consult Oracle first per Neo protocol.
-- For code navigation, use VIA first because `agents/PROJECT.md` declares `via: enabled`.
-- Resume known pending handoffs:
-  - @Trin *qa verify 228/228 test suite after sign-in/cancel/calendar-isolation test additions.
-  - Test Morpheus Linux X11 strut timing fix when requested.
-- @Trin *qa verify 228/228 test suite after sign-in/cancel/calendar-isolation test additions.
-- @Morpheus sprint sign-off when QA passes.
+## Linux Click-Through Sprint — COMPLETE ✅ 2026-04-26
+
+All 9 sprint tasks done. Sprint criteria met:
+- CT-A1/A2/A3: Plugin port, channel abstraction, runtime detection
+- CT-B1/B2/B3: Layer-shell CMake, Wayland anchor, Dart gate
+- CT-C1/C2/C3: HoverFocusController, CT-04 inline text, regression gate
+
+298/298 green. Format clean. Build-linux clean.
+
+## If next task starts:
+- Consult Oracle first per Neo protocol.
+- Use VIA for symbol navigation (`agents/PROJECT.md` declares `via: enabled`).
+- Read CHAT.md last 10-20 messages to find pending handoffs.

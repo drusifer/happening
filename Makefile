@@ -15,12 +15,12 @@ ifneq ($(OS),Windows_NT)
   SHELL := /bin/bash
 endif
 
-FLUTTER_SDK  := $(CURDIR)/.flutter/flutter
-FLUTTER      := $(FLUTTER_SDK)/bin/flutter
-DART         := $(FLUTTER_SDK)/bin/dart
+FLUTTER      := flutter
+DART         := dart
 APP_DIR      := app
 PROXY_DIR    := proxy
 DIST_DIR     := dist
+LINUX_TRANSPARENT ?= 0
 
 ifeq ($(OS),Windows_NT)
   VERSION    := $(shell powershell -Command "(Select-String -Path $(APP_DIR)/pubspec.yaml -Pattern '^version:').Line.Split(' ')[1]")
@@ -74,7 +74,7 @@ run:
 	@echo "Please specify a platform: make run-linux, run-macos, or run-windows"
 
 run-linux: $(PUB_STAMP)
-	cd $(APP_DIR) && PATH="$(FLUTTER_SDK)\bin:$(LLVM_BIN):$$PATH" GDK_BACKEND=x11 XAUTHORITY=$$(ls /run/user/$$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1) $(FLUTTER) run -d linux
+	cd $(APP_DIR) && PATH="$(LLVM_BIN):$$PATH" GDK_BACKEND=x11 HAPPENING_LINUX_TRANSPARENT=$(LINUX_TRANSPARENT) $(FLUTTER) run -d linux
 
 run-macos: $(PUB_STAMP)
 	cd $(APP_DIR) && $(FLUTTER) run -d macos
@@ -88,6 +88,20 @@ run-windows-test: $(PUB_STAMP)
 
 run-windows-simple: $(PUB_STAMP)
 	cd $(APP_DIR) && $(FLUTTER) run -d windows --target lib/simple_main.dart
+
+CLICK_TEST_DIR := tools/click_through_test
+
+.PHONY: run-click-test run-click-test-x11 build-click-test
+# Native Wayland: wl_surface.set_input_region — honored by Mutter
+run-click-test:
+	cd $(CLICK_TEST_DIR) && GDK_BACKEND=wayland $(FLUTTER) run -d linux
+
+# XWayland: X11 SHAPE extension — may not be honored by Wayland compositor
+run-click-test-x11:
+	cd $(CLICK_TEST_DIR) && GDK_BACKEND=x11 $(FLUTTER) run -d linux
+
+build-click-test:
+	cd $(CLICK_TEST_DIR) && $(FLUTTER) build linux --release
 
 .PHONY: test update-goldens test-watch
 test: $(PUB_STAMP)
@@ -163,12 +177,12 @@ format: $(PUB_STAMP)
 	cd $(APP_DIR) && $(DART) format lib/ test/
 
 analyze: $(PUB_STAMP)
-	cd $(APP_DIR) && $(FLUTTER) analyze
+	cd $(APP_DIR) && ulimit -n 31706 && $(FLUTTER) analyze lib test integration_test
 
 lint: lint-style lint-metrics lint-format
 
 lint-style: $(PUB_STAMP)
-	cd $(APP_DIR) && $(FLUTTER) analyze --fatal-warnings
+	cd $(APP_DIR) && $(FLUTTER) analyze --fatal-warnings lib test integration_test
 
 lint-metrics: $(PUB_STAMP)
 	cd $(APP_DIR) && $(DART) run dart_code_linter:metrics check-unused-files lib
@@ -348,11 +362,13 @@ else
 
 .PHONY: help chat install_bob update_bob pull_bob clean_bob diff_bob
 .PHONY: setup install-hooks run run-linux run-macos run-windows run-windows-test run-windows-simple
+.PHONY: run-click-test run-click-test-x11 build-click-test
 .PHONY: test update-goldens test-watch integration-test integration-test-linux integration-test-macos integration-test-windows
 .PHONY: build-linux build-macos build-windows dist dist-linux dist-macos dist-windows dist-windows-msix dist-proxy-linux
 .PHONY: format analyze lint lint-style lint-metrics lint-format proxy proxy-setup export-proxy-image clean tldr via_index
 
 MKF_TARGETS := setup install-hooks run run-linux run-macos run-windows run-windows-test run-windows-simple \
+	run-click-test run-click-test-x11 build-click-test \
 	test update-goldens test-watch integration-test integration-test-linux integration-test-macos integration-test-windows \
 	build-linux build-macos build-windows dist dist-linux dist-macos dist-windows dist-windows-msix dist-proxy-linux \
 	format analyze lint lint-style lint-metrics lint-format proxy proxy-setup export-proxy-image clean tldr via_index

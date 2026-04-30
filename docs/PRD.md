@@ -100,7 +100,7 @@ A **narrow, persistent, horizontal bar** anchored to the top of the screen (all 
 | F-23 | **Tick Marks** | Adaptive hour/minute tick marks along the strip; hour ticks labeled, density scales with available pixel space |
 | F-24 | **Event Start Time Labels** | Show HH:mm at the left edge of each event block; suppressed when block is too narrow or labels would overlap |
 | F-25 | **In-Meeting Countdown Mode** | When now indicator is inside an active event, countdown shows time until END of current event in amber; normal mode (white) shows time until NEXT event starts |
-| F-26 | **Transparent Pass-Through Mode** | On macOS, use a mostly transparent, click-through timeline strip instead of reserved screen space; Windows/Linux may choose transparent mode or reserved statusbar mode where supported |
+| F-26 | **Transparent Pass-Through Mode** | On macOS and verified Linux sessions, use a mostly transparent, click-through timeline strip instead of reserved screen space; Windows may choose transparent mode or reserved statusbar mode where supported |
 
 ### V3 (Nice to Have)
 
@@ -176,7 +176,8 @@ A **narrow, persistent, horizontal bar** anchored to the top of the screen (all 
 - The now indicator, countdown, refresh/settings/quit controls, and any focus affordance remain more opaque than the timeline background.
 - Visual shadowing or depth treatment communicates that Happening is layered above other windows.
 - A deliberate focus action brings Happening into an opaque, interactive state so users can open event details and use controls.
-- Windows and Linux expose a setting to choose transparent pass-through mode or reserved statusbar mode when both are technically supported.
+- Windows exposes a setting to choose transparent pass-through mode or reserved statusbar mode when both are technically supported.
+- Linux exposes transparent pass-through only after real-session validation; unsupported Linux sessions hide unavailable modes rather than showing broken choices.
 - macOS shows transparent mode as the fixed behavior; the reserved/statusbar mode setting is disabled or hidden for macOS users.
 - Users can adjust idle transparency with a settings slider within a bounded range that preserves countdown/control legibility.
 
@@ -192,7 +193,8 @@ A **narrow, persistent, horizontal bar** anchored to the top of the screen (all 
 | **Always-on-top** | Floating window (KISS) | Flutter desktop supports this via window_manager package; no OS taskbar integration needed for MVP |
 | **Window Sizing** | DPI-adaptive height | Strip height scales with screen DPI for crisp rendering on HiDPI/4K displays |
 | **macOS Window Mode** | Transparent pass-through strip | Trial and error showed reserved screen space is not reliable on macOS; the product should preserve access to titlebars behind the strip instead |
-| **Windows/Linux Window Mode** | User-selectable transparent or reserved mode | These platforms may support reserved statusbar behavior, but users need a fallback when it conflicts with their window manager or workflow |
+| **Windows Window Mode** | User-selectable transparent or reserved mode | Windows supports AppBar reservation, but users need a fallback when it conflicts with their workflow |
+| **Linux Window Mode** | Transparent non-reserving mode only when verified | Linux shell reservation is compositor-specific and no longer the preferred product path; unsupported modes stay hidden |
 | **Token Storage** | flutter_secure_storage | OS-native secure credential storage |
 | **All-Day Events** | Not displayed | Out of scope — no meaningful time position on timeline |
 | **End-of-Day State** | Celebratory UI | When no more events remain today, show a celebratory animation/message |

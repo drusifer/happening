@@ -2,15 +2,12 @@
 
 #include <flutter_linux/flutter_linux.h>
 #include <unistd.h>
-#ifdef GDK_WINDOWING_X11
-#include <gdk/gdkx.h>
-#include <X11/Xatom.h>
-#endif
-#ifdef HAS_GTK_LAYER_SHELL
+
+#include "click_through_plugin.h"
+#include "flutter/generated_plugin_registrant.h"
+#ifdef LAYER_SHELL_AVAILABLE
 #include <gtk-layer-shell/gtk-layer-shell.h>
 #endif
-
-#include "flutter/generated_plugin_registrant.h"
 
 struct _MyApplication {
   GtkApplication parent_instance;
@@ -19,95 +16,9 @@ struct _MyApplication {
 
 G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
 
-// Reads fontSize from ~/.config/happening/settings.json.
-// Returns the pixel size: 13 (small), 15 (medium, default), 17 (large).
-static int get_reserved_height(void) {
-  const gchar* config_dir = g_get_user_config_dir();
-  g_autofree gchar* path =
-      g_build_filename(config_dir, "happening", "settings.json", NULL);
-  
-  const int og_height = 35;
-  int height = (og_height + 15) * 1.1 + 1; //default medium
-
-  g_autofree gchar* contents = NULL;
-  if (!g_file_get_contents(path, &contents, NULL, NULL)) {
-    return height;  // file absent or unreadable — use medium default
-  }
-
-  if (strstr(contents, "\"fontSize\":\"small\"") ||
-      strstr(contents, "\"fontSize\": \"small\"")) {
-    height = (og_height + 13) * 1.1 + 1; //default medium
-  }
-  if (strstr(contents, "\"fontSize\":\"large\"") ||
-      strstr(contents, "\"fontSize\": \"large\"")) {
-    height = (og_height + 17) * 1.1 + 1; //default large
-  }
-  return height;  
-}
-
-// Sets _NET_WM_STRUT_PARTIAL so the WM reserves 30px at the top of the
-// screen and won't tile or maximise other windows behind the strip.
-static void set_x11_strut(GtkWindow* window) {
-#ifdef GDK_WINDOWING_X11
-  GdkDisplay* display = gdk_display_get_default();
-  if (!GDK_IS_X11_DISPLAY(display)) return;
-
-  GdkWindow* gdk_window = gtk_widget_get_window(GTK_WIDGET(window));
-  if (!gdk_window) return;
-
-  Display* xdisplay = GDK_DISPLAY_XDISPLAY(display);
-  Window xwindow = GDK_WINDOW_XID(gdk_window);
-
-  GdkMonitor* monitor = gdk_display_get_primary_monitor(display);
-  GdkRectangle geo;
-  gdk_monitor_get_geometry(monitor, &geo);
-
-  // _NET_WM_STRUT_PARTIAL: left, right, top, bottom,
-  //   left_y0, left_y1, right_y0, right_y1,
-  //   top_x0,  top_x1,  bottom_x0, bottom_x1
-  const int height = get_reserved_height();
-  long strut[12] = {
-      0, 0, height, 0,
-      0, 0, 0,      0,
-      geo.x, geo.x + geo.width - 1, 0, 0};
-
-  Atom strut_atom = XInternAtom(xdisplay, "_NET_WM_STRUT_PARTIAL", False);
-  XChangeProperty(xdisplay, xwindow, strut_atom, XA_CARDINAL, 32,
-                  PropModeReplace, (unsigned char*)strut, 12);
-
-  // Tell the WM this window IS the panel — place it at y=0, not below the strut.
-  Atom wm_type = XInternAtom(xdisplay, "_NET_WM_WINDOW_TYPE", False);
-  Atom wm_type_dock = XInternAtom(xdisplay, "_NET_WM_WINDOW_TYPE_DOCK", False);
-  XChangeProperty(xdisplay, xwindow, wm_type, XA_ATOM, 32,
-                  PropModeReplace, (unsigned char*)&wm_type_dock, 1);
-#endif
-}
-
-// Configures the window as a Wayland layer-shell panel anchored to the top of
-// the screen, reserving exclusive space equal to the strip height.
-// No-op if gtk-layer-shell was not available at build time.
-static void set_wayland_layer(GtkWindow* window) {
-#ifdef HAS_GTK_LAYER_SHELL
-  GdkDisplay* display = gdk_display_get_default();
-  // Only activate on Wayland; X11 path uses set_x11_strut instead.
-  if (GDK_IS_X11_DISPLAY(display)) return;
-
-  gtk_layer_init_for_window(window);
-  gtk_layer_set_layer(window, GTK_LAYER_SHELL_LAYER_TOP);
-  gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_TOP, TRUE);
-  gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_LEFT, TRUE);
-  gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_RIGHT, TRUE);
-  gtk_layer_set_exclusive_zone(window, get_reserved_height());
-#endif
-}
-
 // Called when first Flutter frame received.
-// Strut and DOCK type were set pre-show in my_application_activate.
 // This callback exists to defer the window show until Flutter has content,
 // avoiding a brief black flash during the loading state.
-// Note: window_manager's _wm.show() may also show the window before this
-// fires (it's a race). Both paths are safe because set_x11_strut was already
-// called before either show runs.
 static void first_frame_cb(MyApplication* self, FlView* view) {
   GtkWidget* toplevel = gtk_widget_get_toplevel(GTK_WIDGET(view));
   gtk_widget_show(toplevel);
@@ -140,6 +51,24 @@ static void my_application_activate(GApplication* application) {
 
   gtk_window_set_default_size(window, 1280, 1);
 
+  // On native Wayland with gtk-layer-shell: anchor strip to top of screen.
+  // exclusive_zone=0 means transparent mode does not reserve desktop space.
+  // On X11/XWayland: window_manager handles positioning; skip this block.
+#ifdef LAYER_SHELL_AVAILABLE
+  {
+    GdkDisplay* display = gdk_display_get_default();
+    if (display != nullptr &&
+        g_strstr_len(G_OBJECT_TYPE_NAME(display), -1, "Wayland") != nullptr) {
+      gtk_layer_init_for_window(window);
+      gtk_layer_set_layer(window, GTK_LAYER_SHELL_LAYER_TOP);
+      gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_TOP, TRUE);
+      gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_LEFT, TRUE);
+      gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_RIGHT, TRUE);
+      gtk_layer_set_exclusive_zone(window, 0);
+    }
+  }
+#endif
+
   // Load the window icon from the bundled PNG (data/app_icon.png, adjacent to
   // the executable in the release bundle).
   {
@@ -155,8 +84,6 @@ static void my_application_activate(GApplication* application) {
       if (icon_err) g_clear_error(&icon_err);
     }
   }
-
-  set_wayland_layer(window);
 
   g_autoptr(FlDartProject) project = fl_dart_project_new();
   fl_dart_project_set_dart_entrypoint_arguments(
@@ -175,22 +102,15 @@ static void my_application_activate(GApplication* application) {
   // Requires the view to be realized so we can start rendering.
   gtk_widget_realize(GTK_WIDGET(view));
 
-  // Set DOCK type and strut on the realized-but-not-yet-mapped window.
-  // X11 properties can be set before mapping; the WM (Mutter/XWayland) reads
-  // them at map time and sets up the correct ARGB compositing path.
-  //
-  // CRITICAL: do NOT change _NET_WM_WINDOW_TYPE_DOCK on an already-mapped
-  // window. Mutter re-classifies the XWayland window and destroys the ARGB
-  // compositing context → permanent black screen.
-  set_x11_strut(GTK_WINDOW(window));
-
   // Show window after Flutter renders first frame so the user never sees an
-  // empty (black) window. The strut is already set above so first_frame_cb
-  // only needs to handle the show.
+  // empty (black) window.
   g_signal_connect_swapped(view, "first-frame", G_CALLBACK(first_frame_cb),
                            self);
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
+  click_through_plugin_register_with_registrar(
+      fl_plugin_registry_get_registrar_for_plugin(FL_PLUGIN_REGISTRY(view),
+                                                  "ClickThroughPlugin"));
 
   gtk_widget_grab_focus(GTK_WIDGET(view));
 }

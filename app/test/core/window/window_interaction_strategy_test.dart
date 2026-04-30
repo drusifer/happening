@@ -1,10 +1,26 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:happening/core/linux/click_through_channel.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/window/interaction_strategy/window_interaction_strategy.dart';
 import 'package:mockito/mockito.dart';
 
 import 'window_service_test.mocks.dart';
+
+class _FakeClickThroughChannel implements ClickThroughChannel {
+  final List<bool> passThroughCalls = [];
+
+  @override
+  Future<void> setPassThrough(bool enabled) async {
+    passThroughCalls.add(enabled);
+  }
+
+  @override
+  Future<String> getDisplayServer() async => 'wayland';
+
+  @override
+  Future<bool> isLayerShellAvailable() async => true;
+}
 
 void main() {
   late MockWindowManager mockWM;
@@ -48,6 +64,18 @@ void main() {
 
     expect(strategy.runtimeType.toString(), 'LinuxWindowInteractionStrategy');
     expect(strategy.availability.supportsTransparent, isFalse);
+    expect(strategy.availability.supportsReserved, isTrue);
+  });
+
+  test('factory can create verified Linux transparent strategy', () {
+    final strategy = WindowInteractionStrategy.createForPlatform(
+      platform: TargetPlatform.linux,
+      wm: mockWM,
+      supportsTransparentPassThrough: true,
+    );
+
+    expect(strategy.runtimeType.toString(), 'LinuxWindowInteractionStrategy');
+    expect(strategy.availability.supportsTransparent, isTrue);
     expect(strategy.availability.supportsReserved, isTrue);
   });
 
@@ -104,17 +132,56 @@ void main() {
     verifyNever(mockWM.setIgnoreMouseEvents(any, forward: anyNamed('forward')));
   });
 
-  test('linux initialize and focus changes are no-op', () async {
+  test('linux unsupported: initialize and focus are no-op', () async {
+    final channel = _FakeClickThroughChannel();
     final strategy = WindowInteractionStrategy.createForPlatform(
       platform: TargetPlatform.linux,
       wm: mockWM,
       supportsTransparentPassThrough: false,
+      clickThroughChannel: channel,
     );
 
     await strategy.initialize(WindowMode.reserved);
     await strategy.setFocused(true);
     await strategy.setPassThrough(true);
 
+    expect(channel.passThroughCalls, isEmpty);
+    verifyNever(mockWM.setIgnoreMouseEvents(any, forward: anyNamed('forward')));
+  });
+
+  test('linux transparent: initialize enables pass-through via channel',
+      () async {
+    final channel = _FakeClickThroughChannel();
+    final strategy = WindowInteractionStrategy.createForPlatform(
+      platform: TargetPlatform.linux,
+      wm: mockWM,
+      supportsTransparentPassThrough: true,
+      clickThroughChannel: channel,
+    );
+
+    await strategy.initialize(WindowMode.transparent);
+
+    expect(channel.passThroughCalls, [true]);
+    verifyNever(mockWM.setIgnoreMouseEvents(any, forward: anyNamed('forward')));
+  });
+
+  test('linux transparent: focus toggles pass-through via channel', () async {
+    final channel = _FakeClickThroughChannel();
+    final strategy = WindowInteractionStrategy.createForPlatform(
+      platform: TargetPlatform.linux,
+      wm: mockWM,
+      supportsTransparentPassThrough: true,
+      clickThroughChannel: channel,
+    );
+
+    await strategy.initialize(WindowMode.transparent);
+    channel.passThroughCalls.clear();
+
+    await strategy.setFocused(true); // focused → disable pass-through
+    await strategy.setFocused(false); // unfocused → re-enable pass-through
+    await strategy.setPassThrough(true);
+
+    expect(channel.passThroughCalls, [false, true, true]);
     verifyNever(mockWM.setIgnoreMouseEvents(any, forward: anyNamed('forward')));
   });
 }

@@ -132,6 +132,38 @@ Swap the order: call `set_x11_strut()` before `gtk_widget_show()`. The toplevel 
 
 ---
 
+## [2026-04-25] Linux Shell Reservation Removed
+
+> **Tags:** #Linux #Wayland #X11 #WindowManager #Architecture #Neo
+
+### Context
+The Linux runner previously reserved desktop space using X11 struts/DOCK hints
+and optional Wayland `gtk-layer-shell`. Transparent Timestrip changed the product
+goal from "reserve pixels" to "stay visible without getting in the user's way."
+
+### The Issue
+Shell reservation is compositor-specific and forced Happening to carry native
+startup code, direct X11 linkage, optional layer-shell detection, and C++ parsing
+of Dart settings.
+
+### The Solution
+Remove Happening-owned Linux shell reservation. Keep normal Flutter GTK startup
+in `my_application.cc`, and keep capability policy in Dart:
+`WindowInteractionStrategy`, `AppSettings.effectiveWindowMode(...)`, and
+`SettingsPanel` availability filtering.
+
+### The Rule
+**Do not reintroduce Linux X11 struts, DOCK type, or Wayland layer-shell without
+a new architecture decision.** Linux transparent mode must stay hidden unless a
+real X11/XWayland or Wayland session validates pass-through behavior.
+
+### References
+- **Files:** `app/linux/runner/my_application.cc`,
+  `app/linux/runner/CMakeLists.txt`,
+  `agents/morpheus.docs/LINUX_WAYLAND_SIMPLIFICATION_ARCH_2026-04-25T16:41.md`
+
+---
+
 ## [2026-02-27] Google OAuth Test Users Required for Unverified Apps
 
 > **Tags:** #Auth #GoogleOAuth #Setup #Drew

@@ -324,8 +324,7 @@ void main() {
       // TimelinePainter renders the "tap to sign in" text — just verify buttons gone.
       expect(find.byIcon(Icons.refresh), findsNothing);
       expect(find.byIcon(Icons.settings), findsNothing);
-      // Power button is always present.
-      expect(find.byIcon(Icons.power_settings_new), findsOneWidget);
+      expect(find.byIcon(Icons.power_settings_new), findsNothing);
     });
   });
 }

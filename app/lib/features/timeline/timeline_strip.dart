@@ -22,6 +22,7 @@ import 'package:happening/features/calendar/calendar_controller.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/timeline/countdown_display.dart';
 import 'package:happening/features/timeline/expansion_logic.dart';
+import 'package:happening/features/timeline/focus/hover_focus_controller.dart';
 import 'package:happening/features/timeline/focus/timeline_focus_controller.dart';
 import 'package:happening/features/timeline/focus/timeline_focus_hotkey.dart';
 import 'package:happening/features/timeline/hover/hover_controller.dart';
@@ -46,6 +47,7 @@ class TimelineStrip extends StatefulWidget {
     this.enableAnimations = true,
     this.focusHotkeyBinding,
     this.platformOverride,
+    this.linuxTransparentSupported = false,
   });
 
   final List<CalendarEvent> events;
@@ -68,6 +70,7 @@ class TimelineStrip extends StatefulWidget {
   final bool enableAnimations;
   final TimelineFocusHotkeyBinding? focusHotkeyBinding;
   final TargetPlatform? platformOverride;
+  final bool linuxTransparentSupported;
 
   @override
   State<TimelineStrip> createState() => _TimelineStripState();
@@ -78,6 +81,7 @@ class _TimelineStripState extends State<TimelineStrip>
   late final WindowService _windowService;
   late final HoverController _hoverController;
   late final TimelineFocusController _focusController;
+  late final HoverFocusController _hoverFocusController;
   late final TimelineFocusHotkeyBinding _focusHotkeyBinding;
   late final FocusNode _keyboardFocusNode;
   final _flashNotifier = ValueNotifier<double>(0.0);
@@ -119,6 +123,8 @@ class _TimelineStripState extends State<TimelineStrip>
       windowService: _windowService,
       initialWindowMode: _effectiveWindowMode(),
     );
+    _hoverFocusController =
+        HoverFocusController(focusController: _focusController);
     _focusHotkeyBinding = widget.focusHotkeyBinding ??
         HotkeyManagerTimelineFocusHotkeyBinding(
           platformOverride: _targetPlatform,
@@ -174,6 +180,7 @@ class _TimelineStripState extends State<TimelineStrip>
     widget.settingsService.removeListener(_onSettingsChanged);
     WidgetsBinding.instance.removeObserver(this);
     _hoverController.dispose();
+    _hoverFocusController.dispose();
     _flashTimer?.cancel();
     _focusIndicatorTimer?.cancel();
     _flashNotifier.dispose();
@@ -198,10 +205,16 @@ class _TimelineStripState extends State<TimelineStrip>
   }
 
   WindowMode _effectiveWindowMode() =>
-      widget.settingsService.current.effectiveWindowMode(_targetPlatform);
+      widget.settingsService.current.effectiveWindowMode(
+        _targetPlatform,
+        linuxTransparentSupported: widget.linuxTransparentSupported,
+      );
 
   bool get _canInteract =>
-      !_focusController.usesTransparentFocusModel || _focusController.isFocused;
+      !_focusController.usesTransparentFocusModel ||
+      _focusController.isFocused ||
+      (_targetPlatform == TargetPlatform.linux &&
+          widget.linuxTransparentSupported);
 
   double get _surfaceOpacity {
     if (_focusController.usesTransparentFocusModel &&
@@ -218,6 +231,9 @@ class _TimelineStripState extends State<TimelineStrip>
     }
     return 1.0;
   }
+
+  bool get _isTransparentIdle =>
+      _focusController.usesTransparentFocusModel && !_focusController.isFocused;
 
   Future<void> _syncWindowBehavior() async {
     final effectiveMode = _effectiveWindowMode();
@@ -314,6 +330,16 @@ class _TimelineStripState extends State<TimelineStrip>
   }
 
   // ── Mouse handlers ───────────────────────────────────────────────────────
+
+  void _onMouseEnter(PointerEnterEvent event) {
+    _hoverFocusController.onEnter();
+    _handleMouse(event);
+  }
+
+  void _onMouseExit(PointerExitEvent event) {
+    _hoverFocusController.onExit();
+    _handleMouse(event);
+  }
 
   void _handleMouse(PointerEvent details) {
     final layout = _layout;
@@ -469,8 +495,9 @@ class _TimelineStripState extends State<TimelineStrip>
     final stripBackgroundColor = theme.brightness == Brightness.dark
         ? const Color(0xFF1A1A2E)
         : Colors.white;
-    final painterBackgroundColor =
-        stripBackgroundColor.withValues(alpha: _surfaceOpacity);
+    final painterBackgroundColor = _isTransparentIdle
+        ? Colors.transparent
+        : stripBackgroundColor.withValues(alpha: _surfaceOpacity);
 
     return StreamBuilder<DateTime>(
       stream: _paintTicks,
@@ -517,9 +544,9 @@ class _TimelineStripState extends State<TimelineStrip>
                   return KeyEventResult.ignored;
                 },
                 child: MouseRegion(
-                  onEnter: _handleMouse,
+                  onEnter: _onMouseEnter,
                   onHover: _handleMouse,
-                  onExit: _handleMouse,
+                  onExit: _onMouseExit,
                   hitTestBehavior: HitTestBehavior.translucent,
                   child: Stack(
                     clipBehavior: Clip.none,
@@ -532,7 +559,8 @@ class _TimelineStripState extends State<TimelineStrip>
                             ? _windowService.getExpandedHeight()
                             : constraints.maxHeight,
                         child: Container(
-                          color: isExpanded && Platform.isWindows
+                          color: _isTransparentIdle ||
+                                  (isExpanded && Platform.isWindows)
                               ? Colors.transparent
                               : painterBackgroundColor,
                         ),
@@ -595,8 +623,7 @@ class _TimelineStripState extends State<TimelineStrip>
                           ),
                         ),
                       if (widget.onSignIn == null &&
-                          widget.onCancelSignIn == null &&
-                          _canInteract)
+                          widget.onCancelSignIn == null)
                         Positioned(
                           left: mode == CountdownMode.untilEnd
                               ? nowIndicatorX + 8
@@ -706,8 +733,7 @@ class _TimelineStripState extends State<TimelineStrip>
                           ),
                         ),
                       if (widget.onSignIn == null &&
-                          widget.onCancelSignIn == null &&
-                          _canInteract)
+                          widget.onCancelSignIn == null)
                         Positioned(
                           left: 8,
                           top: 0,
@@ -734,7 +760,8 @@ class _TimelineStripState extends State<TimelineStrip>
                             ],
                           ),
                         ),
-                      if (_canInteract)
+                      if (widget.onSignIn == null &&
+                          widget.onCancelSignIn == null)
                         Positioned(
                           right: 8,
                           top: 0,
@@ -810,6 +837,8 @@ class _TimelineStripState extends State<TimelineStrip>
                             calendarController: widget.calendarController!,
                             onSignOut: widget.onSignOut,
                             platformOverride: _targetPlatform,
+                            linuxTransparentSupported:
+                                widget.linuxTransparentSupported,
                           ),
                         ),
                     ],

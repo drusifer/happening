@@ -1,3 +1,17 @@
+# Linux Transparent X11/XWayland Smoke Flag — 2026-04-25
+- Added temporary `LINUX_TRANSPARENT=1` Makefile opt-in for Linux X11/XWayland smoke testing.
+- Runtime flag is exposed as `HAPPENING_LINUX_TRANSPARENT`; default remains off.
+- `main.dart` uses the flag to enable Linux transparent capability in `WindowService` and `AppSettings.effectiveWindowMode(...)`.
+- `HappeningApp` threads the flag into `TimelineStrip`; `TimelineStrip` threads it into settings/effective-mode handling and `SettingsPanel`.
+- Validation: `make format` pass, `make test` pass 293/293, `make build-linux` pass.
+- User smoke showed the Flutter surface starts transparent, then a white layer is painted; controls disappear and click-through did not work.
+- Removed idle transparent full-window background fill in `TimelineStrip`: transparent idle now uses `Colors.transparent` for both the backing container and `TimelinePainter` background.
+- Revalidation after opaque-layer fix: `make format` pass, `make test` pass 293/293, clean sequential `make build-linux` pass.
+- Second user smoke showed the intended UX is visible mostly-opaque chrome on transparent background, not hidden controls. Updated `TimelineStrip` so countdown/buttons remain visible and Linux verified smoke remains interactive.
+- `build/build.out` showed `MissingPluginException(No implementation found for method setIgnoreMouseEvents on channel window_manager)`: Linux click-through is not available through `window_manager`; this is not a missing apt/pub dependency.
+- Linux focus hotkey registration also failed for `<Primary><Shift>KP_Space`, so Linux now uses Ctrl+Shift+H for the smoke path.
+- Revalidation after interaction correction: `make format` pass, `make test` pass 294/294, clean `make build-linux` pass.
+
 # Neo Context
 
 ## Transparent Timestrip Phase C — 2026-04-24
@@ -18,6 +32,27 @@
 - Linux CMake release install must force `/usr/local` back to `${PROJECT_BINARY_DIR}/bundle` to keep `flutter build linux --release` non-root.
 - Closed board items TT-D1, TT-D2, TT-D3, TT-E1, TT-F1, TT-F2 after `make test` 289/289 and `make build-linux` green.
 - `make analyze` remains blocked by Flutter analysis server `Too many open files` crash after code diagnostics were fixed. `analysis_options.yaml` now excludes generated artifacts, but the Flutter tool still crashes before a clean analyzer result.
+
+## Linux Wayland Simplification Phase A — 2026-04-25
+- Interpreted `$bloop *impl sprint 4` against the active approved handoff as current sprint Phase A (`LWS Phase A`) because the Linux Wayland board had Phase A ready and Phase D depends on A-C.
+- Added explicit Linux transparent capability guardrails:
+  - `AppSettings.effectiveWindowMode(...)` now accepts `linuxTransparentSupported`, defaulting false.
+  - `LinuxWindowInteractionStrategy` now supports a verified opt-in path using `window_manager.setIgnoreMouseEvents(..., forward: true)`.
+  - `SettingsPanel` now has `linuxTransparentSupported`, defaulting false, and only shows Linux transparent mode when verified.
+- Added tests for default-hidden Linux transparent mode and verified Linux transparent support.
+- Added smoke matrix at `agents/trin.docs/linux_wayland_simplification_smoke_matrix_2026-04-25T16:55.md`.
+- Validation: `make format` passed; `make test` passed 293/293; `make build-linux` passed. `make analyze` failed from the known Flutter analysis server crash, not a source diagnostic.
+
+## Linux Wayland Simplification Phase B/C — 2026-04-25
+- Removed Linux native shell reservation from the runner:
+  - no X11 `_NET_WM_STRUT_PARTIAL`
+  - no X11 DOCK window type
+  - no direct X11 include/linkage
+  - no optional `gtk-layer-shell` setup
+  - no C++ parsing of `~/.config/happening/settings.json`
+- Preserved minimal Flutter GTK startup, app icon loading, transparent Flutter view background, and first-frame show.
+- Updated docs and Oracle lesson to describe Linux as non-reserving and transparent support as validation-gated.
+- Validation: `make format` passed; `make test` passed 293/293; `make build-linux` passed. `make analyze` still crashes in Flutter analysis server.
 
 ## Transparent Timestrip Phase B — 2026-04-24
 - Added `WindowMode` and `idleTimelineOpacity` to `AppSettings`.

@@ -164,6 +164,17 @@ void main() {
       );
     });
 
+    test('effectiveWindowMode preserves Linux transparent when verified', () {
+      const settings = AppSettings(windowMode: WindowMode.transparent);
+      expect(
+        settings.effectiveWindowMode(
+          TargetPlatform.linux,
+          linuxTransparentSupported: true,
+        ),
+        WindowMode.transparent,
+      );
+    });
+
     test('effectiveWindowMode preserves user choice on Windows', () {
       const settings = AppSettings(windowMode: WindowMode.transparent);
       expect(

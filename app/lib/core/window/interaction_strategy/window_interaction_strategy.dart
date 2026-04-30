@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:happening/core/linux/click_through_channel.dart';
+import 'package:happening/core/linux/linux_click_through_channel.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -39,7 +41,10 @@ abstract class WindowInteractionStrategy {
       );
     }
     if (Platform.isLinux) {
-      return LinuxWindowInteractionStrategy(wm: wm);
+      return LinuxWindowInteractionStrategy(
+        channel: LinuxClickThroughChannel(),
+        supportsTransparentPassThrough: supportsTransparentPassThrough,
+      );
     }
     return MacOsWindowInteractionStrategy(wm: wm);
   }
@@ -48,6 +53,7 @@ abstract class WindowInteractionStrategy {
     required TargetPlatform platform,
     required WindowManager wm,
     required bool supportsTransparentPassThrough,
+    ClickThroughChannel? clickThroughChannel,
   }) {
     switch (platform) {
       case TargetPlatform.macOS:
@@ -58,9 +64,15 @@ abstract class WindowInteractionStrategy {
           supportsTransparentPassThrough: supportsTransparentPassThrough,
         );
       case TargetPlatform.linux:
-        return LinuxWindowInteractionStrategy(wm: wm);
+        return LinuxWindowInteractionStrategy(
+          channel: clickThroughChannel ?? const NullClickThroughChannel(),
+          supportsTransparentPassThrough: supportsTransparentPassThrough,
+        );
       default:
-        return LinuxWindowInteractionStrategy(wm: wm);
+        return LinuxWindowInteractionStrategy(
+          channel: clickThroughChannel ?? const NullClickThroughChannel(),
+          supportsTransparentPassThrough: supportsTransparentPassThrough,
+        );
     }
   }
 

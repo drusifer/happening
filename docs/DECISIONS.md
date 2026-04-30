@@ -3,7 +3,7 @@
 This document records the architectural and technical decisions made during the development of Happening.
 
 ## TL;DR
-Critical fixes for the "fat background" bug on Linux (X11/Wayland) require disabling GTK Header Bars, performing manual DPR-to-logical pixel conversion for `window_manager`, and applying rigid min/max size constraints.
+Linux keeps the GTK header bar disabled and uses Dart-side window sizing/constraint strategies for a thin strip. Linux shell-reservation code is no longer part of Happening: X11 struts/DOCK hints and Wayland layer-shell setup were removed in favor of transparent, non-reserving behavior where real-session validation proves it works.
 
 ## DEC-001: Linux Window Height Constraint (Wayland/GTK)
 **Date**: 2026-02-26
@@ -24,7 +24,10 @@ To achieve a thin, stable strip height on Linux, we must bypass several OS-level
 ### Consequences
 -   The window is now correctly sized to 30px.
 -   The C++ runner is no longer a "vanilla" Flutter template; it contains platform-specific hacks.
--   `GDK_BACKEND=x11` is required to ensure `alwaysOnTop` and `setPosition` work reliably on modern Wayland compositors.
+-   Earlier builds forced `GDK_BACKEND=x11` to recover `alwaysOnTop` and `setPosition` behavior on some Wayland desktops.
+
+### Superseded Guidance
+The sizing constraints and disabled GTK header bar remain relevant. The older `GDK_BACKEND=x11` and reserved-space panel guidance is superseded by DEC-005: Linux no longer attempts shell work-area reservation.
 
 ## DEC-002: Hover Card Alignment and Sizing
 **Date**: 2026-03-01
@@ -42,6 +45,37 @@ User feedback indicated that centered hover cards felt "detached" from the event
 -   The card feels visually "attached" to the event.
 -   The `_cardLeft` logic in `TimelineStrip` must be updated to use the visible start of the event.
 -   `HoverDetailOverlay` must accept a `minWidth` parameter.
+
+## DEC-005: Linux Uses Non-Reserving Window Behavior
+**Date**: 2026-04-25
+**Status**: Decided
+**Authors**: Drew, Morpheus (Lead), Neo (SWE), Trin (QA)
+
+### Context
+Happening previously used native Linux runner code to reserve desktop space:
+X11 `_NET_WM_STRUT_PARTIAL` plus DOCK window type, and optional Wayland
+`gtk-layer-shell` exclusive-zone setup. That path added compositor-specific
+startup behavior, direct X11 linkage, optional layer-shell build detection, and
+C++ parsing of Happening settings.
+
+The Transparent Timestrip product direction changes the goal from "push other
+windows down" to "stay visible without getting in the user's way."
+
+### Decision
+Remove Happening-owned Linux shell-reservation behavior:
+
+1. Do not set X11 struts or DOCK window type.
+2. Do not use Wayland `gtk-layer-shell` for exclusive zones.
+3. Do not parse Happening settings from the C++ runner to calculate reserved height.
+4. Keep Linux transparent/pass-through behavior behind explicit real-session validation.
+5. Keep normal sizing/positioning and pass-through policy in Dart strategy classes.
+6. Prefer the X11/XWayland GTK backend for current Linux runs because it preserves top strip placement without shell reservation.
+
+### Consequences
+- Linux build no longer needs direct Happening-owned X11 linkage or optional layer-shell detection.
+- Linux windows are no longer expected to push maximized windows below the strip.
+- Unsupported Linux transparent mode remains hidden. X11/XWayland placement is acceptable for current Linux runs, but native Wayland remains unsupported for the strip behavior: real-session testing showed compositor-managed center placement and a GTK protocol disconnect during interaction.
+- Windows AppBar reservation remains unchanged.
 
 ## DEC-003: ExpansionBehavior Pure Logic Interface
 **Date**: 2026-03-02

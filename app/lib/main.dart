@@ -13,6 +13,9 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:happening/app.dart';
+import 'package:happening/core/linux/click_through_capability.dart';
+import 'package:happening/core/linux/click_through_channel.dart';
+import 'package:happening/core/linux/linux_click_through_channel.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/util/logger.dart';
 import 'package:happening/core/window/window_service.dart';
@@ -33,13 +36,23 @@ void main() async {
   await settingsSvc.load();
   await AppLogger.debug('Settings loaded.');
 
-  // 3. Initialize window management.
+  // 3. Detect Linux click-through capability via native channel.
+  final capability = await _detectClickThroughCapability();
+  final linuxTransparentSupported = capability.supported;
+  await AppLogger.debug(
+      'Linux click-through: backend=${capability.displayServer} supported=$linuxTransparentSupported');
+
+  // 4. Initialize window management.
   final windowService = WindowService(
     windowManager: windowManager,
     screenRetriever: screenRetriever,
+    supportsTransparentPassThroughForTesting:
+        linuxTransparentSupported ? true : null,
   );
-  final effectiveWindowMode =
-      settingsSvc.current.effectiveWindowMode(defaultTargetPlatform);
+  final effectiveWindowMode = settingsSvc.current.effectiveWindowMode(
+    defaultTargetPlatform,
+    linuxTransparentSupported: linuxTransparentSupported,
+  );
   await windowService.initialize(
     initialFontSize: settingsSvc.current.fontSize,
     initialWindowMode: effectiveWindowMode,
@@ -50,6 +63,13 @@ void main() async {
   runApp(HappeningApp(
     settingsService: settingsSvc,
     windowService: windowService,
+    linuxTransparentSupported: linuxTransparentSupported,
   ));
   await AppLogger.debug('runApp() executed.');
+}
+
+Future<ClickThroughCapability> _detectClickThroughCapability() async {
+  if (!Platform.isLinux) return ClickThroughCapability.unsupported;
+  final ClickThroughChannel channel = LinuxClickThroughChannel();
+  return ClickThroughCapability.detect(channel);
 }
