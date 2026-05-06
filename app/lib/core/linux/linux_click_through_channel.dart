@@ -14,6 +14,6 @@ class LinuxClickThroughChannel implements ClickThroughChannel {
       await _ch.invokeMethod<String>('getDisplayServer') ?? 'unknown';
 
   @override
-  Future<bool> isLayerShellAvailable() async =>
-      await _ch.invokeMethod<bool>('isLayerShellAvailable') ?? false;
+  Future<bool> isClickThroughAvailable() async =>
+      await _ch.invokeMethod<bool>('isClickThroughAvailable') ?? false;
 }

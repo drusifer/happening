@@ -8,10 +8,6 @@
 //
 // ---------------------------------------------------------------------------
 
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 
@@ -80,34 +76,27 @@ class GoogleCalendarService implements CalendarService {
       eventTypes: ['default', 'focusTime', 'outOfOffice'],
     );
 
-    // Append full raw API response for fixture capture (dev only).
-    // if (kDebugMode && calendarId == 'primary') {
-    //  _appendToFixtureLog(response.toJson());
-    //}
-
     // Fetch calendar metadata to get the name and default color.
     String? calendarName;
-    String? calendarAccessRole = response.accessRole;
     Color? calendarColor;
     try {
       final meta = await _api.calendarList.get(calendarId);
       calendarName = meta.summary;
-      calendarAccessRole = meta.accessRole ?? calendarAccessRole;
       if (meta.backgroundColor != null) {
         calendarColor =
             Color(int.parse(meta.backgroundColor!.replaceFirst('#', '0xFF')));
       }
     } catch (_) {}
 
-    await _logFetchDiagnostics(
-      calendarId: calendarId,
-      response: response,
-      calendarName: calendarName,
-      calendarAccessRole: calendarAccessRole,
+    final rawItems = response.items ?? const <gcal.Event>[];
+    final timedItems =
+        rawItems.where((e) => e.start?.dateTime != null).toList();
+    await AppLogger.debug(
+      '[CalendarFetch] fetched ${rawItems.length} raw items, '
+      '${timedItems.length} timed items',
     );
 
-    return (response.items ?? [])
-        .where((e) => e.start?.dateTime != null)
+    return timedItems
         .map((e) => fromApiEvent(
               e,
               calendarId: calendarId,
@@ -115,59 +104,6 @@ class GoogleCalendarService implements CalendarService {
               calendarColor: calendarColor,
             ))
         .toList();
-  }
-
-  static Future<void> _logFetchDiagnostics({
-    required String calendarId,
-    required gcal.Events response,
-    required String? calendarName,
-    required String? calendarAccessRole,
-  }) async {
-    final items = response.items ?? const <gcal.Event>[];
-    await AppLogger.debug(
-      '[CalendarDiag] calendar=$calendarId '
-      'metaSummary=${_logValue(calendarName)} '
-      'responseSummary=${_logValue(response.summary)} '
-      'accessRole=${_logValue(calendarAccessRole)} '
-      'responseAccessRole=${_logValue(response.accessRole)} '
-      'items=${items.length}',
-    );
-
-    for (final event in items) {
-      await AppLogger.debug(
-        '[CalendarDiag] event '
-        'calendar=$calendarId '
-        'id=${_logValue(event.id)} '
-        'summary=${_logValue(event.summary)} '
-        'visibility=${_logValue(event.visibility)} '
-        'status=${_logValue(event.status)} '
-        'eventType=${_logValue(event.eventType)} '
-        'creator=${_logValue(event.creator?.email)} '
-        'organizer=${_logValue(event.organizer?.email)} '
-        'startDateTime=${_logValue(event.start?.dateTime?.toIso8601String())} '
-        'startDate=${_logValue(event.start?.date?.toIso8601String())}',
-      );
-    }
-  }
-
-  static String _logValue(Object? value) {
-    final text = value?.toString();
-    if (text == null || text.isEmpty) return '<empty>';
-    return jsonEncode(text);
-  }
-
-  /// Appends [json] as one line to `test/fixtures/calendar_api_raw.jsonl`
-  /// (relative to CWD — run via `flutter run` from the `app/` directory).
-  /// Silently swallows errors so a log failure never crashes the app.
-  static void _appendToFixtureLog(Map<String, dynamic> json) {
-    try {
-      final file = File(
-          '${Directory.current.path}/test/fixtures/calendar_api_raw.jsonl');
-      file.parent.createSync(recursive: true);
-      file.writeAsStringSync('${jsonEncode(json)}\n', mode: FileMode.append);
-    } catch (e) {
-      unawaited(AppLogger.warn('[CalendarAPI] fixture log write failed: $e'));
-    }
   }
 
   /// Google Calendar event colorId → Flutter Color.

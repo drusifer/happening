@@ -8,8 +8,11 @@
 //
 // ---------------------------------------------------------------------------
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
+import 'package:happening/core/util/logger.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/timeline/painters/background_layer.dart';
 import 'package:happening/features/timeline/painters/events_layer.dart';
@@ -71,9 +74,24 @@ class TimelinePainter extends CustomPainter {
   final double surfaceOpacity;
   final double emphasisOpacity;
 
+  static DateTime? _lastPaintDebugAt;
+
   @override
   void paint(Canvas canvas, Size size) {
-    // unawaited(AppLogger.debug('TimelinePainter.paint size=$size'));
+    final nowForDebug = DateTime.now();
+    final shouldLogPaint = _lastPaintDebugAt == null ||
+        nowForDebug.difference(_lastPaintDebugAt!) >
+            const Duration(milliseconds: 250);
+    if (shouldLogPaint) {
+      _lastPaintDebugAt = nowForDebug;
+      unawaited(AppLogger.debug(
+          'TimelinePainter.paint size=${size.width.toStringAsFixed(1)}x${size.height.toStringAsFixed(1)} '
+          'bg=#${backgroundColor.toARGB32().toRadixString(16).padLeft(8, '0')} '
+          'surfaceOpacity=${surfaceOpacity.toStringAsFixed(2)} '
+          'emphasisOpacity=${emphasisOpacity.toStringAsFixed(2)} '
+          'events=${events.length} hovered=${hoveredEventId != null} '
+          'loading=$isLoading signIn=$isSignIn'));
+    }
     final layout = TimelineLayout(
       stripWidth: size.width,
       nowIndicatorX: nowIndicatorX,

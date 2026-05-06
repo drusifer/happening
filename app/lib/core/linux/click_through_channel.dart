@@ -1,7 +1,7 @@
 abstract class ClickThroughChannel {
   Future<void> setPassThrough(bool enabled);
   Future<String> getDisplayServer();
-  Future<bool> isLayerShellAvailable();
+  Future<bool> isClickThroughAvailable();
 }
 
 class NullClickThroughChannel implements ClickThroughChannel {
@@ -14,5 +14,5 @@ class NullClickThroughChannel implements ClickThroughChannel {
   Future<String> getDisplayServer() async => 'unknown';
 
   @override
-  Future<bool> isLayerShellAvailable() async => false;
+  Future<bool> isClickThroughAvailable() async => false;
 }

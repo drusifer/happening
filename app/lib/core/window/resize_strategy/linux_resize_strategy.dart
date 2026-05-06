@@ -14,7 +14,8 @@ import 'window_resize_strategy.dart';
 ///   Expand: setSize (advisory, ignored — max-cap still 55), then
 ///           setMinimumSize(target) — min(260) > max(55) is INVALID, GTK
 ///           resolves by growing the window to target — then setMaximumSize
-///           to formalise the new constraints.
+///           to formalise the new constraints. Finally setSize(target) again
+///           to force a fresh size-allocation after constraints are valid.
 ///
 ///   Collapse: setSize (advisory), then setMinimumSize(target) to lower the
 ///             expand floor, then setMaximumSize(target) — setMaximumSize is
@@ -53,8 +54,13 @@ class LinuxResizeStrategy extends WindowResizeStrategy {
     await AppLogger.debug('LinuxResizeStrategy.expand() setMinimumSize done');
     // Formalise: lift the max-cap now that the window has grown.
     await _wm.setMaximumSize(targetSize);
+    await AppLogger.debug('LinuxResizeStrategy.expand() setMaximumSize done');
+    // After the first grow, some XWayland sessions keep Flutter's layout
+    // surface at the old collapsed height on subsequent expands. A final
+    // setSize with valid min/max constraints forces a new size-allocate.
+    await _wm.setSize(targetSize);
     await AppLogger.debug(
-        'LinuxResizeStrategy.expand() setMaximumSize done — calling onExpanded');
+        'LinuxResizeStrategy.expand() final setSize done — calling onExpanded');
     onExpanded();
   }
 

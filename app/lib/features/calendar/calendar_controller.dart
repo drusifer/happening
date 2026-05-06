@@ -81,17 +81,18 @@ class CalendarController {
         'primary',
         ...selectedIds,
       };
-      await AppLogger.debug('Fetching calendars: $idsToFetch');
+      await AppLogger.debug(
+          'Fetching ${idsToFetch.length} configured calendars');
 
       final results = <List<CalendarEvent>>[];
       for (final id in idsToFetch) {
         try {
           final events = await _service.fetchEvents(id);
           await AppLogger.debug(
-              'Fetched calendar $id: ${events.length} events');
+              'Fetched configured calendar: ${events.length} events');
           results.add(events);
-        } catch (e) {
-          unawaited(AppLogger.warn('fetchEvents($id) failed: $e'));
+        } catch (_) {
+          unawaited(AppLogger.warn('Configured calendar fetch failed'));
           results.add(<CalendarEvent>[]);
         }
       }
@@ -104,7 +105,7 @@ class CalendarController {
       _lastEvents = deduped;
       _eventsController.add(deduped);
       await AppLogger.debug('Emitted events to stream.');
-    } catch (e) {
+    } catch (_) {
       // S5-FIX: If the first fetch fails, emit an empty list to unblock the UI.
       if (_lastEvents == null) {
         await AppLogger.debug(
@@ -112,7 +113,7 @@ class CalendarController {
         _lastEvents = [];
         _eventsController.add([]);
       }
-      await AppLogger.debug('Fetch failed error: $e');
+      await AppLogger.debug('Fetch failed');
     }
   }
 

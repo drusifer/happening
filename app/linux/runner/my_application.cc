@@ -30,6 +30,21 @@ static void my_application_activate(GApplication* application) {
   GtkWindow* window =
       GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
 
+  // Enable RGBA visual so the compositor can composite the window with alpha.
+  // This is required for visual (see-through) transparency on Wayland and
+  // composited X11. gtk_widget_set_app_paintable prevents GTK from painting
+  // its own opaque theme background behind Flutter's content.
+  // Safe unconditionally: gdk_screen_get_rgba_visual returns nullptr when no
+  // compositor is present (e.g. bare X11), making this block a no-op.
+  {
+    GdkScreen* screen = gtk_widget_get_screen(GTK_WIDGET(window));
+    GdkVisual* rgba_visual = gdk_screen_get_rgba_visual(screen);
+    if (rgba_visual != nullptr) {
+      gtk_widget_set_visual(GTK_WIDGET(window), rgba_visual);
+      gtk_widget_set_app_paintable(GTK_WIDGET(window), TRUE);
+    }
+  }
+
   // Use a header bar when running in GNOME as this is the common style used
   // by applications and is the setup most users will be using (e.g. Ubuntu
   // desktop).

@@ -9,7 +9,6 @@
 // ---------------------------------------------------------------------------
 
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:happening/core/app_metadata.dart';
@@ -103,38 +102,6 @@ class _SettingsPanelState extends State<SettingsPanel> {
     await widget.launchAboutUrl(Uri.parse(appAboutUrl));
   }
 
-  TargetPlatform get _platform {
-    if (widget.platformOverride != null) return widget.platformOverride!;
-    if (Platform.isMacOS) return TargetPlatform.macOS;
-    if (Platform.isWindows) return TargetPlatform.windows;
-    if (Platform.isLinux) return TargetPlatform.linux;
-    return TargetPlatform.linux;
-  }
-
-  List<WindowMode> get _supportedWindowModes {
-    switch (_platform) {
-      case TargetPlatform.macOS:
-        return const [WindowMode.transparent];
-      case TargetPlatform.linux:
-        return widget.linuxTransparentSupported
-            ? WindowMode.values
-            : const [WindowMode.reserved];
-      case TargetPlatform.windows:
-        return WindowMode.values;
-      default:
-        return const [WindowMode.reserved];
-    }
-  }
-
-  String _windowModeLabel(WindowMode mode) {
-    switch (mode) {
-      case WindowMode.transparent:
-        return 'Let clicks pass through';
-      case WindowMode.reserved:
-        return 'Reserve space at top';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -212,56 +179,6 @@ class _SettingsPanelState extends State<SettingsPanel> {
                     )),
                     labelBuilder: (v) => '${v}h',
                   ),
-                  const SizedBox(height: 10),
-                  _SectionHeader(
-                      theme: theme,
-                      title: 'Window behavior',
-                      fontSize: baseSize * 0.7),
-                  const SizedBox(height: 6),
-                  _PickerRow<WindowMode>(
-                    values: _supportedWindowModes,
-                    current: settings.effectiveWindowMode(
-                      _platform,
-                      linuxTransparentSupported:
-                          widget.linuxTransparentSupported,
-                    ),
-                    fontSize: baseSize * 0.65,
-                    onSelect: (val) =>
-                        widget.settingsService.update(settings.copyWith(
-                      windowMode: val,
-                    )),
-                    labelBuilder: _windowModeLabel,
-                  ),
-                  if (_platform == TargetPlatform.linux &&
-                      !widget.linuxTransparentSupported) ...[
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: theme.dividerColor.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        'Let clicks pass through',
-                        style: TextStyle(
-                          color: theme.textTheme.bodyMedium?.color
-                              ?.withValues(alpha: 0.3),
-                          fontSize: baseSize * 0.65,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Transparent mode is not available in this session. '
-                      'Start Happening from a native Wayland session to enable it.',
-                      style: TextStyle(
-                        color: theme.textTheme.bodySmall?.color
-                            ?.withValues(alpha: 0.5),
-                        fontSize: baseSize * 0.55,
-                      ),
-                    ),
-                  ],
                   const Spacer(),
                   _MiniButton(
                     label: 'LOGOUT',
