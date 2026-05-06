@@ -105,6 +105,7 @@ class WindowService with WidgetsBindingObserver {
   bool _appBarBusy =
       false; // guards against concurrent _reserveCollapsedSpace calls
   bool _displayChangeInProgress = false; // serialises _onDisplayChanged calls
+  bool _wantsExpanded = false; // latest requested logical resize state
 
   /// Notifier for the window's expansion state.
   final isExpandedNotifier = ValueNotifier<bool>(false);
@@ -119,6 +120,8 @@ class WindowService with WidgetsBindingObserver {
   bool get _isLinux =>
       _platformOverride == TargetPlatform.linux ||
       (_platformOverride == null && Platform.isLinux);
+
+  bool get wantsExpandedForDebug => _wantsExpanded;
 
   /// Call once, before [runApp], to set up the window.
   Future<void> initialize({
@@ -175,22 +178,25 @@ class WindowService with WidgetsBindingObserver {
     unawaited(_onDisplayChanged());
   }
 
-  /// Re-asserts the window size after the app resumes from background/sleep.
+  /// Re-asserts the collapsed window size after background/sleep.
   ///
   /// On Linux, waking from sleep or DPMS display-off can leave the window at
   /// a corrupt size (e.g., 0px wide from a transient zero-width display event).
-  /// Re-applying the correct size on resume ensures the strip is always visible.
+  /// Re-applying the collapsed size on resume ensures the strip is visible.
+  /// Expanded windows and in-flight expand requests intentionally skip this:
+  /// Linux can emit focus-driven resumed events during hover expansion, and
+  /// queuing a collapse in that window races the transparent expanded surface.
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
+    if (state != AppLifecycleState.resumed) return;
+    if (_wantsExpanded || isExpandedNotifier.value) {
       unawaited(AppLogger.debug(
-          'WindowService.didChangeAppLifecycleState: resumed — re-asserting window size'));
-      if (isExpandedNotifier.value) {
-        unawaited(_doExpand());
-      } else {
-        unawaited(_doCollapse());
-      }
+          'WindowService.didChangeAppLifecycleState: resumed — expand intended, skipping collapsed size reassert'));
+      return;
     }
+    unawaited(AppLogger.debug(
+        'WindowService.didChangeAppLifecycleState: resumed — re-asserting collapsed window size'));
+    unawaited(collapse());
   }
 
   /// Whether this platform should expose transparent click-through mode.
@@ -391,11 +397,11 @@ class WindowService with WidgetsBindingObserver {
   double getExpandedHeight() {
     switch (_fontSize) {
       case FontSize.small:
-        return 240.0;
+        return 300.0;
       case FontSize.medium:
-        return 250.0;
+        return 320.0;
       case FontSize.large:
-        return 260.0;
+        return 340.0;
     }
   }
 
@@ -442,14 +448,31 @@ class WindowService with WidgetsBindingObserver {
 
   /// Expands the window to show the hover card area.
   Future<void> expand() async {
+    _wantsExpanded = true;
     unawaited(AppLogger.debug('WindowService: expand requested'));
     await _gate.request(true, _doResize);
   }
 
   /// Collapses the window back to the strip height.
   Future<void> collapse() async {
+    _wantsExpanded = false;
     unawaited(AppLogger.debug('WindowService: collapse requested'));
     await _gate.request(false, _doResize);
+  }
+
+  /// Forces the service back to the same logical state as a fresh collapsed app.
+  ///
+  /// This is intentionally stronger than [collapse]: callers use it to recover
+  /// from stale hover/expand state, so the UI-facing notifier is cleared before
+  /// the physical resize is serialized through the normal gate.
+  Future<void> resetToFreshCollapsedState() async {
+    await AppLogger.debug(
+        'WindowService.resetFreshCollapsed START wantsExpanded=$_wantsExpanded isExpanded=${isExpandedNotifier.value}');
+    _wantsExpanded = false;
+    isExpandedNotifier.value = false;
+    await _gate.request(false, _doResize);
+    await AppLogger.debug(
+        'WindowService.resetFreshCollapsed DONE wantsExpanded=$_wantsExpanded isExpanded=${isExpandedNotifier.value}');
   }
 
   Future<void> _doResize(bool wantsExpanded) async {
@@ -474,8 +497,10 @@ class WindowService with WidgetsBindingObserver {
     final size = Size(_screenWidth, getCollapsedHeight());
     await AppLogger.debug(
         'WindowService._doCollapse() target=w${size.width}×h${size.height} isExpanded=${isExpandedNotifier.value}');
-    isExpandedNotifier.value = false;
     await _strategy.collapse(size);
+    // Set false after the resize so Flutter stays transparent while GTK
+    // shrinks — mirrors how expand sets true before the resize.
+    isExpandedNotifier.value = false;
     await AppLogger.debug('WindowService._doCollapse() complete');
   }
 }

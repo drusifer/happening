@@ -148,15 +148,15 @@ void main() {
       expect(svc2.current.idleTimelineOpacity, 0.40);
     });
 
-    test('effectiveWindowMode forces transparent on macOS', () {
-      const settings = AppSettings(windowMode: WindowMode.reserved);
+    test('effectiveWindowMode uses opaque reserved mode on macOS', () {
+      const settings = AppSettings(windowMode: WindowMode.transparent);
       expect(
         settings.effectiveWindowMode(TargetPlatform.macOS),
-        WindowMode.transparent,
+        WindowMode.reserved,
       );
     });
 
-    test('effectiveWindowMode forces reserved on Linux', () {
+    test('effectiveWindowMode uses opaque reserved mode on Linux', () {
       const settings = AppSettings(windowMode: WindowMode.transparent);
       expect(
         settings.effectiveWindowMode(TargetPlatform.linux),
@@ -164,22 +164,22 @@ void main() {
       );
     });
 
-    test('effectiveWindowMode preserves Linux transparent when verified', () {
+    test('effectiveWindowMode ignores verified Linux transparent support', () {
       const settings = AppSettings(windowMode: WindowMode.transparent);
       expect(
         settings.effectiveWindowMode(
           TargetPlatform.linux,
           linuxTransparentSupported: true,
         ),
-        WindowMode.transparent,
+        WindowMode.reserved,
       );
     });
 
-    test('effectiveWindowMode preserves user choice on Windows', () {
+    test('effectiveWindowMode uses opaque reserved mode on Windows', () {
       const settings = AppSettings(windowMode: WindowMode.transparent);
       expect(
         settings.effectiveWindowMode(TargetPlatform.windows),
-        WindowMode.transparent,
+        WindowMode.reserved,
       );
     });
 

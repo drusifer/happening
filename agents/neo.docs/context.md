@@ -1,3 +1,146 @@
+# Linux Click-Through XWayland Only — 2026-05-05T22:10
+- User clarified XWayland is the only Linux path that should be supported for click-through and asked to remove logic for other Linux variants.
+- Capability is now explicitly XWayland-only:
+  - `ClickThroughCapability.detect()` requires `displayServer == 'xwayland'`.
+  - Native support boolean is still checked, but only after the backend matches XWayland.
+- Renamed channel method from `isLayerShellAvailable()` to `isClickThroughAvailable()` to remove misleading Wayland/layer-shell semantics.
+- Native `click_through_plugin.cc` now returns true only when `detect_backend()` reports `xwayland`; pure X11 and native Wayland return false.
+- Updated tests:
+  - X11 rejected even with fake native support.
+  - XWayland accepted with fake native support.
+  - Wayland rejected even with fake native support.
+- Validation:
+  - `make format` passed.
+  - `make test FILE=test/core/linux/click_through_capability_test.dart` passed 4/4.
+  - `make test` passed 304/304.
+  - `make build-linux` passed.
+
+# Linux Click-Through Capability + Makefile Test Target — 2026-05-05T20:38
+- User clarified that X11 click-through works and asked to remove the env var gate and Wayland-only restriction.
+- Removed `LINUX_TRANSPARENT` / `HAPPENING_LINUX_TRANSPARENT` from `Makefile run-linux`.
+- `ClickThroughCapability.detect()` now uses the native channel support boolean for every display backend, preserving the logged backend string but not rejecting X11/XWayland.
+- Native Linux plugin now returns support for `x11` and `xwayland` because it implements click-through with GDK input-shape there; Wayland still depends on `LAYER_SHELL_AVAILABLE`.
+- Added `app/test/core/linux/click_through_capability_test.dart` covering X11, XWayland, and unsupported results.
+- User noticed `make test FILE=...` was ignored; fixed Makefile outer mkf forwarding and inner Flutter test recipe:
+  - `FILE` and `ARGS` are passed through mkf into the recursive make.
+  - `test` and `test-watch` append `$(FILE) $(ARGS)` to `flutter test`.
+- Validation:
+  - `make format` passed.
+  - `make test FILE=test/core/linux/click_through_capability_test.dart` ran only that file and passed.
+  - `make test` passed 303/303.
+  - `make build-linux` passed.
+
+# Window Behavior Checkbox Layout — 2026-05-05T20:32
+- User requested the settings panel window behavior control be horizontal and checkbox-based to save real estate.
+- VIA was attempted but returned no symbols because the project area is Dart; used `rg` and direct file reads instead.
+- Replaced the visible two-option `WindowMode` picker in `SettingsPanel` with `_WindowBehaviorCheckbox`.
+- Semantics:
+  - checked means `WindowMode.transparent` / clicks pass through;
+  - unchecked means `WindowMode.reserved`;
+  - disabled when both modes are not available.
+- Removed the visible `Reserve space at top` option and Linux unsupported explanatory paragraph from the compact settings panel.
+- Validation: `make format`, `make test` 300/300, and `make build-linux` passed.
+
+# Expanded Settings Room — 2026-05-05T20:27
+- User requested more room in the expanded section after settings controls became taller.
+- Increased expanded window heights in `WindowService.getExpandedHeight()`:
+  - small 300
+  - medium 320
+  - large 340
+- Updated the medium expanded size test to expect `Size(1920, 320)`.
+- Updated app test fake and standalone demo constants to `320`.
+- Validation: `make format`, `make test`, and `make build-linux` passed.
+
+# Refresh Fresh-Collapsed Recovery — 2026-05-05T20:22
+- User reported the expanded area worked for a while then reverted to black, suggesting state that gets set and stuck.
+- Implemented refresh as a recovery/reset path, not just data reload:
+  - `TimelineStrip._resetToFreshCollapsedState()` clears hover/settings/focus-indicator/layout-related state and re-syncs interaction hold.
+  - `WindowService.resetToFreshCollapsedState()` clears desired expansion (`_wantsExpanded=false`), clears rendered expansion (`isExpandedNotifier=false`), then runs a gated physical collapse.
+- Added count/boolean-only diagnostics around conditional display decisions:
+  - no hovered event IDs in `TimelineStrip.paint-state`;
+  - no hovered event IDs in `TimelinePainter.paint`;
+  - calendar controller/service runtime logs remain count-only.
+- Added regression test that refresh clears an active hover card and collapses the fake window.
+- Validation:
+  - `make format` passed.
+  - `make test` passed 300/300.
+  - `make build-linux` passed.
+  - `make analyze` still fails on unrelated pre-existing `lib/main.dart:66` visible-for-testing warning.
+
+# Deterministic Expansion State Correction — 2026-05-05T19:04
+- User challenged the state model: app should declare the intended state deterministically, not infer/sync from scattered async callbacks.
+- Correction:
+  - `_wantsExpanded` remains the immediate desired logical state used to block lifecycle resume races.
+  - `isExpandedNotifier` now flips to true only in the resize strategy `onExpanded` callback, after Linux resize commands complete.
+- Rationale: previous change made Flutter render `expanded=true` while root constraints were still `maxH=60.0`, creating `expanded=true card=true maxH=60.0` and exposing black native space.
+- Validation: `make test` 299/299, `make build-linux` passed.
+
+# Linux Expand Surface Allocation Fix — 2026-05-05T18:58
+- User reported first expand looked good, second expand all black. Requirement restated: expanded backdrop must be transparent on all platforms; content must be visible.
+- Latest logs after race fix:
+  - First expand reached `TimelineStrip.paint-state ... maxH=260.0`.
+  - Second expand stayed at `maxH=60.0` even after `LinuxResizeStrategy.expand()` completed.
+  - This means GTK/window_manager grew the native window enough to expose transparent lower area, but Flutter did not receive a 260px surface/layout allocation on the second expand.
+- Fix in `LinuxResizeStrategy.expand()`:
+  - Preserve setSize→setMin→setMax order.
+  - Add final `setSize(targetSize)` after min/max constraints are valid to force a fresh GTK/Flutter size allocation on repeated expands.
+- Updated strategy test to require setSize→setMin→setMax→setSize→callback.
+- Validation: `make format`, `make test` 299/299, `make build-linux` passed.
+
+# Linux Expansion Race Fix — 2026-05-05T18:52
+- Latest paint logs proved Flutter state was `expanded=true card=true`, but the first bad expand had `resumed — re-asserting collapsed window size` between `_doExpand()` start and `LinuxResizeStrategy.expand() START`.
+- Root cause: lifecycle resume used completed state (`isExpandedNotifier`) only. During in-flight expand, notifier could still be false while the user's current intent was expanded, so resume queued a collapse behind the expand in `AsyncGate`.
+- Fix in `WindowService`:
+  - Added `_wantsExpanded` as latest requested logical resize state.
+  - `expand()` sets `_wantsExpanded=true` synchronously before logging/awaiting.
+  - `collapse()` sets `_wantsExpanded=false` synchronously.
+  - lifecycle `resumed` skips collapsed recovery if `_wantsExpanded || isExpandedNotifier.value`.
+  - `_doExpand()` flips `isExpandedNotifier` before the debug await to reduce the pre-paint race window.
+- Added regression test: `didChangeAppLifecycleState: does not queue collapse during in-flight expand`.
+- Validation: `make format` passed, `make test` passed 299/299, `make build-linux` passed.
+
+# Calendar Logging Privacy Cleanup — 2026-05-05T18:50
+- User flagged calendar diagnostics as sensitive: event IDs, calendar IDs, titles, emails, organizer/creator, start times.
+- Removed active `[CalendarDiag]` detailed logging from `GoogleCalendarService.fetchEvents()`.
+- Replaced it with count-only `[CalendarFetch] fetched <raw> raw items, <timed> timed items`.
+- Removed `CalendarController` logging of selected calendar ID sets and per-ID counts; it now logs only number of configured calendars and per-calendar event counts without IDs.
+- Fetch warnings no longer include calendar IDs.
+- Validation: `make format` passed and `make test` passed 298/298.
+
+# Linux Paint Debug Instrumentation — 2026-05-05T18:46
+- User reported resumed-skip fix did not solve black expanded area. Latest `build/build.out` showed initially good behavior, then black after cycles.
+- Key new log: at 18:43:39.851 `_doExpand()` started, then at 18:43:39.863 lifecycle `resumed` logged `re-asserting collapsed window size`, queued `collapse()`, and produced an immediate expand-then-collapse sequence. Later `resumed` events correctly logged `expanded, skipping size reassert`.
+- Added paint diagnostics:
+  - `TimelineStrip.paint-state ...` logs only when relevant render state changes: expanded/card/settings/hover/focus/window mode/transparent idle/backdrop color/painter bg/constraints.
+  - `TimelinePainter.paint ...` logs throttled paint calls with canvas size, background ARGB, opacity, event count, hovered ID, loading/sign-in flags.
+- Requirement remains: expanded backdrop stays transparent on all platforms.
+- Validation after instrumentation: `make format`, `make test` 298/298, `make build-linux` all passed.
+
+# Linux Expanded Black Background Fix — 2026-05-05T18:25
+- User clarified hard requirement: expanded backdrop color is always transparent on every platform; no opaque Linux-specific expanded layer.
+- `resumed` is not a sticky state to clear. It is a Flutter lifecycle notification emitted when the engine/window returns to foreground/focus.
+- In `build/build-expand-black-bug.out`, later failed-looking expansions correlate with `WindowService.didChangeAppLifecycleState: resumed — re-asserting window size`, which called `_doExpand()` while the window was already expanded.
+- That extra physical resize can expose the native GTK transparent surface before Flutter paints/composites the next frame; if the compositor fills that surface black, it appears over/behind the transparent expanded area and hides cards.
+- Fix implemented in `app/lib/core/window/window_service.dart`: on `resumed`, skip size reassertion when already expanded; only collapsed resume uses the normal gated `collapse()` recovery path.
+- Test updated in `app/test/core/window/window_service_test.dart`: expanded `resumed` now verifies no `setSize`, `setMinimumSize`, or `setMaximumSize` calls.
+- Validation: `make test FILE=app/test/core/window/window_service_test.dart` ran the full suite and passed 298/298; `make format` passed; `make build-linux` passed.
+
+# Linux Expanded Black Background Diagnosis — 2026-05-05T18:19
+- User provided `build/build-expand-black-bug.out`: first expansions looked correct, later expansions showed black over the expanded window/cards.
+- Log shows normal expand/collapse resize sequences plus repeated Linux lifecycle `resumed` events that re-run `_doExpand()` while already expanded, e.g. 18:11:09, 18:11:13, 18:11:15, 18:13:56.
+- Current `timeline_strip.dart` keeps the full expanded `Positioned` transparent. User confirmed this is required on all platforms.
+- Diagnosis: the lower expanded area depends on native/GTK transparency. When Linux compositor/GTK exposes the transparent surface during unnecessary lifecycle reassertion, the expanded area can show black before the next Flutter frame.
+- Rejected idea: painting a Linux opaque expanded backdrop. User explicitly rejected it.
+
+# Protocol Load — 2026-05-05T18:15
+- Loaded Neo through `$bob-protocol init load neo`.
+- Current persisted engineering state remains the completed Linux transparency work:
+  - GTK RGBA visual + `gtk_widget_set_app_paintable` added in `app/linux/runner/my_application.cc`.
+  - Linux expanded section black-background fix completed in `app/lib/features/timeline/timeline_strip.dart`.
+  - Last validation recorded by Neo: `make test` 298/298 and `make build-linux` green.
+- Remaining follow-up is native Linux smoke verification if the user reports transparency still failing.
+- Project capability still declares `via: enabled`; use `mcp__via__via_query` for symbol lookup before implementation/refactor work.
+
 # Linux Transparent X11/XWayland Smoke Flag — 2026-04-25
 - Added temporary `LINUX_TRANSPARENT=1` Makefile opt-in for Linux X11/XWayland smoke testing.
 - Runtime flag is exposed as `HAPPENING_LINUX_TRANSPARENT`; default remains off.

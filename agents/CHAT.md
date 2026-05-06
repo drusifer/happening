@@ -1372,3 +1372,244 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
 [2026-04-27T09:39:53.659140] [DBG] WindowService._doCollapse() complete
 Lost connection to device.
 make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-05 16:25:50</small>] [**User**]->[**all**] *init*:
+ Bob Protocol /init invoked by User. Reading current project state.
+
+---
+[<small>2026-05-05 16:26:05</small>] [**Mouse**]->[**all**] *sm status*:
+ Bob Protocol initialized. System healthy. Last sprint: Linux Click-Through COMPLETE (9/9 tasks, 298/298 green, 2026-04-26). All personas idle. Awaiting user direction.
+
+---
+[<small>2026-05-05 16:29:36</small>] [**User**]->[**Neo**] *request*:
+ @neo *swe fix linux transparency bug. See task.md for details.
+
+---
+[<small>2026-05-05 16:29:52</small>] [**Neo**]->[**User**] *swe fix*:
+ Loaded context. Investigating linux transparency bug. User reports extra opaque layer blocking transparency; works on Windows. Checking effectiveWindowMode, linuxTransparentSupported, and any platform guards.
+
+---
+[<small>2026-05-05 16:35:59</small>] [**Neo**]->[**User**] *swe fix*:
+ Found root cause: GTK window lacks RGBA visual. Plugin sets input-region only. Visual transparency needs gtk_widget_set_visual+app_paintable in my_application.cc. Windows uses DWM — that's the OS check. Fixing now in C++ runner.
+
+---
+[<small>2026-05-05 16:37:15</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:06 +298: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-05 16:37:41</small>] [**Neo**]->[**User**] *swe fix*:
+ Fix applied: app/linux/runner/my_application.cc. Added RGBA visual block after window creation. gtk_widget_set_visual + gtk_widget_set_app_paintable. build-linux clean, 298/298 green. Needs user smoke on native Wayland with transparent mode selected.
+
+---
+[<small>2026-05-05 16:47:15</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make build-linux | /home/drusifer/Projects/happening/build/build.out
+Building Linux application...
+✓ Built build/linux/arm64/release/bundle/happening
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-05 16:47:34</small>] [**Neo**]->[**User**] *swe fix*:
+ Fixed all-black expanded section. Background Container was transparent in idle mode even when expanded — GTK layer showed black. Now expanded always uses solid background. 298/298 green, build clean.
+
+---
+[<small>2026-05-05 18:13:57</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-05 18:15:47</small>] [**User**]->[**Neo**] *request*:
+ $bob-protocol init load neo
+
+---
+[<small>2026-05-05 18:16:17</small>] [**Neo**]->[**User**] *swe init*:
+ Neo loaded via bob-protocol. Current state: idle. Last task complete: Linux transparency fix, test 298/298 and build-linux green. Awaiting user direction.
+
+---
+[<small>2026-05-05 18:16:17</small>] [**Neo**]->[**User**] *handoff*:
+ State saved after init. No active engineering task. @User provide next task when ready.
+
+---
+[<small>2026-05-05 18:17:57</small>] [**User**]->[**Neo**] *request*:
+ we need to fix the black background bug on linux. See build/build-expand-black-bug.out. Diagnose from log and present fix idea; wait for approval.
+
+---
+[<small>2026-05-05 18:18:06</small>] [**Neo**]->[**Oracle**] *swe ask*:
+ @Oracle *ora ask Prior Linux black-expanded-section fix did not hold. Need diagnose build/build-expand-black-bug.out before proposing new fix.
+
+---
+[<small>2026-05-05 18:19:29</small>] [**Neo**]->[**User**] *swe diagnosis*:
+ Diagnosed black expanded Linux bug from build log. Resize completes; lower expanded pane is still transparent in Flutter. Proposed non-Windows solid backdrop. Waiting approval.
+
+---
+[<small>2026-05-05 18:19:29</small>] [**Neo**]->[**User**] *handoff*:
+ State saved with diagnosis. No code edits made. @User approve or revise proposed TimelineStrip expanded backdrop fix.
+
+---
+[<small>2026-05-05 18:25:41</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make build-linux | /home/drusifer/Projects/happening/build/build.out
+Building Linux application...
+✓ Built build/linux/arm64/release/bundle/happening
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-05 18:44:59</small>] [**Neo**]->[**Oracle**] *swe ask*:
+ @Oracle *ora ask Second attempt failed: expanded backdrop must stay transparent; resumed skip did not fix Linux all-black after cycles. Need new diagnosis from latest build/build.out.
+
+---
+[<small>2026-05-05 18:44:59</small>] [**User**]->[**Neo**] *request*:
+ Linux black expanded bug still reproduces. Latest build/build.out: initially works, then all black after expand/collapse cycles. Diagnose before next fix.
+
+---
+[<small>2026-05-05 18:46:40</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make build-linux | /home/drusifer/Projects/happening/build/build.out
+Building Linux application...
+✓ Built build/linux/arm64/release/bundle/happening
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-05 18:47:08</small>] [**Neo**]->[**User**] *swe debug*:
+ Added paint debug instrumentation: TimelineStrip.paint-state and TimelinePainter.paint. format/test/build-linux pass. Awaiting next Linux smoke log.
+
+---
+[<small>2026-05-05 18:47:08</small>] [**Neo**]->[**User**] *handoff*:
+ State saved. Next: reproduce and inspect paint-state/Painter logs around black frame to separate Flutter paint from GTK/compositor issue.
+
+---
+[<small>2026-05-05 18:50:14</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:06 +298: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-05 18:50:38</small>] [**Neo**]->[**User**] *handoff*:
+ State saved for calendar logging cleanup. Linux black-area diagnosis remains active separately.
+
+---
+[<small>2026-05-05 18:50:38</small>] [**Neo**]->[**User**] *swe fix*:
+ Removed sensitive calendar diagnostics. Runtime logs now use count-only calendar fetch messages, no IDs/titles/emails/timestamps. Tests 298/298.
+
+---
+[<small>2026-05-05 18:52:52</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make build-linux | /home/drusifer/Projects/happening/build/build.out
+Building Linux application...
+✓ Built build/linux/arm64/release/bundle/happening
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-05 18:53:22</small>] [**Neo**]->[**User**] *swe fix*:
+ Fixed expansion race: resume now checks intended expand state, so it cannot queue collapse during in-flight expand. Tests 299/299, build-linux pass.
+
+---
+[<small>2026-05-05 18:53:22</small>] [**Neo**]->[**User**] *handoff*:
+ State saved. Next smoke: verify no collapsed resume recovery appears during _doExpand and no immediate collapse follows expand completion.
+
+---
+[<small>2026-05-05 18:58:44</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make build-linux | /home/drusifer/Projects/happening/build/build.out
+Building Linux application...
+✓ Built build/linux/arm64/release/bundle/happening
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-05 18:59:13</small>] [**Neo**]->[**User**] *swe fix*:
+ Added Linux expand allocation fix: final setSize after min/max so repeated expands should force Flutter surface to 260px. Tests 299/299, build-linux pass.
+
+---
+[<small>2026-05-05 18:59:13</small>] [**Neo**]->[**User**] *handoff*:
+ State saved. Next smoke: verify second expand logs final setSize and TimelineStrip maxH=260.0, not maxH=60.0.
+
+---
+[<small>2026-05-05 19:04:25</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make build-linux | /home/drusifer/Projects/happening/build/build.out
+Building Linux application...
+✓ Built build/linux/arm64/release/bundle/happening
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-05 19:04:58</small>] [**Neo**]->[**User**] *swe fix*:
+ Corrected expansion state model: desired state is _wantsExpanded; rendered expanded notifier flips only after resize callback. Tests 299/299, build-linux pass.
+
+---
+[<small>2026-05-05 19:04:58</small>] [**Neo**]->[**User**] *handoff*:
+ State saved. Next smoke should not show expanded=true with maxH=60 before onExpanded.
+
+---
+[<small>2026-05-05 20:22:11</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make build-linux | /home/drusifer/Projects/happening/build/build.out
+Building Linux application...
+✓ Built build/linux/arm64/release/bundle/happening
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-05 20:23:01</small>] [**Neo**]->[**User**] *swe fix*:
+ Refresh now performs fresh-collapsed recovery: clears hover/settings/focus/layout state, clears wantsExpanded/isExpanded, keeps expanded backdrop transparent, and logs conditional state without IDs. Tests 300/300, build-linux pass.
+
+---
+[<small>2026-05-05 20:23:04</small>] [**Neo**]->[**User**] *handoff*:
+ State saved. Next smoke: after black area, press refresh and verify resetFreshCollapsed logs show expanded=false wantsExpanded=false hovered=false settings=false, then retry expand.
+
+---
+[<small>2026-05-05 20:27:18</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+[2026-05-05T20:27:18.800805] [DBG] WindowService.didChangeAppLifecycleState: resumed — expand intended, skipping collapsed size reassert
+
+---
+[<small>2026-05-05 20:27:54</small>] [**Neo**]->[**User**] *swe fix*:
+ Expanded section height increased for taller settings: small=300, medium=320, large=340. Updated tests/fakes and demo constants. format/test/build-linux pass.
+
+---
+[<small>2026-05-05 20:28:00</small>] [**Neo**]->[**User**] *handoff*:
+ State saved. Next smoke: open settings and confirm controls/buttons fit in expanded area; if still clipped, only increase getExpandedHeight again.
+
+---
+[<small>2026-05-05 20:32:41</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make build-linux | /home/drusifer/Projects/happening/build/build.out
+Building Linux application...
+✓ Built build/linux/arm64/release/bundle/happening
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-05 20:33:05</small>] [**Neo**]->[**User**] *swe fix*:
+ Settings window behavior control is now a compact checkbox row: checked=click-through, unchecked=reserved, disabled when platform forces mode. Tests 300/300, build-linux pass.
+
+---
+[<small>2026-05-05 20:33:08</small>] [**Neo**]->[**User**] *handoff*:
+ State saved. Next smoke: open settings and confirm the old Window behavior two-option vertical picker is gone and checkbox fits in one row.
+
+---
+[<small>2026-05-05 20:38:35</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make build-linux | /home/drusifer/Projects/happening/build/build.out
+Building Linux application...
+✓ Built build/linux/arm64/release/bundle/happening
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-05 20:39:11</small>] [**Neo**]->[**User**] *swe fix*:
+ Removed Linux transparent env gate and Wayland-only capability restriction; X11/XWayland now report support via native input-shape. Also fixed make test FILE/ARGS forwarding. Tests 303/303, build-linux pass.
+
+---
+[<small>2026-05-05 20:39:15</small>] [**Neo**]->[**User**] *handoff*:
+ State saved. Next smoke: make run-linux should enable the checkbox on X11/XWayland if native plugin reports support; focused tests now work with FILE=.
+
+---
+[<small>2026-05-05 22:10:27</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make build-linux | /home/drusifer/Projects/happening/build/build.out
+Building Linux application...
+✓ Built build/linux/arm64/release/bundle/happening
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-05 22:11:03</small>] [**Neo**]->[**User**] *swe fix*:
+ Linux click-through narrowed to XWayland only. Renamed capability channel to isClickThroughAvailable; pure X11/native Wayland now unsupported. Tests 304/304, build-linux pass.
+
+---
+[<small>2026-05-05 22:11:06</small>] [**Neo**]->[**User**] *handoff*:
+ State saved. Next smoke: make run-linux should show backend=xwayland supported=true; backend=x11 or wayland intentionally leaves checkbox disabled.
+
+---
+[<small>2026-05-05 23:22:26</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make build-linux | /home/drusifer/Projects/happening/build/build.out

@@ -12,8 +12,8 @@
 //
 //   getDisplayServer() → "x11" | "xwayland" | "wayland" | "unknown"
 //
-//   isLayerShellAvailable() → bool (compile-time; true only when
-//     gtk-layer-shell-0 was found by CMake and LAYER_SHELL_AVAILABLE is defined)
+//   isClickThroughAvailable() → bool
+//     true only for XWayland, where GDK input-shape is the supported path.
 
 #include "click_through_plugin.h"
 
@@ -130,14 +130,12 @@ static FlMethodResponse* get_display_server(ClickThroughPlugin* self) {
   return FL_METHOD_RESPONSE(fl_method_success_response_new(result));
 }
 
-// ── isLayerShellAvailable ────────────────────────────────────────────────────
+// ── isClickThroughAvailable ──────────────────────────────────────────────────
 
-static FlMethodResponse* is_layer_shell_available(ClickThroughPlugin* self) {
-#ifdef LAYER_SHELL_AVAILABLE
-  g_autoptr(FlValue) result = fl_value_new_bool(true);
-#else
-  g_autoptr(FlValue) result = fl_value_new_bool(false);
-#endif
+static FlMethodResponse* is_click_through_available(ClickThroughPlugin* self) {
+  const gchar* backend = detect_backend();
+  g_autoptr(FlValue) result =
+      fl_value_new_bool(g_strcmp0(backend, "xwayland") == 0);
   return FL_METHOD_RESPONSE(fl_method_success_response_new(result));
 }
 
@@ -153,8 +151,8 @@ static void click_through_plugin_handle_method_call(ClickThroughPlugin* self,
     response = set_ignore_mouse_events(self, args);
   } else if (g_strcmp0(method, "getDisplayServer") == 0) {
     response = get_display_server(self);
-  } else if (g_strcmp0(method, "isLayerShellAvailable") == 0) {
-    response = is_layer_shell_available(self);
+  } else if (g_strcmp0(method, "isClickThroughAvailable") == 0) {
+    response = is_click_through_available(self);
   } else {
     response = FL_METHOD_RESPONSE(fl_method_not_implemented_response_new());
   }

@@ -104,68 +104,6 @@ void main() {
       expect(find.text('ABOUT'), findsOneWidget);
     });
 
-    testWidgets('renders window behavior labels for Windows', (tester) async {
-      await tester.pumpWidget(_wrap(SettingsPanel(
-        settingsService: fakeSettings,
-        calendarController: CalendarController(_FakeCalendarService()),
-        onSignOut: () {},
-        platformOverride: TargetPlatform.windows,
-      )));
-
-      expect(find.text('Window behavior'), findsOneWidget);
-      expect(find.text('Let clicks pass through'), findsOneWidget);
-      expect(find.text('Reserve space at top'), findsOneWidget);
-    });
-
-    testWidgets('macOS hides reserved window behavior option', (tester) async {
-      await tester.pumpWidget(_wrap(SettingsPanel(
-        settingsService: fakeSettings,
-        calendarController: CalendarController(_FakeCalendarService()),
-        onSignOut: () {},
-        platformOverride: TargetPlatform.macOS,
-      )));
-
-      expect(find.text('Let clicks pass through'), findsOneWidget);
-      expect(find.text('Reserve space at top'), findsNothing);
-    });
-
-    testWidgets(
-        'linux without layer-shell shows disabled option and inline explanation (CT-04)',
-        (tester) async {
-      await tester.pumpWidget(_wrap(SettingsPanel(
-        settingsService: fakeSettings,
-        calendarController: CalendarController(_FakeCalendarService()),
-        onSignOut: () {},
-        platformOverride: TargetPlatform.linux,
-      )));
-
-      expect(find.text('Reserve space at top'), findsOneWidget);
-      // Disabled option visible but not tappable
-      expect(find.text('Let clicks pass through'), findsOneWidget);
-      // Inline explanation always visible, no jargon
-      expect(
-        find.text(
-          'Transparent mode is not available in this session. '
-          'Start Happening from a native Wayland session to enable it.',
-        ),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('verified linux shows transparent window behavior option',
-        (tester) async {
-      await tester.pumpWidget(_wrap(SettingsPanel(
-        settingsService: fakeSettings,
-        calendarController: CalendarController(_FakeCalendarService()),
-        onSignOut: () {},
-        platformOverride: TargetPlatform.linux,
-        linuxTransparentSupported: true,
-      )));
-
-      expect(find.text('Let clicks pass through'), findsOneWidget);
-      expect(find.text('Reserve space at top'), findsOneWidget);
-    });
-
     testWidgets('renders transparency slider labels', (tester) async {
       await tester.pumpWidget(_wrap(SettingsPanel(
         settingsService: fakeSettings,
@@ -222,20 +160,6 @@ void main() {
       )));
       await tester.tap(find.text('LOGOUT'));
       expect(fakeSettings.updates, isEmpty);
-    });
-
-    testWidgets('tapping transparent behavior updates window mode',
-        (tester) async {
-      await tester.pumpWidget(_wrap(SettingsPanel(
-        settingsService: fakeSettings,
-        calendarController: CalendarController(_FakeCalendarService()),
-        onSignOut: () {},
-        platformOverride: TargetPlatform.windows,
-      )));
-
-      await tester.tap(find.text('Let clicks pass through'));
-
-      expect(fakeSettings.updates.last.windowMode, WindowMode.transparent);
     });
 
     testWidgets('moving transparency slider updates idle opacity',

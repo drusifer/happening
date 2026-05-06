@@ -20,7 +20,6 @@ DART         := dart
 APP_DIR      := app
 PROXY_DIR    := proxy
 DIST_DIR     := dist
-LINUX_TRANSPARENT ?= 0
 
 ifeq ($(OS),Windows_NT)
   VERSION    := $(shell powershell -Command "(Select-String -Path $(APP_DIR)/pubspec.yaml -Pattern '^version:').Line.Split(' ')[1]")
@@ -74,7 +73,7 @@ run:
 	@echo "Please specify a platform: make run-linux, run-macos, or run-windows"
 
 run-linux: $(PUB_STAMP)
-	cd $(APP_DIR) && PATH="$(LLVM_BIN):$$PATH" GDK_BACKEND=x11 HAPPENING_LINUX_TRANSPARENT=$(LINUX_TRANSPARENT) $(FLUTTER) run -d linux
+	cd $(APP_DIR) && PATH="$(LLVM_BIN):$$PATH" GDK_BACKEND=x11 $(FLUTTER) run -d linux
 
 run-macos: $(PUB_STAMP)
 	cd $(APP_DIR) && $(FLUTTER) run -d macos
@@ -105,13 +104,13 @@ build-click-test:
 
 .PHONY: test update-goldens test-watch
 test: $(PUB_STAMP)
-	cd $(APP_DIR) && $(FLUTTER) test --coverage
+	cd $(APP_DIR) && $(FLUTTER) test --coverage $(FILE) $(ARGS)
 
 update-goldens: $(PUB_STAMP)
 	cd $(APP_DIR) && $(FLUTTER) test --update-goldens test/goldens/
 
 test-watch: $(PUB_STAMP)
-	cd $(APP_DIR) && $(FLUTTER) test --coverage --watch
+	cd $(APP_DIR) && $(FLUTTER) test --coverage --watch $(FILE) $(ARGS)
 
 .PHONY: integration-test integration-test-linux integration-test-macos integration-test-windows
 integration-test:
@@ -418,7 +417,9 @@ chat: ## Post a message to CHAT.md (usage: make chat MSG="<msg>" [PERSONA="<name
 		$(if $(TO),--to "$(TO)")
 
 $(MKF_TARGETS):
-	@./agents/tools/mkf.py $(V) $@
+	@./agents/tools/mkf.py $(V) $@ \
+		$(if $(FILE),FILE=$(FILE)) \
+		$(if $(ARGS),ARGS=$(ARGS))
 
 # Interception logic: 
 # If we are the entry point (direct make call), intercept everything.

@@ -47,7 +47,7 @@ class _FakeWindowService extends WindowService {
   double getCollapsedHeight() => 55.0;
 
   @override
-  double getExpandedHeight() => 250.0;
+  double getExpandedHeight() => 320.0;
 
   @override
   Future<void> expand({double? height}) async {
@@ -56,6 +56,11 @@ class _FakeWindowService extends WindowService {
 
   @override
   Future<void> collapse({double? height}) async {
+    isExpandedNotifier.value = false;
+  }
+
+  @override
+  Future<void> resetToFreshCollapsedState() async {
     isExpandedNotifier.value = false;
   }
 

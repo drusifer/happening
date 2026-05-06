@@ -17,7 +17,7 @@ import 'package:window_manager/window_manager.dart';
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const double _collapsedHeight = 50.0;
-const double _expandedHeight = 250.0;
+const double _expandedHeight = 320.0;
 const int _uCallbackMessage = 0x0400 + 100; // WM_USER + 100
 
 const int _abmNew = 0;

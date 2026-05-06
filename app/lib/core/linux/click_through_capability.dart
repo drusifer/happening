@@ -16,10 +16,8 @@ class ClickThroughCapability {
 
   static Future<ClickThroughCapability> detect(ClickThroughChannel ch) async {
     final server = await ch.getDisplayServer();
-    if (server != 'wayland') {
-      return ClickThroughCapability(supported: false, displayServer: server);
-    }
-    final hasShell = await ch.isLayerShellAvailable();
-    return ClickThroughCapability(supported: hasShell, displayServer: server);
+    final supported =
+        server == 'xwayland' && await ch.isClickThroughAvailable();
+    return ClickThroughCapability(supported: supported, displayServer: server);
   }
 }

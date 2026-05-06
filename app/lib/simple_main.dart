@@ -73,7 +73,7 @@ class _SimpleResizeWidgetState extends State<SimpleResizeWidget> {
   @override
   Widget build(BuildContext context) {
     final isExpanded = widget.windowService.isExpandedNotifier.value;
-    final height = isExpanded ? 250.0 : 50.0;
+    final height = isExpanded ? 320.0 : 50.0;
     final color = isExpanded ? Colors.blue : Colors.red;
     final text = isExpanded ? 'Expanded' : 'Collapsed';
 

@@ -16,10 +16,10 @@ class _FakeClickThroughChannel implements ClickThroughChannel {
   }
 
   @override
-  Future<String> getDisplayServer() async => 'wayland';
+  Future<String> getDisplayServer() async => 'xwayland';
 
   @override
-  Future<bool> isLayerShellAvailable() async => true;
+  Future<bool> isClickThroughAvailable() async => true;
 }
 
 void main() {

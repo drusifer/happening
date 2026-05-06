@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "via": {
+      "command": "via",
+      "args": [
+        "mcp",
+        "serve",
+        "--no-web",
+        "/home/drusifer/Projects/happening"
+      ],
+      "env": {
+        "HOME": "/home/drusifer/Projects/happening"
+      }
+    }
+  }
+}

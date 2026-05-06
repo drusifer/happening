@@ -36,6 +36,7 @@ class _FakeWindowService extends WindowService {
 
   int expandCalls = 0;
   int collapseCalls = 0;
+  int resetCalls = 0;
   final List<bool> focusedCalls = [];
   final List<bool> passThroughCalls = [];
   final List<WindowMode> windowModeCalls = [];
@@ -49,6 +50,12 @@ class _FakeWindowService extends WindowService {
   @override
   Future<void> collapse({double? height}) async {
     collapseCalls++;
+    isExpandedNotifier.value = false;
+  }
+
+  @override
+  Future<void> resetToFreshCollapsedState() async {
+    resetCalls++;
     isExpandedNotifier.value = false;
   }
 
@@ -266,6 +273,82 @@ void main() {
       await tester.tap(find.byIcon(Icons.refresh));
       await tester.pump();
       expect(fakeController.fetchCalls, equals(1));
+    });
+
+    testWidgets('refresh resets timeline to a fresh collapsed state',
+        (tester) async {
+      final fakeWS = _FakeWindowService(initialExpanded: true);
+      final event = CalendarEvent(
+        id: 'e1',
+        title: 'Meeting',
+        startTime: now.add(const Duration(minutes: 30)),
+        endTime: now.add(const Duration(minutes: 60)),
+        color: Colors.blue,
+        calendarEventUrl: null,
+        videoCallUrl: null,
+      );
+
+      await tester.pumpWidget(wrap(
+        TimelineStrip(
+          events: [event],
+          clockService: clock,
+          calendarController: fakeController,
+          settingsService: fakeSettings,
+          windowService: fakeWS,
+          onSignOut: () {},
+        ),
+      ));
+      await tester.pump(Duration.zero);
+
+      final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+      await gesture.addPointer(location: Offset.zero);
+      await gesture.moveTo(const Offset(140, 10));
+      await tester.pump(const Duration(seconds: 10));
+
+      expect(find.byType(HoverDetailOverlay), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.refresh));
+      await tester.pump();
+
+      expect(fakeWS.resetCalls, equals(1));
+      expect(fakeWS.isExpandedNotifier.value, isFalse);
+      expect(find.byType(HoverDetailOverlay), findsNothing);
+      expect(fakeController.fetchCalls, equals(1));
+
+      await gesture.removePointer();
+    });
+
+    testWidgets('click-through toggle auto-restores after seven seconds',
+        (tester) async {
+      final fakeWS = _FakeWindowService();
+
+      await tester.pumpWidget(wrap(
+        TimelineStrip(
+          events: const [],
+          clockService: clock,
+          calendarController: fakeController,
+          settingsService: fakeSettings,
+          windowService: fakeWS,
+          onSignOut: () {},
+          enableAnimations: false,
+        ),
+      ));
+      await tester.pump(Duration.zero);
+      fakeWS.passThroughCalls.clear();
+
+      expect(find.byIcon(Icons.touch_app), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.touch_app));
+      await tester.pump();
+
+      expect(fakeWS.passThroughCalls, [true]);
+      expect(find.byIcon(Icons.ads_click), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 7));
+      await tester.pump();
+
+      expect(fakeWS.passThroughCalls, [true, false]);
+      expect(find.byIcon(Icons.touch_app), findsOneWidget);
     });
 
     testWidgets('hover-only: hovering shows card, tap does nothing extra',
@@ -584,81 +667,9 @@ void main() {
       // Should STAY expanded because settings is open
       expect(windowService.isExpandedNotifier.value, isTrue);
     });
-    group('hover-to-focus (CT-C1)', () {
-      testWidgets('transparent mode: 300ms hover triggers focus',
-          (tester) async {
-        final fakeWS = _FakeWindowService();
-        // macOS platform override forces transparent mode regardless of stored setting
-        await tester.pumpWidget(wrap(
-          TimelineStrip(
-            events: const [],
-            clockService: clock,
-            calendarController: fakeController,
-            settingsService: fakeSettings,
-            windowService: fakeWS,
-            onSignOut: () {},
-            platformOverride: TargetPlatform.macOS,
-            enableAnimations: false,
-          ),
-        ));
-        await tester.pump(Duration.zero);
-
-        final baseTrue = fakeWS.focusedCalls.where((f) => f).length;
-
-        final gesture =
-            await tester.createGesture(kind: PointerDeviceKind.mouse);
-        await gesture.addPointer(location: Offset.zero);
-        await gesture.moveTo(const Offset(100, 10));
-        await tester.pump(const Duration(milliseconds: 100));
-
-        // Not focused yet — timer still pending
-        expect(fakeWS.focusedCalls.where((f) => f).length, equals(baseTrue));
-
-        // After 300ms delay elapses
-        await tester.pump(const Duration(milliseconds: 300));
-        expect(
-          fakeWS.focusedCalls.where((f) => f).length,
-          greaterThan(baseTrue),
-        );
-
-        await gesture.removePointer();
-      });
-
-      testWidgets('transparent mode: exit before 300ms cancels pending focus',
-          (tester) async {
-        final fakeWS = _FakeWindowService();
-        await tester.pumpWidget(wrap(
-          TimelineStrip(
-            events: const [],
-            clockService: clock,
-            calendarController: fakeController,
-            settingsService: fakeSettings,
-            windowService: fakeWS,
-            onSignOut: () {},
-            platformOverride: TargetPlatform.macOS,
-            enableAnimations: false,
-          ),
-        ));
-        await tester.pump(Duration.zero);
-
-        final gesture =
-            await tester.createGesture(kind: PointerDeviceKind.mouse);
-        await gesture.addPointer(location: Offset.zero);
-
-        // Enter strip
-        await gesture.moveTo(const Offset(100, 10));
-        await tester.pump(const Duration(milliseconds: 100));
-
-        // Remove pointer — fires onExit, cancels the pending 300ms timer
-        await gesture.removePointer();
-        await tester.pump(const Duration(milliseconds: 400));
-
-        // Timer was cancelled — no focus call
-        expect(fakeWS.focusedCalls.where((f) => f).length, equals(0));
-      });
-
+    group('temporary click-through focus model', () {
       testWidgets(
-          'reserved mode: hover does not trigger focus (no-op for non-transparent)',
+          'opaque default: hover does not trigger transparent focus model',
           (tester) async {
         final fakeWS = _FakeWindowService();
         await tester.pumpWidget(wrap(
@@ -951,132 +962,27 @@ void main() {
     });
   });
 
-  group('Transparent focus gating', () {
-    testWidgets(
-        'idle transparent mode keeps chrome visible and suppresses hover',
-        (tester) async {
-      final hotkeyBinding = _FakeFocusHotkeyBinding();
-      final windowService = _FakeWindowService();
-      final settings = _FakeSettingsService(
-        const AppSettings(windowMode: WindowMode.transparent),
-      );
-      final event = CalendarEvent(
-        id: 'e1',
-        title: 'Meeting',
-        startTime: now.add(const Duration(minutes: 30)),
-        endTime: now.add(const Duration(minutes: 60)),
-        color: Colors.blue,
-        calendarEventUrl: null,
-        videoCallUrl: null,
-      );
+  testWidgets('persisted transparent mode is ignored; strip starts opaque',
+      (tester) async {
+    final windowService = _FakeWindowService();
+    final settings = _FakeSettingsService(
+      const AppSettings(windowMode: WindowMode.transparent),
+    );
 
-      await tester.pumpWidget(wrap(TimelineStrip(
-        events: [event],
-        clockService: clock,
-        calendarController: fakeController,
-        settingsService: settings,
-        windowService: windowService,
-        onSignOut: () {},
-        enableAnimations: false,
-        platformOverride: TargetPlatform.macOS,
-        focusHotkeyBinding: hotkeyBinding,
-      )));
-      await tester.pump();
-      await tester.pump();
+    await tester.pumpWidget(wrap(TimelineStrip(
+      events: const [],
+      clockService: clock,
+      calendarController: fakeController,
+      settingsService: settings,
+      windowService: windowService,
+      onSignOut: () {},
+      enableAnimations: false,
+      platformOverride: TargetPlatform.macOS,
+    )));
+    await tester.pump();
+    await tester.pump();
 
-      expect(find.byIcon(Icons.refresh), findsOneWidget);
-      expect(find.byIcon(Icons.settings), findsOneWidget);
-      expect(find.byIcon(Icons.power_settings_new), findsOneWidget);
-
-      final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
-      await gesture.addPointer(location: Offset.zero);
-      await gesture.moveTo(const Offset(140, 10));
-      await tester.pump(const Duration(milliseconds: 50));
-
-      expect(find.byType(HoverDetailOverlay), findsNothing);
-      expect(windowService.expandCalls, 0);
-      expect(windowService.passThroughCalls.last, isTrue);
-    });
-
-    testWidgets('global hotkey focuses transparent mode and enables controls',
-        (tester) async {
-      final hotkeyBinding = _FakeFocusHotkeyBinding();
-      final windowService = _FakeWindowService();
-      final settings = _FakeSettingsService(
-        const AppSettings(windowMode: WindowMode.transparent),
-      );
-
-      await tester.pumpWidget(wrap(TimelineStrip(
-        events: const [],
-        clockService: clock,
-        calendarController: fakeController,
-        settingsService: settings,
-        windowService: windowService,
-        onSignOut: () {},
-        enableAnimations: false,
-        platformOverride: TargetPlatform.macOS,
-        focusHotkeyBinding: hotkeyBinding,
-      )));
-      await tester.pump();
-      await tester.pump();
-
-      hotkeyBinding.trigger();
-      await tester.pump();
-
-      expect(find.byIcon(Icons.refresh), findsOneWidget);
-      expect(find.byIcon(Icons.settings), findsOneWidget);
-      expect(find.byIcon(Icons.power_settings_new), findsOneWidget);
-      expect(windowService.passThroughCalls.last, isFalse);
-
-      await tester.sendKeyDownEvent(LogicalKeyboardKey.escape);
-      await tester.pump();
-
-      expect(find.byIcon(Icons.refresh), findsOneWidget);
-      expect(windowService.passThroughCalls.last, isTrue);
-    });
-
-    testWidgets('verified linux transparent smoke keeps controls interactive',
-        (tester) async {
-      final hotkeyBinding = _FakeFocusHotkeyBinding();
-      final windowService = _FakeWindowService();
-      final settings = _FakeSettingsService(
-        const AppSettings(windowMode: WindowMode.transparent),
-      );
-      final event = CalendarEvent(
-        id: 'linux-e1',
-        title: 'Linux Meeting',
-        startTime: now.add(const Duration(minutes: 30)),
-        endTime: now.add(const Duration(minutes: 60)),
-        color: Colors.blue,
-        calendarEventUrl: null,
-        videoCallUrl: null,
-      );
-
-      await tester.pumpWidget(wrap(TimelineStrip(
-        events: [event],
-        clockService: clock,
-        calendarController: fakeController,
-        settingsService: settings,
-        windowService: windowService,
-        onSignOut: () {},
-        enableAnimations: false,
-        platformOverride: TargetPlatform.linux,
-        linuxTransparentSupported: true,
-        focusHotkeyBinding: hotkeyBinding,
-      )));
-      await tester.pump();
-      await tester.pump();
-
-      expect(find.byIcon(Icons.refresh), findsOneWidget);
-      expect(find.byIcon(Icons.settings), findsOneWidget);
-      expect(find.byIcon(Icons.power_settings_new), findsOneWidget);
-
-      final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
-      await gesture.addPointer(location: Offset.zero);
-      await gesture.moveTo(const Offset(140, 10));
-      await tester.pump(const Duration(milliseconds: 50));
-
-      expect(windowService.expandCalls, greaterThan(0));
-    });
+    expect(find.byIcon(Icons.touch_app), findsOneWidget);
+    expect(windowService.passThroughCalls.last, isFalse);
   });
 }

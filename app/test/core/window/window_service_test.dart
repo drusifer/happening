@@ -185,7 +185,7 @@ void main() {
       await service.initialize(initialFontSize: FontSize.medium);
       await service.expand();
 
-      const expandedSize = Size(1920.0, 250.0);
+      const expandedSize = Size(1920.0, 320.0);
       verify(mockWM.setSize(expandedSize)).called(greaterThanOrEqualTo(1));
       if (Platform.isWindows) {
         verify(mockWM.setMinimumSize(expandedSize))
@@ -308,7 +308,7 @@ void main() {
           argThat(predicate<Size>((s) => s.width == 0, 'zero-width size'))));
     });
 
-    // didChangeAppLifecycleState re-asserts window on resumed
+    // didChangeAppLifecycleState re-asserts collapsed window on resumed
     test('didChangeAppLifecycleState: re-asserts collapsed window on resumed',
         () async {
       await service.initialize(initialFontSize: FontSize.medium);
@@ -323,7 +323,7 @@ void main() {
       verify(mockWM.setSize(collapsedSize)).called(greaterThanOrEqualTo(1));
     });
 
-    test('didChangeAppLifecycleState: re-asserts expanded window on resumed',
+    test('didChangeAppLifecycleState: leaves expanded window alone on resumed',
         () async {
       await service.initialize(initialFontSize: FontSize.medium);
       await service.expand();
@@ -333,8 +333,28 @@ void main() {
       await Future.delayed(Duration.zero);
       await Future.delayed(Duration.zero);
 
-      const expandedSize = Size(1920.0, 250.0);
-      verify(mockWM.setSize(expandedSize)).called(greaterThanOrEqualTo(1));
+      verifyNever(mockWM.setSize(any));
+      verifyNever(mockWM.setMinimumSize(any));
+      verifyNever(mockWM.setMaximumSize(any));
+    });
+
+    test(
+        'didChangeAppLifecycleState: does not queue collapse during in-flight expand',
+        () async {
+      await service.initialize(initialFontSize: FontSize.medium);
+      clearInteractions(mockWM);
+
+      final expandFuture = service.expand();
+      service.didChangeAppLifecycleState(AppLifecycleState.resumed);
+      await expandFuture;
+      await Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
+
+      const collapsedSize = Size(1920.0, 55.0);
+      verifyNever(mockWM.setSize(collapsedSize));
+      verifyNever(mockWM.setMinimumSize(collapsedSize));
+      verifyNever(mockWM.setMaximumSize(collapsedSize));
+      expect(service.isExpandedNotifier.value, true);
     });
 
     test('didChangeAppLifecycleState: does nothing on paused', () async {
