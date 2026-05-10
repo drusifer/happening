@@ -16,8 +16,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:happening/core/settings/settings_service.dart';
-import 'package:happening/core/util/logger.dart';
 import 'package:happening/core/window/window_service.dart';
+import 'package:happening/features/timeline/expansion_logic.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -68,8 +68,7 @@ class _GtkStyleWindowManager extends Fake implements WindowManager {
   // We always ignore it to simulate the worst-case Linux behaviour.
   Future<void> setSize(Size size, {bool animate = false}) async {
     // intentionally no-op: compositor ignores our size request
-    AppLogger.debug(
-        'GTK WM: setSize($size) called — IGNORED (advisory request)');
+    // intentionally no-op: compositor ignores size request
   }
 
   @override
@@ -164,7 +163,7 @@ void main() {
 
       // setSize(260) no-op; setMinimumSize(260) with max-cap still 55
       // → min(260) > max(55) = invalid constraint → GTK grows to 260.
-      await service.expand();
+      await service.performResize(ExpansionState.expanded);
 
       final actualHeight = gtkWM.reportedSize.height;
       expect(
@@ -188,10 +187,10 @@ void main() {
       await service.initialize(initialFontSize: FontSize.large);
 
       // Force isExpandedNotifier to reflect expanded state.
-      await service.expand();
+      await service.performResize(ExpansionState.expanded);
 
       // User moves away — collapse is requested.
-      await service.collapse();
+      await service.performResize(ExpansionState.collapsed);
 
       final actualHeight = gtkWM.reportedSize.height;
 
@@ -219,7 +218,7 @@ void main() {
       await service.initialize(initialFontSize: FontSize.large);
 
       // TimelineStrip calls collapse() immediately on first render.
-      await service.collapse();
+      await service.performResize(ExpansionState.collapsed);
 
       final actualHeight = gtkWM.reportedSize.height;
 
@@ -232,28 +231,19 @@ void main() {
       );
     });
 
-    test(
-        'isExpandedNotifier is false after collapse but window is still visually expanded (state/OS mismatch)',
-        () async {
+    test('collapse after expand: OS window matches collapsed height', () async {
       gtkWM._current = const Size(1920, 260);
       await service.initialize(initialFontSize: FontSize.large);
-      await service.expand();
-      await service.collapse();
+      await service.performResize(ExpansionState.expanded);
+      await service.performResize(ExpansionState.collapsed);
 
       final actualHeight = gtkWM.reportedSize.height;
-      final notifierSaysCollapsed = !service.isExpandedNotifier.value;
-
-      // Notifier says collapsed (correct), but OS window is still tall.
-      // This is the symptom Drew observed: hover card gone but window huge.
-      expect(notifierSaysCollapsed, true,
-          reason: 'isExpandedNotifier should be false after collapse');
 
       expect(
         actualHeight,
         lessThanOrEqualTo(service.getCollapsedHeight()),
-        reason:
-            'BUG-B mismatch: notifier=collapsed but OS window=${actualHeight}px. '
-            'State and visual are out of sync.',
+        reason: 'BUG-B: OS window=${actualHeight}px after collapse. '
+            'LinuxResizeStrategy needs constraint-forcing (setMin + setMax).',
       );
     });
   });

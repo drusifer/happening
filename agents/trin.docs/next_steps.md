@@ -1,32 +1,18 @@
 # Next Steps
 
-- [x] Linux Wayland Simplification Phase A UAT complete.
-- [ ] Morpheus: review Phase A for architectural sufficiency before Phase B.
-- [x] Linux Wayland Simplification Phase B/C UAT complete.
-- [ ] Morpheus: review Phase B/C for architectural sufficiency before verification gate.
-- [x] Phase D automated gate complete for current scope: format/test/build pass; user reports host-side analyze is clean, Codex sandbox analyze remains environment-limited by inotify watcher cap.
-- [x] Execute Linux smoke matrix enough to choose backend: X11/XWayland selected for stable placement.
-- [ ] Do not claim native Wayland or Linux transparent support; keep transparent hidden until separately validated.
-- [x] Transparent Timestrip Phase C UAT complete.
-- [ ] Morpheus: review Phase C for architectural sufficiency before Phase D.
-- [ ] Later platform QA: manual macOS/Windows transparent-mode smoke once real hosts are available.
-- [x] Transparent Timestrip Phase B UAT complete.
-- [ ] Morpheus: review Phase B for architectural sufficiency before Phase C.
-- [x] Transparent Timestrip Phase A UAT complete.
-- [ ] Morpheus: review Phase A for architectural sufficiency before Phase B/C.
-- [ ] Later platform QA: manual macOS/Windows click-through smoke once real hosts are available.
-- [x] DIAGNOSED: buttons-disappear-after-sleep bug → WindowService._onDisplayChanged() zero-width race. Handed to Neo.
-- [ ] Trin: After Neo fixes WindowService, re-run `make -f Makefile.prj test` and verify no regressions.
-- [ ] Morpheus: Review calendar fetch threading implementation for architecture compliance.
-- [ ] Neo/Trin later: Fix unrelated window binding tests so full suite can be green.
-- [ ] Neo: Implement Morpheus calendar fetch threading architecture:
-  - Replace `Future.wait` in `CalendarController._fetchOnce()` with sequential per-calendar queue processing.
-  - Keep `_inFlightFetch != null` guard and return the active Future for overlapping refreshes.
-  - Do not add queued follow-up state or a `while (true)` drain loop.
-  - Update stale overlapping refresh test to expect one fetch.
-  - Add selected-calendar queue-order test.
-- [ ] Trin: Re-run `make -f Makefile.prj test` after Neo implementation.
-- [ ] Trin: If full suite remains red only from window binding tests, file that as separate blocker and run focused calendar verification as secondary evidence.
-- [ ] Trin: Final full regression suite run for v0.2.0 (all unit + integration + golden).
-- [ ] Trin: Verification of Group F (macOS) once Neo is done.
-- [ ] Mouse: Prepare for v0.2.0 release.
+## Immediate (next session)
+- [ ] Replace `debugPrint(line)` in `main.dart::_setupLogging` Logger.root handler
+      with `dart:developer`'s `log()`:
+      ```dart
+      import 'dart:developer' as dev;
+      // inside onRecord.listen:
+      dev.log(r.message, time: r.time, level: r.level.value, name: r.loggerName,
+              error: r.error, stackTrace: r.stackTrace);
+      ```
+      File writing (Level.INFO+) stays as-is.
+- [ ] Run `make test` after that change to confirm 293/293 still green.
+
+## Ongoing
+- [ ] Manual Wayland smoke: expand/collapse with ExpansionController live;
+      verify the three redundant resize operations are gone from the log.
+- [ ] Later platform QA: manual macOS/Windows transparent-mode smoke.

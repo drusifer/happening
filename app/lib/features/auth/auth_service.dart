@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:logging/logging.dart';
 
 import 'package:crypto/crypto.dart';
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../core/util/logger.dart';
 import 'token_store.dart';
 
 // Abstract authentication service interface.
@@ -22,6 +22,7 @@ import 'token_store.dart';
 /// ---------------------------------------------------------------------------
 
 abstract class AuthService {
+  static final _log = Logger('AuthService');
   Future<bool> signIn();
   void cancelSignIn();
   Future<void> signOut();
@@ -39,6 +40,7 @@ const _kProxyUrl = String.fromEnvironment(
 /// Routes Google token requests through the proxy so client_secret is injected
 /// server-side and never embedded in the app binary.
 class _ProxyingClient extends http.BaseClient {
+  static final _log = Logger('_ProxyingClient');
   _ProxyingClient(this._inner, this._proxyUrl);
 
   final http.Client _inner;
@@ -61,6 +63,7 @@ class _ProxyingClient extends http.BaseClient {
 }
 
 class GoogleAuthService implements AuthService {
+  static final _log = Logger('GoogleAuthService');
   GoogleAuthService({
     required ClientId clientId,
     required List<String> scopes,
@@ -112,7 +115,7 @@ class GoogleAuthService implements AuthService {
 
   @override
   Future<bool> signIn() async {
-    unawaited(AppLogger.debug('PKCE signIn: starting'));
+    _log.fine('PKCE signIn: starting');
     try {
       final verifier = _generateVerifier();
       final challenge = _sha256Challenge(verifier);
@@ -145,7 +148,7 @@ class GoogleAuthService implements AuthService {
       } catch (_) {
         // Server was closed by cancelSignIn() or another error.
         _pendingServer = null;
-        unawaited(AppLogger.debug('PKCE signIn: cancelled or server closed'));
+        _log.fine('PKCE signIn: cancelled or server closed');
         return false;
       }
       _pendingServer = null;
@@ -153,8 +156,7 @@ class GoogleAuthService implements AuthService {
       // Verify state to prevent CSRF (RFC 6749 §10.12).
       final returnedState = request.uri.queryParameters['state'];
       if (returnedState != state) {
-        unawaited(
-            AppLogger.debug('PKCE signIn: state mismatch — possible CSRF'));
+        _log.fine('PKCE signIn: state mismatch — possible CSRF');
         request.response
           ..statusCode = 400
           ..write('Bad request: state mismatch.');
@@ -174,7 +176,7 @@ class GoogleAuthService implements AuthService {
 
       if (code == null) {
         // User denied access — Google redirects back with error= instead of code=.
-        unawaited(AppLogger.debug('PKCE signIn: access denied by user'));
+        _log.fine('PKCE signIn: access denied by user');
         return false;
       }
 
@@ -190,11 +192,11 @@ class GoogleAuthService implements AuthService {
         },
       );
 
-      unawaited(AppLogger.debug('PKCE token response: ${response.statusCode}'));
+      _log.fine('PKCE token response: ${response.statusCode}');
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       if (data.containsKey('error')) {
-        unawaited(AppLogger.debug(
-            'PKCE token exchange failed: ${data['error']} — ${data['error_description']}'));
+        _log.fine(
+            'PKCE token exchange failed: ${data['error']} — ${data['error_description']}');
         return false;
       }
       final expiresIn = (data['expires_in'] as num).toInt();
@@ -214,7 +216,7 @@ class GoogleAuthService implements AuthService {
       _onCredentialsChanged(_client!.credentials);
       return true;
     } catch (e, st) {
-      unawaited(AppLogger.debug('PKCE signIn exception: $e\n$st'));
+      _log.fine('PKCE signIn exception: $e\n$st');
       return false;
     }
   }

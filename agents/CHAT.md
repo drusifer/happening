@@ -1613,3 +1613,123 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
 ---
 [<small>2026-05-05 23:22:26</small>] [**make**]->[**all**] *build*:
  Build PASSED | make build-linux | /home/drusifer/Projects/happening/build/build.out
+
+---
+[<small>2026-05-06 12:45:20</small>] [**User**]->[**all**] *init*:
+ Bob Protocol invoked — cold start 2026-05-06. Reading team state.
+
+---
+[<small>2026-05-06 12:57:20</small>] [**Neo**]->[**all**] *swe fix*:
+ *swe fix: UX completely transparent — can't see timestrip but mouse events work. Investigating build/build.out logs. May relate to recent XWayland-only click-through change.
+
+---
+[<small>2026-05-06 14:35:18</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-06 20:16:33</small>] [**Morpheus**]->[**Neo**] *handoff*:
+ Design doc at docs/EXPANSION_CONTROLLER.md is ready. TDD impl: FakeResizeExecutor + controller unit tests first, then TimelineStrip wiring. See Testing Strategy section.
+
+---
+[<small>2026-05-06 20:19:34</small>] [**Neo**]->[**all**] *swe impl*:
+ Starting TDD impl: PhysicalWindowState, ResizeExecutor interface, ExpansionController. Tests first.
+
+---
+[<small>2026-05-06 20:21:05</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:07 +309: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-06 20:21:53</small>] [**Neo**]->[**all**] *swe impl*:
+ Phase 1 done. PhysicalWindowState, ResizeExecutor, ExpansionController created. 9/9 unit tests green, 309/309 full suite. Queue, confirmation, no-skip all verified. Phase 2 next: wire TimelineStrip.
+
+---
+[<small>2026-05-06 22:26:37</small>] [**Drew**]->[**all**] *chat*:
+ Context at 62%. State saved. Neo: phase 1 done (ExpansionController + 9 tests, 309/309). Phase 2 next: wire TimelineStrip. See neo.docs/next_steps.md.
+
+---
+[<small>2026-05-06 22:44:18</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:10 +309: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-06 22:45:07</small>] [**Neo**]->[**all**] *swe done*:
+ Phase 2 COMPLETE — 309/309 green. TimelineStrip wired to ExpansionController; HoverController removed; stream drives card visibility. @Drew ready for Phase 3?
+
+---
+[<small>2026-05-06 22:49:11</small>] [**Drew**]->[**neo**] *request*:
+ complete phase 3
+
+---
+[<small>2026-05-06 23:07:53</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make format | /home/drusifer/Projects/happening/build/build.out
+Formatted test/core/window/window_service_test.dart
+Formatted 87 files (2 changed) in 0.17 seconds.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-06 23:08:06</small>] [**Neo**]->[**Drew**] *swe done*:
+ Phase 3 COMPLETE — 292/292 green. AsyncGate, isExpandedNotifier, expand/collapse, hover controllers all removed. performResize() replaces them. See next_steps.md.
+
+---
+[<small>2026-05-06 23:42:50</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+[2026-05-06T23:42:49.495234] [DBG] WindowService._doCollapse() complete
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-06 23:45:01</small>] [**drusifer**]->[**morpheus**] *chat*:
+ we are still getting blacked out expansions and non-deterministic behavior (works a few times then stops working completely) did neo follow the plan? What's missing? latest log in: build/build-expand-black3.out
+
+---
+[<small>2026-05-07 00:30:57</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+[EC] execute DONE intent=collapsed target=60.0
+[EC] loop idle
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-09 18:32:44</small>] [**User**]->[**all**] *request*:
+ Initializing session — loading Morpheus. args: init load morph
+
+---
+[<small>2026-05-09 18:39:05</small>] [**Morpheus**]->[**Neo**] *lead diagnose*:
+ Expand bug diagnosed. Neo followed plan — gap was missed. Fix: dedup send in _handleMouse. See morpheus.docs/EXPAND_BUG_DIAG.md @Neo *swe fix
+
+---
+[<small>2026-05-10 10:50:14</small>] [**make**]->[**all**] *build*:
+ Build FAILED exit=2 | make test | /home/drusifer/Projects/happening/build/build.out
+00:24 +291 -1: Some tests failed.
+make[1]: *** [Makefile:107: test] Error 1
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-10 10:53:47</small>] [**User**]->[**all**] *request*:
+ init load trin
+
+---
+[<small>2026-05-10 10:55:53</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+[EC] send intent=collapsed processing=true pending=collapsed
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-10 11:14:10</small>] [**Trin**]->[**all**] *qa result*:
+ QA PASS 292/292. Root cause: flutter_test defers broadcast stream delivery as microtask; logger migration removed trailing await that HEAD code used to flush it. Fix: added await Future.delayed(Duration.zero) in per-cal isolation test after refresh().
+
+---
+[<small>2026-05-10 11:39:06</small>] [**Trin**]->[**all**] *handoff*:
+ 293/293 green. See agents/trin.docs/handoff_2026-05-10.md for details. @next *resume
+
+---
+[<small>2026-05-10 18:30:51</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'

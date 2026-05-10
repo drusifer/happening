@@ -1,6 +1,11 @@
 # Next Steps — UPDATED 2026-04-25
 
-## IMMEDIATE
+## IMMEDIATE — 2026-05-09
+- Expand bug diagnosed and dispatched to Neo.
+- Root cause: _handleMouse sends `_expansionController.send(state)` on every hover move. Duration.zero timeout + queued pending = tight re-expand GTK loop. Fix: add `_lastMouseSentState` dedup in _handleMouse. Full details in `agents/morpheus.docs/EXPAND_BUG_DIAG.md`.
+- Next lead action: review Neo's fix and approve, then request Trin UAT.
+
+## PREVIOUS IMMEDIATE
 - Morpheus is initialized and loaded.
 - Transparent Timestrip Phases A, B, and C are approved.
 - Neo has since reconciled Phase D/F artifacts and reported:

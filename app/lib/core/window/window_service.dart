@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'dart:ffi' hide Size;
 import 'dart:io';
+import 'package:logging/logging.dart';
 
 import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:happening/core/settings/settings_service.dart';
-import 'package:happening/core/util/async_gate.dart';
-import 'package:happening/core/util/logger.dart';
 import 'package:happening/core/window/interaction_strategy/window_interaction_strategy.dart';
 import 'package:happening/core/window/resize_strategy/window_resize_strategy.dart';
+import 'package:happening/features/timeline/expansion_logic.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:win32/win32.dart';
 import 'package:window_manager/window_manager.dart';
@@ -58,14 +58,15 @@ typedef _SHDart = int Function(int dwMessage, Pointer<_AppBarData> pData);
 ///
 /// TLDR:
 /// Overview: Controls physical OS window dimensions via window_manager.
-/// Problem: High-frequency resizing causes OS flickering and race conditions.
-/// Solution: [AsyncGate] serialises expand/collapse; [WindowResizeStrategy]
-///           isolates platform-specific resize sequences.
+/// Problem: Platform-specific resize sequences differ across macOS/Windows/Linux.
+/// Solution: [WindowResizeStrategy] isolates platform-specific resize sequences;
+///           [ExpansionController] serialises expand/collapse and confirms via GTK.
 /// Breaking Changes: No.
 ///
 /// ---------------------------------------------------------------------------
 
 class WindowService with WidgetsBindingObserver {
+  static final _log = Logger('WindowService');
   WindowService({
     required WindowManager windowManager,
     required ScreenRetriever screenRetriever,
@@ -95,7 +96,6 @@ class WindowService with WidgetsBindingObserver {
   final bool _enableWindowsAppBar;
   final WindowInteractionStrategy _interactionStrategy;
   final WindowResizeStrategy _strategy;
-  final _gate = AsyncGate<bool>();
 
   FontSize _fontSize = FontSize.medium;
   WindowMode _windowMode = WindowMode.reserved;
@@ -105,10 +105,7 @@ class WindowService with WidgetsBindingObserver {
   bool _appBarBusy =
       false; // guards against concurrent _reserveCollapsedSpace calls
   bool _displayChangeInProgress = false; // serialises _onDisplayChanged calls
-  bool _wantsExpanded = false; // latest requested logical resize state
-
-  /// Notifier for the window's expansion state.
-  final isExpandedNotifier = ValueNotifier<bool>(false);
+  bool _isExpanded = false; // tracks last executed resize intent
 
   double _dpr = 1.0;
   double _screenWidth = 0;
@@ -120,8 +117,6 @@ class WindowService with WidgetsBindingObserver {
   bool get _isLinux =>
       _platformOverride == TargetPlatform.linux ||
       (_platformOverride == null && Platform.isLinux);
-
-  bool get wantsExpandedForDebug => _wantsExpanded;
 
   /// Call once, before [runApp], to set up the window.
   Future<void> initialize({
@@ -140,7 +135,7 @@ class WindowService with WidgetsBindingObserver {
     final targetHeight = getCollapsedHeight();
     final size = Size(width, targetHeight);
 
-    await AppLogger.debug(
+    _log.fine(
         'WindowService: init dpr=$_dpr displaySize=${display.size} collapsedHeight=$targetHeight expandedHeight=${getExpandedHeight()}');
 
     final windowOptions = WindowOptions(
@@ -150,8 +145,6 @@ class WindowService with WidgetsBindingObserver {
       skipTaskbar: true,
       titleBarStyle: TitleBarStyle.hidden,
     );
-
-    WidgetsBinding.instance.addObserver(this);
 
     await _wm.waitUntilReadyToShow(windowOptions, () async {
       if (_isWindows &&
@@ -165,6 +158,11 @@ class WindowService with WidgetsBindingObserver {
       await _wm.focus();
       await _interactionStrategy.initialize(_windowMode);
     });
+
+    // Register lifecycle observer AFTER initial setup so spurious resumed
+    // events emitted during GTK window creation do not queue extra collapses
+    // that race with first_frame_cb showing the window.
+    WidgetsBinding.instance.addObserver(this);
   }
 
   void dispose() {
@@ -176,27 +174,6 @@ class WindowService with WidgetsBindingObserver {
   @override
   void didChangeMetrics() {
     unawaited(_onDisplayChanged());
-  }
-
-  /// Re-asserts the collapsed window size after background/sleep.
-  ///
-  /// On Linux, waking from sleep or DPMS display-off can leave the window at
-  /// a corrupt size (e.g., 0px wide from a transient zero-width display event).
-  /// Re-applying the collapsed size on resume ensures the strip is visible.
-  /// Expanded windows and in-flight expand requests intentionally skip this:
-  /// Linux can emit focus-driven resumed events during hover expansion, and
-  /// queuing a collapse in that window races the transparent expanded surface.
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state != AppLifecycleState.resumed) return;
-    if (_wantsExpanded || isExpandedNotifier.value) {
-      unawaited(AppLogger.debug(
-          'WindowService.didChangeAppLifecycleState: resumed — expand intended, skipping collapsed size reassert'));
-      return;
-    }
-    unawaited(AppLogger.debug(
-        'WindowService.didChangeAppLifecycleState: resumed — re-asserting collapsed window size'));
-    unawaited(collapse());
   }
 
   /// Whether this platform should expose transparent click-through mode.
@@ -216,7 +193,7 @@ class WindowService with WidgetsBindingObserver {
   /// events to whatever is behind the strip instead of swallowing them.
   Future<void> setPassThroughEnabled(bool enabled) async {
     if (!_interactionStrategy.availability.supportsTransparent) {
-      await AppLogger.debug(
+      _log.fine(
           'WindowService.setPassThroughEnabled($enabled): unsupported platform');
       return;
     }
@@ -249,7 +226,7 @@ class WindowService with WidgetsBindingObserver {
   Future<void> _onDisplayChanged() async {
     // Serialise: drop concurrent calls fired by GTK spurious didChangeMetrics.
     if (_displayChangeInProgress) {
-      await AppLogger.debug(
+      _log.fine(
           'WindowService._onDisplayChanged: already in progress, skipping');
       return;
     }
@@ -267,25 +244,25 @@ class WindowService with WidgetsBindingObserver {
     final newWidth = display.size.width;
 
     // [DBG] Log every didChangeMetrics call to detect spurious Linux firings.
-    await AppLogger.debug(
-        'WindowService._onDisplayChanged: dpr=$_dpr→$newDpr width=$_screenWidth→$newWidth isExpanded=${isExpandedNotifier.value}');
+    _log.fine(
+        'WindowService._onDisplayChanged: dpr=$_dpr→$newDpr width=$_screenWidth→$newWidth isExpanded=$_isExpanded');
 
     // Guard against transient zero-width from DPMS wake / display reinit.
     // If width is 0 we must not update _screenWidth or resize, as that would
     // collapse the window to 0px and make all UI invisible.
     if (newWidth <= 0) {
-      await AppLogger.debug(
+      _log.fine(
           'WindowService._onDisplayChanged: invalid width ($newWidth), skipping');
       return;
     }
 
     if (newDpr == _dpr && newWidth == _screenWidth) {
-      await AppLogger.debug(
+      _log.fine(
           'WindowService._onDisplayChanged: no change, skipping');
       return;
     }
 
-    await AppLogger.debug('WindowService: display CHANGED — applying resize');
+    _log.fine('WindowService: display CHANGED — applying resize');
     _dpr = newDpr;
     _screenWidth = newWidth;
 
@@ -301,9 +278,9 @@ class WindowService with WidgetsBindingObserver {
 
     // Resize window to match new display dimensions via the strategy.
     // _reserveCollapsedSpace alone is not sufficient — setBounds is unreliable.
-    await AppLogger.debug(
-        'WindowService._onDisplayChanged: triggering resize isExpanded=${isExpandedNotifier.value}');
-    if (isExpandedNotifier.value) {
+    _log.fine(
+        'WindowService._onDisplayChanged: triggering resize isExpanded=$_isExpanded');
+    if (_isExpanded) {
       await _doExpand();
     } else {
       await _doCollapse();
@@ -338,44 +315,44 @@ class WindowService with WidgetsBindingObserver {
         _appBarData == null) {
       return;
     }
-    unawaited(AppLogger.debug('WindowService: reassertAppBar() start'));
+    _log.fine('WindowService: reassertAppBar() start');
     // Collapse first — the AppBar band equals the collapsed window height (55px).
     // Running ABM_REMOVE/NEW/SETPOS while expanded (250px) causes Windows to
     // push the window below the reserved band. Collapse before touching the
     // AppBar registration so the window fits inside the band during negotiation.
     await _doCollapse();
-    unawaited(AppLogger.debug(
-        'WindowService: reassertAppBar() collapsed, running ABM cycle'));
+    _log.fine(
+        'WindowService: reassertAppBar() collapsed, running ABM cycle');
     _shAppBarMessage(_abmRemove, _appBarData!);
     _shAppBarMessage(_abmNew, _appBarData!);
     await _reserveCollapsedSpace();
     // rcTop is trusted post-SETPOS for ABE_TOP. Force window back into the
     // band in case Windows nudged it during work-area contraction.
     final double rcTop = _appBarData!.ref.rcTop / _dpr;
-    unawaited(AppLogger.debug(
-        'WindowService: reassertAppBar() rcTop=$rcTop, repositioning'));
+    _log.fine(
+        'WindowService: reassertAppBar() rcTop=$rcTop, repositioning');
     await _wm.setPosition(Offset(0, rcTop));
     await _doCollapse();
-    unawaited(AppLogger.debug('WindowService: reassertAppBar() done'));
+    _log.fine('WindowService: reassertAppBar() done');
   }
 
   /// Updates the target heights for collapsed and expanded states.
   Future<void> updateHeights(FontSize fontSize) async {
     if (_fontSize == fontSize) return;
     _fontSize = fontSize;
-    await AppLogger.debug(
-        'WindowService.updateHeights: fontSize=$fontSize isExpanded=${isExpandedNotifier.value}');
-    if (isExpandedNotifier.value) {
+    _log.fine(
+        'WindowService.updateHeights: fontSize=$fontSize isExpanded=$_isExpanded');
+    if (_isExpanded) {
       await _doExpand();
-      await AppLogger.debug('WindowService.updateHeights: _doExpand complete');
+      _log.fine('WindowService.updateHeights: _doExpand complete');
     } else {
       if (!_isWindows) {
         // NOTE: calls _doCollapse() directly, bypassing _gate — concurrent with
         // gated collapse() calls from TimelineStrip.initState(). [DBG WATCH]
-        await AppLogger.debug(
+        _log.fine(
             'WindowService.updateHeights: calling _doCollapse (bypass gate)');
         await _doCollapse();
-        await AppLogger.debug(
+        _log.fine(
             'WindowService.updateHeights: _doCollapse complete');
       }
     }
@@ -416,12 +393,12 @@ class WindowService with WidgetsBindingObserver {
       final targetHeight = (getCollapsedHeight() * _dpr).round();
       _appBarData!.ref.rcBottom = targetHeight;
 
-      unawaited(AppLogger.debug(
-          'WindowService:  reserved targetHeight is $targetHeight'));
+      _log.fine(
+          'WindowService:  reserved targetHeight is $targetHeight');
       _shAppBarMessage(_abmQuerypos, _appBarData!);
       _shAppBarMessage(_abmSetpos, _appBarData!);
 
-      if (!isExpandedNotifier.value) {
+      if (!_isExpanded) {
         await _wm.setMinimumSize(Size.zero);
         await _wm.setMaximumSize(Size.infinite);
         // rcLeft and rcBottom are mutated by ABM_SETPOS — use stored values instead.
@@ -446,37 +423,12 @@ class WindowService with WidgetsBindingObserver {
     }
   }
 
-  /// Expands the window to show the hover card area.
-  Future<void> expand() async {
-    _wantsExpanded = true;
-    unawaited(AppLogger.debug('WindowService: expand requested'));
-    await _gate.request(true, _doResize);
-  }
-
-  /// Collapses the window back to the strip height.
-  Future<void> collapse() async {
-    _wantsExpanded = false;
-    unawaited(AppLogger.debug('WindowService: collapse requested'));
-    await _gate.request(false, _doResize);
-  }
-
-  /// Forces the service back to the same logical state as a fresh collapsed app.
+  /// Executes the platform resize sequence for [intent].
   ///
-  /// This is intentionally stronger than [collapse]: callers use it to recover
-  /// from stale hover/expand state, so the UI-facing notifier is cleared before
-  /// the physical resize is serialized through the normal gate.
-  Future<void> resetToFreshCollapsedState() async {
-    await AppLogger.debug(
-        'WindowService.resetFreshCollapsed START wantsExpanded=$_wantsExpanded isExpanded=${isExpandedNotifier.value}');
-    _wantsExpanded = false;
-    isExpandedNotifier.value = false;
-    await _gate.request(false, _doResize);
-    await AppLogger.debug(
-        'WindowService.resetFreshCollapsed DONE wantsExpanded=$_wantsExpanded isExpanded=${isExpandedNotifier.value}');
-  }
-
-  Future<void> _doResize(bool wantsExpanded) async {
-    if (wantsExpanded) {
+  /// Called by [WindowServiceResizeExecutor] on behalf of [ExpansionController].
+  /// Bypasses the old AsyncGate — serialisation is now owned by the controller.
+  Future<void> performResize(ExpansionState intent) async {
+    if (intent == ExpansionState.expanded) {
       await _doExpand();
     } else {
       await _doCollapse();
@@ -484,23 +436,19 @@ class WindowService with WidgetsBindingObserver {
   }
 
   Future<void> _doExpand() async {
+    _isExpanded = true;
     final size = Size(_screenWidth, getExpandedHeight());
-    await AppLogger.debug(
-        'WindowService._doExpand() target=w${size.width}×h${size.height} isExpanded=${isExpandedNotifier.value}');
-    await _strategy.expand(size, () {
-      isExpandedNotifier.value = true;
-      unawaited(AppLogger.debug('WindowService._doExpand() onExpanded fired'));
-    });
+    _log.fine('WindowService._doExpand() target=w${size.width}×h${size.height}');
+    await _strategy.expand(size);
   }
 
   Future<void> _doCollapse() async {
+    _isExpanded = false;
     final size = Size(_screenWidth, getCollapsedHeight());
-    await AppLogger.debug(
-        'WindowService._doCollapse() target=w${size.width}×h${size.height} isExpanded=${isExpandedNotifier.value}');
+    _log.fine(
+        'WindowService._doCollapse() target=w${size.width}×h${size.height}');
     await _strategy.collapse(size);
-    // Set false after the resize so Flutter stays transparent while GTK
-    // shrinks — mirrors how expand sets true before the resize.
-    isExpandedNotifier.value = false;
-    await AppLogger.debug('WindowService._doCollapse() complete');
+    _log.fine('WindowService._doCollapse() complete');
   }
+
 }

@@ -9,8 +9,8 @@
 // ---------------------------------------------------------------------------
 
 import 'dart:async';
+import 'package:logging/logging.dart';
 import 'package:flutter/gestures.dart';
-import 'package:happening/core/util/logger.dart';
 
 /// The intended state of the hover card/window.
 enum ExpansionState {
@@ -23,6 +23,7 @@ enum ExpansionState {
 
 /// A representation of the 2D bounds of an event's interactive area.
 class EventBounds {
+  static final _log = Logger('EventBounds');
   const EventBounds({
     required this.left,
     required this.right,
@@ -47,6 +48,7 @@ class EventBounds {
 ///
 /// This class MUST NOT depend on Flutter or any other project classes.
 class ExpansionLogic {
+  static final _log = Logger('ExpansionLogic');
   /// Determines the intended [ExpansionState] based on coordinates and state.
   ///
   /// [details] Current pointer event, or null when called from a lifecycle change.
@@ -61,7 +63,7 @@ class ExpansionLogic {
   }) {
     // 1. Settings always forces expansion.
     if (isSettingsOpen) {
-      unawaited(AppLogger.debug('ExpansionLogic -> Expanded (Settings Open)'));
+      _log.fine('ExpansionLogic -> Expanded (Settings Open)');
       return ExpansionState.expanded;
     }
 
@@ -72,8 +74,8 @@ class ExpansionLogic {
 
     double mouseX = details.localPosition.dx;
     double mouseY = details.localPosition.dy;
-    //unawaited(AppLogger.debug('ExpansionLogic x=${mouseX.toStringAsFixed(1)} y=${mouseY.toStringAsFixed(1)} '
-    //    'events=${eventBounds.length} settings=$isSettingsOpen'));
+    //_log.fine('ExpansionLogic x=${mouseX.toStringAsFixed(1)} y=${mouseY.toStringAsFixed(1)} '
+    //    'events=${eventBounds.length} settings=$isSettingsOpen');
 
     if (details is PointerExitEvent) {
       return ExpansionState.collapsed;
