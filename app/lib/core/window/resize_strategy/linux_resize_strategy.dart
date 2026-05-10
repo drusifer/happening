@@ -1,5 +1,5 @@
+import 'package:logging/logging.dart';
 import 'package:flutter/material.dart';
-import 'package:happening/core/util/logger.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -17,17 +17,16 @@ import 'window_resize_strategy.dart';
 ///           to formalise the new constraints. Finally setSize(target) again
 ///           to force a fresh size-allocation after constraints are valid.
 ///
-///   Collapse: setSize (advisory), then setMinimumSize(target) to lower the
-///             expand floor, then setMaximumSize(target) — setMaximumSize is
-///             the forcing mechanism when the window is above target.
+///   Collapse: setMinimumSize(target) first to lower the expand floor (when
+///             min=expanded, setSize is clamped and ignored). Then
+///             setMaximumSize(target) — now constraints are valid at target.
+///             Finally setSize(target) to force GTK to apply the shrink.
 ///
 /// WARNING: do NOT lift setMaximumSize before setMinimumSize on expand.
 /// Lifting max first means constraints are always valid → no conflict →
 /// GTK has no reason to force-grow → window stays at collapsed height.
-///
-/// This matches the behaviour documented in pre-Sprint6 _doExpand/_doCollapse
-/// (log-sample.txt lines 53-56, git history).
 class LinuxResizeStrategy extends WindowResizeStrategy {
+  static final _log = Logger('LinuxResizeStrategy');
   LinuxResizeStrategy({required WindowManager wm, required ScreenRetriever sr})
       : _wm = wm,
         _sr = sr;
@@ -42,45 +41,44 @@ class LinuxResizeStrategy extends WindowResizeStrategy {
   }
 
   @override
-  Future<void> expand(Size targetSize, void Function() onExpanded) async {
-    await AppLogger.debug(
+  Future<void> expand(Size targetSize) async {
+    _log.fine(
         'LinuxResizeStrategy.expand() START target=w${targetSize.width}×h${targetSize.height}');
     // Advisory — ignored by GTK when max-cap is still the collapsed height.
     await _wm.setSize(targetSize);
-    await AppLogger.debug('LinuxResizeStrategy.expand() setSize done');
+    _log.fine('LinuxResizeStrategy.expand() setSize done');
     // min(target) > max(collapsed) = intentionally invalid constraint.
     // GTK resolves the conflict by growing the window to targetSize.
     await _wm.setMinimumSize(targetSize);
-    await AppLogger.debug('LinuxResizeStrategy.expand() setMinimumSize done');
+    _log.fine('LinuxResizeStrategy.expand() setMinimumSize done');
     // Formalise: lift the max-cap now that the window has grown.
     await _wm.setMaximumSize(targetSize);
-    await AppLogger.debug('LinuxResizeStrategy.expand() setMaximumSize done');
+    _log.fine('LinuxResizeStrategy.expand() setMaximumSize done');
     // After the first grow, some XWayland sessions keep Flutter's layout
     // surface at the old collapsed height on subsequent expands. A final
     // setSize with valid min/max constraints forces a new size-allocate.
     await _wm.setSize(targetSize);
-    await AppLogger.debug(
-        'LinuxResizeStrategy.expand() final setSize done — calling onExpanded');
-    onExpanded();
+    _log.fine('LinuxResizeStrategy.expand() done');
   }
 
   @override
   Future<void> collapse(Size targetSize) async {
-    await AppLogger.debug(
+    _log.fine(
         'LinuxResizeStrategy.collapse() START target=w${targetSize.width}×h${targetSize.height}');
-    await _wm.setSize(targetSize);
-    await AppLogger.debug('LinuxResizeStrategy.collapse() setSize done');
-    // Lower the min-floor left by a previous expand before applying max-cap.
+    // Lower the min-floor left by a previous expand first. With min still at
+    // the expanded height, any setSize(target) is clamped to min and ignored.
     await _wm.setMinimumSize(targetSize);
-    await AppLogger.debug('LinuxResizeStrategy.collapse() setMinimumSize done');
-    // setMaximumSize forces the compositor to shrink when setSize was ignored.
+    _log.fine('LinuxResizeStrategy.collapse() setMinimumSize done');
+    // Cap the ceiling. Now min=target, max=target — constraints are valid and
+    // below the current window size, so GTK must accept the following setSize.
     await _wm.setMaximumSize(targetSize);
-    await AppLogger.debug('LinuxResizeStrategy.collapse() setMaximumSize done');
-    // Re-anchor to (0,0) of the primary display. On Linux the window manager
-    // may rescue/move the window to an arbitrary position when a monitor is
-    // disconnected (build/tmp line 2054: 3840→2944 display change). Without
-    // this call the strip drifts away from the top-left corner.
+    _log.fine('LinuxResizeStrategy.collapse() setMaximumSize done');
+    // Force the resize now that constraints allow it.
+    await _wm.setSize(targetSize);
+    _log.fine('LinuxResizeStrategy.collapse() setSize done');
+    // Re-anchor to (0,0). On Linux the WM may drift the window after a
+    // monitor change (build/tmp line 2054: 3840→2944 display change).
     await _wm.setPosition(Offset.zero);
-    await AppLogger.debug('LinuxResizeStrategy.collapse() setPosition done');
+    _log.fine('LinuxResizeStrategy.collapse() setPosition done');
   }
 }

@@ -286,6 +286,8 @@ void main() {
 
       fakeService.shouldThrow = true;
       await controller.refresh();
+      // flush the stream delivery microtask
+      await Future<void>.delayed(Duration.zero);
 
       // Failing calendar returns [] via catchError → stream emits [] (not retained).
       expect(emitted, hasLength(2));

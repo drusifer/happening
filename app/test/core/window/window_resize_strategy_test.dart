@@ -45,8 +45,7 @@ void main() {
       verifyNever(mockWM.setResizable(any));
     });
 
-    test('expand calls setSize→setMin→setMax→setSize then onExpanded',
-        () async {
+    test('expand calls setSize→setMin→setMax→setSize', () async {
       final order = <String>[];
       when(mockWM.setMaximumSize(any))
           .thenAnswer((_) async => order.add('setMax'));
@@ -55,11 +54,11 @@ void main() {
       when(mockWM.setMinimumSize(any))
           .thenAnswer((_) async => order.add('setMin'));
 
-      await strategy.expand(const Size(1920, 250), () => order.add('cb'));
-      expect(order, ['setSize', 'setMin', 'setMax', 'setSize', 'cb']);
+      await strategy.expand(const Size(1920, 250));
+      expect(order, ['setSize', 'setMin', 'setMax', 'setSize']);
     });
 
-    test('collapse calls setSize→setMin→setMax', () async {
+    test('collapse calls setMin→setMax→setSize', () async {
       final order = <String>[];
       when(mockWM.setSize(any, animate: anyNamed('animate')))
           .thenAnswer((_) async => order.add('setSize'));
@@ -69,7 +68,7 @@ void main() {
           .thenAnswer((_) async => order.add('setMax'));
 
       await strategy.collapse(const Size(1920, 55));
-      expect(order, ['setSize', 'setMin', 'setMax']);
+      expect(order, ['setMin', 'setMax', 'setSize']);
     });
   });
 
@@ -85,7 +84,7 @@ void main() {
       verify(mockWM.setResizable(false)).called(1);
     });
 
-    test('expand: onExpanded then setMax→setSize→setMin', () async {
+    test('expand: setMax→setSize→setMin', () async {
       final order = <String>[];
       when(mockWM.setMaximumSize(any))
           .thenAnswer((_) async => order.add('setMax'));
@@ -94,8 +93,8 @@ void main() {
       when(mockWM.setMinimumSize(any))
           .thenAnswer((_) async => order.add('setMin'));
 
-      await strategy.expand(const Size(1920, 250), () => order.add('cb'));
-      expect(order, ['cb', 'setMax', 'setSize', 'setMin']);
+      await strategy.expand(const Size(1920, 250));
+      expect(order, ['setMax', 'setSize', 'setMin']);
     });
 
     test('collapse: setMin→setMax→setSize', () async {
@@ -125,7 +124,7 @@ void main() {
       verify(mockWM.setPosition(Offset.zero)).called(1);
     });
 
-    test('expand: onExpanded then setMax→setSize→setMin', () async {
+    test('expand: setMax→setSize→setMin', () async {
       final order = <String>[];
       when(mockWM.setMaximumSize(any))
           .thenAnswer((_) async => order.add('setMax'));
@@ -134,8 +133,8 @@ void main() {
       when(mockWM.setMinimumSize(any))
           .thenAnswer((_) async => order.add('setMin'));
 
-      await strategy.expand(const Size(1920, 250), () => order.add('cb'));
-      expect(order, ['cb', 'setMax', 'setSize', 'setMin']);
+      await strategy.expand(const Size(1920, 250));
+      expect(order, ['setMax', 'setSize', 'setMin']);
     });
 
     test('collapse: setMin→setMax→setSize', () async {

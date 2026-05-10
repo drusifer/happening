@@ -8,15 +8,16 @@
 //
 // ---------------------------------------------------------------------------
 
+import 'package:logging/logging.dart';
 import 'package:flutter/material.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 
-import '../../core/util/logger.dart';
 import 'calendar_event.dart';
 import 'video_link_extractor.dart';
 
 /// Metadata for a single Google Calendar.
 class CalendarMeta {
+  static final _log = Logger('CalendarMeta');
   const CalendarMeta({
     required this.id,
     required this.summary,
@@ -35,12 +36,14 @@ class CalendarMeta {
 }
 
 abstract class CalendarService {
+  static final _log = Logger('CalendarService');
   Future<List<CalendarMeta>> fetchCalendarList();
   Future<List<CalendarEvent>> fetchEvents(String calendarId);
   Future<List<CalendarEvent>> fetchTodayEvents();
 }
 
 class GoogleCalendarService implements CalendarService {
+  static final _log = Logger('GoogleCalendarService');
   GoogleCalendarService(this._api);
   final gcal.CalendarApi _api;
 
@@ -91,7 +94,7 @@ class GoogleCalendarService implements CalendarService {
     final rawItems = response.items ?? const <gcal.Event>[];
     final timedItems =
         rawItems.where((e) => e.start?.dateTime != null).toList();
-    await AppLogger.debug(
+    _log.fine(
       '[CalendarFetch] fetched ${rawItems.length} raw items, '
       '${timedItems.length} timed items',
     );
@@ -134,7 +137,7 @@ class GoogleCalendarService implements CalendarService {
     Color? calendarColor,
   }) {
     // Log raw API payload — copy from debug console to build test fixtures.
-    // unawaited(AppLogger.debug('[CalendarAPI] ${jsonEncode(e.toJson())}'));
+    // _log.fine('[CalendarAPI] ${jsonEncode(e.toJson())}');
     // Tasks synced from Google Tasks appear in the primary calendar feed
     // with eventType=="focusTime" rather than from a separate @tasks feed.
     if (e.eventType == 'focusTime') isTask = true;

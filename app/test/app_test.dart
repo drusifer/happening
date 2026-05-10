@@ -22,6 +22,7 @@ import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/time/clock_service.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:happening/features/auth/auth_service.dart';
+import 'package:happening/features/timeline/expansion_logic.dart';
 import 'package:happening/features/calendar/calendar_controller.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/calendar/calendar_service.dart';
@@ -50,19 +51,7 @@ class _FakeWindowService extends WindowService {
   double getExpandedHeight() => 320.0;
 
   @override
-  Future<void> expand({double? height}) async {
-    isExpandedNotifier.value = true;
-  }
-
-  @override
-  Future<void> collapse({double? height}) async {
-    isExpandedNotifier.value = false;
-  }
-
-  @override
-  Future<void> resetToFreshCollapsedState() async {
-    isExpandedNotifier.value = false;
-  }
+  Future<void> performResize(ExpansionState intent) async {}
 
   @override
   Future<void> reassertAppBar() async {}

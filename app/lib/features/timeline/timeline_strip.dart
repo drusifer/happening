@@ -11,13 +11,16 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
+import 'package:logging/logging.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/time/clock_service.dart';
-import 'package:happening/core/util/logger.dart';
+import 'package:happening/core/window/expansion_controller.dart';
+import 'package:happening/core/window/physical_window_state.dart';
 import 'package:happening/core/window/window_service.dart';
+import 'package:happening/core/window/window_service_resize_executor.dart';
 import 'package:happening/features/calendar/calendar_controller.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/timeline/countdown_display.dart';
@@ -25,7 +28,6 @@ import 'package:happening/features/timeline/expansion_logic.dart';
 import 'package:happening/features/timeline/focus/hover_focus_controller.dart';
 import 'package:happening/features/timeline/focus/timeline_focus_controller.dart';
 import 'package:happening/features/timeline/focus/timeline_focus_hotkey.dart';
-import 'package:happening/features/timeline/hover/hover_controller.dart';
 import 'package:happening/features/timeline/hover_detail_overlay.dart';
 import 'package:happening/features/timeline/settings_panel.dart';
 import 'package:happening/features/timeline/timeline_layout.dart';
@@ -33,6 +35,7 @@ import 'package:happening/features/timeline/timeline_painter.dart';
 
 /// Root timeline widget. Driven by [clockService] stream.
 class TimelineStrip extends StatefulWidget {
+  static final _log = Logger('TimelineStrip');
   const TimelineStrip({
     super.key,
     required this.events,
@@ -78,8 +81,9 @@ class TimelineStrip extends StatefulWidget {
 
 class _TimelineStripState extends State<TimelineStrip>
     with WidgetsBindingObserver {
+  static final _log = Logger('_TimelineStripState');
   late final WindowService _windowService;
-  late final HoverController _hoverController;
+  late final ExpansionController _expansionController;
   late final TimelineFocusController _focusController;
   late final HoverFocusController _hoverFocusController;
   late final TimelineFocusHotkeyBinding _focusHotkeyBinding;
@@ -90,10 +94,12 @@ class _TimelineStripState extends State<TimelineStrip>
   Timer? _clickThroughTimer;
   CalendarEvent? _hoveredEvent;
   bool _isHoveringStrip = false;
+  PointerEvent? _lastPointerEvent;
   bool _isSettingsOpen = false;
   bool _isTemporaryClickThroughActive = false;
   bool _showFocusIndicator = false;
   bool _focusInitialized = false;
+  ExpansionState? _lastSentExpansionState;
   late Stream<DateTime> _paintTicks;
   late Stream<DateTime> _countdownTicks;
   String? _lastPaintStateDebug;
@@ -120,7 +126,9 @@ class _TimelineStripState extends State<TimelineStrip>
     _windowService = widget.windowService;
     _paintTicks = widget.clockService.tick10s;
     _countdownTicks = widget.clockService.tick1s;
-    _hoverController = HoverController.create(_windowService);
+    _expansionController = ExpansionController(
+      executor: WindowServiceResizeExecutor(_windowService),
+    )..start();
     _keyboardFocusNode = FocusNode(debugLabel: 'TimelineStripFocus');
     _focusController = TimelineFocusController(
       windowService: _windowService,
@@ -132,7 +140,6 @@ class _TimelineStripState extends State<TimelineStrip>
         HotkeyManagerTimelineFocusHotkeyBinding(
           platformOverride: _targetPlatform,
         );
-    _windowService.isExpandedNotifier.addListener(_onExpansionChanged);
     _focusController.isFocusedNotifier.addListener(_onFocusChanged);
 
     // S5-FIX: Listen to settings changes to update heights and trigger rebuild
@@ -142,9 +149,7 @@ class _TimelineStripState extends State<TimelineStrip>
     _updateHeights();
     unawaited(_syncWindowBehavior());
     _collidingIds = detectCollisions(widget.events);
-    unawaited(AppLogger.debug('TimelineStrip: Initializing'));
-    // ALWAYS call collapse on init to force initial state regardless of OS/service previous state.
-    unawaited(_windowService.collapse());
+    _log.fine('TimelineStrip: Initializing');
     unawaited(_focusHotkeyBinding.register(_focusFromHotkey));
   }
 
@@ -169,6 +174,17 @@ class _TimelineStripState extends State<TimelineStrip>
       _collidingIds = detectCollisions(widget.events);
     }
 
+    // When loading clears and the cursor is already over the strip, re-evaluate
+    // hover with the stored pointer position.  Without this, the strip stays
+    // collapsed until the user makes a new mouse move because _handleMouse only
+    // fires on pointer events — it does not react to state changes on its own.
+    if (oldWidget.isLoading && !widget.isLoading) {
+      final last = _lastPointerEvent;
+      if (_isHoveringStrip && last != null) {
+        _handleMouse(last);
+      }
+    }
+
     if (oldWidget.clockService != widget.clockService) {
       _paintTicks = widget.clockService.tick10s;
       _countdownTicks = widget.clockService.tick1s;
@@ -178,11 +194,10 @@ class _TimelineStripState extends State<TimelineStrip>
 
   @override
   void dispose() {
-    _windowService.isExpandedNotifier.removeListener(_onExpansionChanged);
+    _expansionController.dispose();
     _focusController.isFocusedNotifier.removeListener(_onFocusChanged);
     widget.settingsService.removeListener(_onSettingsChanged);
     WidgetsBinding.instance.removeObserver(this);
-    _hoverController.dispose();
     _hoverFocusController.dispose();
     _flashTimer?.cancel();
     _focusIndicatorTimer?.cancel();
@@ -193,12 +208,6 @@ class _TimelineStripState extends State<TimelineStrip>
     unawaited(_focusHotkeyBinding.unregister());
     _focusController.dispose();
     super.dispose();
-  }
-
-  void _onExpansionChanged() {
-    if (mounted) {
-      setState(() {});
-    }
   }
 
   TargetPlatform get _targetPlatform {
@@ -251,7 +260,7 @@ class _TimelineStripState extends State<TimelineStrip>
     _focusController.registerUserActivity();
     _clickThroughTimer?.cancel();
     setState(() => _isTemporaryClickThroughActive = true);
-    await AppLogger.debug('TimelineStrip.clickThrough START opacity=0.10');
+    _log.fine('TimelineStrip.clickThrough START opacity=0.10');
     await _windowService.setPassThroughEnabled(true);
     _clickThroughTimer = Timer(const Duration(seconds: 7), () {
       unawaited(_endTemporaryClickThrough());
@@ -267,7 +276,7 @@ class _TimelineStripState extends State<TimelineStrip>
       _isTemporaryClickThroughActive = false;
     }
     await _windowService.setPassThroughEnabled(false);
-    await AppLogger.debug('TimelineStrip.clickThrough END opacity=1.00');
+    _log.fine('TimelineStrip.clickThrough END opacity=1.00');
   }
 
   Future<void> _syncWindowBehavior() async {
@@ -291,9 +300,7 @@ class _TimelineStripState extends State<TimelineStrip>
 
   Future<void> _resetToFreshCollapsedState() async {
     final hadHoveredEvent = _hoveredEvent != null;
-    await AppLogger.debug('TimelineStrip.resetFreshCollapsed START '
-        'expanded=${_windowService.isExpandedNotifier.value} '
-        'wantsExpanded=${_windowService.wantsExpandedForDebug} '
+    _log.fine('TimelineStrip.resetFreshCollapsed START '
         'hovered=$hadHoveredEvent hovering=$_isHoveringStrip '
         'settings=$_isSettingsOpen focusIndicator=$_showFocusIndicator '
         'focused=${_focusController.isFocused} '
@@ -317,11 +324,9 @@ class _TimelineStripState extends State<TimelineStrip>
       });
     }
     _syncInteractionHold();
-    await _windowService.resetToFreshCollapsedState();
+    _expansionController.send(ExpansionState.collapsed);
 
-    await AppLogger.debug('TimelineStrip.resetFreshCollapsed DONE '
-        'expanded=${_windowService.isExpandedNotifier.value} '
-        'wantsExpanded=${_windowService.wantsExpandedForDebug} '
+    _log.fine('TimelineStrip.resetFreshCollapsed DONE '
         'hovered=${_hoveredEvent != null} hovering=$_isHoveringStrip '
         'settings=$_isSettingsOpen focusIndicator=$_showFocusIndicator '
         'focused=${_focusController.isFocused} '
@@ -361,9 +366,7 @@ class _TimelineStripState extends State<TimelineStrip>
       _hoveredEvent = null;
     });
     _syncInteractionHold();
-    if (_windowService.isExpandedNotifier.value) {
-      unawaited(_windowService.collapse());
-    }
+    _expansionController.send(ExpansionState.collapsed);
   }
 
   void _focusFromHotkey() {
@@ -381,8 +384,8 @@ class _TimelineStripState extends State<TimelineStrip>
   }
 
   void _updateHeights() {
-    unawaited(AppLogger.debug(
-        'Timestrip: _updatgeHeights called:  strip height is to $_collapsedHeight'));
+    _log.fine(
+        'Timestrip: _updatgeHeights called:  strip height is to $_collapsedHeight');
     final settings = widget.settingsService.current;
     unawaited(_windowService.updateHeights(settings.fontSize));
   }
@@ -391,17 +394,13 @@ class _TimelineStripState extends State<TimelineStrip>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // S5-FIX: Focus-based expansion logic is fragile on Linux.
-    // We only use this to trigger a collapse if settings are closed and we lose focus.
     if (state != AppLifecycleState.resumed && !_isSettingsOpen) {
       unawaited(_focusController.handleWindowFocusLost());
-      if (_windowService.isExpandedNotifier.value) {
-        setState(() {
-          _isHoveringStrip = false;
-          _hoveredEvent = null;
-        });
-        unawaited(_windowService.collapse());
-      }
+      setState(() {
+        _isHoveringStrip = false;
+        _hoveredEvent = null;
+      });
+      _expansionController.send(ExpansionState.collapsed);
     }
   }
 
@@ -418,6 +417,7 @@ class _TimelineStripState extends State<TimelineStrip>
   }
 
   void _handleMouse(PointerEvent details) {
+    _lastPointerEvent = details;
     final layout = _layout;
     if (layout == null) return;
     if (!_canInteract) return;
@@ -487,23 +487,20 @@ class _TimelineStripState extends State<TimelineStrip>
       }
     }
 
-    final intentAccepted = _hoverController.setIntent(state);
-    if (!intentAccepted) return;
+    if (state != _lastSentExpansionState) {
+      _lastSentExpansionState = state;
+      _log.fine('[TS] expansion → ${state.name} mouseX=${mouseX.toStringAsFixed(1)} mouseY=${mouseY.toStringAsFixed(1)} isExit=${details is PointerExitEvent}');
+    }
+    _expansionController.send(state);
     _focusController.registerUserActivity();
 
     if (isOverStrip != _isHoveringStrip || hit?.id != _hoveredEvent?.id) {
-      // unawaited(AppLogger.debug(
-      //     '${details.runtimeType}: ${hit?.title ?? (isOverStrip ? 'Strip' : 'Outside')}'));
       setState(() {
         _isHoveringStrip = isOverStrip;
         _hoveredEvent = hit;
       });
       _syncInteractionHold();
     }
-
-    // 3. Window Execution — routed through HoverController.
-    // On Linux, LinuxHoverController suppresses spurious collapses fired by
-    // GTK's synthetic pointer-exit during window resize (300ms window).
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────
@@ -536,13 +533,9 @@ class _TimelineStripState extends State<TimelineStrip>
     });
     _syncInteractionHold();
     if (_isSettingsOpen) {
-      if (!_windowService.isExpandedNotifier.value) {
-        unawaited(_windowService.expand());
-      }
+      _expansionController.send(ExpansionState.expanded);
     } else {
-      if (_windowService.isExpandedNotifier.value) {
-        unawaited(_windowService.collapse());
-      }
+      _expansionController.send(ExpansionState.collapsed);
     }
   }
 
@@ -573,7 +566,6 @@ class _TimelineStripState extends State<TimelineStrip>
         _isSettingsOpen;
     final signature = [
       'expanded=$isExpanded',
-      'wantsExpanded=${_windowService.wantsExpandedForDebug}',
       'card=$cardVisible',
       'settings=$settingsVisible',
       'hovered=${_hoveredEvent != null}',
@@ -597,7 +589,7 @@ class _TimelineStripState extends State<TimelineStrip>
     ].join(' ');
     if (signature == _lastPaintStateDebug) return;
     _lastPaintStateDebug = signature;
-    unawaited(AppLogger.debug('TimelineStrip.paint-state $signature'));
+    _log.fine('TimelineStrip.paint-state $signature');
   }
 
   // ── Build ────────────────────────────────────────────────────────────────
@@ -606,7 +598,7 @@ class _TimelineStripState extends State<TimelineStrip>
 
   @override
   Widget build(BuildContext context) {
-    // unawaited(AppLogger.debug('Building $runtimeType'));
+    // _log.fine('Building $runtimeType');
     final theme = Theme.of(context);
     final settings = widget.settingsService.current;
     final fontSize = settings.fontSize.px;
@@ -617,367 +609,385 @@ class _TimelineStripState extends State<TimelineStrip>
     final painterBackgroundColor =
         stripBackgroundColor.withValues(alpha: _surfaceOpacity);
 
-    return StreamBuilder<DateTime>(
-      stream: _paintTicks,
-      initialData: widget.clockService.now,
-      builder: (context, snapshot) {
-        final now = snapshot.data!;
-        _now = now;
+    return StreamBuilder<PhysicalWindowState>(
+      stream: _expansionController.stateStream,
+      initialData: PhysicalWindowState.collapsed,
+      builder: (context, expansionSnapshot) {
+        final isExpanded = expansionSnapshot.data!.isExpanded;
 
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            final stripWidth = constraints.maxWidth;
-            final nowIndicatorX = stripWidth * 0.10;
+        return StreamBuilder<DateTime>(
+          stream: _paintTicks,
+          initialData: widget.clockService.now,
+          builder: (context, snapshot) {
+            final now = snapshot.data!;
+            _now = now;
 
-            final layout = TimelineLayout(
-              stripWidth: stripWidth,
-              nowIndicatorX: nowIndicatorX,
-              windowStart: now.subtract(Duration(
-                  milliseconds:
-                      (settings.timeWindowHours * 3600000 * 0.125).toInt())),
-              windowEnd: now.add(Duration(
-                  milliseconds:
-                      (settings.timeWindowHours * 3600000 * 0.875).toInt())),
-            );
-            _layout = layout;
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final stripWidth = constraints.maxWidth;
+                final nowIndicatorX = stripWidth * 0.10;
 
-            final active = layout.activeEvent(widget.events, now);
-            final mode = active != null
-                ? CountdownMode.untilEnd
-                : CountdownMode.untilNext;
+                final layout = TimelineLayout(
+                  stripWidth: stripWidth,
+                  nowIndicatorX: nowIndicatorX,
+                  windowStart: now.subtract(Duration(
+                      milliseconds: (settings.timeWindowHours * 3600000 * 0.125)
+                          .toInt())),
+                  windowEnd: now.add(Duration(
+                      milliseconds: (settings.timeWindowHours * 3600000 * 0.875)
+                          .toInt())),
+                );
+                _layout = layout;
 
-            final isExpanded = _windowService.isExpandedNotifier.value;
-            const expandedBackdropColor = Colors.transparent;
-            _debugPaintState(
-              isExpanded: isExpanded,
-              constraints: constraints,
-              backdropColor: expandedBackdropColor,
-              painterBackgroundColor: painterBackgroundColor,
-            );
+                final active = layout.activeEvent(widget.events, now);
+                final mode = active != null
+                    ? CountdownMode.untilEnd
+                    : CountdownMode.untilNext;
+                const expandedBackdropColor = Colors.transparent;
+                _debugPaintState(
+                  isExpanded: isExpanded,
+                  constraints: constraints,
+                  backdropColor: expandedBackdropColor,
+                  painterBackgroundColor: painterBackgroundColor,
+                );
 
-            return Focus(
-                focusNode: _keyboardFocusNode,
-                autofocus: true,
-                onKeyEvent: (node, event) {
-                  if (event is KeyDownEvent &&
-                      event.logicalKey == LogicalKeyboardKey.escape) {
-                    unawaited(_focusController.handleEscape());
-                    return KeyEventResult.handled;
-                  }
-                  return KeyEventResult.ignored;
-                },
-                child: MouseRegion(
-                  onEnter: _onMouseEnter,
-                  onHover: _handleMouse,
-                  onExit: _onMouseExit,
-                  hitTestBehavior: HitTestBehavior.translucent,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Positioned(
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: isExpanded
-                            ? _windowService.getExpandedHeight()
-                            : constraints.maxHeight,
-                        child: const ColoredBox(color: expandedBackdropColor),
-                      ),
-                      Positioned(
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: _collapsedHeight,
-                        child: RepaintBoundary(
-                          child: CustomPaint(
-                            painter: TimelinePainter(
-                              events: widget.events,
-                              now: now,
-                              nowIndicatorX: nowIndicatorX,
-                              windowStart: layout.windowStart,
-                              windowEnd: layout.windowEnd,
-                              hoveredEventId: _hoveredEvent?.id,
-                              collidingIds: _collidingIds,
-                              fontSize: fontSize,
-                              backgroundColor: painterBackgroundColor,
-                              pastOverlayColor:
-                                  theme.brightness == Brightness.dark
-                                      ? Colors.black26
-                                      : Colors.black12,
-                              nowLineColor: const Color(0xFFB71C1C),
-                              alwaysUse24HourFormat:
-                                  MediaQuery.alwaysUse24HourFormatOf(context),
-                              tickColor: theme.textTheme.bodySmall?.color
-                                      ?.withValues(alpha: 0.75) ??
-                                  Colors.grey,
-                              isLoading: widget.isLoading,
-                              loadingTextColor:
-                                  theme.textTheme.bodyMedium?.color ??
-                                      Colors.white,
-                              isSignIn: widget.onSignIn != null ||
-                                  widget.onCancelSignIn != null,
-                              isSigningIn: widget.onCancelSignIn != null,
-                              signInTextColor:
-                                  theme.textTheme.bodyMedium?.color ??
-                                      Colors.white,
-                              surfaceOpacity:
-                                  _isTemporaryClickThroughActive ? 0.1 : 1.0,
-                              emphasisOpacity:
-                                  _isTemporaryClickThroughActive ? 0.1 : 1.0,
+                return Focus(
+                    focusNode: _keyboardFocusNode,
+                    autofocus: true,
+                    onKeyEvent: (node, event) {
+                      if (event is KeyDownEvent &&
+                          event.logicalKey == LogicalKeyboardKey.escape) {
+                        unawaited(_focusController.handleEscape());
+                        return KeyEventResult.handled;
+                      }
+                      return KeyEventResult.ignored;
+                    },
+                    child: MouseRegion(
+                      onEnter: _onMouseEnter,
+                      onHover: _handleMouse,
+                      onExit: _onMouseExit,
+                      hitTestBehavior: HitTestBehavior.translucent,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Positioned(
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: isExpanded
+                                ? _windowService.getExpandedHeight()
+                                : constraints.maxHeight,
+                            child:
+                                const ColoredBox(color: expandedBackdropColor),
+                          ),
+                          Positioned(
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            height: _collapsedHeight,
+                            child: RepaintBoundary(
+                              child: CustomPaint(
+                                painter: TimelinePainter(
+                                  events: widget.events,
+                                  now: now,
+                                  nowIndicatorX: nowIndicatorX,
+                                  windowStart: layout.windowStart,
+                                  windowEnd: layout.windowEnd,
+                                  hoveredEventId: _hoveredEvent?.id,
+                                  collidingIds: _collidingIds,
+                                  fontSize: fontSize,
+                                  backgroundColor: painterBackgroundColor,
+                                  pastOverlayColor:
+                                      theme.brightness == Brightness.dark
+                                          ? Colors.black26
+                                          : Colors.black12,
+                                  nowLineColor: const Color(0xFFB71C1C),
+                                  alwaysUse24HourFormat:
+                                      MediaQuery.alwaysUse24HourFormatOf(
+                                          context),
+                                  tickColor: theme.textTheme.bodySmall?.color
+                                          ?.withValues(alpha: 0.75) ??
+                                      Colors.grey,
+                                  isLoading: widget.isLoading,
+                                  loadingTextColor:
+                                      theme.textTheme.bodyMedium?.color ??
+                                          Colors.white,
+                                  isSignIn: widget.onSignIn != null ||
+                                      widget.onCancelSignIn != null,
+                                  isSigningIn: widget.onCancelSignIn != null,
+                                  signInTextColor:
+                                      theme.textTheme.bodyMedium?.color ??
+                                          Colors.white,
+                                  surfaceOpacity: _isTemporaryClickThroughActive
+                                      ? 0.1
+                                      : 1.0,
+                                  emphasisOpacity:
+                                      _isTemporaryClickThroughActive
+                                          ? 0.1
+                                          : 1.0,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                      if ((widget.onSignIn != null ||
-                              widget.onCancelSignIn != null) &&
-                          _canInteract)
-                        Positioned.fill(
-                          child: GestureDetector(
-                            onTap: () {
-                              _focusController.registerUserActivity();
-                              (widget.onCancelSignIn ?? widget.onSignIn)
-                                  ?.call();
-                            },
-                            behavior: HitTestBehavior.opaque,
-                            child: const SizedBox.expand(),
-                          ),
-                        ),
-                      if (widget.onSignIn == null &&
-                          widget.onCancelSignIn == null)
-                        Positioned(
-                          left: mode == CountdownMode.untilEnd
-                              ? nowIndicatorX + 8
-                              : null,
-                          right: mode == CountdownMode.untilNext
-                              ? stripWidth - nowIndicatorX + 8
-                              : null,
-                          top: 0,
-                          height: _collapsedHeight,
-                          child: StreamBuilder<DateTime>(
-                            stream: _countdownTicks,
-                            initialData: now,
-                            builder: (context, timeSnapshot) {
-                              final tickNow = timeSnapshot.data!;
-
-                              // Recompute active/target/mode/color with fresh time so
-                              // event-boundary transitions (e.g. start → end) are
-                              // reflected within 1s instead of waiting for tick10s.
-                              final tickActive =
-                                  _layout?.activeEvent(widget.events, tickNow);
-                              final tickNextOverlap = tickActive != null
-                                  ? (widget.events
-                                          .where((e) =>
-                                              e.startTime.isAfter(tickNow) &&
-                                              e.startTime
-                                                  .isBefore(tickActive.endTime))
-                                          .toList()
-                                        ..sort((a, b) =>
-                                            a.startTime.compareTo(b.startTime)))
-                                      .firstOrNull
-                                  : null;
-                              final tickNextToStart = tickActive == null
-                                  ? (widget.events
-                                          .where((e) =>
-                                              e.startTime.isAfter(tickNow))
-                                          .toList()
-                                        ..sort((a, b) =>
-                                            a.startTime.compareTo(b.startTime)))
-                                      .firstOrNull
-                                  : null;
-                              final tickTarget = tickActive != null
-                                  ? (tickNextOverlap?.startTime ??
-                                      tickActive.endTime)
-                                  : tickNextToStart?.startTime;
-                              final tickMode = tickActive != null
-                                  ? CountdownMode.untilEnd
-                                  : CountdownMode.untilNext;
-                              final tickBaseColor =
-                                  tickMode == CountdownMode.untilEnd
-                                      ? (theme.brightness == Brightness.dark
-                                          ? Colors.amber
-                                          : Colors.orange[800]!)
-                                      : theme.textTheme.bodyMedium?.color ??
-                                          Colors.white;
-
-                              final countdown = tickTarget != null
-                                  ? layout.countdownTo(tickTarget, tickNow)
-                                  : Duration.zero;
-
-                              _updateAnimationTimer(countdown);
-
-                              return ValueListenableBuilder<double>(
-                                valueListenable: _flashNotifier,
-                                builder: (context, flashValue, _) {
-                                  final countdownColor = _resolveCountdownColor(
-                                      countdown, tickBaseColor, flashValue);
-                                  double countdownScale = 1.0;
-                                  Offset shakeOffset = Offset.zero;
-                                  if (countdown.inSeconds > 0 &&
-                                      widget.enableAnimations) {
-                                    if (countdown.inSeconds <= 120 &&
-                                        countdown.inSeconds > 30) {
-                                      countdownScale = 1.0 +
-                                          (120 - countdown.inSeconds) /
-                                              90.0 *
-                                              2.0;
-                                    } else if (countdown.inSeconds <= 30) {
-                                      countdownScale = 3.0;
-                                    }
-                                    if (countdown.inSeconds <= 60) {
-                                      shakeOffset = Offset(
-                                          math.sin(flashValue * 8 * math.pi) *
-                                              2.0,
-                                          0);
-                                    }
-                                  }
-                                  return Center(
-                                    child: Transform.translate(
-                                      offset: shakeOffset,
-                                      child: Transform.scale(
-                                        scale: countdownScale,
-                                        child: CountdownDisplay(
-                                          remaining: countdown,
-                                          mode: tickMode,
-                                          color: countdownColor,
-                                          fontSize: fontSize,
-                                          backgroundColor:
-                                              stripBackgroundColor.withValues(
-                                                  alpha: _emphasisOpacity),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                      if (widget.onSignIn == null &&
-                          widget.onCancelSignIn == null)
-                        Positioned(
-                          left: 8,
-                          top: 0,
-                          height: _collapsedHeight,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              _IconButton(
-                                icon: Icons.refresh,
+                          if ((widget.onSignIn != null ||
+                                  widget.onCancelSignIn != null) &&
+                              _canInteract)
+                            Positioned.fill(
+                              child: GestureDetector(
                                 onTap: () {
                                   _focusController.registerUserActivity();
-                                  unawaited(_resetToFreshCollapsedState());
-                                  unawaited(
-                                      widget.calendarController!.refresh());
-                                  unawaited(_windowService.reassertAppBar());
+                                  (widget.onCancelSignIn ?? widget.onSignIn)
+                                      ?.call();
                                 },
-                                stripBackgroundColor: stripBackgroundColor,
-                                surfaceOpacity: _surfaceOpacity,
+                                behavior: HitTestBehavior.opaque,
+                                child: const SizedBox.expand(),
                               ),
-                              const SizedBox(width: 4),
-                              _IconButton(
-                                icon: _isTemporaryClickThroughActive
-                                    ? Icons.ads_click
-                                    : Icons.touch_app,
-                                onTap: () =>
-                                    unawaited(_toggleTemporaryClickThrough()),
-                                stripBackgroundColor: stripBackgroundColor,
-                                surfaceOpacity: _surfaceOpacity,
-                              ),
-                              const SizedBox(width: 4),
-                              _IconButton(
-                                icon: Icons.settings,
-                                onTap: _toggleSettings,
-                                stripBackgroundColor: stripBackgroundColor,
-                                surfaceOpacity: _surfaceOpacity,
-                              ),
-                            ],
-                          ),
-                        ),
-                      if (widget.onSignIn == null &&
-                          widget.onCancelSignIn == null)
-                        Positioned(
-                          right: 8,
-                          top: 0,
-                          height: _collapsedHeight,
-                          child: Center(
-                            child: _IconButton(
-                              icon: Icons.power_settings_new,
-                              onTap: () {
-                                _focusController.registerUserActivity();
-                                exit(0);
-                              },
-                              stripBackgroundColor: stripBackgroundColor,
-                              surfaceOpacity: _surfaceOpacity,
                             ),
-                          ),
-                        ),
-                      if (_showFocusIndicator && _canInteract)
-                        Positioned(
-                          top: 2,
-                          left: 2,
-                          right: 2,
-                          height: _collapsedHeight - 4,
-                          child: IgnorePointer(
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: theme.colorScheme.primary
-                                      .withValues(alpha: 0.55),
-                                ),
-                                borderRadius: BorderRadius.circular(8),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: theme.colorScheme.primary
-                                        .withValues(alpha: 0.18),
-                                    blurRadius: 14,
+                          if (widget.onSignIn == null &&
+                              widget.onCancelSignIn == null)
+                            Positioned(
+                              left: mode == CountdownMode.untilEnd
+                                  ? nowIndicatorX + 8
+                                  : null,
+                              right: mode == CountdownMode.untilNext
+                                  ? stripWidth - nowIndicatorX + 8
+                                  : null,
+                              top: 0,
+                              height: _collapsedHeight,
+                              child: StreamBuilder<DateTime>(
+                                stream: _countdownTicks,
+                                initialData: now,
+                                builder: (context, timeSnapshot) {
+                                  final tickNow = timeSnapshot.data!;
+
+                                  // Recompute active/target/mode/color with fresh time so
+                                  // event-boundary transitions (e.g. start → end) are
+                                  // reflected within 1s instead of waiting for tick10s.
+                                  final tickActive = _layout?.activeEvent(
+                                      widget.events, tickNow);
+                                  final tickNextOverlap = tickActive != null
+                                      ? (widget.events
+                                              .where((e) =>
+                                                  e.startTime
+                                                      .isAfter(tickNow) &&
+                                                  e.startTime.isBefore(
+                                                      tickActive.endTime))
+                                              .toList()
+                                            ..sort((a, b) => a.startTime
+                                                .compareTo(b.startTime)))
+                                          .firstOrNull
+                                      : null;
+                                  final tickNextToStart = tickActive == null
+                                      ? (widget.events
+                                              .where((e) =>
+                                                  e.startTime.isAfter(tickNow))
+                                              .toList()
+                                            ..sort((a, b) => a.startTime
+                                                .compareTo(b.startTime)))
+                                          .firstOrNull
+                                      : null;
+                                  final tickTarget = tickActive != null
+                                      ? (tickNextOverlap?.startTime ??
+                                          tickActive.endTime)
+                                      : tickNextToStart?.startTime;
+                                  final tickMode = tickActive != null
+                                      ? CountdownMode.untilEnd
+                                      : CountdownMode.untilNext;
+                                  final tickBaseColor =
+                                      tickMode == CountdownMode.untilEnd
+                                          ? (theme.brightness == Brightness.dark
+                                              ? Colors.amber
+                                              : Colors.orange[800]!)
+                                          : theme.textTheme.bodyMedium?.color ??
+                                              Colors.white;
+
+                                  final countdown = tickTarget != null
+                                      ? layout.countdownTo(tickTarget, tickNow)
+                                      : Duration.zero;
+
+                                  _updateAnimationTimer(countdown);
+
+                                  return ValueListenableBuilder<double>(
+                                    valueListenable: _flashNotifier,
+                                    builder: (context, flashValue, _) {
+                                      final countdownColor =
+                                          _resolveCountdownColor(countdown,
+                                              tickBaseColor, flashValue);
+                                      double countdownScale = 1.0;
+                                      Offset shakeOffset = Offset.zero;
+                                      if (countdown.inSeconds > 0 &&
+                                          widget.enableAnimations) {
+                                        if (countdown.inSeconds <= 120 &&
+                                            countdown.inSeconds > 30) {
+                                          countdownScale = 1.0 +
+                                              (120 - countdown.inSeconds) /
+                                                  90.0 *
+                                                  2.0;
+                                        } else if (countdown.inSeconds <= 30) {
+                                          countdownScale = 3.0;
+                                        }
+                                        if (countdown.inSeconds <= 60) {
+                                          shakeOffset = Offset(
+                                              math.sin(flashValue *
+                                                      8 *
+                                                      math.pi) *
+                                                  2.0,
+                                              0);
+                                        }
+                                      }
+                                      return Center(
+                                        child: Transform.translate(
+                                          offset: shakeOffset,
+                                          child: Transform.scale(
+                                            scale: countdownScale,
+                                            child: CountdownDisplay(
+                                              remaining: countdown,
+                                              mode: tickMode,
+                                              color: countdownColor,
+                                              fontSize: fontSize,
+                                              backgroundColor:
+                                                  stripBackgroundColor
+                                                      .withValues(
+                                                          alpha:
+                                                              _emphasisOpacity),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                          if (widget.onSignIn == null &&
+                              widget.onCancelSignIn == null)
+                            Positioned(
+                              left: 8,
+                              top: 0,
+                              height: _collapsedHeight,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  _IconButton(
+                                    icon: Icons.refresh,
+                                    onTap: () {
+                                      _focusController.registerUserActivity();
+                                      unawaited(_resetToFreshCollapsedState());
+                                      unawaited(
+                                          widget.calendarController!.refresh());
+                                      unawaited(
+                                          _windowService.reassertAppBar());
+                                    },
+                                    stripBackgroundColor: stripBackgroundColor,
+                                    surfaceOpacity: _surfaceOpacity,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  _IconButton(
+                                    icon: _isTemporaryClickThroughActive
+                                        ? Icons.ads_click
+                                        : Icons.touch_app,
+                                    onTap: () => unawaited(
+                                        _toggleTemporaryClickThrough()),
+                                    stripBackgroundColor: stripBackgroundColor,
+                                    surfaceOpacity: _surfaceOpacity,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  _IconButton(
+                                    icon: Icons.settings,
+                                    onTap: _toggleSettings,
+                                    stripBackgroundColor: stripBackgroundColor,
+                                    surfaceOpacity: _surfaceOpacity,
                                   ),
                                 ],
                               ),
                             ),
-                          ),
-                        ),
-                      if (widget.onSignIn == null &&
-                          widget.onCancelSignIn == null &&
-                          _windowService.isExpandedNotifier.value &&
-                          !_isSettingsOpen &&
-                          _hoveredEvent != null)
-                        Positioned(
-                          top: _collapsedHeight,
-                          left: _cardLeft(stripWidth),
-                          child: HoverDetailOverlay(
-                            event: _hoveredEvent!,
-                            width: _cardWidth(stripWidth),
-                          ),
-                        ),
-                      if (widget.onSignIn == null &&
-                          widget.onCancelSignIn == null &&
-                          _isSettingsOpen)
-                        Positioned.fill(
-                          child: GestureDetector(
-                            onTap: _toggleSettings,
-                            behavior: HitTestBehavior.opaque,
-                            child: Container(color: Colors.transparent),
-                          ),
-                        ),
-                      if (widget.onSignIn == null &&
-                          widget.onCancelSignIn == null &&
-                          _isSettingsOpen)
-                        Positioned(
-                          top: _collapsedHeight,
-                          left: 8,
-                          bottom: 8,
-                          child: SettingsPanel(
-                            settingsService: widget.settingsService,
-                            calendarController: widget.calendarController!,
-                            onSignOut: widget.onSignOut,
-                            platformOverride: _targetPlatform,
-                            linuxTransparentSupported:
-                                widget.linuxTransparentSupported,
-                          ),
-                        ),
-                    ],
-                  ),
-                ));
+                          if (widget.onSignIn == null &&
+                              widget.onCancelSignIn == null)
+                            Positioned(
+                              right: 8,
+                              top: 0,
+                              height: _collapsedHeight,
+                              child: Center(
+                                child: _IconButton(
+                                  icon: Icons.power_settings_new,
+                                  onTap: () {
+                                    _focusController.registerUserActivity();
+                                    exit(0);
+                                  },
+                                  stripBackgroundColor: stripBackgroundColor,
+                                  surfaceOpacity: _surfaceOpacity,
+                                ),
+                              ),
+                            ),
+                          if (_showFocusIndicator && _canInteract)
+                            Positioned(
+                              top: 2,
+                              left: 2,
+                              right: 2,
+                              height: _collapsedHeight - 4,
+                              child: IgnorePointer(
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: theme.colorScheme.primary
+                                          .withValues(alpha: 0.55),
+                                    ),
+                                    borderRadius: BorderRadius.circular(8),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: theme.colorScheme.primary
+                                            .withValues(alpha: 0.18),
+                                        blurRadius: 14,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          if (widget.onSignIn == null &&
+                              widget.onCancelSignIn == null &&
+                              isExpanded &&
+                              !_isSettingsOpen &&
+                              _hoveredEvent != null)
+                            Positioned(
+                              top: _collapsedHeight,
+                              left: _cardLeft(stripWidth),
+                              child: HoverDetailOverlay(
+                                event: _hoveredEvent!,
+                                width: _cardWidth(stripWidth),
+                              ),
+                            ),
+                          if (widget.onSignIn == null &&
+                              widget.onCancelSignIn == null &&
+                              _isSettingsOpen)
+                            Positioned.fill(
+                              child: GestureDetector(
+                                onTap: _toggleSettings,
+                                behavior: HitTestBehavior.opaque,
+                                child: Container(color: Colors.transparent),
+                              ),
+                            ),
+                          if (widget.onSignIn == null &&
+                              widget.onCancelSignIn == null &&
+                              _isSettingsOpen)
+                            Positioned(
+                              top: _collapsedHeight,
+                              left: 8,
+                              bottom: 8,
+                              child: SettingsPanel(
+                                settingsService: widget.settingsService,
+                                calendarController: widget.calendarController!,
+                                onSignOut: widget.onSignOut,
+                                platformOverride: _targetPlatform,
+                                linuxTransparentSupported:
+                                    widget.linuxTransparentSupported,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ));
+              },
+            );
           },
         );
       },
@@ -999,7 +1009,7 @@ class _IconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // unawaited(AppLogger.debug('Building $runtimeType'));
+    // _log.fine('Building $runtimeType');
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     return GestureDetector(

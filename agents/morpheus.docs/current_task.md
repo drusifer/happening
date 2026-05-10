@@ -1,5 +1,22 @@
 # Current Task
 
+## Expand Bug Fix — 2026-05-09
+**Status**: DIAGNOSED ✅ — handed to Neo for fix
+
+### Done
+- [x] Loaded chat log and Neo state after Phase 3 completion.
+- [x] Read build-expand-black3.out log — confirmed tight re-expand loop.
+- [x] Read ExpansionController, WindowService, TimelineStrip, LinuxResizeStrategy.
+- [x] Root cause: _handleMouse sends to EC on every hover move; EC Duration.zero timeout causes continuous re-expand.
+- [x] Wrote diagnosis: `agents/morpheus.docs/EXPAND_BUG_DIAG.md`.
+- [x] Dispatched fix to Neo via chat.
+
+### Next
+- [ ] Review Neo's fix after implementation.
+- [ ] Trin UAT after fix.
+
+---
+
 ## Linux Click-Through Sprint Architecture — 2026-04-26
 **Status**: COMPLETE ✅ — Sprint plan approved, Phase A handed to Neo
 

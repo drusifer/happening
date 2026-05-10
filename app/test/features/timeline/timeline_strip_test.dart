@@ -9,12 +9,14 @@ import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/time/clock_service.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:happening/features/calendar/calendar_controller.dart';
+import 'package:happening/features/timeline/expansion_logic.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/calendar/calendar_service.dart';
 import 'package:happening/features/timeline/countdown_display.dart';
 import 'package:happening/features/timeline/focus/timeline_focus_hotkey.dart';
 import 'package:happening/features/timeline/hover_detail_overlay.dart';
 import 'package:happening/features/timeline/settings_panel.dart';
+import 'package:happening/features/timeline/timeline_painter.dart';
 import 'package:happening/features/timeline/timeline_strip.dart';
 import 'package:mockito/mockito.dart';
 import 'package:screen_retriever/screen_retriever.dart';
@@ -24,39 +26,32 @@ class _FakeWindowManager extends Mock implements WindowManager {}
 
 class _FakeScreenRetriever extends Mock implements ScreenRetriever {}
 
-/// Fake WindowService that counts expand/collapse calls without touching the OS.
+/// Fake WindowService that drives ExpansionController without touching the OS.
 class _FakeWindowService extends WindowService {
   _FakeWindowService({bool initialExpanded = false})
       : super(
           windowManager: _FakeWindowManager(),
           screenRetriever: _FakeScreenRetriever(),
         ) {
-    isExpandedNotifier.value = initialExpanded;
+    _fakeIsExpanded = initialExpanded;
   }
 
+  bool _fakeIsExpanded = false;
   int expandCalls = 0;
   int collapseCalls = 0;
-  int resetCalls = 0;
   final List<bool> focusedCalls = [];
   final List<bool> passThroughCalls = [];
   final List<WindowMode> windowModeCalls = [];
 
   @override
-  Future<void> expand({double? height}) async {
-    expandCalls++;
-    isExpandedNotifier.value = true;
-  }
-
-  @override
-  Future<void> collapse({double? height}) async {
-    collapseCalls++;
-    isExpandedNotifier.value = false;
-  }
-
-  @override
-  Future<void> resetToFreshCollapsedState() async {
-    resetCalls++;
-    isExpandedNotifier.value = false;
+  Future<void> performResize(ExpansionState intent) async {
+    if (intent == ExpansionState.expanded) {
+      expandCalls++;
+      _fakeIsExpanded = true;
+    } else {
+      collapseCalls++;
+      _fakeIsExpanded = false;
+    }
   }
 
   @override
@@ -310,8 +305,6 @@ void main() {
       await tester.tap(find.byIcon(Icons.refresh));
       await tester.pump();
 
-      expect(fakeWS.resetCalls, equals(1));
-      expect(fakeWS.isExpandedNotifier.value, isFalse);
       expect(find.byType(HoverDetailOverlay), findsNothing);
       expect(fakeController.fetchCalls, equals(1));
 
@@ -384,20 +377,18 @@ void main() {
       await tester.pump(const Duration(seconds: 10));
 
       expect(find.byType(HoverDetailOverlay), findsOneWidget);
-      expect(fakeWS.expandCalls, equals(1));
 
-      // 2. Tap (should NOT call expand again or toggle)
+      // 2. Tap — card stays visible, no collapse
       await tester.tapAt(const Offset(140, 10));
       await tester.pump();
 
       expect(find.byType(HoverDetailOverlay), findsOneWidget);
-      expect(fakeWS.expandCalls, equals(1));
 
       await gesture.removePointer();
     });
 
     testWidgets(
-        'BUG-09/11: expand called once on hover; collapse called once on exit',
+        'BUG-09/11: hover over event shows card; moving away collapses strip',
         (tester) async {
       final fakeWS = _FakeWindowService();
       final events = [
@@ -424,14 +415,10 @@ void main() {
       ));
       await tester.pump(Duration.zero);
 
-      // Record baseline after init (initState unconditionally calls collapse once)
-      final baseExpand = fakeWS.expandCalls;
-      final baseCollapse = fakeWS.collapseCalls;
-
       final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
       await gesture.addPointer(location: Offset.zero);
 
-      // Move in and jiggle
+      // Hover and jiggle — card appears and stays visible
       await gesture.moveTo(const Offset(140, 10));
       await tester.pump(const Duration(seconds: 10));
       await gesture.moveTo(const Offset(145, 10));
@@ -439,19 +426,19 @@ void main() {
       await gesture.moveTo(const Offset(142, 10));
       await tester.pump();
 
-      expect(fakeWS.expandCalls - baseExpand, equals(1),
-          reason: 'expand called once despite jiggle');
+      expect(find.byType(HoverDetailOverlay), findsOneWidget,
+          reason: 'card visible after hover + jiggle');
 
-      await gesture
-          .moveTo(const Offset(400, 10)); // Move to non-event area → collapse
+      // Move to non-event area → card disappears
+      await gesture.moveTo(const Offset(400, 10));
       await tester.pump(const Duration(seconds: 10));
 
-      expect(fakeWS.collapseCalls - baseCollapse, equals(1),
-          reason: 'collapse called once on exit');
+      expect(find.byType(HoverDetailOverlay), findsNothing,
+          reason: 'card gone after moving away');
       await gesture.removePointer();
     });
 
-    testWidgets('Linux: suppressed synthetic exit keeps hover card painted',
+    testWidgets('Linux: moving out of strip collapses the card',
         (tester) async {
       if (!Platform.isLinux) return;
 
@@ -478,20 +465,18 @@ void main() {
       ));
       await tester.pump(Duration.zero);
 
-      final baseCollapse = fakeWS.collapseCalls;
       final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
       await gesture.addPointer(location: Offset.zero);
 
       await gesture.moveTo(const Offset(140, 10));
-      await tester.pump(Duration.zero);
+      await tester.pump(const Duration(seconds: 1));
 
       expect(find.byType(HoverDetailOverlay), findsOneWidget);
 
       await gesture.moveTo(const Offset(400, 10));
-      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(seconds: 1));
 
-      expect(find.byType(HoverDetailOverlay), findsOneWidget);
-      expect(fakeWS.collapseCalls - baseCollapse, equals(0));
+      expect(find.byType(HoverDetailOverlay), findsNothing);
 
       await gesture.removePointer();
     });
@@ -658,14 +643,14 @@ void main() {
       await tester.tap(find.byIcon(Icons.settings));
       await tester.pump();
 
-      expect(windowService.isExpandedNotifier.value, isTrue);
+      expect(find.byType(SettingsPanel), findsOneWidget);
 
       // 2. Lose focus
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
       await tester.pump();
 
       // Should STAY expanded because settings is open
-      expect(windowService.isExpandedNotifier.value, isTrue);
+      expect(find.byType(SettingsPanel), findsOneWidget);
     });
     group('temporary click-through focus model', () {
       testWidgets(
@@ -749,15 +734,15 @@ void main() {
         await gesture.moveTo(const Offset(140, 10));
         await tester.pump(const Duration(seconds: 10));
 
-        expect(windowService.isExpandedNotifier.value, isTrue);
+        expect(find.byType(HoverDetailOverlay), findsOneWidget);
 
         // 2. Lose focus
         tester.binding
             .handleAppLifecycleStateChanged(AppLifecycleState.inactive);
         await tester.pump();
 
-        // Should collapse
-        expect(windowService.isExpandedNotifier.value, isFalse);
+        // Should collapse — card gone after focus loss
+        expect(find.byType(HoverDetailOverlay), findsNothing);
 
         await gesture.removePointer();
       });
@@ -809,7 +794,7 @@ void main() {
       await gesture.moveTo(const Offset(140, 10));
       await tester.pump(const Duration(seconds: 1));
 
-      expect(windowService.isExpandedNotifier.value, isTrue);
+      expect(find.byType(HoverDetailOverlay), findsOneWidget);
       expect(find.byIcon(Icons.power_settings_new), findsOneWidget);
       await gesture.removePointer();
     });
@@ -960,6 +945,150 @@ void main() {
       final widget = tester.widget<CountdownDisplay>(countdownFinder);
       expect(widget.mode, CountdownMode.untilEnd);
     });
+  });
+
+  // ── Startup race regression tests ───────────────────────────────────────
+  // The invisible-strip bug was caused by initState firing an extra collapse()
+  // that raced with first_frame_cb showing the window.  These tests lock in
+  // the correct behaviour so the regression cannot silently reappear.
+
+  testWidgets('initState does not call collapse — no post-show GTK resize race',
+      (tester) async {
+    final fakeWS = _FakeWindowService();
+
+    await tester.pumpWidget(wrap(TimelineStrip(
+      events: const [],
+      clockService: clock,
+      calendarController: fakeController,
+      settingsService: fakeSettings,
+      windowService: fakeWS,
+      onSignOut: () {},
+      enableAnimations: false,
+    )));
+    await tester.pump(Duration.zero);
+
+    expect(fakeWS.collapseCalls, equals(0),
+        reason: 'initState must not call collapse; '
+            'WindowService.initialize() already collapses before runApp');
+  });
+
+  testWidgets('isLoading transitions to false when events arrive in stream',
+      (tester) async {
+    // Regression: compositor-refresh failures could leave the strip painted
+    // with loading=true even after events were emitted.  Verify the widget
+    // tree rebuilds correctly when the stream delivers data.
+    final fakeWS = _FakeWindowService();
+    final controller = StreamController<List<CalendarEvent>>();
+
+    final event = CalendarEvent(
+      id: 'e1',
+      title: 'Meeting',
+      startTime: now.add(const Duration(hours: 1)),
+      endTime: now.add(const Duration(hours: 2)),
+      color: Colors.blue,
+      calendarEventUrl: null,
+      videoCallUrl: null,
+    );
+
+    await tester.pumpWidget(wrap(TimelineStrip(
+      events: const [],
+      isLoading: true,
+      clockService: clock,
+      calendarController: fakeController,
+      settingsService: fakeSettings,
+      windowService: fakeWS,
+      onSignOut: () {},
+      enableAnimations: false,
+    )));
+    await tester.pump();
+
+    bool hasLoadingPainter(Widget w) =>
+        w is CustomPaint &&
+        w.painter is TimelinePainter &&
+        (w.painter! as TimelinePainter).isLoading;
+
+    // Initially loading
+    expect(find.byWidgetPredicate(hasLoadingPainter), findsWidgets);
+
+    // Deliver events by rebuilding with isLoading=false
+    await tester.pumpWidget(wrap(TimelineStrip(
+      events: [event],
+      isLoading: false,
+      clockService: clock,
+      calendarController: fakeController,
+      settingsService: fakeSettings,
+      windowService: fakeWS,
+      onSignOut: () {},
+      enableAnimations: false,
+    )));
+    await tester.pump();
+
+    expect(find.byWidgetPredicate(hasLoadingPainter), findsNothing);
+    controller.close();
+  });
+
+  // ── Hover-while-loading regression ──────────────────────────────────────
+  // When the user hovers during the loading phase (events=[]), ExpansionLogic
+  // returns collapsed (no event rects). When loading clears and events arrive,
+  // the strip must self-correct: re-evaluate the stored hover position and
+  // trigger expand if the cursor is now over an event zone.
+  testWidgets(
+      'REGRESSION: strip expands when loading clears with cursor over event zone',
+      (tester) async {
+    final fakeWS = _FakeWindowService();
+    final event = CalendarEvent(
+      id: 'e1',
+      title: 'Meeting',
+      startTime: now.add(const Duration(minutes: 30)),
+      endTime: now.add(const Duration(minutes: 60)),
+      color: Colors.blue,
+      calendarEventUrl: null,
+      videoCallUrl: null,
+    );
+
+    // Start loading with no events.
+    await tester.pumpWidget(wrap(TimelineStrip(
+      events: const [],
+      isLoading: true,
+      clockService: clock,
+      calendarController: fakeController,
+      settingsService: fakeSettings,
+      windowService: fakeWS,
+      onSignOut: () {},
+      enableAnimations: false,
+    )));
+    await tester.pump();
+
+    // Hover over the strip zone at a position that will be inside the event
+    // rect once events arrive.  With events=[], ExpansionLogic returns
+    // collapsed (no rect matches) → _isHoveringStrip=true but no expand.
+    final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    await gesture.addPointer(location: Offset.zero);
+    await gesture.moveTo(const Offset(140, 10));
+    await tester.pump();
+
+    expect(fakeWS.expandCalls, 0,
+        reason: 'no expansion during loading — no event rects to hit');
+
+    // Events arrive, loading clears.  Cursor is still at (140, 10).
+    await tester.pumpWidget(wrap(TimelineStrip(
+      events: [event],
+      isLoading: false,
+      clockService: clock,
+      calendarController: fakeController,
+      settingsService: fakeSettings,
+      windowService: fakeWS,
+      onSignOut: () {},
+      enableAnimations: false,
+    )));
+    await tester.pump();
+
+    // Strip must self-correct: re-evaluate hover with current events and expand.
+    expect(fakeWS.expandCalls, greaterThan(0),
+        reason:
+            'strip must expand when loading clears with cursor in event zone');
+
+    await gesture.removePointer();
   });
 
   testWidgets('persisted transparent mode is ignored; strip starts opaque',

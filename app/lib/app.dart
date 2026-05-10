@@ -9,6 +9,7 @@
 // ---------------------------------------------------------------------------
 
 import 'dart:async';
+import 'package:logging/logging.dart';
 
 import 'package:flutter/material.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
@@ -16,7 +17,6 @@ import 'package:googleapis_auth/auth_io.dart';
 
 import 'core/settings/settings_service.dart';
 import 'core/time/clock_service.dart';
-import 'core/util/logger.dart';
 import 'core/window/window_service.dart';
 import 'features/auth/auth_service.dart';
 import 'features/auth/token_store.dart';
@@ -40,6 +40,7 @@ const _scopes = ['https://www.googleapis.com/auth/calendar.readonly'];
 // ---------------------------------------------------------------------------
 
 class HappeningApp extends StatefulWidget {
+  static final _log = Logger('HappeningApp');
   const HappeningApp({
     super.key,
     required this.settingsService,
@@ -74,6 +75,7 @@ class HappeningApp extends StatefulWidget {
 }
 
 class _HappeningAppState extends State<HappeningApp> {
+  static final _log = Logger('_HappeningAppState');
   late final ClockService _clock;
   late final AuthService _auth;
   CalendarController? _calendar;
@@ -99,13 +101,13 @@ class _HappeningAppState extends State<HappeningApp> {
   // ── Initialization ───────────────────────────────────────────────────────
 
   Future<void> _initServices() async {
-    await AppLogger.debug('HappeningApp._initServices starting...');
+    _log.fine('HappeningApp._initServices starting...');
     try {
       if (widget.authServiceOverride != null) {
         _auth = widget.authServiceOverride!;
       } else {
         final tokenStore = FlutterSecureTokenStore();
-        await AppLogger.debug('OAuth Client ID loaded.');
+        _log.fine('OAuth Client ID loaded.');
         _auth = GoogleAuthService(
           clientId: ClientId(_kGoogleClientId, ''),
           scopes: _scopes,
@@ -113,17 +115,17 @@ class _HappeningAppState extends State<HappeningApp> {
         );
       }
 
-      await AppLogger.debug('AuthService initialized. Attempting restore...');
+      _log.fine('AuthService initialized. Attempting restore...');
       if (await _auth.tryRestore()) {
-        await AppLogger.debug('Auth restored successfully.');
+        _log.fine('Auth restored successfully.');
         await _startCalendar();
       } else {
-        await AppLogger.debug(
+        _log.fine(
             'Auth restore failed. Moving to unauthenticated state.');
         if (mounted) setState(() => _authState = _AuthState.unauthenticated);
       }
     } catch (e) {
-      await AppLogger.debug('Service initialization FAILED: $e');
+      _log.fine('Service initialization FAILED: $e');
       if (mounted) setState(() => _authState = _AuthState.unauthenticated);
     }
   }
@@ -137,7 +139,7 @@ class _HappeningAppState extends State<HappeningApp> {
         await _startCalendar();
       }
     } catch (e) {
-      unawaited(AppLogger.debug('Sign-in error: $e'));
+      _log.fine('Sign-in error: $e');
     } finally {
       if (mounted) setState(() => _isSigningIn = false);
     }
@@ -149,7 +151,7 @@ class _HappeningAppState extends State<HappeningApp> {
   }
 
   Future<void> _startCalendar() async {
-    await AppLogger.debug('HappeningApp._startCalendar called.');
+    _log.fine('HappeningApp._startCalendar called.');
     if (widget.calendarControllerOverride == null) {
       _calendar?.dispose();
       _calendar = CalendarController(
@@ -160,12 +162,12 @@ class _HappeningAppState extends State<HappeningApp> {
       _calendar = widget.calendarControllerOverride;
     }
     unawaited(_calendar!.start());
-    await AppLogger.debug('CalendarController started.');
+    _log.fine('CalendarController started.');
 
     if (mounted) {
       setState(() {
         _authState = _AuthState.authenticated;
-        unawaited(AppLogger.debug('AuthState changed to: authenticated'));
+        _log.fine('AuthState changed to: authenticated');
       });
     }
   }
@@ -239,11 +241,11 @@ class _HappeningAppState extends State<HappeningApp> {
                   initialData: _calendar!.lastEvents,
                   builder: (context, eventSnapshot) {
                     // [DBG] Trace StreamBuilder state to diagnose stuck-Fetching.
-                    unawaited(AppLogger.debug(
+                    _log.fine(
                         'app StreamBuilder: state=${eventSnapshot.connectionState} '
                         'hasData=${eventSnapshot.hasData} '
                         'dataLen=${eventSnapshot.data?.length} '
-                        'lastEvents=${_calendar?.lastEvents?.length}'));
+                        'lastEvents=${_calendar?.lastEvents?.length}');
                     return TimelineStrip(
                       events: eventSnapshot.data ?? const [],
                       isLoading: eventSnapshot.data == null,

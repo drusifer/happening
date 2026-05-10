@@ -7,6 +7,7 @@ import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/time/clock_service.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:happening/features/calendar/calendar_controller.dart';
+import 'package:happening/features/timeline/expansion_logic.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/calendar/calendar_service.dart';
 import 'package:happening/features/timeline/focus/timeline_focus_hotkey.dart';
@@ -26,15 +27,14 @@ class _FakeWindowService extends WindowService {
           screenRetriever: _FakeScreenRetriever(),
         );
 
-  @override
-  Future<void> expand({double? height}) async {
-    isExpandedNotifier.value = true;
-  }
+  bool _fakeIsExpanded = false;
 
   @override
-  Future<void> collapse({double? height}) async {
-    isExpandedNotifier.value = false;
+  Future<void> performResize(ExpansionState intent) async {
+    _fakeIsExpanded = intent == ExpansionState.expanded;
+    WidgetsBinding.instance.handleMetricsChanged();
   }
+
 }
 
 class _FakeClock extends ClockService {

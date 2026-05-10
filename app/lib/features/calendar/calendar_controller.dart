@@ -9,13 +9,14 @@
 // ---------------------------------------------------------------------------
 
 import 'dart:async';
+import 'package:logging/logging.dart';
 
 import '../../core/settings/settings_service.dart';
-import '../../core/util/logger.dart';
 import 'calendar_event.dart';
 import 'calendar_service.dart';
 
 class CalendarController {
+  static final _log = Logger('CalendarController');
   CalendarController(CalendarService service,
       {SettingsService? settingsService})
       : _service = service,
@@ -36,7 +37,7 @@ class CalendarController {
 
   /// Starts the polling loop.
   Future<void> start() async {
-    await AppLogger.debug('CalendarController.start() called.');
+    _log.fine('CalendarController.start() called.');
     unawaited(_scheduleFetch());
     _pollTimer?.cancel();
     _pollTimer = Timer.periodic(
@@ -57,8 +58,8 @@ class CalendarController {
   Future<void> _scheduleFetch({bool forceRefresh = false}) {
     final inFlight = _inFlightFetch;
     if (inFlight != null) {
-      unawaited(AppLogger.debug(
-          'CalendarController._fetch() already in flight; ignoring request forceRefresh=$forceRefresh'));
+      _log.fine(
+          'CalendarController._fetch() already in flight; ignoring request forceRefresh=$forceRefresh');
       return inFlight;
     }
 
@@ -70,7 +71,7 @@ class CalendarController {
   }
 
   Future<void> _fetchOnce({bool forceRefresh = false}) async {
-    await AppLogger.debug(
+    _log.fine(
         'CalendarController._fetch() started (forceRefresh: $forceRefresh)');
     try {
       final selectedIds =
@@ -81,39 +82,39 @@ class CalendarController {
         'primary',
         ...selectedIds,
       };
-      await AppLogger.debug(
+      _log.fine(
           'Fetching ${idsToFetch.length} configured calendars');
 
       final results = <List<CalendarEvent>>[];
       for (final id in idsToFetch) {
         try {
           final events = await _service.fetchEvents(id);
-          await AppLogger.debug(
+          _log.fine(
               'Fetched configured calendar: ${events.length} events');
           results.add(events);
         } catch (_) {
-          unawaited(AppLogger.warn('Configured calendar fetch failed'));
+          _log.warning('Configured calendar fetch failed');
           results.add(<CalendarEvent>[]);
         }
       }
 
       final allEvents = results.expand((e) => e).toList();
       final deduped = _dedup(allEvents);
-      await AppLogger.debug(
+      _log.fine(
           'Fetch complete. Found ${allEvents.length} events (${deduped.length} deduped).');
 
       _lastEvents = deduped;
       _eventsController.add(deduped);
-      await AppLogger.debug('Emitted events to stream.');
+      _log.fine('Emitted events to stream.');
     } catch (_) {
       // S5-FIX: If the first fetch fails, emit an empty list to unblock the UI.
       if (_lastEvents == null) {
-        await AppLogger.debug(
+        _log.fine(
             'Initial fetch failed. Emitting empty list to unblock UI.');
         _lastEvents = [];
         _eventsController.add([]);
       }
-      await AppLogger.debug('Fetch failed');
+      _log.fine('Fetch failed');
     }
   }
 

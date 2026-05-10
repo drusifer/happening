@@ -21,6 +21,7 @@ dependencies:
   win32: any
   ffi: any
   hotkey_manager: any
+  logging: any
 
 dev_dependencies:
   flutter_test:

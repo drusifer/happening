@@ -24,8 +24,7 @@ class WindowsResizeStrategy extends WindowResizeStrategy {
   }
 
   @override
-  Future<void> expand(Size targetSize, void Function() onExpanded) async {
-    onExpanded();
+  Future<void> expand(Size targetSize) async {
     await _wm.setMaximumSize(targetSize);
     await _wm.setSize(targetSize);
     await _wm.setMinimumSize(targetSize);

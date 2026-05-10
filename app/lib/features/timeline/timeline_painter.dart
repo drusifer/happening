@@ -9,10 +9,10 @@
 // ---------------------------------------------------------------------------
 
 import 'dart:async';
+import 'package:logging/logging.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
-import 'package:happening/core/util/logger.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/timeline/painters/background_layer.dart';
 import 'package:happening/features/timeline/painters/events_layer.dart';
@@ -25,6 +25,7 @@ import 'package:happening/features/timeline/timeline_layout.dart';
 
 /// Paints the proportional event timeline onto the strip canvas.
 class TimelinePainter extends CustomPainter {
+  static final _log = Logger('TimelinePainter');
   TimelinePainter({
     required this.events,
     required this.now,
@@ -84,13 +85,13 @@ class TimelinePainter extends CustomPainter {
             const Duration(milliseconds: 250);
     if (shouldLogPaint) {
       _lastPaintDebugAt = nowForDebug;
-      unawaited(AppLogger.debug(
+      _log.fine(
           'TimelinePainter.paint size=${size.width.toStringAsFixed(1)}x${size.height.toStringAsFixed(1)} '
           'bg=#${backgroundColor.toARGB32().toRadixString(16).padLeft(8, '0')} '
           'surfaceOpacity=${surfaceOpacity.toStringAsFixed(2)} '
           'emphasisOpacity=${emphasisOpacity.toStringAsFixed(2)} '
           'events=${events.length} hovered=${hoveredEventId != null} '
-          'loading=$isLoading signIn=$isSignIn'));
+          'loading=$isLoading signIn=$isSignIn');
     }
     final layout = TimelineLayout(
       stripWidth: size.width,
