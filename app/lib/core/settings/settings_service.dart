@@ -38,11 +38,14 @@ enum AppTheme {
 
 /// Persisted window interaction mode preference.
 enum WindowMode {
-  transparent,
+  overlay,
   reserved;
 
-  static WindowMode fromString(String val) => WindowMode.values
-      .firstWhere((e) => e.name == val, orElse: () => WindowMode.reserved);
+  static WindowMode fromString(String val) {
+    if (val == 'transparent') return WindowMode.overlay;
+    return WindowMode.values
+        .firstWhere((e) => e.name == val, orElse: () => WindowMode.reserved);
+  }
 }
 
 const double kMinIdleTimelineOpacity = 0.35;
@@ -71,12 +74,7 @@ class AppSettings {
   final double idleTimelineOpacity;
 
   /// Effective mode after platform reliability rules are applied.
-  WindowMode effectiveWindowMode(
-    TargetPlatform platform, {
-    bool linuxTransparentSupported = false,
-  }) {
-    return WindowMode.reserved;
-  }
+  WindowMode get effectiveWindowMode => WindowMode.reserved;
 
   AppSettings copyWith({
     FontSize? fontSize,

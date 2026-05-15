@@ -1,12 +1,18 @@
-# Next Steps — Linux Click-Through Sprint
+# Next Steps — Send-to-Back Sprint
 
-- [x] Planned Linux Click-Through sprint (CT-01 – CT-05).
-- [x] Updated root `task.md` with 3-phase, 9-task CT board.
-- [x] Morpheus reviewed and approved sprint plan.
-- [x] Arch v1.1: ClickThroughChannel abstraction added; sprint plan + task.md updated to match.
-- [ ] Neo: implement Phase A (CT-A1 → CT-A2 → CT-A3).
-- [ ] Trin: UAT Phase A → Morpheus review.
-- [ ] Neo: implement Phase B (CT-B1 → CT-B2 → CT-B3).
-- [ ] Trin: UAT Phase B → Morpheus review.
-- [ ] Neo: implement Phase C (CT-C1 → CT-C2 → CT-C3).
-- [ ] Trin: UAT Phase C → Morpheus close review → Oracle groom.
+- [x] Phase board written in `task.md` — 8 phases (A–H), 15 tasks.
+- [ ] Morpheus review and approve phase plan → `@Morpheus *lead review sprint plan`.
+- [ ] Neo: Phase A (STB-A1 doc cleanup, STB-A2 WindowMode rename).
+- [ ] Trin: verify Phase A → Morpheus approve.
+- [ ] Neo: Phase B (STB-B1 strategy hierarchy, STB-B2 WindowService purge).
+- [ ] Trin: verify Phase B → Morpheus approve.
+- [ ] Neo: Phase C (STB-C1 TFC redesign + HoverFocusController delete).
+- [ ] Trin: Phase D green gate (STB-D1 — hard stop before Phase E).
+- [ ] Neo: Phase E (STB-E1 sendToBack in strategy+service).
+- [ ] Neo: Phase F (STB-F1 TFC wire, STB-F2 button wire).
+- [ ] Trin: Phase G tests (STB-G1).
+- [ ] Trin + Oracle: Phase H close (STB-H1 QA, STB-H2 docs).
+
+## Key Risks to Watch
+- STB-E1: `wm.lower()` Linux availability — Neo must verify before closing task.
+- STB-D1: Hard green gate — Phase E does NOT start until all tests pass.

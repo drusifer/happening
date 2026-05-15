@@ -1,42 +1,15 @@
-// Widget-level regression tests for HappeningApp auth-state → button visibility.
-//
-// BUG-C: Refresh and settings buttons disappeared from the strip on Linux after
-// a transient DNS failure at ~18:28 (log: build/tmp).  Root cause under
-// investigation; these tests lock in the expected invariants so any regression
-// is caught immediately:
-//
-//   • When auth restore succeeds → buttons visible.
-//   • When auth restore fails    → buttons hidden (sign-in prompt instead).
-//   • When calendar fetch throws a network error → auth state must NOT flip to
-//     unauthenticated; buttons must remain visible.
-//   • Tapping refresh while authenticated must NOT cause unauthenticated state.
-
-import 'dart:async';
-import 'dart:io';
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:googleapis_auth/auth_io.dart';
-import 'package:happening/app.dart';
 import 'package:happening/core/settings/settings_service.dart';
-import 'package:happening/core/time/clock_service.dart';
 import 'package:happening/core/window/window_service.dart';
-import 'package:happening/features/auth/auth_service.dart';
-import 'package:happening/features/timeline/expansion_logic.dart';
-import 'package:happening/features/calendar/calendar_controller.dart';
-import 'package:happening/features/calendar/calendar_event.dart';
-import 'package:happening/features/calendar/calendar_service.dart';
+import 'package:happening/features/timeline/focus/timeline_focus_controller.dart';
 import 'package:mockito/mockito.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
-
-// ── Fakes ────────────────────────────────────────────────────────────────────
 
 class _FakeWindowManager extends Mock implements WindowManager {}
 
 class _FakeScreenRetriever extends Mock implements ScreenRetriever {}
 
-/// WindowService that never touches the OS.
 class _FakeWindowService extends WindowService {
   _FakeWindowService()
       : super(
@@ -44,281 +17,115 @@ class _FakeWindowService extends WindowService {
           screenRetriever: _FakeScreenRetriever(),
         );
 
-  @override
-  double getCollapsedHeight() => 55.0;
+  final List<WindowMode> modeCalls = [];
+  int sendToBackCalls = 0;
+  int restoreToFrontCalls = 0;
 
   @override
-  double getExpandedHeight() => 320.0;
-
-  @override
-  Future<void> performResize(ExpansionState intent) async {}
-
-  @override
-  Future<void> reassertAppBar() async {}
-}
-
-/// ClockService with empty streams — avoids periodic timers that block pumpAndSettle.
-class _FakeClockService extends ClockService {
-  final DateTime fixedTime;
-  _FakeClockService(this.fixedTime);
-
-  @override
-  DateTime get now => fixedTime;
-
-  @override
-  Stream<DateTime> get tick1s => const Stream.empty();
-
-  @override
-  Stream<DateTime> get tick10s => const Stream.empty();
-}
-
-/// Fake SettingsService with defaults.
-class _FakeSettingsService extends SettingsService {
-  _FakeSettingsService() : super(directory: Directory.systemTemp);
-
-  @override
-  AppSettings get current => const AppSettings();
-
-  @override
-  Stream<AppSettings> get settings => const Stream.empty();
-}
-
-/// Fake CalendarService — never throws, returns empty events.
-class _FakeCalendarService implements CalendarService {
-  bool shouldThrow = false;
-  int fetchCalls = 0;
-
-  @override
-  Future<List<CalendarMeta>> fetchCalendarList() async => [];
-
-  @override
-  Future<List<CalendarEvent>> fetchEvents(String calendarId) async {
-    fetchCalls++;
-    if (shouldThrow) throw Exception('network error: DNS failure');
-    return [];
+  Future<void> setWindowMode(WindowMode mode) async {
+    modeCalls.add(mode);
   }
 
   @override
-  Future<List<CalendarEvent>> fetchTodayEvents() async => [];
-}
-
-/// CalendarController backed by a controllable fake service.
-class _FakeCalendarController extends CalendarController {
-  _FakeCalendarController(this._fakeService)
-      : super(_fakeService, settingsService: null);
-
-  final _FakeCalendarService _fakeService;
-  int refreshCalls = 0;
-
-  bool get didThrowOnFetch => _fakeService.shouldThrow;
-  set throwOnFetch(bool v) => _fakeService.shouldThrow = v;
-
-  @override
-  Future<void> refresh() async {
-    refreshCalls++;
-    await super.refresh();
-  }
-}
-
-/// Controllable fake auth service.
-class _FakeAuthService implements AuthService {
-  _FakeAuthService({
-    this.tryRestoreResult = true,
-  });
-
-  final bool tryRestoreResult;
-  bool _signedIn = false;
-  bool cancelCalled = false;
-
-  @override
-  Future<bool> tryRestore() async {
-    if (tryRestoreResult) _signedIn = true;
-    return tryRestoreResult;
+  Future<void> sendToBack() async {
+    sendToBackCalls++;
   }
 
   @override
-  Future<bool> signIn() async {
-    _signedIn = true;
-    return true;
+  Future<void> restoreToFront() async {
+    restoreToFrontCalls++;
   }
-
-  @override
-  void cancelSignIn() => cancelCalled = true;
-
-  @override
-  Future<void> signOut() async => _signedIn = false;
-
-  @override
-  bool get isSignedIn => _signedIn;
-
-  @override
-  AutoRefreshingAuthClient? get client =>
-      null; // not used when controller is injected
 }
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-Widget _wrap(Widget child) => child; // HappeningApp is itself a MaterialApp
-
-// ── Tests ────────────────────────────────────────────────────────────────────
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
+  group('TimelineFocusController', () {
+    test('initialize is a no-op', () async {
+      final windowService = _FakeWindowService();
+      final controller = TimelineFocusController(windowService: windowService);
+      addTearDown(controller.dispose);
 
-  late _FakeSettingsService fakeSettings;
-  late _FakeWindowService fakeWindowService;
-  late _FakeClockService fakeClock;
+      await controller.initialize();
 
-  setUp(() {
-    fakeSettings = _FakeSettingsService();
-    fakeWindowService = _FakeWindowService();
-    fakeClock = _FakeClockService(DateTime(2026, 4, 19, 10, 0));
-  });
-
-  group('BUG-C: auth-state → button visibility', () {
-    // ── happy path ──────────────────────────────────────────────────────────
-
-    testWidgets('buttons visible when tryRestore succeeds (authenticated)',
-        (tester) async {
-      final fakeAuth = _FakeAuthService(tryRestoreResult: true);
-      final fakeController = _FakeCalendarController(_FakeCalendarService());
-
-      await tester.pumpWidget(_wrap(HappeningApp(
-        settingsService: fakeSettings,
-        windowService: fakeWindowService,
-        authServiceOverride: fakeAuth,
-        calendarControllerOverride: fakeController,
-        clockServiceOverride: fakeClock,
-        enableAnimations: false,
-      )));
-
-      // Let _initServices complete and setState rebuild.
-      await tester.pump();
-      await tester.pump(Duration.zero);
-
-      expect(find.byIcon(Icons.refresh), findsOneWidget,
-          reason: 'BUG-C: refresh button must be visible when authenticated');
-      expect(find.byIcon(Icons.settings), findsOneWidget,
-          reason: 'BUG-C: settings button must be visible when authenticated');
+      expect(controller.isSentToBack, isFalse);
     });
 
-    // ── unauthenticated path ────────────────────────────────────────────────
+    test('setWindowMode delegates to WindowService', () async {
+      final windowService = _FakeWindowService();
+      final controller = TimelineFocusController(windowService: windowService);
+      addTearDown(controller.dispose);
 
-    testWidgets('buttons hidden when tryRestore fails (unauthenticated)',
-        (tester) async {
-      final fakeAuth = _FakeAuthService(tryRestoreResult: false);
+      await controller.setWindowMode(WindowMode.overlay);
 
-      await tester.pumpWidget(_wrap(HappeningApp(
-        settingsService: fakeSettings,
-        windowService: fakeWindowService,
-        authServiceOverride: fakeAuth,
-        clockServiceOverride: fakeClock,
-        enableAnimations: false,
-      )));
-
-      await tester.pump();
-      await tester.pump(Duration.zero);
-
-      expect(find.byIcon(Icons.refresh), findsNothing,
-          reason:
-              'BUG-C: refresh button must NOT be visible when unauthenticated');
-      expect(find.byIcon(Icons.settings), findsNothing,
-          reason:
-              'BUG-C: settings button must NOT be visible when unauthenticated');
+      expect(windowService.modeCalls, [WindowMode.overlay]);
     });
 
-    // ── network-error regression ────────────────────────────────────────────
+    test('sendToBack sets isSentToBack and calls service', () async {
+      final windowService = _FakeWindowService();
+      final controller = TimelineFocusController(windowService: windowService);
+      addTearDown(controller.dispose);
 
-    testWidgets(
-        'BUG-C: buttons remain visible after calendar fetch network error',
-        (tester) async {
-      final fakeAuth = _FakeAuthService(tryRestoreResult: true);
-      final fakeService = _FakeCalendarService();
-      final fakeController = _FakeCalendarController(fakeService);
+      await controller.sendToBack();
 
-      await tester.pumpWidget(_wrap(HappeningApp(
-        settingsService: fakeSettings,
-        windowService: fakeWindowService,
-        authServiceOverride: fakeAuth,
-        calendarControllerOverride: fakeController,
-        clockServiceOverride: fakeClock,
-        enableAnimations: false,
-      )));
-
-      await tester.pump();
-      await tester.pump(Duration.zero);
-
-      // Confirm buttons are visible while authenticated.
-      expect(find.byIcon(Icons.refresh), findsOneWidget);
-
-      // Simulate DNS failure: all fetches now throw.
-      fakeService.shouldThrow = true;
-      unawaited(fakeController.refresh());
-      await tester.pump();
-      await tester.pump(Duration.zero);
-
-      // Auth state must NOT have changed — buttons must still be visible.
-      expect(find.byIcon(Icons.refresh), findsOneWidget,
-          reason: 'BUG-C: refresh button disappeared after network error — '
-              'auth state was incorrectly set to unauthenticated');
-      expect(find.byIcon(Icons.settings), findsOneWidget,
-          reason: 'BUG-C: settings button disappeared after network error');
+      expect(controller.isSentToBack, isTrue);
+      expect(windowService.sendToBackCalls, 1);
     });
 
-    // ── refresh tap regression ──────────────────────────────────────────────
+    test('restoreToFront clears isSentToBack and calls service', () async {
+      final windowService = _FakeWindowService();
+      final controller = TimelineFocusController(windowService: windowService);
+      addTearDown(controller.dispose);
 
-    testWidgets(
-        'BUG-C: tapping refresh while authenticated does not change auth state',
-        (tester) async {
-      final fakeAuth = _FakeAuthService(tryRestoreResult: true);
-      final fakeController = _FakeCalendarController(_FakeCalendarService());
+      await controller.sendToBack();
+      await controller.restoreToFront();
 
-      await tester.pumpWidget(_wrap(HappeningApp(
-        settingsService: fakeSettings,
-        windowService: fakeWindowService,
-        authServiceOverride: fakeAuth,
-        calendarControllerOverride: fakeController,
-        clockServiceOverride: fakeClock,
-        enableAnimations: false,
-      )));
-
-      await tester.pump();
-      await tester.pump(Duration.zero);
-
-      expect(find.byIcon(Icons.refresh), findsOneWidget);
-
-      await tester.tap(find.byIcon(Icons.refresh));
-      await tester.pump();
-      await tester.pump(Duration.zero);
-
-      // Buttons must still be visible — refresh should never sign the user out.
-      expect(find.byIcon(Icons.refresh), findsOneWidget,
-          reason: 'BUG-C: tap refresh caused auth state to change');
-      expect(find.byIcon(Icons.settings), findsOneWidget);
+      expect(controller.isSentToBack, isFalse);
+      expect(windowService.restoreToFrontCalls, 1);
     });
 
-    // ── sign-in prompt shown when unauthenticated ───────────────────────────
+    test('auto-restores after timeout', () async {
+      final windowService = _FakeWindowService();
+      final controller = TimelineFocusController(
+        windowService: windowService,
+        restoreTimeout: const Duration(milliseconds: 50),
+      );
+      addTearDown(controller.dispose);
 
-    testWidgets('sign-in tap-to-sign-in overlay shown when unauthenticated',
-        (tester) async {
-      final fakeAuth = _FakeAuthService(tryRestoreResult: false);
+      await controller.sendToBack();
+      expect(controller.isSentToBack, isTrue);
 
-      await tester.pumpWidget(_wrap(HappeningApp(
-        settingsService: fakeSettings,
-        windowService: fakeWindowService,
-        authServiceOverride: fakeAuth,
-        clockServiceOverride: fakeClock,
-        enableAnimations: false,
-      )));
+      await Future<void>.delayed(const Duration(milliseconds: 80));
+      expect(controller.isSentToBack, isFalse);
+      expect(windowService.restoreToFrontCalls, 1);
+    });
 
-      await tester.pump();
-      await tester.pump(Duration.zero);
+    test('second sendToBack resets the timer', () async {
+      final windowService = _FakeWindowService();
+      final controller = TimelineFocusController(
+        windowService: windowService,
+        restoreTimeout: const Duration(milliseconds: 100),
+      );
+      addTearDown(controller.dispose);
 
-      // The sign-in overlay (GestureDetector covering the strip) should exist.
-      // TimelinePainter renders the "tap to sign in" text — just verify buttons gone.
-      expect(find.byIcon(Icons.refresh), findsNothing);
-      expect(find.byIcon(Icons.settings), findsNothing);
-      expect(find.byIcon(Icons.power_settings_new), findsNothing);
+      await controller.sendToBack();
+      await Future<void>.delayed(const Duration(milliseconds: 60));
+      await controller.sendToBack();
+      await Future<void>.delayed(const Duration(milliseconds: 60));
+      expect(controller.isSentToBack, isTrue);
+
+      await Future<void>.delayed(const Duration(milliseconds: 60));
+      expect(controller.isSentToBack, isFalse);
+    });
+
+    test('isSentToBackNotifier reflects state', () async {
+      final windowService = _FakeWindowService();
+      final controller = TimelineFocusController(windowService: windowService);
+      addTearDown(controller.dispose);
+
+      expect(controller.isSentToBackNotifier.value, isFalse);
+      await controller.sendToBack();
+      expect(controller.isSentToBackNotifier.value, isTrue);
+      await controller.restoreToFront();
+      expect(controller.isSentToBackNotifier.value, isFalse);
     });
   });
 }

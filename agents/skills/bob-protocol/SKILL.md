@@ -151,6 +151,33 @@ make chat MSG="@Morpheus *lead decide <choice>" PERSONA="Trin" CMD="qa handoff" 
 
 ---
 
+## Context Pressure Protocol
+
+**During any bloop or loop interval** — after each persona step, before handing off to the next — check for injected system messages signaling low context.
+
+### Detecting Context Pressure
+
+The AI harness injects `<system-reminder>` or similar signals when the conversation approaches its context limit. Watch for messages such as:
+- "context is getting long"
+- "approaching context limit"
+- "context window is filling"
+- Any system-injected reminder about context or compaction
+
+### When Context Is Low — STOP Protocol
+
+1. **Do NOT hand off to the next persona.**
+2. Save all persona state — follow the EXIT hard gate above.
+3. Post to chat:
+   ```bash
+   make chat MSG="Context is low. Prep for context clear." PERSONA="<current-persona>" CMD="context-low" TO="all"
+   ```
+4. **STOP.** Wait for the user to run `/clear` before continuing.
+5. After `/clear`, resume using Cold Start Recovery.
+
+**This overrides all loop continuation rules.** A context-low signal is a hard stop — state is saved, team is notified, loop pauses.
+
+---
+
 ## Anti-Loop Protocol
 
 If a fix attempt fails:

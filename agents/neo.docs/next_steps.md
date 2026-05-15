@@ -1,18 +1,13 @@
-# Next Steps — ExpansionController Complete
+# Neo Next Steps — 2026-05-14
 
-## All 3 phases done. 292/292 green.
+## Send-to-Back Sprint — COMPLETE
 
-## What was done
-- Phase 1: PhysicalWindowState, ResizeExecutor, ExpansionController + tests
-- Phase 2: WindowServiceResizeExecutor, TimelineStrip wired, stream drives card visibility
-- Phase 3: WindowService cleanup — removed AsyncGate/isExpandedNotifier/expand/collapse/hover controllers
+All phases A–H done. 266/266 green. Sprint closed.
 
-## Manual UAT recommended
-- Wayland smoke test: hover expand/collapse works, no black card
-- Sleep/resume: window re-collapses correctly via ExpansionController no-skip guarantee
-- Display change (monitor connect/disconnect): window resizes to new width
+## Post-sprint backlog
+- Expand/collapse flicker: Flutter maxH lags ~171ms after setSize grows GTK window. Root cause deferred.
+- `flutter analyze` pre-existing errors: unused `_log` fields in auth/calendar/app, unused imports in expansion_logic/timeline_painter. Not sprint-introduced.
+- Manual Wayland smoke test: expand/collapse with ExpansionController on native Wayland (unsupported but worth tracking)
 
-## If bugs found
-- Check `ExpansionController.didChangeMetrics()` — fires when GTK confirms
-- Check `WindowServiceResizeExecutor.resize()` calls `performResize()`
-- Check `_isExpanded` in `WindowService._onDisplayChangedInner()` is accurate
+## Next sprint
+No active sprint. Await Drew direction.

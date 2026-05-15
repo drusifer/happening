@@ -28,5 +28,16 @@
   - UX decisions: hover+300ms delay is primary focus trigger; hotkey is secondary. Soft gate for layer-shell.
   - Full review: agents/smith.docs/ct_gate1_review_2026-04-26.md
 
+- 2026-05-13: Send-to-Back Gate 1 + Gate 2 both approved.
+  - Gate 2 notes: verify wm.lower() on Linux before T-08 closes; no early-user-cancel is intentional (V2 scope).
+  - Full Gate 2 review: agents/smith.docs/send_to_back_gate2_review_2026-05-13.md
+- 2026-05-13: Send-to-Back Gate 1 approved with amendments.
+  - Timer: 10s not 7s (7 too tight for real window management).
+  - Restore: setAlwaysOnTop(true) only — must NOT steal focus.
+  - Icon: flip_to_back or equivalent — do NOT reuse old pass-through icon.
+  - STB-01 AC: add re-press visual feedback (timer reset confirmation).
+  - STB-03 AC: remove internal `WindowMode.transparent` reference; use user-outcome language.
+  - Full review: agents/smith.docs/send_to_back_gate1_review_2026-05-13.md
+
 ---
-*Last updated: 2026-04-26*
+*Last updated: 2026-05-13*

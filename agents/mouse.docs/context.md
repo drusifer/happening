@@ -12,6 +12,12 @@
 - Direct repository check shows Phase D/F-looking implementation artifacts (`TimelineFocusController`, hotkey file, settings window behavior/opacity controls), but persona state and chat have not formally closed Phase D. Treat as implementation drift until Neo reconciles and Trin verifies.
 - Last logged build status is `make build-linux` failure from 2026-04-24 21:28 because `app/pubspec.lock` was missing for `app/.dart_tool/package_config.json`; current filesystem contains both files, so rerun is needed before calling this an active blocker.
 
+## Send-to-Back Sprint — 2026-05-13
+- 8 phases (A–H), 15 tasks. Phase board in `task.md`.
+- Phase D is a hard green gate (tests must pass before Phase E / feature work begins).
+- STB-E1 risk: verify `wm.lower()` Linux before closing.
+- Linux Click-Through sprint CANCELLED — replaced by this sprint.
+
 ## Linux Click-Through Sprint — 2026-04-26
 - Planning complete: Cypher stories → Smith Gate 1 → Morpheus arch → Smith Gate 2 → Mouse plan → Morpheus plan approval.
 - Arch v1.1 added: `ClickThroughChannel` (abstract) + `NullClickThroughChannel` + `LinuxClickThroughChannel` + `ClickThroughCapability.detect()`. Sprint plan and task.md updated to match.

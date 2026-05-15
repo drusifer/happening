@@ -1,8 +1,8 @@
 # ARCH: Happening — System Architecture
 
-**Version**: 0.6
+**Version**: 0.7
 **Author**: Morpheus (Tech Lead) / Ora (Knowledge Officer)
-**Date**: 2026-04-14
+**Date**: 2026-05-14
 **Status**: Approved
 
 ## TLDR
@@ -133,9 +133,7 @@ content.
 
 Linux no longer uses Happening-owned shell-reservation code. The runner does not
 set X11 `_NET_WM_STRUT_PARTIAL`, does not mark the window as an X11 DOCK, and
-does not use Wayland `gtk-layer-shell`. Linux transparent behavior is exposed
-only when the Dart capability layer has real-session evidence that pass-through
-works for the current window stack.
+does not use Wayland `gtk-layer-shell`.
 
 Current Linux development runs prefer X11/XWayland (`GDK_BACKEND=x11`) because
 standard native Wayland clients cannot reliably request absolute top-of-screen
@@ -153,10 +151,11 @@ If either value changes, `WindowService` resizes the window through the active `
 On Windows, display/DPI changes can also stale the shell AppBar work-area reservation because the AppBar rect is expressed in physical pixels. After refreshing DPR and width, Windows calls `_reserveCollapsedSpace()` so `ABM_QUERYPOS`/`ABM_SETPOS` reassert the reserved band with updated physical-pixel values, then repositions the Flutter window using the trusted `rcTop / dpr`. This covers DPI scaling changes, resolution changes, and primary-display size changes without Win32 message subclassing.
 
 ### Always-Visible Controls
-Three icon buttons are always painted on the strip regardless of auth state:
-- **Refresh** (left) — re-fetches calendar events and reasserts the Windows AppBar reservation
-- **Settings** (left) — opens the settings panel
-- **Quit** (right, power icon) — `exit(0)`, visible in loading, sign-in, and authenticated states
+Four icon buttons are always painted on the strip (visible once authenticated):
+- **Refresh** — re-fetches calendar events and reasserts the Windows AppBar reservation
+- **Send to Back** (`flip_to_back` icon) — lowers the strip behind all other windows for 10 seconds, then auto-restores always-on-top. Re-pressing resets the timer. Implemented via `setAlwaysOnTop(false)` + `blur()` on press; `setAlwaysOnTop(true)` on restore. `wm.lower()` is not available in `window_manager`; the window drops behind newly-focused windows naturally after losing always-on-top.
+- **Settings** — opens the settings panel
+- **Quit** (power icon, right side) — `exit(0)`
 
 ---
 
@@ -181,7 +180,8 @@ Google OAuth on desktop uses the **PKCE (Proof Key for Code Exchange)** flow to 
 | AOQ-5 | CPU Bottlenecks? | **Tiered Frequency** | Repainting a 3000px canvas at 1Hz is too heavy for idle. |
 | AOQ-6 | Resizing? | **KISS Protocol** | Asynchronous queues were prone to "stuck" windows. Use direct UI-gated calls. |
 | AOQ-7 | Interaction? | **Contextual Latching** | Standard hit-testing makes action buttons hard to click. |
-| AOQ-8 | Linux display server? | **No shell reservation** | Linux uses the standard Flutter GTK runner plus Dart window APIs. X11 struts and Wayland layer-shell reservation were removed because transparent non-reserving mode is the preferred product path and shell reservation is compositor-specific. |
+| AOQ-8 | Linux display server? | **No shell reservation** | Linux uses the standard Flutter GTK runner plus Dart window APIs. X11 struts and Wayland layer-shell reservation were removed. Transparent/click-through was also removed — Send-to-Back achieves the same user goal (temporarily move the strip out of the way) with zero platform-specific code. |
+| AOQ-11 | Interaction model for moving strip out of the way? | **Send-to-Back** | Click-through required native C++/Dart platform code that was unreliable or unavailable. Send-to-Back (`setAlwaysOnTop(false)` + `blur()`) achieves the same user goal cross-platform with no platform-specific code. Auto-restores after 10s. |
 | AOQ-9 | Background transparency? | **Solid color always** | Transparent windows render black without a compositor. Solid background eliminates the dependency. |
 | AOQ-10 | Display/DPI changes after launch? | **Refresh live metrics in `WindowService.didChangeMetrics()`** | DPR and primary-display width can change after launch; the window and Windows AppBar reservation must be recalculated from current display state. |
 

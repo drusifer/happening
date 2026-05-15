@@ -27,14 +27,10 @@ class _FakeWindowService extends WindowService {
           screenRetriever: _FakeScreenRetriever(),
         );
 
-  bool _fakeIsExpanded = false;
-
   @override
   Future<void> performResize(ExpansionState intent) async {
-    _fakeIsExpanded = intent == ExpansionState.expanded;
     WidgetsBinding.instance.handleMetricsChanged();
   }
-
 }
 
 class _FakeClock extends ClockService {

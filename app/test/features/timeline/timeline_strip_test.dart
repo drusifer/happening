@@ -28,40 +28,23 @@ class _FakeScreenRetriever extends Mock implements ScreenRetriever {}
 
 /// Fake WindowService that drives ExpansionController without touching the OS.
 class _FakeWindowService extends WindowService {
-  _FakeWindowService({bool initialExpanded = false})
+  _FakeWindowService()
       : super(
           windowManager: _FakeWindowManager(),
           screenRetriever: _FakeScreenRetriever(),
-        ) {
-    _fakeIsExpanded = initialExpanded;
-  }
+        );
 
-  bool _fakeIsExpanded = false;
   int expandCalls = 0;
   int collapseCalls = 0;
-  final List<bool> focusedCalls = [];
-  final List<bool> passThroughCalls = [];
   final List<WindowMode> windowModeCalls = [];
 
   @override
   Future<void> performResize(ExpansionState intent) async {
     if (intent == ExpansionState.expanded) {
       expandCalls++;
-      _fakeIsExpanded = true;
     } else {
       collapseCalls++;
-      _fakeIsExpanded = false;
     }
-  }
-
-  @override
-  Future<void> setInteractionFocused(bool focused) async {
-    focusedCalls.add(focused);
-  }
-
-  @override
-  Future<void> setPassThroughEnabled(bool enabled) async {
-    passThroughCalls.add(enabled);
   }
 
   @override
@@ -272,7 +255,7 @@ void main() {
 
     testWidgets('refresh resets timeline to a fresh collapsed state',
         (tester) async {
-      final fakeWS = _FakeWindowService(initialExpanded: true);
+      final fakeWS = _FakeWindowService();
       final event = CalendarEvent(
         id: 'e1',
         title: 'Meeting',
@@ -309,39 +292,6 @@ void main() {
       expect(fakeController.fetchCalls, equals(1));
 
       await gesture.removePointer();
-    });
-
-    testWidgets('click-through toggle auto-restores after seven seconds',
-        (tester) async {
-      final fakeWS = _FakeWindowService();
-
-      await tester.pumpWidget(wrap(
-        TimelineStrip(
-          events: const [],
-          clockService: clock,
-          calendarController: fakeController,
-          settingsService: fakeSettings,
-          windowService: fakeWS,
-          onSignOut: () {},
-          enableAnimations: false,
-        ),
-      ));
-      await tester.pump(Duration.zero);
-      fakeWS.passThroughCalls.clear();
-
-      expect(find.byIcon(Icons.touch_app), findsOneWidget);
-
-      await tester.tap(find.byIcon(Icons.touch_app));
-      await tester.pump();
-
-      expect(fakeWS.passThroughCalls, [true]);
-      expect(find.byIcon(Icons.ads_click), findsOneWidget);
-
-      await tester.pump(const Duration(seconds: 7));
-      await tester.pump();
-
-      expect(fakeWS.passThroughCalls, [true, false]);
-      expect(find.byIcon(Icons.touch_app), findsOneWidget);
     });
 
     testWidgets('hover-only: hovering shows card, tap does nothing extra',
@@ -652,42 +602,6 @@ void main() {
       // Should STAY expanded because settings is open
       expect(find.byType(SettingsPanel), findsOneWidget);
     });
-    group('temporary click-through focus model', () {
-      testWidgets(
-          'opaque default: hover does not trigger transparent focus model',
-          (tester) async {
-        final fakeWS = _FakeWindowService();
-        await tester.pumpWidget(wrap(
-          TimelineStrip(
-            events: const [],
-            clockService: clock,
-            calendarController: fakeController,
-            settingsService: fakeSettings,
-            windowService: fakeWS,
-            onSignOut: () {},
-            enableAnimations: false,
-          ),
-        ));
-        await tester.pump(Duration.zero);
-
-        final baseTrue = fakeWS.focusedCalls.where((f) => f).length;
-
-        final gesture =
-            await tester.createGesture(kind: PointerDeviceKind.mouse);
-        await gesture.addPointer(location: Offset.zero);
-        await gesture.moveTo(const Offset(100, 10));
-        await tester.pump(const Duration(milliseconds: 500));
-
-        expect(
-          fakeWS.focusedCalls.where((f) => f).length,
-          equals(baseTrue),
-          reason: 'reserved mode hover should not call setInteractionFocused',
-        );
-
-        await gesture.removePointer();
-      });
-    });
-
     group('focus/lifecycle', () {
       testWidgets('collapses when app loses focus if settings closed',
           (tester) async {
@@ -1091,27 +1005,4 @@ void main() {
     await gesture.removePointer();
   });
 
-  testWidgets('persisted transparent mode is ignored; strip starts opaque',
-      (tester) async {
-    final windowService = _FakeWindowService();
-    final settings = _FakeSettingsService(
-      const AppSettings(windowMode: WindowMode.transparent),
-    );
-
-    await tester.pumpWidget(wrap(TimelineStrip(
-      events: const [],
-      clockService: clock,
-      calendarController: fakeController,
-      settingsService: settings,
-      windowService: windowService,
-      onSignOut: () {},
-      enableAnimations: false,
-      platformOverride: TargetPlatform.macOS,
-    )));
-    await tester.pump();
-    await tester.pump();
-
-    expect(find.byIcon(Icons.touch_app), findsOneWidget);
-    expect(windowService.passThroughCalls.last, isFalse);
-  });
 }

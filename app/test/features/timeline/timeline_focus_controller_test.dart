@@ -17,125 +17,111 @@ class _FakeWindowService extends WindowService {
           screenRetriever: _FakeScreenRetriever(),
         );
 
-  final List<bool> focusedCalls = [];
-  final List<bool> passThroughCalls = [];
   final List<WindowMode> modeCalls = [];
-
-  @override
-  Future<void> setInteractionFocused(bool focused) async {
-    focusedCalls.add(focused);
-  }
-
-  @override
-  Future<void> setPassThroughEnabled(bool enabled) async {
-    passThroughCalls.add(enabled);
-  }
+  int sendToBackCalls = 0;
+  int restoreToFrontCalls = 0;
 
   @override
   Future<void> setWindowMode(WindowMode mode) async {
     modeCalls.add(mode);
   }
+
+  @override
+  Future<void> sendToBack() async {
+    sendToBackCalls++;
+  }
+
+  @override
+  Future<void> restoreToFront() async {
+    restoreToFrontCalls++;
+  }
 }
 
 void main() {
-  group('TimelineFocusController', () {
-    test('transparent mode initializes in idle pass-through state', () async {
-      final windowService = _FakeWindowService();
-      final controller = TimelineFocusController(
-        windowService: windowService,
-        initialWindowMode: WindowMode.transparent,
-      );
+  group('TimelineFocusController — send-to-back', () {
+    test('starts not sent-to-back', () {
+      final controller =
+          TimelineFocusController(windowService: _FakeWindowService());
       addTearDown(controller.dispose);
-
-      await controller.initialize();
-
-      expect(controller.isFocused, isFalse);
-      expect(windowService.focusedCalls, [false]);
-      expect(windowService.passThroughCalls, [true]);
+      expect(controller.isSentToBack, isFalse);
     });
 
-    test('focus enters interactive mode and disables pass-through', () async {
-      final windowService = _FakeWindowService();
-      final controller = TimelineFocusController(
-        windowService: windowService,
-        initialWindowMode: WindowMode.transparent,
-      );
+    test('sendToBack sets state and calls service', () async {
+      final ws = _FakeWindowService();
+      final controller = TimelineFocusController(windowService: ws);
       addTearDown(controller.dispose);
 
-      await controller.initialize();
-      await controller.focus();
+      await controller.sendToBack();
 
-      expect(controller.isFocused, isTrue);
-      expect(windowService.focusedCalls, [false, true]);
-      expect(windowService.passThroughCalls, [true, false]);
+      expect(controller.isSentToBack, isTrue);
+      expect(ws.sendToBackCalls, 1);
     });
 
-    test('escape unfocuses transparent mode', () async {
-      final windowService = _FakeWindowService();
-      final controller = TimelineFocusController(
-        windowService: windowService,
-        initialWindowMode: WindowMode.transparent,
-      );
+    test('restoreToFront clears state and calls service', () async {
+      final ws = _FakeWindowService();
+      final controller = TimelineFocusController(windowService: ws);
       addTearDown(controller.dispose);
 
-      await controller.initialize();
-      await controller.focus();
-      await controller.handleEscape();
+      await controller.sendToBack();
+      await controller.restoreToFront();
 
-      expect(controller.isFocused, isFalse);
-      expect(windowService.passThroughCalls.last, isTrue);
+      expect(controller.isSentToBack, isFalse);
+      expect(ws.restoreToFrontCalls, 1);
     });
 
-    test('interaction hold suppresses inactivity timeout', () async {
-      final windowService = _FakeWindowService();
+    test('auto-restores after restoreTimeout', () async {
+      final ws = _FakeWindowService();
       final controller = TimelineFocusController(
-        windowService: windowService,
-        initialWindowMode: WindowMode.transparent,
-        inactivityTimeout: const Duration(milliseconds: 40),
+        windowService: ws,
+        restoreTimeout: const Duration(milliseconds: 50),
       );
       addTearDown(controller.dispose);
 
-      await controller.initialize();
-      await controller.focus();
-      controller.setInteractionHold(true);
+      await controller.sendToBack();
+      await Future<void>.delayed(const Duration(milliseconds: 80));
 
-      await Future<void>.delayed(const Duration(milliseconds: 70));
-      expect(controller.isFocused, isTrue);
-
-      controller.setInteractionHold(false);
-      await Future<void>.delayed(const Duration(milliseconds: 70));
-      expect(controller.isFocused, isFalse);
+      expect(controller.isSentToBack, isFalse);
+      expect(ws.restoreToFrontCalls, 1);
     });
 
-    test('reserved mode initializes as focused without pass-through', () async {
-      final windowService = _FakeWindowService();
+    test('second sendToBack resets the restore timer', () async {
+      final ws = _FakeWindowService();
       final controller = TimelineFocusController(
-        windowService: windowService,
-        initialWindowMode: WindowMode.reserved,
+        windowService: ws,
+        restoreTimeout: const Duration(milliseconds: 100),
       );
       addTearDown(controller.dispose);
 
-      await controller.initialize();
+      await controller.sendToBack();
+      await Future<void>.delayed(const Duration(milliseconds: 60));
+      await controller.sendToBack(); // reset timer
+      await Future<void>.delayed(const Duration(milliseconds: 60));
+      expect(controller.isSentToBack, isTrue); // not yet restored
 
-      expect(controller.isFocused, isTrue);
-      expect(windowService.focusedCalls, [true]);
-      expect(windowService.passThroughCalls, [false]);
+      await Future<void>.delayed(const Duration(milliseconds: 60));
+      expect(controller.isSentToBack, isFalse); // now restored
     });
 
-    test('window mode switch to reserved keeps interactive state', () async {
-      final windowService = _FakeWindowService();
-      final controller = TimelineFocusController(
-        windowService: windowService,
-        initialWindowMode: WindowMode.transparent,
-      );
+    test('isSentToBackNotifier mirrors isSentToBack', () async {
+      final controller =
+          TimelineFocusController(windowService: _FakeWindowService());
       addTearDown(controller.dispose);
 
-      await controller.initialize();
-      await controller.setWindowMode(WindowMode.reserved);
+      expect(controller.isSentToBackNotifier.value, isFalse);
+      await controller.sendToBack();
+      expect(controller.isSentToBackNotifier.value, isTrue);
+      await controller.restoreToFront();
+      expect(controller.isSentToBackNotifier.value, isFalse);
+    });
 
-      expect(windowService.modeCalls, [WindowMode.reserved]);
-      expect(controller.isFocused, isTrue);
-      expect(windowService.passThroughCalls.last, isFalse);
+    test('setWindowMode delegates to WindowService', () async {
+      final ws = _FakeWindowService();
+      final controller = TimelineFocusController(windowService: ws);
+      addTearDown(controller.dispose);
+
+      await controller.setWindowMode(WindowMode.overlay);
+
+      expect(ws.modeCalls, [WindowMode.overlay]);
     });
   });
 }

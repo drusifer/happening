@@ -28,7 +28,6 @@ class SettingsPanel extends StatefulWidget {
     required this.onSignOut,
     this.launchAboutUrl = _launchAboutUrl,
     this.platformOverride,
-    this.linuxTransparentSupported = false,
   });
 
   final SettingsService settingsService;
@@ -36,7 +35,6 @@ class SettingsPanel extends StatefulWidget {
   final VoidCallback onSignOut;
   final AboutUrlLauncher launchAboutUrl;
   final TargetPlatform? platformOverride;
-  final bool linuxTransparentSupported;
 
   @override
   State<SettingsPanel> createState() => _SettingsPanelState();

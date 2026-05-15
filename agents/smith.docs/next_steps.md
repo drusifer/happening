@@ -1,7 +1,7 @@
 # Next Steps
 
 ## Immediate Next Action
-Usability review after Linux Wayland Simplification implementation lands.
+Gate 2 review after Morpheus architects the Send-to-Back sprint.
 
 ## Waiting On
 - Neo implementation and Trin UAT for Linux Wayland Simplification.

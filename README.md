@@ -25,6 +25,7 @@ Happening is a persistent, always-on-top horizontal timeline strip that reads yo
 - [x] **Sprint 6**: v0.3.0 Linux window sizing, hover card fixes, always-visible quit button
 - [x] **v0.3.1**: Secure credential storage, OAuth cancellation, calendar isolation, settings panel polish
 - [x] **v0.4.0**: Display/DPI metric refresh, Windows AppBar reservation recovery, refresh-button overlap fix
+- [x] **Linux Simplification + Send-to-Back**: Removed click-through C++ plugin; Linux shares macOS code paths; Send-to-Back replaces click-through cross-platform
 
 ---
 
@@ -108,16 +109,6 @@ make run-windows  # Windows
 make run          # Lists all options
 ```
 
-For a temporary Linux X11/XWayland transparent-mode smoke test:
-
-```bash
-make run-linux LINUX_TRANSPARENT=1
-```
-
-This exposes the Linux transparent option for the current run only. It is not a
-support claim; use it to validate transparency, pass-through, focus restore, and
-Escape behavior.
-
 ---
 
 ## Building
@@ -147,6 +138,6 @@ Escape behavior.
 - **Window Management**: `window_manager` for frameless, always-on-top behavior. Linux development runs force X11/XWayland because native Wayland does not allow reliable absolute strip placement through standard Flutter/GTK APIs. Platform-specific resize sequences (`WindowResizeStrategy`) handle GTK/XWayland sizing behavior. `WindowService` refreshes display width and DPI on metric changes, and the refresh button can reassert the Windows AppBar reservation if another window overlaps the strip.
 - **Rendering**: `CustomPainter` decomposed into 5 composited layers (`BackgroundLayer`, `PastOverlayLayer`, `TickLayer`, `NowIndicatorLayer`, `EventsLayer`).
 - **State Management**: `StreamBuilder` driven by a 1Hz clock tick. `AsyncGate<T>` serializes async window ops and deduplicates rapid intent changes.
-- **Hover**: `HoverController` isolates all expand/collapse calls from pointer events. `LinuxHoverController` adds 300ms suppression for GTK spurious pointer-exit after resize.
+- **Hover / Focus**: `TimelineFocusController` manages expand/collapse and Send-to-Back state. Hover over any event to expand its detail card; move away to collapse.
 - **Auth**: PKCE OAuth flow with cancellable `HttpServer` redirect capture. Credentials persisted via `FlutterSecureTokenStore` (OS keychain on all platforms).
 - **Data**: Google Calendar API v3 via `googleapis`. Per-calendar fetch failures are isolated — one bad calendar does not block others.
