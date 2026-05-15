@@ -1,18 +1,22 @@
-# Next Steps
+# Next Steps — 2026-05-13
 
-## Immediate Next Action
-Linux Wayland Simplification stories are approved. Product waits for implementation results and Linux smoke findings.
+## Immediate
+1. Drew approves sprint plan in `agents/cypher.docs/send_to_back_sprint_plan.md`
+2. Smith reviews F-27 acceptance criteria (send-to-back UX)
+3. Neo begins T-02 through T-07 (cleanup phase) after approval
 
-## Waiting On
-- Neo/Trin implementation and UAT of the Linux Wayland Simplification sprint.
+## Phase 1 order (cleanup, no new behavior)
+T-02 → T-03 → T-04 → T-05 → T-06 → T-07 (tests green gate)
 
-## Planned Work
-- [x] Consult Oracle for existing decisions once Drew provides direction.
-- [x] Update `docs/PRD.md` with transparent pass-through mode.
-- [x] Write sprint stories for transparent timestrip.
-- [x] Draft Linux Wayland Simplification stories.
-- [x] Smith Gate 1 approval for Linux Wayland Simplification.
-- [ ] Product review after Linux smoke results decide whether transparent Linux mode can be described as supported.
+## Phase 2 order (new feature)
+T-08 → T-09 → T-10 → T-11 (tests)
+
+## Phase 3 (QA + docs)
+T-12 (Trin full QA) → T-13 (Oracle doc pass)
+
+## PM actions remaining
+- Update `docs/PRD.md`: remove F-26, rewrite US-06, add F-27 (do after Drew approves sprint)
+- Delete stale cypher.docs sprint stories (see context.md stale docs list)
 
 ---
-*Last updated: 2026-04-25T16:41*
+*Last updated: 2026-05-13*

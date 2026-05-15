@@ -1,36 +1,32 @@
 # Current Task
 
-## Session 2026-05-10 — Logger cleanup + EC redundancy suppression
-**Status**: COMPLETE (293/293 green)
+## Session 2026-05-14 — Send-to-Back Sprint Phase G/H UAT
+**Status**: COMPLETE — UAT PASS
 **Progress**: 100%
 
-### Completed
-- [x] Fixed `calendar_controller_test.dart` per-cal isolation test: added
-      `await Future<void>.delayed(Duration.zero)` after `refresh()` to flush
-      flutter_test's deferred broadcast-stream delivery microtask. Root cause:
-      working-tree logger migration removed the trailing `await AppLogger.debug`
-      that HEAD code accidentally used to flush the microtask queue.
-- [x] Deleted `AppLogger` facade (`app/lib/core/util/logger.dart`). All files
-      now use `package:logging/logging.dart` directly with per-class
-      `static final _log = Logger('ClassName')`.
-- [x] Removed `import '../../core/util/logger.dart'` from: `auth_service.dart`,
-      `calendar_controller.dart`, `calendar_service.dart`, `app.dart`,
-      `window_linux_e2e_test.dart`. Replaced `AppLogger.debug(...)` in
-      `main.dart` with `_log.fine(...)` and direct `Logger.root` setup in
-      `_setupLogging(Directory)`.
-- [x] EC: replaced all `debugPrint('[EC] ...')` with `_log.fine(...)` using
-      `static final _log = Logger('EC')`. Removed `import flutter/foundation`.
-- [x] EC: added `_lastConfirmed` field; `send()` now skips execute when idle,
-      no pending, and `intent == _lastConfirmed`. Fixes three redundant resize
-      operations seen in the expand-collapse trace.
-- [x] EC test: replaced "same state always executes — no skip" test with:
-      - "idle same-state send is skipped — no redundant resize"
-      - "different state after confirmed executes normally"
-- [x] 293/293 green (was 292 before adding the two new EC tests).
+### Phase H1 Full QA Gate
 
-### Pending (next session)
-- [ ] `main.dart::_setupLogging`: replace `debugPrint(line)` in the
-      `Logger.root.onRecord` handler with `dart:developer`'s `log()`.
-      Cannot recurse through Logger — use `dev.log(r.message, time: r.time,
-      level: r.level.value, name: r.loggerName)`.
-- [ ] Manual Wayland smoke: expand/collapse with ExpansionController live.
+| Check | Result |
+|-------|--------|
+| Zero `passThrough` in `app/lib` + `app/test` | ✅ CLEAN |
+| Zero `click_through` in `app/lib` + `app/test` | ✅ CLEAN |
+| Zero `setIgnoreMouseEvents` in `app/lib` + `app/test` | ✅ CLEAN (removed stale stub + verifyNever) |
+| Zero `supportsTransparent` in `app/lib` + `app/test` | ✅ CLEAN |
+| Zero `WindowMode.transparent` in `app/lib` + `app/test` | ✅ CLEAN |
+| Zero `HoverFocusController` / `hover_focus` | ✅ CLEAN |
+| Zero `linuxTransparentSupported` in lib | ✅ CLEAN |
+| Zero `isFocusedNotifier` in lib | ✅ CLEAN |
+| Strategy hierarchy: Base → MacOs + Reserved | ✅ |
+| `sendToBack()` implemented: `setAlwaysOnTop(false)` + `blur()` | ✅ |
+| `restoreToFront()` implemented: `setAlwaysOnTop(true)` | ✅ |
+| `wm.lower()` not available in window_manager | ⚠️ N/A — using blur() as fallback |
+| Button `Icons.flip_to_back` wired to TFC | ✅ |
+| 10s auto-restore timer in TFC | ✅ |
+| `make test` 266/266 GREEN | ✅ |
+| `flutter analyze` — sprint-introduced errors | ✅ CLEAN (only pre-existing) |
+
+### Note on `wm.lower()`
+`window_manager` does not expose `lower()`. `sendToBack()` uses `setAlwaysOnTop(false)` + `blur()` instead. Window drops behind newly-focused windows; it doesn't actively push below existing windows. Acceptable behavior for v1.
+
+---
+*Last updated: 2026-05-14*

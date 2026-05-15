@@ -1,37 +1,27 @@
-# Current Task
+# Current Task — 2026-05-13
 
-**Status:** Linux Click-Through stories drafted — awaiting Smith Gate 1
-**Assigned to:** Cypher
-**Started:** 2026-04-24T14:45
+**Status:** Sprint plan written, awaiting Drew approval + Smith UX review
 
-## Task Description
-Resume Sprint 5 product planning after loading Cypher state.
+## Completed this session
+- Requirements analysis: full scope of pass-through removal identified
+  - 7 source files, 6 test files, 3+ docs affected
+- New feature F-27 (Send-to-Back) defined with acceptance criteria
+- Sprint plan written: 13 tasks across 3 phases
+- `send_to_back_sprint_plan.md` created in `agents/cypher.docs/`
+- PRD needs updating: remove F-26, rewrite US-06, add F-27
 
-## Linux Wayland Simplification Sprint — 2026-04-25
-- [x] Loaded recent chat and prior transparent-timestrip product context.
-- [x] Consulted Oracle via chat for Linux reserved-space/transparent constraints.
-- [x] Drafted sprint stories and acceptance criteria: `agents/cypher.docs/linux_wayland_simplification_sprint_stories_2026-04-25T16:41.md`.
-- [x] Smith Gate 1 approved stories with UX conditions.
-- [x] Handed off to Morpheus for architecture.
+## Sprint plan location
+`agents/cypher.docs/send_to_back_sprint_plan.md`
 
-## Progress
-- [x] Loaded `agents/CHAT.md` recent context.
-- [x] Loaded Cypher state files and `agents/PROJECT.md`.
-- [x] Confirmed Sprint 5 planning is the active PM queue.
-- [x] Collected Drew direction for macOS/window-mode behavior.
-- [x] Consulted Oracle via chat for prior decisions/lessons.
-- [x] Updated PRD with F-26 and US-06.
-- [x] Drafted transparent timestrip requirement note.
-- [x] Handed off to Smith for UX review.
-- [x] Drafted transparent timestrip sprint stories and acceptance criteria.
-- [ ] Smith UX review of focus trigger, idle click behavior, disabled macOS setting treatment, and opacity range.
-- [ ] Morpheus feasibility review after Smith provides UX direction.
+## Awaiting
+- Drew approval to proceed
+- Smith review of F-27 acceptance criteria
+- Neo + Morpheus to confirm task breakdown before implementation
 
-## Blockers
-- Needs Smith review before architecture planning.
-
-## Oracle Consultations
-- Asked Oracle in chat on 2026-04-24T14:59 for prior decisions/lessons on macOS strip reservation, click-through/transparent windows, and platform-specific reserved-space behavior.
+## Previous tasks (superseded)
+- Linux click-through stories (CT-01–CT-05): CANCELLED — feature dropped
+- Transparent timestrip stories: CANCELLED — feature dropped
+- Linux Wayland Simplification stories: COMPLETE (code landed), docs need cleanup
 
 ---
-*Last updated: 2026-04-25T16:41*
+*Last updated: 2026-05-13*

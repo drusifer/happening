@@ -3,11 +3,7 @@
 #include <flutter_linux/flutter_linux.h>
 #include <unistd.h>
 
-#include "click_through_plugin.h"
 #include "flutter/generated_plugin_registrant.h"
-#ifdef LAYER_SHELL_AVAILABLE
-#include <gtk-layer-shell/gtk-layer-shell.h>
-#endif
 
 struct _MyApplication {
   GtkApplication parent_instance;
@@ -66,24 +62,6 @@ static void my_application_activate(GApplication* application) {
 
   gtk_window_set_default_size(window, 1280, 1);
 
-  // On native Wayland with gtk-layer-shell: anchor strip to top of screen.
-  // exclusive_zone=0 means transparent mode does not reserve desktop space.
-  // On X11/XWayland: window_manager handles positioning; skip this block.
-#ifdef LAYER_SHELL_AVAILABLE
-  {
-    GdkDisplay* display = gdk_display_get_default();
-    if (display != nullptr &&
-        g_strstr_len(G_OBJECT_TYPE_NAME(display), -1, "Wayland") != nullptr) {
-      gtk_layer_init_for_window(window);
-      gtk_layer_set_layer(window, GTK_LAYER_SHELL_LAYER_TOP);
-      gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_TOP, TRUE);
-      gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_LEFT, TRUE);
-      gtk_layer_set_anchor(window, GTK_LAYER_SHELL_EDGE_RIGHT, TRUE);
-      gtk_layer_set_exclusive_zone(window, 0);
-    }
-  }
-#endif
-
   // Load the window icon from the bundled PNG (data/app_icon.png, adjacent to
   // the executable in the release bundle).
   {
@@ -123,9 +101,6 @@ static void my_application_activate(GApplication* application) {
                            self);
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
-  click_through_plugin_register_with_registrar(
-      fl_plugin_registry_get_registrar_for_plugin(FL_PLUGIN_REGISTRY(view),
-                                                  "ClickThroughPlugin"));
 
   gtk_widget_grab_focus(GTK_WIDGET(view));
 }

@@ -1,11 +1,12 @@
 # Current Task
 
-## v0.3.0 / Sprint 6 Active
+## 2026-05-14 — Context Pressure Protocol *learn
+- [x] Added Context Pressure Protocol section to `agents/skills/bob-protocol/SKILL.md`
+- [x] Added Context Pressure Rule to `agents/skills/bloop/SKILL.md`
+- [x] Added Context Pressure Rule to `agents/skills/loops/SKILL.md`
+- [x] Rule: on context-low signal → save state, post chat, STOP for user to /clear
+
+## Previous
 - [x] v0.2.0 shipped.
-- [x] Power button (quit) always-visible on strip.
-- [x] Auth relay reverted — localhost PKCE flow confirmed correct.
-- [x] Proxy /token confirmed working (no changes needed).
-- [x] Bob protocol re-initialized (2026-03-18).
-- [x] Bob protocol re-initialized (2026-04-01).
-- [x] Bob protocol re-initialized (2026-04-14).
+- [x] Bob protocol re-initialized multiple times (2026-03-18, 2026-04-01, 2026-04-14).
 - [ ] Awaiting Drew's next task directive.

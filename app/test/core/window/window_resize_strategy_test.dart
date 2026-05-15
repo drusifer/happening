@@ -32,46 +32,6 @@ void main() {
     when(mockWM.getSize()).thenAnswer((_) async => Size.zero);
   });
 
-  group('LinuxResizeStrategy', () {
-    late LinuxResizeStrategy strategy;
-
-    setUp(() {
-      strategy = LinuxResizeStrategy(wm: mockWM, sr: mockSR);
-    });
-
-    test('initialize sets position to zero, no setResizable', () async {
-      await strategy.initialize(const Size(1920, 55), 1.0);
-      verify(mockWM.setPosition(Offset.zero)).called(1);
-      verifyNever(mockWM.setResizable(any));
-    });
-
-    test('expand calls setSize→setMin→setMax→setSize', () async {
-      final order = <String>[];
-      when(mockWM.setMaximumSize(any))
-          .thenAnswer((_) async => order.add('setMax'));
-      when(mockWM.setSize(any, animate: anyNamed('animate')))
-          .thenAnswer((_) async => order.add('setSize'));
-      when(mockWM.setMinimumSize(any))
-          .thenAnswer((_) async => order.add('setMin'));
-
-      await strategy.expand(const Size(1920, 250));
-      expect(order, ['setSize', 'setMin', 'setMax', 'setSize']);
-    });
-
-    test('collapse calls setMin→setMax→setSize', () async {
-      final order = <String>[];
-      when(mockWM.setSize(any, animate: anyNamed('animate')))
-          .thenAnswer((_) async => order.add('setSize'));
-      when(mockWM.setMinimumSize(any))
-          .thenAnswer((_) async => order.add('setMin'));
-      when(mockWM.setMaximumSize(any))
-          .thenAnswer((_) async => order.add('setMax'));
-
-      await strategy.collapse(const Size(1920, 55));
-      expect(order, ['setMin', 'setMax', 'setSize']);
-    });
-  });
-
   group('WindowsResizeStrategy', () {
     late WindowsResizeStrategy strategy;
 

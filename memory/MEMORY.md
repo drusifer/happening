@@ -6,35 +6,26 @@ Flutter desktop app (Linux/macOS/Windows) — a top-of-screen calendar strip tha
 ## Key Files
 - `app/lib/core/window/window_service.dart` — window resize logic (expand/collapse)
 - `app/lib/features/timeline/timeline_strip.dart` — main UI, hover/mouse logic
-- `app/linux/runner/my_application.cc` — GTK native setup (X11 strut, dock type)
+- `app/linux/runner/my_application.cc` — GTK native setup (RGBA visual, first_frame_cb)
 - `app/lib/main.dart` — entry point
 - `~/.config/happening/debug.log` — runtime log file
+- `docs/LINUX_SIMPLIFICATION.md` — design doc for 2026-05-11 platform simplification
 
-## Linux GTK Window Resize Behavior (CRITICAL)
-`setResizable(false)` is called during init. This means:
-- `setSize()` is **silently ignored** by GTK — never changes the actual window size
-- `setMaximumSize(x)` causes GTK to snap to its "natural height" (~200px) if x > natural
-- `setMinimumSize(x)` is the **actual resize mechanism** — forces the window to x
+## Linux Platform (XWayland only)
+As of 2026-05-11, all Linux-specific platform code has been removed.
+Linux now uses the same code paths as macOS:
+- `MacOsResizeStrategy`: expand = setMax→setSize→setMin; collapse = setMin→setMax→setSize
+- `MacOsWindowInteractionStrategy`: click-through via `window_manager.setIgnoreMouseEvents()`
+- No custom C++ click-through plugin; no layer-shell; no XWayland detection
+- `linuxTransparentSupported = Platform.isLinux` (always true)
 
-### Correct Linux expand order (setSize first):
-```dart
-if (Platform.isLinux) {
-  await _wm.setSize(size);        // no-op but harmless — avoids 200px intermediate
-  await _wm.setMinimumSize(size); // actual resize: direct 50→240, clean Flutter notification
-  await _wm.setMaximumSize(size); // lock
-}
-```
-Using Windows order (setMaximumSize first) causes a two-step resize (50→200→240).
-The 200→240 step does NOT reliably notify Flutter's viewport on 2nd+ expand,
-leaving maxHeight stuck at 200 and the hovercard/settings area blank.
-
-### Correct Linux collapse order (current, works):
-```dart
-setSize(size);        // ignored
-setMinimumSize(size); // lowers min
-setMaximumSize(size); // forces shrink — only call that actually collapses
-```
+## Expand/Collapse Flicker (open issue)
+Diagnosed 2026-05-11. NOT YET FIXED.
+- `setSize` grows GTK window at +42ms after expand intent
+- Flutter `maxH` lags ~171ms while subsequent platform calls block the GLib event loop
+- During that gap: 50px Flutter surface appears at bottom of 300px GTK window
+- Fix direction: emit expanded state before OS resize, OR remove constraint calls from expand
 
 ## Multi-Agent Protocol
 Uses BOB_SYSTEM_PROTOCOL — see `agents/bob.docs/BOB_SYSTEM_PROTOCOL.md`.
-Chat log: `agents/CHAT.md`. Post via `./agents/tools/chat.py`.
+Chat log: `agents/CHAT.md`. Post via `make chat MSG="..." PERSONA="..." CMD="..."`.

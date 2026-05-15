@@ -1733,3 +1733,119 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
  Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
 Lost connection to device.
 make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-11 10:52:29</small>] [**User**]->[**all**] *request*:
+ init — cold start. Reading chat log and state files.
+
+---
+[<small>2026-05-11 10:53:24</small>] [**BobProtocol**]->[**all**] *init*:
+ BobProtocol init complete. State: Neo=EC refactor DONE 292/292, Trin=293/293 green. Pending: debugPrint->dart:developer log() migration + Wayland smoke. Last commit flickers. Awaiting user direction.
+
+---
+[<small>2026-05-11 11:50:56</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:28 +278: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-11 12:01:29</small>] [**Neo**]->[**all**] *handoff*:
+ Linux simplification DONE 278/278. MacOsResizeStrategy+MacOsWindowInteractionStrategy now used for Linux. Flicker diagnosed, not fixed. See neo.docs/next_steps.md to resume.
+
+---
+[<small>2026-05-13 14:42:28</small>] [**Cypher**]->[**all**] *pm doc*:
+ F-26 (click-through) DROPPED. F-27 (sendToBack) replaces on all platforms. Sprint plan ready: agents/cypher.docs/send_to_back_sprint_plan.md — 13 tasks/3 phases. Awaiting Drew approval.
+
+---
+[<small>2026-05-13 14:53:34</small>] [**Cypher**]->[**Smith**] *handoff*:
+ Stories ready for Gate 1: agents/cypher.docs/smith_gate1_send_to_back_stories.md — 3 stories (STB-01/02/03) + 3 open UX Qs. @Smith *user review smith_gate1_send_to_back_stories.md
+
+---
+[<small>2026-05-13 14:54:49</small>] [**Smith**]->[**Morpheus**] *user approve*:
+ Gate 1 APPROVED with amendments. Full review: agents/smith.docs/send_to_back_gate1_review_2026-05-13.md. Key: 10s timer (not 7), no focus-steal on restore, new icon (flip_to_back), minor AC wording fixes. @Morpheus *lead arch sprint
+
+---
+[<small>2026-05-13 14:57:46</small>] [**Morpheus**]->[**Smith**] *handoff*:
+ Arch ready for Gate 2: agents/morpheus.docs/SEND_TO_BACK_ARCH_2026-05-13.md — Base/MacOs/Reserved hierarchy, sendToBack in base, TFC redesign, HoverFocusController deleted. @Smith *user feedback arch
+
+---
+[<small>2026-05-13 14:59:05</small>] [**Smith**]->[**Mouse**] *user approve*:
+ Gate 2 APPROVED. Review: agents/smith.docs/send_to_back_gate2_review_2026-05-13.md. Notes: verify wm.lower() Linux before T-08 closes; no early-cancel is intentional V2 scope. @Mouse *sm plan sprint
+
+---
+[<small>2026-05-13 15:00:46</small>] [**Mouse**]->[**Morpheus**] *handoff*:
+ Sprint board ready: task.md — 8 phases (A-H), 15 tasks. Phase D is a hard green gate before feature work. @Morpheus *lead review sprint plan
+
+---
+[<small>2026-05-13 15:01:29</small>] [**Morpheus**]->[**Neo**] *handoff*:
+ Sprint plan APPROVED. task.md ready — 8 phases, 15 tasks. Phase D is hard green gate. @Neo *swe impl STB-A1 STB-A2 (Phase A: doc cleanup + WindowMode rename)
+
+---
+[<small>2026-05-13 22:17:54</small>] [**Neo**]->[**all**] *handoff*:
+ Context clear prep done. All persona state updated. Neo ready for Phase A (STB-A1 docs, STB-A2 WindowMode rename). See neo.docs/next_steps.md to resume.
+
+---
+[<small>2026-05-13 22:22:34</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:06 +279: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-13 22:23:02</small>] [**Neo**]->[**Trin**] *swe handoff*:
+ Phase A complete: STB-A1 docs cleaned (F-26→F-27, US-06 rewritten, 7 stale docs deleted), STB-A2 WindowMode.transparent→overlay (migration fallback added). make test 279/279 GREEN. @Trin *qa uat Phase A
+
+---
+[<small>2026-05-13 22:24:09</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:06 +279: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-13 22:24:38</small>] [**Trin**]->[**Morpheus**] *qa handoff*:
+ Phase A UAT PASS: zero WindowMode.transparent in app/, migration fallback verified, PRD F-26→F-27 + US-06 correct, 7 stale docs gone, LINUX_SIMPLIFICATION.md accurate, make test 279/279 GREEN. @Morpheus *lead review Phase A
+
+---
+[<small>2026-05-13 22:26:42</small>] [**Morpheus**]->[**Neo**] *lead approve*:
+ Phase A APPROVED. Doc fix applied. 279/279 green. Dead fields noted for Phase B. @Neo *swe impl Phase B (STB-B1 + STB-B2)
+
+---
+[<small>2026-05-14 12:30:33</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:07 +266: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-14 12:31:15</small>] [**Trin**]->[**Morpheus**] *qa handoff*:
+ Phase G/H UAT PASS — 266/266 green, analyze clean (sprint-introduced). sendToBack uses setAlwaysOnTop(false)+blur() — lower() not in window_manager API. @Morpheus *lead review send-to-back sprint
+
+---
+[<small>2026-05-14 12:33:00</small>] [**Morpheus**]->[**Oracle**] *lead handoff*:
+ Code review APPROVED. Architecture clean — Base→MacOs/Reserved hierarchy, TFC/button wired, 266/266 green. wm.lower() unavailable — blur() fallback documented. @Oracle *oracle doc Phase H2: ARCH.md, USER_GUIDE.md, README.md, LINUX_SIMPLIFICATION.md
+
+---
+[<small>2026-05-14 12:34:54</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:06 +266: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-14 12:35:40</small>] [**Neo**]->[**all**] *swe complete*:
+ Send-to-Back sprint COMPLETE. All phases A-H done. 266/266 green. analyze clean (sprint-introduced). Docs updated. wm.lower() N/A — blur() fallback. Awaiting Drew direction for next sprint.
+
+---
+[<small>2026-05-14 12:37:44</small>] [**Neo**]->[**all**] *resume*:
+ Cold start recovery complete. Send-to-Back sprint DONE (all phases A-H, 266/266 green). No active sprint — awaiting Drew's direction.
+
+---
+[<small>2026-05-14 12:40:18</small>] [**Bob**]->[**all**] *learn*:
+ *learn deployed: Context Pressure Protocol in bob-protocol/bloop/loops. Context-low signal → save state, post chat, STOP. User runs /clear, resume via Cold Start.
+
+---
+[<small>2026-05-14 16:39:43</small>] [**Oracle**]->[**all**] *ora complete*:
+ Phase H2 docs DONE. ARCH.md→v0.7, README (sprint entry + Hover fix), USER_GUIDE (Strip Controls section, Linux troubleshoot fix). LINUX_SIMPLIFICATION was already current. Send-to-Back sprint fully closed.
+
+---
+[<small>2026-05-15 00:03:54</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'

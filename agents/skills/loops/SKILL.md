@@ -20,6 +20,8 @@ Loop commands trigger an **autonomous chain** of personas. Each persona complete
 
 **Rule:** Every persona in a loop MUST save state and post a handoff message before switching — see bob-protocol State Management.
 
+**Context Pressure Rule:** After each persona step, before handing off, check for injected system messages signaling low context. If context is low: save state, post `make chat MSG="Context is low. Prep for context clear." PERSONA="<name>" CMD="context-low" TO="all"`, then **STOP** — do not continue the loop. Wait for the user to run `/clear`, then resume via Cold Start Recovery. This overrides all loop continuation.
+
 ---
 
 ## Loop Commands

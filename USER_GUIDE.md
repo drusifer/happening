@@ -74,9 +74,17 @@ Happening uses "Smart Bounding" to make interaction stable:
 
 ---
 
-## 6. Settings & Customization
+## 6. Strip Controls & Settings
 
-Click the **Gear** icon on the far left to open the Settings Panel:
+### Always-Visible Strip Buttons
+Four icon buttons are always visible on the strip (once signed in):
+- **Refresh** — re-fetches your calendar events. On Windows, also reasserts the reserved space at the top of the screen.
+- **Send to Back** (`⧉` flip icon) — temporarily lowers the strip behind all other windows for 10 seconds, then auto-restores it to the top. Press again to reset the timer. Useful when the strip is covering something you need to see.
+- **Settings** (gear icon) — opens the settings panel.
+- **Quit** (power icon, far right) — exits the app at any time, even before signing in.
+
+### Settings Panel
+Click the **Gear** icon to open the Settings Panel:
 
 - **Theme**: Switch between **Dark**, **Light**, and **System** themes.
 - **Time Window**: Control how many hours of your day are visible (8h, 12h, or 24h).
@@ -100,7 +108,7 @@ Happening is optimized for ultra-low CPU usage:
 - **Windows overlap after changing display scale or resolution**: Click the **Refresh** icon on the left side of the strip. It refreshes calendar events and asks Windows to reapply the reserved space at the top of the screen.
 - **Strip Positioning**: If the strip appears in the center of the screen (Linux/Wayland), ensure `GDK_BACKEND=x11` is set.
 - **Transparency**: The area below the strip is transparent to your desktop. If it appears as a solid black/white box, verify your system's compositor settings (compositing must be enabled).
-- **Hover card not expanding (Linux)**: If hovering over an event does nothing, try a full app restart. The GTK window resize uses a constraint-forcing sequence that requires the app to initialize in the correct size state.
+- **Hover card not expanding (Linux)**: If hovering over an event does nothing, try a full app restart. Linux uses the same resize path as macOS via the `window_manager` API.
 
 ---
 

@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:happening/core/settings/settings_service.dart';
 
@@ -111,7 +110,7 @@ void main() {
         theme: AppTheme.light,
         timeWindowHours: 12,
         selectedCalendarIds: ['cal-1', 'cal-2'],
-        windowMode: WindowMode.transparent,
+        windowMode: WindowMode.overlay,
         idleTimelineOpacity: 0.70,
       );
       await svc.update(settings);
@@ -122,7 +121,7 @@ void main() {
       expect(json['theme'], 'light');
       expect(json['timeWindowHours'], 12);
       expect(json['selectedCalendarIds'], ['cal-1', 'cal-2']);
-      expect(json['windowMode'], 'transparent');
+      expect(json['windowMode'], 'overlay');
       expect(json['idleTimelineOpacity'], 0.70);
     });
 
@@ -132,7 +131,7 @@ void main() {
         theme: AppTheme.system,
         timeWindowHours: 24,
         selectedCalendarIds: ['primary'],
-        windowMode: WindowMode.transparent,
+        windowMode: WindowMode.overlay,
         idleTimelineOpacity: 0.40,
       );
       await svc.update(settings);
@@ -144,41 +143,21 @@ void main() {
       expect(svc2.current.theme, AppTheme.system);
       expect(svc2.current.timeWindowHours, 24);
       expect(svc2.current.selectedCalendarIds, ['primary']);
-      expect(svc2.current.windowMode, WindowMode.transparent);
+      expect(svc2.current.windowMode, WindowMode.overlay);
       expect(svc2.current.idleTimelineOpacity, 0.40);
     });
 
-    test('effectiveWindowMode uses opaque reserved mode on macOS', () {
-      const settings = AppSettings(windowMode: WindowMode.transparent);
-      expect(
-        settings.effectiveWindowMode(TargetPlatform.macOS),
-        WindowMode.reserved,
-      );
+    test('fromString migrates legacy "transparent" value to overlay', () async {
+      File('${tmpDir.path}/settings.json')
+          .writeAsStringSync(jsonEncode({'windowMode': 'transparent'}));
+      await svc.load();
+      expect(svc.current.windowMode, WindowMode.overlay);
     });
 
-    test('effectiveWindowMode uses opaque reserved mode on Linux', () {
-      const settings = AppSettings(windowMode: WindowMode.transparent);
+    test('effectiveWindowMode is always reserved', () {
+      expect(const AppSettings().effectiveWindowMode, WindowMode.reserved);
       expect(
-        settings.effectiveWindowMode(TargetPlatform.linux),
-        WindowMode.reserved,
-      );
-    });
-
-    test('effectiveWindowMode ignores verified Linux transparent support', () {
-      const settings = AppSettings(windowMode: WindowMode.transparent);
-      expect(
-        settings.effectiveWindowMode(
-          TargetPlatform.linux,
-          linuxTransparentSupported: true,
-        ),
-        WindowMode.reserved,
-      );
-    });
-
-    test('effectiveWindowMode uses opaque reserved mode on Windows', () {
-      const settings = AppSettings(windowMode: WindowMode.transparent);
-      expect(
-        settings.effectiveWindowMode(TargetPlatform.windows),
+        const AppSettings(windowMode: WindowMode.overlay).effectiveWindowMode,
         WindowMode.reserved,
       );
     });

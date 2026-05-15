@@ -70,7 +70,6 @@ class WindowService with WidgetsBindingObserver {
   WindowService({
     required WindowManager windowManager,
     required ScreenRetriever screenRetriever,
-    bool? supportsTransparentPassThroughForTesting,
     TargetPlatform? platformOverride,
     bool enableWindowsAppBar = true,
     WindowInteractionStrategy? interactionStrategy,
@@ -81,8 +80,6 @@ class WindowService with WidgetsBindingObserver {
         _interactionStrategy = interactionStrategy ??
             WindowInteractionStrategy.create(
               wm: windowManager,
-              supportsTransparentPassThrough:
-                  supportsTransparentPassThroughForTesting ?? !Platform.isLinux,
               platformOverride: platformOverride,
             ),
         _strategy = WindowResizeStrategy.create(
@@ -176,33 +173,11 @@ class WindowService with WidgetsBindingObserver {
     unawaited(_onDisplayChanged());
   }
 
-  /// Whether this platform should expose transparent click-through mode.
-  ///
-  /// Phase A deliberately keeps Linux unavailable: an earlier real-session
-  /// attempt produced an unusable black bar, and current reliable behavior is
-  /// only established for macOS/Windows.
-  Future<bool> supportsTransparentPassThrough() async {
-    return _interactionStrategy.availability.supportsTransparent;
-  }
-
   WindowMode get windowMode => _windowMode;
 
-  /// Enables or disables whole-window click-through behavior.
-  ///
-  /// Uses `forward: true` so supported native platforms pass ignored mouse
-  /// events to whatever is behind the strip instead of swallowing them.
-  Future<void> setPassThroughEnabled(bool enabled) async {
-    if (!_interactionStrategy.availability.supportsTransparent) {
-      _log.fine(
-          'WindowService.setPassThroughEnabled($enabled): unsupported platform');
-      return;
-    }
-    await _interactionStrategy.setPassThrough(enabled);
-  }
+  Future<void> sendToBack() => _interactionStrategy.sendToBack();
 
-  Future<void> setInteractionFocused(bool focused) async {
-    await _interactionStrategy.setFocused(focused);
-  }
+  Future<void> restoreToFront() => _interactionStrategy.restoreToFront();
 
   Future<void> setWindowMode(WindowMode mode) async {
     if (_windowMode == mode) return;

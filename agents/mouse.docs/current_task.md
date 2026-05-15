@@ -1,8 +1,21 @@
 # Current Task
 
+## Send-to-Back Sprint Planning — 2026-05-13
+**Status**: PLANNED ✅ — awaiting Morpheus review, then Phase A to Neo
+**Progress**: 0/15 tasks
+
+### Delivered
+- [x] Phase board written in `task.md` — 8 phases, 15 tasks
+- [x] Covers: doc cleanup, WindowMode rename, strategy hierarchy, WindowService purge, TFC redesign, tests green gate, sendToBack feature, QA/docs close
+
+### Next
+- [ ] Morpheus review and approve phase plan
+- [ ] Neo: implement Phase A (STB-A1, STB-A2)
+
+---
+
 ## Linux Click-Through Sprint Tracking — 2026-04-26
-**Status**: COMPLETE ✅
-**Progress**: 9/9 tasks done
+**Status**: CANCELLED — replaced by Send-to-Back sprint
 
 ### Delivered
 - [x] Sprint planned (Mouse).

@@ -1,5 +1,15 @@
 # Morpheus Context
 
+## Send-to-Back Sprint — 2026-05-13
+- Click-through DROPPED. Send-to-back replaces on all platforms.
+- Architecture: BaseWindowInteractionStrategy → MacOs + Reserved (Linux+Windows).
+- sendToBack: setAlwaysOnTop(false)+blur()+lower(). restoreToFront: setAlwaysOnTop(true) only (no focus steal).
+- TimelineFocusController completely redesigned: _isSentToBack + 10s restore timer.
+- HoverFocusController: DELETE (dead code after transparent mode removal).
+- WindowMode.transparent → WindowMode.overlay. fromString fallback silent migration.
+- Arch doc: agents/morpheus.docs/SEND_TO_BACK_ARCH_2026-05-13.md
+- Risk: wm.lower() Linux availability — Neo to verify in T-08.
+
 ## Linux Click-Through Research — 2026-04-26
 
 - `window_manager` v0.5.1 does NOT implement `setIgnoreMouseEvents` on Linux (returns `MissingPluginException`).

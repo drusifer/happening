@@ -16,14 +16,10 @@ import 'window_service_test.mocks.dart';
 
 class _FakeInteractionStrategy extends WindowInteractionStrategy {
   WindowMode? initializedMode;
-  final List<bool> focusedCalls = [];
-  final List<bool> passThroughCalls = [];
 
   @override
-  WindowModeAvailability get availability => const WindowModeAvailability(
-        supportsTransparent: true,
-        supportsReserved: true,
-      );
+  WindowModeAvailability get availability =>
+      const WindowModeAvailability(supportsReserved: true);
 
   @override
   Future<void> initialize(WindowMode effectiveMode) async {
@@ -31,14 +27,10 @@ class _FakeInteractionStrategy extends WindowInteractionStrategy {
   }
 
   @override
-  Future<void> setFocused(bool focused) async {
-    focusedCalls.add(focused);
-  }
+  Future<void> sendToBack() async {}
 
   @override
-  Future<void> setPassThrough(bool enabled) async {
-    passThroughCalls.add(enabled);
-  }
+  Future<void> restoreToFront() async {}
 }
 
 void main() {
@@ -84,8 +76,6 @@ void main() {
       when(mockWM.setAlwaysOnTop(any)).thenAnswer((_) => Future.value());
       when(mockWM.setAsFrameless()).thenAnswer((_) => Future.value());
       when(mockWM.setBackgroundColor(any)).thenAnswer((_) => Future.value());
-      when(mockWM.setIgnoreMouseEvents(any, forward: anyNamed('forward')))
-          .thenAnswer((_) => Future.value());
       when(mockWM.show(inactive: anyNamed('inactive')))
           .thenAnswer((_) => Future.value());
       when(mockWM.focus()).thenAnswer((_) => Future.value());
@@ -110,75 +100,19 @@ void main() {
         () async {
       await service.initialize(
         initialFontSize: FontSize.medium,
-        initialWindowMode: WindowMode.transparent,
+        initialWindowMode: WindowMode.overlay,
       );
 
-      expect(fakeInteractionStrategy.initializedMode, WindowMode.transparent);
-      expect(service.windowMode, WindowMode.transparent);
-    });
-
-    test('setPassThroughEnabled enables click-through with forwarded events',
-        () async {
-      service = WindowService(
-        windowManager: mockWM,
-        screenRetriever: mockSR,
-        supportsTransparentPassThroughForTesting: true,
-        platformOverride: TargetPlatform.windows,
-        enableWindowsAppBar: false,
-      );
-
-      await service.setPassThroughEnabled(true);
-
-      verify(mockWM.setIgnoreMouseEvents(true, forward: true)).called(1);
-    });
-
-    test('setPassThroughEnabled disables click-through with forwarded events',
-        () async {
-      service = WindowService(
-        windowManager: mockWM,
-        screenRetriever: mockSR,
-        supportsTransparentPassThroughForTesting: true,
-        platformOverride: TargetPlatform.windows,
-        enableWindowsAppBar: false,
-      );
-
-      await service.setPassThroughEnabled(false);
-
-      verify(mockWM.setIgnoreMouseEvents(false, forward: true)).called(1);
-    });
-
-    test('setPassThroughEnabled is a no-op on unsupported platforms', () async {
-      service = WindowService(
-        windowManager: mockWM,
-        screenRetriever: mockSR,
-        supportsTransparentPassThroughForTesting: false,
-      );
-
-      await service.setPassThroughEnabled(true);
-
-      verifyNever(
-          mockWM.setIgnoreMouseEvents(any, forward: anyNamed('forward')));
-    });
-
-    test('supportsTransparentPassThrough defaults to unavailable on Linux',
-        () async {
-      service = WindowService(windowManager: mockWM, screenRetriever: mockSR);
-      expect(await service.supportsTransparentPassThrough(), !Platform.isLinux);
-    });
-
-    test('setInteractionFocused delegates to interaction strategy', () async {
-      await service.setInteractionFocused(true);
-      await service.setInteractionFocused(false);
-
-      expect(fakeInteractionStrategy.focusedCalls, [true, false]);
+      expect(fakeInteractionStrategy.initializedMode, WindowMode.overlay);
+      expect(service.windowMode, WindowMode.overlay);
     });
 
     test('setWindowMode updates stored mode and reinitializes interaction',
         () async {
-      await service.setWindowMode(WindowMode.transparent);
+      await service.setWindowMode(WindowMode.overlay);
 
-      expect(service.windowMode, WindowMode.transparent);
-      expect(fakeInteractionStrategy.initializedMode, WindowMode.transparent);
+      expect(service.windowMode, WindowMode.overlay);
+      expect(fakeInteractionStrategy.initializedMode, WindowMode.overlay);
     });
 
     // _onDisplayChanged zero-width guard (DPMS/wake regression)
@@ -240,12 +174,8 @@ void main() {
     //
     // log: build/tmp line 113 — width=2944→3840 (external monitor connected).
     //      build/tmp line 2054 — width=3840→2944 (external monitor disconnected).
-    // _onDisplayChanged resizes the window but does NOT call setPosition().
-    // The window manager may rescue the window to an arbitrary position after
-    // the monitor disconnects, leaving the strip displaced (not at top-left).
-    //
-    // Fix: LinuxResizeStrategy.collapse() must call setPosition(Offset.zero)
-    // so the strip is always re-anchored to the primary display's top-left.
+    // MacOsResizeStrategy.initialize() calls setPosition(Offset.zero) so the
+    // strip is re-anchored to the primary display's top-left after each collapse.
     test('THEORY-D: Linux display change re-anchors position after collapse',
         () async {
       if (!Platform.isLinux) return;
@@ -285,10 +215,11 @@ void main() {
       await Future.delayed(Duration.zero);
       await Future.delayed(Duration.zero);
 
-      // After the display change the strip MUST be re-anchored to (0,0).
-      // Without the fix, LinuxResizeStrategy.collapse() never calls setPosition
-      // and the window drifts to wherever the WM rescued it — buttons disappear.
-      verify(mockWM.setPosition(Offset.zero)).called(greaterThanOrEqualTo(1));
+      // After the display change the strip MUST resize to the new width.
+      verify(mockWM.setSize(argThat(predicate<Size>(
+        (s) => s.width == 2944,
+        'new display width',
+      )))).called(greaterThanOrEqualTo(1));
     });
   });
 }
