@@ -10,7 +10,6 @@ import 'package:happening/features/calendar/calendar_controller.dart';
 import 'package:happening/features/timeline/expansion_logic.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/calendar/calendar_service.dart';
-import 'package:happening/features/timeline/focus/timeline_focus_hotkey.dart';
 import 'package:happening/features/timeline/timeline_strip.dart';
 import 'package:mockito/mockito.dart';
 import 'package:screen_retriever/screen_retriever.dart';
@@ -52,14 +51,6 @@ class _FakeSettings extends SettingsService {
   AppSettings get current => const AppSettings();
   @override
   Stream<AppSettings> get settings => const Stream.empty();
-}
-
-class _FakeFocusHotkeyBinding implements TimelineFocusHotkeyBinding {
-  @override
-  Future<void> register(TimelineFocusHotkeyHandler onTriggered) async {}
-
-  @override
-  Future<void> unregister() async {}
 }
 
 class _MockCalendarService extends Mock implements CalendarService {
@@ -104,7 +95,6 @@ void main() {
             windowService: _FakeWindowService(),
             onSignOut: () {},
             enableAnimations: false, // crucial for golden tests
-            focusHotkeyBinding: _FakeFocusHotkeyBinding(),
           ),
         ),
       ));

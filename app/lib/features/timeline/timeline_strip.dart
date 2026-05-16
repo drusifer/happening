@@ -26,7 +26,6 @@ import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/timeline/countdown_display.dart';
 import 'package:happening/features/timeline/expansion_logic.dart';
 import 'package:happening/features/timeline/focus/timeline_focus_controller.dart';
-import 'package:happening/features/timeline/focus/timeline_focus_hotkey.dart';
 import 'package:happening/features/timeline/hover_detail_overlay.dart';
 import 'package:happening/features/timeline/settings_panel.dart';
 import 'package:happening/features/timeline/timeline_layout.dart';
@@ -46,7 +45,6 @@ class TimelineStrip extends StatefulWidget {
     this.onCancelSignIn,
     this.isLoading = false,
     this.enableAnimations = true,
-    this.focusHotkeyBinding,
     this.platformOverride,
   });
 
@@ -68,7 +66,6 @@ class TimelineStrip extends StatefulWidget {
 
   /// Whether to run repeating animations. Disable in tests to allow pumpAndSettle.
   final bool enableAnimations;
-  final TimelineFocusHotkeyBinding? focusHotkeyBinding;
   final TargetPlatform? platformOverride;
 
   @override
@@ -81,7 +78,6 @@ class _TimelineStripState extends State<TimelineStrip>
   late final WindowService _windowService;
   late final ExpansionController _expansionController;
   late final TimelineFocusController _focusController;
-  late final TimelineFocusHotkeyBinding _focusHotkeyBinding;
   late final FocusNode _keyboardFocusNode;
   final _flashNotifier = ValueNotifier<double>(0.0);
   Timer? _flashTimer;
@@ -123,10 +119,6 @@ class _TimelineStripState extends State<TimelineStrip>
     _focusController = TimelineFocusController(
       windowService: _windowService,
     );
-    _focusHotkeyBinding = widget.focusHotkeyBinding ??
-        HotkeyManagerTimelineFocusHotkeyBinding(
-          platformOverride: _targetPlatform,
-        );
     _focusController.isSentToBackNotifier.addListener(_onSentToBackChanged);
 
     // S5-FIX: Listen to settings changes to update heights and trigger rebuild
@@ -137,7 +129,6 @@ class _TimelineStripState extends State<TimelineStrip>
     unawaited(_syncWindowBehavior());
     _collidingIds = detectCollisions(widget.events);
     _log.fine('TimelineStrip: Initializing');
-    unawaited(_focusHotkeyBinding.register(() {}));
   }
 
   void _onSettingsChanged() {
@@ -189,7 +180,6 @@ class _TimelineStripState extends State<TimelineStrip>
 
     _flashNotifier.dispose();
     _keyboardFocusNode.dispose();
-    unawaited(_focusHotkeyBinding.unregister());
     _focusController.dispose();
     super.dispose();
   }

@@ -266,12 +266,12 @@ class WindowService with WidgetsBindingObserver {
     _shAppBarMessage = DynamicLibrary.open('shell32.dll')
         .lookupFunction<_SHNative, _SHDart>('SHAppBarMessage');
     final classNamePtr = _flutterWindowClass.toNativeUtf16();
-    final hwnd = FindWindow(classNamePtr, nullptr.cast<Utf16>());
+    final hwnd = FindWindow(PCWSTR(classNamePtr), null);
     calloc.free(classNamePtr);
 
     _appBarData = calloc<_AppBarData>();
     _appBarData!.ref.cbSize = sizeOf<_AppBarData>();
-    _appBarData!.ref.hWnd = hwnd;
+    _appBarData!.ref.hWnd = hwnd.value.address;
     _appBarData!.ref.uCallbackMessage = _uCallbackMessage;
     _shAppBarMessage(_abmNew, _appBarData!);
 
