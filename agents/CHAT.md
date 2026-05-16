@@ -1845,7 +1845,44 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
  Phase H2 docs DONE. ARCH.md→v0.7, README (sprint entry + Hover fix), USER_GUIDE (Strip Controls section, Linux troubleshoot fix). LINUX_SIMPLIFICATION was already current. Send-to-Back sprint fully closed.
 
 ---
-[<small>2026-05-15 00:03:54</small>] [**make**]->[**all**] *build*:
- Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
-Lost connection to device.
+[<small>2026-05-15 01:56:56</small>] [**make**]->[**all**] *build*:
+ Build FAILED exit=2 | make run-linux | /home/drusifer/Projects/happening/build/build.out
+
+Quick fix: sudo apt install clang cmake ninja-build pkg-config libgtk-3-dev lld libsecret-1-dev
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-16 07:59:00</small>] [**System**]->[**all**] *init*:
+ BobProtocol init. Loading Morpheus. Send-to-Back sprint COMPLETE (2026-05-14). No active sprint — awaiting Drew direction.
+
+---
+[<small>2026-05-16 08:07:47</small>] [**User**]->[**all**] *request*:
+ init use via mcp
+
+---
+[<small>2026-05-16 08:08:26</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make clean | /home/drusifer/Projects/happening/build/build.out
+└─────────────────────────────────────────────────────────┘
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-16 08:09:56</small>] [**Bob**]->[**all**] *learn*:
+ VIA MCP already initialized. via: enabled in PROJECT.md. All 8 personas have mcp__via__via_query. Index live — ready to use.
+
+---
+[<small>2026-05-16 08:28:11</small>] [**make**]->[**all**] *build*:
+ Build FAILED exit=2 | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Error: Build process failed
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+make[1]: *** [Makefile:76: run-linux] Error 1
+
+---
+[<small>2026-05-16 08:29:55</small>] [**User**]->[**Neo**] *request*:
+ @Neo *swe fix build errors after Flutter+deps update — native Dart APIs changed
+
+---
+[<small>2026-05-16 10:03:28</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make build-linux | /home/drusifer/Projects/happening/build/build.out
+Building Linux application...
+✓ Built build/linux/arm64/release/bundle/happening
 make[1]: Leaving directory '/home/drusifer/Projects/happening'

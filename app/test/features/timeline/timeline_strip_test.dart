@@ -13,7 +13,6 @@ import 'package:happening/features/timeline/expansion_logic.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/calendar/calendar_service.dart';
 import 'package:happening/features/timeline/countdown_display.dart';
-import 'package:happening/features/timeline/focus/timeline_focus_hotkey.dart';
 import 'package:happening/features/timeline/hover_detail_overlay.dart';
 import 'package:happening/features/timeline/settings_panel.dart';
 import 'package:happening/features/timeline/timeline_painter.dart';
@@ -131,21 +130,6 @@ class _FakeSettingsService extends SettingsService {
   Stream<AppSettings> get settings => const Stream.empty();
 }
 
-class _FakeFocusHotkeyBinding implements TimelineFocusHotkeyBinding {
-  VoidCallback? callback;
-
-  @override
-  Future<void> register(TimelineFocusHotkeyHandler onTriggered) async {
-    callback = onTriggered;
-  }
-
-  @override
-  Future<void> unregister() async {
-    callback = null;
-  }
-
-  void trigger() => callback?.call();
-}
 
 void main() {
   final now = DateTime(2026, 3, 2, 10, 0);

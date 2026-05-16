@@ -27,7 +27,8 @@
       "Bash(pkg-config --modversion gtk-layer-shell-0)",
       "Read(//usr/include/gtk-layer-shell/**)",
       "Bash(xargs ls -la)",
-      "Bash(make *)"
+      "Bash(make *)",
+      "mcp__via__via_query"
     ]
   },
   "enabledMcpjsonServers": [

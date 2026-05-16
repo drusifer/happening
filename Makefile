@@ -40,7 +40,7 @@ else
   endif
 endif
 
-LLVM_BIN     := /usr/lib/llvm-20/bin
+LLVM_BIN     := /usr/lib/llvm-22/bin
 PUB_STAMP    := $(APP_DIR)/.dart_tool/package_config.json
 
 $(FLUTTER):
