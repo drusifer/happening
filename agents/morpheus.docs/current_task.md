@@ -1,36 +1,44 @@
-# Current Task — 2026-05-14
+# Current Task — 2026-05-18
 
-**Status**: Code Review COMPLETE — APPROVED
+**Status:** F-29 Code Review COMPLETE — APPROVED
 
-## Send-to-Back Sprint — Full Review
+## Code Review: F-29 Astronomical Timeline Theme (AST-E2)
 
-### Review Verdict: APPROVED
+### Issues Found and Resolved
 
-All Phase B, C, E, F changes reviewed and approved.
+| Issue | Severity | Resolution |
+|-------|----------|-----------|
+| `AstroDataService._recalculate` missing disposed guard — `notifyListeners()` could fire after dispose | HIGH | Fixed: added `_disposed = true` in `dispose()`, check `if (_disposed) return` after `await SunCalc.getTimes()` |
 
-### Architecture checklist
+### Architecture Findings (Non-blocking)
 
-| Check | Result |
-|-------|--------|
-| `setPassThrough`/`setFocused` gone from interface | ✅ |
-| `BaseWindowInteractionStrategy` created | ✅ |
-| `MacOs` + `Reserved` extend base | ✅ |
-| `supportsTransparent` removed from `WindowModeAvailability` | ✅ |
-| Factory routes Linux+Windows → Reserved | ✅ |
-| `setPassThroughEnabled` removed from WindowService | ✅ |
-| `sendToBack`/`restoreToFront` in interface + service | ✅ |
-| `sendToBack` impl: `setAlwaysOnTop(false)` + `blur()` | ✅ |
-| `restoreToFront` impl: `setAlwaysOnTop(true)` | ✅ |
-| `HoverFocusController` deleted | ✅ |
-| TFC redesigned: `isSentToBack`, `isSentToBackNotifier`, 10s timer | ✅ |
-| Button `Icons.flip_to_back` with active state | ✅ |
-| Listener removed before `_focusController.dispose()` | ✅ |
-| `_onSentToBackChanged` guards `mounted` | ✅ |
-| 266/266 tests green | ✅ |
+| Finding | Verdict |
+|---------|---------|
+| `AstroDataService` created in `_TimelineStripState.initState()` (not main.dart as arch doc specified) | ACCEPTABLE — equivalent lifecycle; avoids threading through HappeningApp |
+| City geocoding always returns null (`_defaultResolveCityName`) | KNOWN GAP — error UX correct; lat/lng advanced field is workaround |
+| `_useDeviceLocation` calls real `Geolocator.checkPermission()` after injected callback | MINOR — doesn't affect production; noted for future test refactor |
+| Gradient stop ordering — duplicate stops possible when all events outside window | SAFE — Flutter allows duplicate stops; shows all-dark/all-day correctly |
 
-### Notes
-- `wm.lower()` not in window_manager API — `blur()` fallback acceptable for v1
-- `_syncWindowBehavior` always calls `setWindowMode` even on init — harmless (WindowService guards idempotently)
+### Painter Layer Review
+
+- **AstronomicalBackgroundLayer**: Clean `TimelineLayer` implementation. `stopFor()` public for testability. Stops clamped to [0,1]. ✅
+- **SolarMarkerLayer**: Clips correctly. Uses `TextPainter` for noon symbol. ✅
+- **LunarMarkerLayer**: Phase silhouette via shadow-circle technique. Arrow paths correct. ✅
+- **TimelinePainter wiring**: `useAstro = isAstroTheme && astroData != null` is a clean guard. Layer list uses spread for conditional insertion. `shouldRepaint` updated. ✅
+
+### Test Coverage Review
+
+- +52 tests from baseline (276 → 328)
+- AstroSettings: equality + moonPhase fromFraction ✅
+- AstroDataService: lifecycle, solar ordering, cache, location change ✅
+- Painter layers: stop positions, x ordering, moon null handling ✅
+- MoonPhaseBadge: render, tap, tooltip ✅
+- SettingsPanel: location section visible/hidden, prompt, preview, city error, advanced ✅
+
+### Final Gate
+
+**APPROVED.** 328/328 green. Disposed guard fix applied. F-29 is ship-ready pending Oracle doc pass.
 
 ---
-*Last updated: 2026-05-14*
+
+*Last updated: 2026-05-18*

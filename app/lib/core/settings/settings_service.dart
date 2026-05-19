@@ -12,6 +12,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:happening/core/astro/astro_settings.dart';
 
 /// Supported font sizes for event labels.
 enum FontSize {
@@ -30,7 +31,8 @@ enum FontSize {
 enum AppTheme {
   dark,
   light,
-  system;
+  system,
+  astronomical;
 
   static AppTheme fromString(String val) => AppTheme.values
       .firstWhere((e) => e.name == val, orElse: () => AppTheme.dark);
@@ -48,8 +50,8 @@ enum WindowMode {
   }
 }
 
-const double kMinIdleTimelineOpacity = 0.35;
-const double kMaxIdleTimelineOpacity = 0.75;
+const double kMinIdleTimelineOpacity = 0.2;
+const double kMaxIdleTimelineOpacity = 1.0;
 
 double _clampIdleTimelineOpacity(double value) {
   return value.clamp(kMinIdleTimelineOpacity, kMaxIdleTimelineOpacity);
@@ -63,7 +65,8 @@ class AppSettings {
     this.timeWindowHours = 8,
     this.selectedCalendarIds = const [],
     this.windowMode = WindowMode.reserved,
-    this.idleTimelineOpacity = 0.55,
+    this.idleTimelineOpacity = 1.0,
+    this.astroSettings = const AstroSettings(),
   });
 
   final FontSize fontSize;
@@ -72,6 +75,7 @@ class AppSettings {
   final List<String> selectedCalendarIds;
   final WindowMode windowMode;
   final double idleTimelineOpacity;
+  final AstroSettings astroSettings;
 
   /// Effective mode after platform reliability rules are applied.
   WindowMode get effectiveWindowMode => WindowMode.reserved;
@@ -83,6 +87,7 @@ class AppSettings {
     List<String>? selectedCalendarIds,
     WindowMode? windowMode,
     double? idleTimelineOpacity,
+    AstroSettings? astroSettings,
   }) {
     return AppSettings(
       fontSize: fontSize ?? this.fontSize,
@@ -91,6 +96,7 @@ class AppSettings {
       selectedCalendarIds: selectedCalendarIds ?? this.selectedCalendarIds,
       windowMode: windowMode ?? this.windowMode,
       idleTimelineOpacity: idleTimelineOpacity ?? this.idleTimelineOpacity,
+      astroSettings: astroSettings ?? this.astroSettings,
     );
   }
 
@@ -101,6 +107,7 @@ class AppSettings {
         'selectedCalendarIds': selectedCalendarIds,
         'windowMode': windowMode.name,
         'idleTimelineOpacity': idleTimelineOpacity,
+        'astroSettings': astroSettings.toJson(),
       };
 
   factory AppSettings.fromJson(Map<String, dynamic> json) => AppSettings(
@@ -114,8 +121,12 @@ class AppSettings {
         windowMode:
             WindowMode.fromString(json['windowMode'] as String? ?? 'reserved'),
         idleTimelineOpacity: _clampIdleTimelineOpacity(
-          (json['idleTimelineOpacity'] as num? ?? 0.55).toDouble(),
+          (json['idleTimelineOpacity'] as num? ?? 1.0).toDouble(),
         ),
+        astroSettings: json['astroSettings'] is Map<String, dynamic>
+            ? AstroSettings.fromJson(
+                json['astroSettings'] as Map<String, dynamic>)
+            : const AstroSettings(),
       );
 }
 

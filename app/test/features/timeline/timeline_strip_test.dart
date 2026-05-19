@@ -50,6 +50,9 @@ class _FakeWindowService extends WindowService {
   Future<void> setWindowMode(WindowMode mode) async {
     windowModeCalls.add(mode);
   }
+
+  @override
+  Future<void> focus() async {}
 }
 
 class _FakeClock extends ClockService {

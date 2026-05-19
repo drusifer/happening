@@ -7,6 +7,7 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/window/interaction_strategy/window_interaction_strategy.dart';
+import 'package:happening/core/window/linux_dock_window_manager.dart';
 import 'package:happening/core/window/resize_strategy/window_resize_strategy.dart';
 import 'package:happening/features/timeline/expansion_logic.dart';
 import 'package:screen_retriever/screen_retriever.dart';
@@ -73,6 +74,7 @@ class WindowService with WidgetsBindingObserver {
     TargetPlatform? platformOverride,
     bool enableWindowsAppBar = true,
     WindowInteractionStrategy? interactionStrategy,
+    LinuxDockWindowManager? linuxDockWindowManager,
   })  : _wm = windowManager,
         _sr = screenRetriever,
         _platformOverride = platformOverride,
@@ -82,6 +84,7 @@ class WindowService with WidgetsBindingObserver {
               wm: windowManager,
               platformOverride: platformOverride,
             ),
+        _linuxDock = linuxDockWindowManager ?? LinuxDockWindowManager(),
         _strategy = WindowResizeStrategy.create(
           wm: windowManager,
           sr: screenRetriever,
@@ -92,6 +95,7 @@ class WindowService with WidgetsBindingObserver {
   final TargetPlatform? _platformOverride;
   final bool _enableWindowsAppBar;
   final WindowInteractionStrategy _interactionStrategy;
+  final LinuxDockWindowManager _linuxDock;
   final WindowResizeStrategy _strategy;
 
   FontSize _fontSize = FontSize.medium;
@@ -156,6 +160,10 @@ class WindowService with WidgetsBindingObserver {
       await _interactionStrategy.initialize(_windowMode);
     });
 
+    if (_isLinux && _windowMode == WindowMode.reserved) {
+      await _reserveLinuxStrut();
+    }
+
     // Register lifecycle observer AFTER initial setup so spurious resumed
     // events emitted during GTK window creation do not queue extra collapses
     // that race with first_frame_cb showing the window.
@@ -166,6 +174,9 @@ class WindowService with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _strategy.dispose();
     _disposeAppBar();
+    if (_isLinux) {
+      unawaited(_linuxDock.undock());
+    }
   }
 
   @override
@@ -178,6 +189,8 @@ class WindowService with WidgetsBindingObserver {
   Future<void> sendToBack() => _interactionStrategy.sendToBack();
 
   Future<void> restoreToFront() => _interactionStrategy.restoreToFront();
+
+  Future<void> focus() => _wm.focus();
 
   Future<void> setWindowMode(WindowMode mode) async {
     if (_windowMode == mode) return;
@@ -192,6 +205,14 @@ class WindowService with WidgetsBindingObserver {
         }
       } else {
         _disposeAppBar();
+      }
+    }
+
+    if (_isLinux) {
+      if (_windowMode == WindowMode.reserved) {
+        await _reserveLinuxStrut();
+      } else {
+        await _linuxDock.undock();
       }
     }
 
@@ -249,6 +270,10 @@ class WindowService with WidgetsBindingObserver {
       // Re-anchor window position — display change can nudge the window.
       // rcTop is trusted post-SETPOS for ABE_TOP.
       await _wm.setPosition(Offset(0, _appBarData!.ref.rcTop / _dpr));
+    }
+
+    if (_isLinux && _windowMode == WindowMode.reserved) {
+      await _reserveLinuxStrut();
     }
 
     // Resize window to match new display dimensions via the strategy.
@@ -396,6 +421,12 @@ class WindowService with WidgetsBindingObserver {
       calloc.free(_appBarData!);
       _appBarData = null;
     }
+  }
+
+  Future<void> _reserveLinuxStrut() async {
+    final height = (getCollapsedHeight() * _dpr).round();
+    _log.fine('WindowService._reserveLinuxStrut: height=$height (dpr=$_dpr)');
+    await _linuxDock.dock(height: height);
   }
 
   /// Executes the platform resize sequence for [intent].

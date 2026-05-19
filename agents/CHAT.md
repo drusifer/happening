@@ -1886,3 +1886,199 @@ make[1]: *** [Makefile:76: run-linux] Error 1
 Building Linux application...
 ✓ Built build/linux/arm64/release/bundle/happening
 make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-16 10:10:34</small>] [**User**]->[**all**] *request*:
+ *plan sprint: implement linux reserved space. Starting chain: Cypher→Smith→Morpheus→Smith→Mouse→Morpheus.
+
+---
+[<small>2026-05-16 10:14:30</small>] [**Cypher**]->[**Smith**] *pm handoff*:
+ Stories written → agents/cypher.docs/linux_reserved_space_sprint_stories.md. 3 stories, F-28. @Smith *user review linux_reserved_space_sprint_stories.md
+
+---
+[<small>2026-05-16 10:15:56</small>] [**Smith**]->[**Morpheus**] *user approve*:
+ Gate 1 APPROVED w/ amendments. 3 AC wording fixes (remove impl terms). Review: smith.docs/linux_reserved_gate1_review_2026-05-16.md @Morpheus *lead arch sprint
+
+---
+[<small>2026-05-16 10:24:10</small>] [**Morpheus**]->[**Smith**] *lead handoff*:
+ Arch DONE: platform-channel plugin (happening/strut) + LinuxStrutService.dart + WindowService wiring. No DOCK type = no black screen. Wayland guarded. Doc: LINUX_RESERVED_ARCH_2026-05-16.md @Smith *user feedback arch
+
+---
+[<small>2026-05-16 10:24:36</small>] [**Smith**]->[**Mouse**] *user approve*:
+ Gate 2 APPROVED. Arch clean — no DOCK type, runtime toggle correct, Wayland fallback right. Non-blocking: verify settings label is outcome-language. @Mouse *sm plan sprint
+
+---
+[<small>2026-05-16 10:25:55</small>] [**Mouse**]->[**Morpheus**] *sm handoff*:
+ Sprint board written → task.md. F-28 Linux Reserved Space: 3 phases, 6 tasks. Phase A → Neo. @Morpheus *lead review sprint plan
+
+---
+[<small>2026-05-16 10:26:06</small>] [**Morpheus**]->[**Neo**] *lead approve*:
+ Sprint plan APPROVED. 3 phases clean, Wayland guard correct, memory-safety review in C2. Ready: @Neo *swe impl LRS-A1
+
+---
+[<small>2026-05-16 10:37:45</small>] [**Mouse**]->[**all**] *sm update*:
+ Plan updated: linux_dock_window_manager plugin (3 methods only: isDockable/dock/undock). Top strut only — DockSide left/right irrelevant. Phase A→Neo.
+
+---
+[<small>2026-05-16 10:54:11</small>] [**Oracle**]->[**all**] *ora record*:
+ Documented: DEC-006 in docs/DECISIONS.md (supersedes DEC-005), LESSONS.md entry re window_manager.dock() stubs + left/right only. linux_dock_window_manager plugin approach recorded.
+
+---
+[<small>2026-05-16 10:59:09</small>] [**Oracle**]->[**all**] *context-low*:
+ Context is low. Prep for context clear. State saved: Neo (F-28 Phase A ready), Oracle (DEC-006 done), Cypher/Mouse/Smith (sprint planned). Resume: Cold Start → task.md top.
+
+---
+[<small>2026-05-16 14:29:12</small>] [**Neo**]->[**all**] *swe impl*:
+ Cold start. Taking Phase A (LRS-A1 + LRS-A2) + Phase B (LRS-B1) for linux_dock_window_manager sprint.
+
+---
+[<small>2026-05-16 14:35:48</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make build-linux | /home/drusifer/Projects/happening/build/build.out
+Building Linux application...
+✓ Built build/linux/arm64/release/bundle/happening
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-16 14:36:28</small>] [**Neo**]->[**Trin**] *swe handoff*:
+ Phase A + B DONE. LRS-A1 (C++ plugin), LRS-A2 (Dart wrapper), LRS-B1 (WindowService wiring). 275/275 green, build-linux PASSED. @Trin *qa uat LRS-C1: run test suite + manual AC checklist. @Morpheus LRS-C2 review after Trin.
+
+---
+[<small>2026-05-16 14:36:40</small>] [**Trin**]->[**all**] *qa uat*:
+ Entering as Trin. Reading handoff — running LRS-C1 UAT: full test suite + AC checklist.
+
+---
+[<small>2026-05-18 14:25:18</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:06 +276: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-18 14:25:26</small>] [**Neo**]->[**all**] *swe fix*:
+ Fixed strip-below-reserved-space bug. GNOME moves window to work-area top after strut set. Fix: _reserveLinuxStrut() calls setPosition(Offset.zero) after dock(). 276/276 green.
+
+---
+[<small>2026-05-18 15:22:56</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-18 16:02:21</small>] [**Neo**]->[**all**] *context-low*:
+ Context low. Saving state. Stopping.
+
+---
+[<small>2026-05-18 16:30:35</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make build-linux | /home/drusifer/Projects/happening/build/build.out
+Building Linux application...
+✓ Built build/linux/arm64/release/bundle/happening
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-18 17:37:08</small>] [**Cypher**]->[**all**] *init*:
+ Cypher online. Loaded state. F-28 Phases A+B+hotfixes DONE (276/276 green, build passing). Phase C (Trin UAT + Morpheus review) pending. Awaiting direction.
+
+---
+[<small>2026-05-18 18:14:45</small>] [**Cypher**]->[**all**] *pm story*:
+ Writing F-29 Astronomical Timeline Theme — US stories, AC, open questions. API probe: sunrise-sunset.org is solar-only; will flag moon data source as OQ.
+
+---
+[<small>2026-05-18 18:18:20</small>] [**Cypher**]->[**all**] *pm story*:
+ F-29 stories done. 4 US, full AC. OQ-1: moon data source TBD (solar API is solar-only). PRD updated. @Smith *user review f29_astronomical_theme_stories.md
+
+---
+[<small>2026-05-18 18:33:45</small>] [**Cypher**]->[**all**] *pm update*:
+ F-29 OQs resolved. Dart astro lib (offline lunar), civil twilight gradient, always-on moon badge, geolocator pkg for location UI. AC updated. Ready for @Smith *user review f29_astronomical_theme_stories.md
+
+---
+[<small>2026-05-18 18:35:08</small>] [**Cypher**]->[**all**] *pm update*:
+ F-29 updated: solar data also moves to Dart astro lib. No external APIs at all — fully offline from lat/lng + date. PRD + stories updated.
+
+---
+[<small>2026-05-18 18:36:43</small>] [**Cypher**]->[**Smith**] *pm handoff*:
+ *plan sprint for F-29 Astro Theme. Stories + OQs resolved. Handing to @Smith *user review f29_astronomical_theme_stories.md
+
+---
+[<small>2026-05-18 18:37:52</small>] [**Smith**]->[**Morpheus**] *user approve*:
+ Gate 1 APPROVED w/ notes. Review: agents/smith.docs/f29_gate1_review_2026-05-18.md. Key: (1) sunrise icon at actual sunrise, not civil twilight begin; (2) city search fallback for manual location. @Morpheus *lead arch F-29
+
+---
+[<small>2026-05-18 18:40:32</small>] [**Morpheus**]->[**Smith**] *lead handoff*:
+ F-29 arch done → ASTRO_THEME_ARCH_2026-05-18.md. 5 phases A-E. @Smith *user review Gate 2.
+
+---
+[<small>2026-05-18 18:41:38</small>] [**Smith**]->[**Mouse**] *user approve*:
+ Gate 2 APPROVED. Review: f29_gate2_review_2026-05-18.md. 3 non-blocking notes: location permission UX, city search no-match UX, moon badge tooltip. @Mouse *sm plan F-29 sprint
+
+---
+[<small>2026-05-18 18:46:56</small>] [**Mouse**]->[**Morpheus**] *sm handoff*:
+ F-29 sprint board written → task.md. 5 phases, 12 tasks (AST-A1 through AST-E2). F-28 Phase C (Trin UAT + Morpheus review) preserved. @Morpheus *lead review sprint plan
+
+---
+[<small>2026-05-18 18:47:25</small>] [**Morpheus**]->[**Neo**] *lead review*:
+ Sprint plan APPROVED. One addition: AST-A1 — Neo posts astro library choice to chat before coding for Morpheus review. @Neo *swe impl AST-A1 when ready.
+
+---
+[<small>2026-05-18 18:52:18</small>] [**Neo**]->[**Morpheus**] *swe note*:
+ Package selection: dart_suncalc (user directive). Provides getSunTimes() for civil twilight/sunrise/sunset/noon, getMoonTimes() for moonrise/moonset, getMoonIllumination() for phase+fraction. Proceeding with AST-A1.
+
+---
+[<small>2026-05-18 19:13:55</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+
+---
+[<small>2026-05-18 19:31:15</small>] [**Neo**]->[**Trin**] *swe handoff*:
+ F-29 Phases A-D DONE. 328/328 (+52 tests). AstroDataService, painter layers, location UI, MoonPhaseBadge all wired. City geocoding returns null (known gap, lat/lng workaround). @Trin *qa uat F-29
+
+---
+[<small>2026-05-18 19:31:24</small>] [**Trin**]->[**all**] *qa entry*:
+ Trin online. Running F-29 UAT (AST-E1). Suite: 328/328 confirmed. Running AC checklist.
+
+---
+[<small>2026-05-18 19:33:27</small>] [**Trin**]->[**Morpheus**] *qa handoff*:
+ F-29 UAT PASS. 328/328. All 9 ACs green. 1 non-blocking gap: city geocoding always returns null (correct error UX, lat/lng workaround works). @Morpheus *lead review F-29
+
+---
+[<small>2026-05-18 19:33:39</small>] [**Morpheus**]->[**all**] *lead entry*:
+ Morpheus online. Running F-29 code review (AST-E2). Checking AstroDataService lifecycle, painter layer isolation, TimelinePainter param additions.
+
+---
+[<small>2026-05-18 19:35:46</small>] [**Morpheus**]->[**Oracle**] *lead approve*:
+ F-29 code review APPROVED. 1 fix applied: disposed guard in AstroDataService._recalculate. 328/328 clean. Sprint ship-ready. @Oracle *doc update F-29 (ARCH.md + PRD.md)
+
+---
+[<small>2026-05-18 19:38:32</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-18 19:39:14</small>] [**Morpheus**]->[**all**] *context-low*:
+ Context prep: F-29 impl+UAT+review DONE. 328/328. Disposed guard fix applied. Oracle doc pass (AST-E2) pending. All persona states saved. Ready for /clear.
+
+---
+[<small>2026-05-19 10:52:11</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-19 10:55:27</small>] [**User**]->[**all**] *request*:
+ init and continue with the fix for the astro gradient. load neo and await my feedback
+
+---
+[<small>2026-05-19 10:56:41</small>] [**Neo**]->[**User**] *resume*:
+ Resuming F-29 session. Neo online. Loaded state: Phases A-D COMPLETE (328/328 green). AstronomicalBackgroundLayer reviewed. Awaiting user direction on the gradient fix.
+
+---
+[<small>2026-05-19 11:55:09</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+
+---
+[<small>2026-05-19 11:55:40</small>] [**Neo**]->[**User**] *swe done*:
+ Gradient rewrite done. 4 stops at real solar events. 333/333 green.
+
+---
+[<small>2026-05-19 18:00:14</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:08 +333: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'

@@ -8,18 +8,21 @@
 //
 // ---------------------------------------------------------------------------
 
-import 'dart:async';
 import 'package:logging/logging.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
+import 'package:happening/core/astro/astro_settings.dart';
+import 'package:happening/features/timeline/painters/astronomical_background_layer.dart';
 import 'package:happening/features/timeline/painters/background_layer.dart';
 import 'package:happening/features/timeline/painters/events_layer.dart';
 import 'package:happening/features/timeline/painters/fetching_layer.dart';
+import 'package:happening/features/timeline/painters/lunar_marker_layer.dart';
 import 'package:happening/features/timeline/painters/now_indicator_layer.dart';
 import 'package:happening/features/timeline/painters/past_overlay_layer.dart';
 import 'package:happening/features/timeline/painters/sign_in_layer.dart';
+import 'package:happening/features/timeline/painters/solar_marker_layer.dart';
 import 'package:happening/features/timeline/painters/tick_layer.dart';
 import 'package:happening/features/timeline/timeline_layout.dart';
 
@@ -48,6 +51,9 @@ class TimelinePainter extends CustomPainter {
     this.signInTextColor = Colors.white,
     this.surfaceOpacity = 1.0,
     this.emphasisOpacity = 1.0,
+    this.stripOpacity = 1.0,
+    this.astroData,
+    this.isAstroTheme = false,
   });
 
   final List<CalendarEvent> events;
@@ -74,6 +80,9 @@ class TimelinePainter extends CustomPainter {
   final Color signInTextColor;
   final double surfaceOpacity;
   final double emphasisOpacity;
+  final double stripOpacity;
+  final AstroData? astroData;
+  final bool isAstroTheme;
 
   static DateTime? _lastPaintDebugAt;
 
@@ -100,8 +109,18 @@ class TimelinePainter extends CustomPainter {
       windowEnd: windowEnd,
     );
 
+    final useAstro = isAstroTheme && astroData != null;
+
     final layers = [
-      BackgroundLayer(color: backgroundColor),
+      if (useAstro)
+        AstronomicalBackgroundLayer(
+            astroData: astroData!, layout: layout, now: now)
+      else
+        BackgroundLayer(color: backgroundColor),
+      if (useAstro) ...[
+        SolarMarkerLayer(astroData: astroData!, layout: layout, now: now),
+        LunarMarkerLayer(astroData: astroData!, layout: layout, now: now),
+      ],
       PastOverlayLayer(
         nowIndicatorX: nowIndicatorX,
         color: pastOverlayColor.withValues(
@@ -155,8 +174,26 @@ class TimelinePainter extends CustomPainter {
       ),
     ];
 
+    final useLayerOpacity = stripOpacity < 1.0;
+    if (useLayerOpacity) {
+      canvas.saveLayer(Rect.fromLTWH(0, 0, size.width, size.height), Paint());
+    }
+
     for (final layer in layers) {
       layer.paint(canvas, size);
+    }
+
+    if (useLayerOpacity) {
+      // Apply global opacity via DstIn: output = dst * src.alpha.
+      // This is a Skia-level composite — no Flutter OpacityLayer is created,
+      // so GTK keyboard focus routing is unaffected.
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, size.width, size.height),
+        Paint()
+          ..blendMode = BlendMode.dstIn
+          ..color = Color.fromARGB((stripOpacity * 255).round(), 255, 255, 255),
+      );
+      canvas.restore();
     }
   }
 
@@ -172,7 +209,10 @@ class TimelinePainter extends CustomPainter {
       old.isSigningIn != isSigningIn ||
       old.alwaysUse24HourFormat != alwaysUse24HourFormat ||
       old.surfaceOpacity != surfaceOpacity ||
-      old.emphasisOpacity != emphasisOpacity;
+      old.emphasisOpacity != emphasisOpacity ||
+      old.stripOpacity != stripOpacity ||
+      old.astroData != astroData ||
+      old.isAstroTheme != isAstroTheme;
 
   /// Semantic nodes for canvas content — makes ticks, events, and task
   /// diamonds queryable by integration tests via find.bySemanticsLabel.

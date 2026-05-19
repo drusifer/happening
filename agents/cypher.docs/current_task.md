@@ -1,27 +1,25 @@
-# Current Task — 2026-05-13
+# Current Task — 2026-05-18
 
-**Status:** Sprint plan written, awaiting Drew approval + Smith UX review
+**Status:** F-29 Astronomical Timeline Theme — stories written, awaiting gates
 
-## Completed this session
-- Requirements analysis: full scope of pass-through removal identified
-  - 7 source files, 6 test files, 3+ docs affected
-- New feature F-27 (Send-to-Back) defined with acceptance criteria
-- Sprint plan written: 13 tasks across 3 phases
-- `send_to_back_sprint_plan.md` created in `agents/cypher.docs/`
-- PRD needs updating: remove F-26, rewrite US-06, add F-27
+## What was done
+- Probed sunrise-sunset.org API → confirmed solar-only (no lunar data)
+- Wrote 4 user stories with full AC → `agents/cypher.docs/f29_astronomical_theme_stories.md`
+  - US-F29-1: Location setup (OS geolocation + manual lat/lng fallback)
+  - US-F29-2: Solar events on timeline (sunrise/sunset + civil twilight gradient)
+  - US-F29-3: Lunar events on timeline (moonrise/moonset + moon phase badge)
+  - US-F29-4: Theme selection (opt-in, persisted, scaffolds F-16)
+- Added F-28 and F-29 entries to `docs/PRD.md` V2 table
+- Identified 3 open questions (OQ-1 moon source, OQ-2 twilight depth, OQ-3 offscreen moon)
 
-## Sprint plan location
-`agents/cypher.docs/send_to_back_sprint_plan.md`
+## Pending gates before sprint can start
+1. Drew answers OQ-1, OQ-2, OQ-3 (see stories doc)
+2. Smith HCI review of F-29 stories
+3. Morpheus architecture (geolocator package, moon data source, gradient rendering approach)
 
-## Awaiting
-- Drew approval to proceed
-- Smith review of F-27 acceptance criteria
-- Neo + Morpheus to confirm task breakdown before implementation
-
-## Previous tasks (superseded)
-- Linux click-through stories (CT-01–CT-05): CANCELLED — feature dropped
-- Transparent timestrip stories: CANCELLED — feature dropped
-- Linux Wayland Simplification stories: COMPLETE (code landed), docs need cleanup
+## Previous — F-28 Linux Reserved Space Sprint
+**Status:** Phases A+B+hotfixes DONE 2026-05-18; Phase C (Trin UAT + Morpheus review) PENDING
+- PM actions F-28: PRD entry added today ✓; settings label outcome-language check (non-blocking)
 
 ---
-*Last updated: 2026-05-13*
+*Last updated: 2026-05-18*

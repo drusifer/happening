@@ -21,6 +21,8 @@ dependencies:
   win32: any
   ffi: any
   logging: any
+  apsl_sun_calc: ^0.0.4
+  geolocator: any
 
 dev_dependencies:
   flutter_test:

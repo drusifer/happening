@@ -1,5 +1,6 @@
 # Local Flutter SDK (downloaded by make setup, not committed)
 .flutter/
+.cache
 
 node_modules
 

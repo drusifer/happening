@@ -15,6 +15,7 @@ import 'package:logging/logging.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:happening/core/astro/astro_data_service.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/time/clock_service.dart';
 import 'package:happening/core/window/expansion_controller.dart';
@@ -27,6 +28,7 @@ import 'package:happening/features/timeline/countdown_display.dart';
 import 'package:happening/features/timeline/expansion_logic.dart';
 import 'package:happening/features/timeline/focus/timeline_focus_controller.dart';
 import 'package:happening/features/timeline/hover_detail_overlay.dart';
+import 'package:happening/features/timeline/moon_phase_badge.dart';
 import 'package:happening/features/timeline/settings_panel.dart';
 import 'package:happening/features/timeline/timeline_layout.dart';
 import 'package:happening/features/timeline/timeline_painter.dart';
@@ -81,6 +83,7 @@ class _TimelineStripState extends State<TimelineStrip>
   late final FocusNode _keyboardFocusNode;
   final _flashNotifier = ValueNotifier<double>(0.0);
   Timer? _flashTimer;
+  late final AstroDataService _astroDataService;
   CalendarEvent? _hoveredEvent;
   bool _isHoveringStrip = false;
   PointerEvent? _lastPointerEvent;
@@ -124,11 +127,22 @@ class _TimelineStripState extends State<TimelineStrip>
     // S5-FIX: Listen to settings changes to update heights and trigger rebuild
     widget.settingsService.addListener(_onSettingsChanged);
 
+    _astroDataService =
+        AstroDataService(settingsService: widget.settingsService);
+    _astroDataService.addListener(_onAstroDataChanged);
+    _astroDataService.initialize();
+
     WidgetsBinding.instance.addObserver(this);
     _updateHeights();
     unawaited(_syncWindowBehavior());
     _collidingIds = detectCollisions(widget.events);
     _log.fine('TimelineStrip: Initializing');
+  }
+
+  void _onAstroDataChanged() {
+    _log.fine('TimelineStrip: astroData changed → '
+        'current=${_astroDataService.current != null ? "AstroData(sunrise=${_astroDataService.current!.sunrise})" : "null"}');
+    if (mounted) setState(() {});
   }
 
   void _onSettingsChanged() {
@@ -175,6 +189,8 @@ class _TimelineStripState extends State<TimelineStrip>
     _expansionController.dispose();
     _focusController.isSentToBackNotifier.removeListener(_onSentToBackChanged);
     widget.settingsService.removeListener(_onSettingsChanged);
+    _astroDataService.removeListener(_onAstroDataChanged);
+    _astroDataService.dispose();
     WidgetsBinding.instance.removeObserver(this);
     _flashTimer?.cancel();
 
@@ -384,6 +400,7 @@ class _TimelineStripState extends State<TimelineStrip>
     });
     if (_isSettingsOpen) {
       _expansionController.send(ExpansionState.expanded);
+      unawaited(_windowService.focus());
     } else {
       _expansionController.send(ExpansionState.collapsed);
     }
@@ -557,6 +574,10 @@ class _TimelineStripState extends State<TimelineStrip>
                                           Colors.white,
                                   surfaceOpacity: 1.0,
                                   emphasisOpacity: 1.0,
+                                  stripOpacity: settings.idleTimelineOpacity,
+                                  astroData: _astroDataService.current,
+                                  isAstroTheme: settings.theme ==
+                                      AppTheme.astronomical,
                                 ),
                               ),
                             ),
@@ -721,6 +742,14 @@ class _TimelineStripState extends State<TimelineStrip>
                                     stripBackgroundColor: stripBackgroundColor,
                                   ),
                                   const SizedBox(width: 4),
+                                  if (_astroDataService.current != null) ...[
+                                    MoonPhaseBadge(
+                                      astroData: _astroDataService.current!,
+                                      onTap: _toggleSettings,
+                                      fontSize: fontSize,
+                                    ),
+                                    const SizedBox(width: 8),
+                                  ],
                                   _IconButton(
                                     icon: Icons.settings,
                                     onTap: _toggleSettings,

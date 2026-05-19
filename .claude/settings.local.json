@@ -28,7 +28,10 @@
       "Read(//usr/include/gtk-layer-shell/**)",
       "Bash(xargs ls -la)",
       "Bash(make *)",
-      "mcp__via__via_query"
+      "mcp__via__via_query",
+      "Skill(make)",
+      "WebFetch(domain:pub.dev)",
+      "Skill(chat)"
     ]
   },
   "enabledMcpjsonServers": [

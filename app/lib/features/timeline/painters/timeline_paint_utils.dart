@@ -12,17 +12,13 @@ class TimelinePaintUtils {
     required Color backgroundColor,
     bool centered = false,
   }) {
-    final isDarkBg = ThemeData.estimateBrightnessForColor(backgroundColor) ==
-        Brightness.dark;
-    final List<Shadow>? shadows = isDarkBg
-        ? [
-            Shadow(
-              blurRadius: 2.0,
-              color: Colors.black.withValues(alpha: 0.5),
-              offset: const Offset(0.5, 0.5),
-            )
-          ]
-        : null;
+    const shadows = [
+      Shadow(
+        blurRadius: 3.0,
+        color: Color(0xAA000000),
+        offset: Offset(0.5, 0.5),
+      ),
+    ];
 
     final span = TextSpan(
       text: text,
@@ -53,24 +49,19 @@ class TimelinePaintUtils {
     required Color backgroundColor,
     bool isTask = false,
   }) {
-    final isDarkBg = ThemeData.estimateBrightnessForColor(backgroundColor) ==
-        Brightness.dark;
-    final textColor = isTask && !isDarkBg ? Colors.black87 : Colors.white;
-    final shadow = (!isTask || isDarkBg)
-        ? Shadow(
-            blurRadius: 2.0,
-            color: Colors.black.withValues(alpha: 0.5),
-            offset: const Offset(0.5, 0.5),
-          )
-        : null;
+    const shadow = Shadow(
+      blurRadius: 3.0,
+      color: Color(0xAA000000),
+      offset: Offset(0.5, 0.5),
+    );
 
     final span = TextSpan(
       text: title,
       style: TextStyle(
-        color: textColor,
+        color: Colors.white,
         fontSize: fontSize,
         fontWeight: FontWeight.w500,
-        shadows: shadow != null ? [shadow] : null,
+        shadows: const [shadow],
       ),
     );
     final painter = TextPainter(
