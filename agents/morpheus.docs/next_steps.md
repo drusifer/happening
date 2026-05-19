@@ -1,10 +1,14 @@
-# Next Steps — 2026-05-14
+# Next Steps — 2026-05-18
 
-## Send-to-Back Sprint — COMPLETE
-Code review approved 2026-05-14. Hand to Oracle for Phase H2 doc pass.
+## F-29 Astronomical Theme — ACTIVE
+1. Review Neo's Dart astronomy library choice when posted to chat (`@Morpheus *lead decide <package>`)
+2. After Phase B: review new painter layers for canvas correctness and isolation
+3. After Phase E: final code review (AST-E2)
 
-## Oracle H2 doc targets
-- `docs/ARCH.md` — update interaction strategy section (Base → MacOs/Reserved; sendToBack API)
-- `docs/USER_GUIDE.md` — remove pass-through, describe send-to-back button
-- `README.md` — remove transparent pass-through reference
-- `docs/LINUX_SIMPLIFICATION.md` — final arch summary (already partially done in Phase A)
+## F-28 Phase C — PENDING
+4. `@Trin *qa test F-28` — run UAT against AC-L1 through AC-L3
+5. `@Morpheus *lead review F-28` — C++ memory safety + WindowService serialisation
+6. After both: close F-28 sprint, update PRD F-28 status to SHIPPED
+
+---
+*Last updated: 2026-05-18*

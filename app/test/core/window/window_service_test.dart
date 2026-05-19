@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/window/interaction_strategy/window_interaction_strategy.dart';
+import 'package:happening/core/window/linux_dock_window_manager.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -13,6 +14,25 @@ import 'package:window_manager/window_manager.dart';
 
 @GenerateNiceMocks([MockSpec<WindowManager>(), MockSpec<ScreenRetriever>()])
 import 'window_service_test.mocks.dart';
+
+class _FakeLinuxDockWindowManager extends LinuxDockWindowManager {
+  final List<String> calls = [];
+  int? lastDockHeight;
+
+  @override
+  Future<bool> isDockable() async => true;
+
+  @override
+  Future<void> dock({required int height}) async {
+    calls.add('dock');
+    lastDockHeight = height;
+  }
+
+  @override
+  Future<void> undock() async {
+    calls.add('undock');
+  }
+}
 
 class _FakeInteractionStrategy extends WindowInteractionStrategy {
   WindowMode? initializedMode;
@@ -41,15 +61,18 @@ void main() {
     late MockScreenRetriever mockSR;
     late WindowService service;
     late _FakeInteractionStrategy fakeInteractionStrategy;
+    late _FakeLinuxDockWindowManager fakeLinuxDock;
 
     setUp(() {
       mockWM = MockWindowManager();
       mockSR = MockScreenRetriever();
       fakeInteractionStrategy = _FakeInteractionStrategy();
+      fakeLinuxDock = _FakeLinuxDockWindowManager();
       service = WindowService(
         windowManager: mockWM,
         screenRetriever: mockSR,
         interactionStrategy: fakeInteractionStrategy,
+        linuxDockWindowManager: fakeLinuxDock,
       );
 
       // Default mock behavior for initialization
@@ -220,6 +243,86 @@ void main() {
         (s) => s.width == 2944,
         'new display width',
       )))).called(greaterThanOrEqualTo(1));
+    });
+
+    group('Linux strut (F-28)', () {
+      WindowService linuxService() => WindowService(
+            windowManager: mockWM,
+            screenRetriever: mockSR,
+            platformOverride: TargetPlatform.linux,
+            interactionStrategy: fakeInteractionStrategy,
+            linuxDockWindowManager: fakeLinuxDock,
+          );
+
+      test('initialize reserved mode calls dock with physical pixel height',
+          () async {
+        final svc = linuxService();
+        await svc.initialize(
+          initialFontSize: FontSize.medium,
+          initialWindowMode: WindowMode.reserved,
+        );
+        // DPR=1.0 (mock), collapsedHeight=55 → physical=55
+        expect(fakeLinuxDock.calls, contains('dock'));
+        expect(fakeLinuxDock.lastDockHeight, 55);
+      });
+
+      test('initialize overlay mode does NOT call dock', () async {
+        final svc = linuxService();
+        await svc.initialize(
+          initialFontSize: FontSize.medium,
+          initialWindowMode: WindowMode.overlay,
+        );
+        expect(fakeLinuxDock.calls, isNot(contains('dock')));
+      });
+
+      test('setWindowMode reserved→dock, other→undock', () async {
+        final svc = linuxService();
+        await svc.initialize(
+          initialFontSize: FontSize.medium,
+          initialWindowMode: WindowMode.overlay,
+        );
+        fakeLinuxDock.calls.clear();
+
+        await svc.setWindowMode(WindowMode.reserved);
+        expect(fakeLinuxDock.calls, contains('dock'));
+
+        fakeLinuxDock.calls.clear();
+        await svc.setWindowMode(WindowMode.overlay);
+        expect(fakeLinuxDock.calls, contains('undock'));
+      });
+
+      test('dispose calls undock', () async {
+        final svc = linuxService();
+        await svc.initialize(
+          initialFontSize: FontSize.medium,
+          initialWindowMode: WindowMode.reserved,
+        );
+        fakeLinuxDock.calls.clear();
+
+        svc.dispose();
+        await Future.delayed(Duration.zero);
+        expect(fakeLinuxDock.calls, contains('undock'));
+      });
+
+      test('display change re-docks with updated height', () async {
+        final svc = linuxService();
+        await svc.initialize(
+          initialFontSize: FontSize.medium,
+          initialWindowMode: WindowMode.reserved,
+        );
+        fakeLinuxDock.calls.clear();
+
+        // Simulate DPR change so _onDisplayChangedInner fires.
+        when(mockWM.getDevicePixelRatio()).thenReturn(2.0);
+
+        svc.didChangeMetrics();
+        await Future.delayed(Duration.zero);
+        await Future.delayed(Duration.zero);
+
+        // Should re-dock with dpr=2.0: collapsedHeight=55 * 2 = 110
+        expect(fakeLinuxDock.calls, contains('dock'));
+        expect(fakeLinuxDock.lastDockHeight, 110);
+      });
     });
   });
 }

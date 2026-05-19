@@ -1,186 +1,238 @@
-# Task Board — Send-to-Back Sprint
-**Updated**: 2026-05-13 | **Owner**: @Neo | **QA**: @Trin | **Arch**: @Morpheus | **UX**: @Smith
+# Task Board — Astronomical Timeline Theme Sprint (F-29)
+**Updated**: 2026-05-18 | **Owner**: @Neo | **QA**: @Trin | **Arch**: @Morpheus | **UX**: @Smith
 
 ---
 
 ## Sprint Goal
-
-Remove all pass-through / click-through infrastructure (three failed implementation attempts). Replace with a cross-platform "send to back" behavior: the strip drops behind other windows for 10 seconds then auto-restores. Clean baseline with no dead code.
+Add an opt-in "Astronomical" theme that overlays sunrise, sunset, moonrise, and moonset
+markers on the timeline at their exact times, with a day/night gradient background.
+All astronomical data calculated offline from user's location via a Dart astronomy library.
+Location sourced via `geolocator` OS API (with city-search + manual lat/lng fallback).
 
 ## Source Artifacts
-- Product stories: `agents/cypher.docs/smith_gate1_send_to_back_stories.md`
-- UX Gate 1: `agents/smith.docs/send_to_back_gate1_review_2026-05-13.md`
-- Architecture: `agents/morpheus.docs/SEND_TO_BACK_ARCH_2026-05-13.md`
-- UX Gate 2: `agents/smith.docs/send_to_back_gate2_review_2026-05-13.md`
-- Full sprint plan: `agents/cypher.docs/send_to_back_sprint_plan.md`
+- Product stories: `agents/cypher.docs/f29_astronomical_theme_stories.md`
+- UX Gate 1: `agents/smith.docs/f29_gate1_review_2026-05-18.md`
+- Architecture: `agents/morpheus.docs/ASTRO_THEME_ARCH_2026-05-18.md`
+- UX Gate 2: `agents/smith.docs/f29_gate2_review_2026-05-18.md`
 
 ---
 
-## Phase A — Doc Cleanup + WindowMode Rename
-**Review**: [ ] pending
-**Gate**: compile passes after rename; no test changes yet
+## Phase A — Data Models + Service
+**Gate**: `make test` green; `AstroDataService` calculates and caches solar + lunar data correctly
 
-### STB-A1: PRD & Doc Cleanup (T-01)
-- **Goal**: Remove F-26 from PRD; rewrite US-06 AC; update Section 8 tech decisions; delete stale Cypher sprint docs; update `docs/LINUX_SIMPLIFICATION.md`.
+### AST-A1: Dependencies + Data model
+- **Goal**: Add `geolocator: any` and Dart astronomy library (Neo selects best pub.dev package
+  for sunrise/sunset/moonrise/moonset/phase) to `pubspec.yaml`. Create `app/lib/core/astro/`:
+  - `AstroSettings` — value object: `latitude: double?`, `longitude: double?`, `cityName: String?`
+  - `AstroData` — value object: `civilTwilightBegin`, `sunrise`, `solarNoon`, `sunset`,
+    `civilTwilightEnd` (all `DateTime`); `moonrise: DateTime?`, `moonset: DateTime?`;
+    `phase: MoonPhase`, `illuminationFraction: double`
+  - `MoonPhase` — 8-value enum: `newMoon`, `waxingCrescent`, `firstQuarter`, `waxingGibbous`,
+    `full`, `waningGibbous`, `lastQuarter`, `waningCrescent`
+  **Before coding**: Neo evaluates available pub.dev astronomy packages and posts
+  the chosen package name + rationale to CHAT.md for Morpheus review.
+  Write unit tests for `AstroData` equality and `MoonPhase`.
 - **Files**:
-  - `docs/PRD.md` ✎
-  - `docs/LINUX_SIMPLIFICATION.md` ✎
-  - `agents/cypher.docs/linux_click_through_sprint_stories_2026-04-26.md` 🗑
-  - `agents/cypher.docs/transparent_timestrip_*.md` 🗑
-- **Risk**: Low (docs only)
-- **Tests**: n/a
+  - `app/pubspec.yaml` ✎
+  - `app/lib/core/astro/astro_settings.dart` ✦
+  - `app/test/core/astro/astro_settings_test.dart` ✦
+- **Risk**: Low
+- **Tests**: `make test` green
 
-### STB-A2: Rename `WindowMode.transparent` → `WindowMode.overlay` (T-02)
-- **Goal**: Rename enum value; update `fromString` fallback (`'transparent'` → `WindowMode.overlay`); update all call sites.
+### AST-A2: `AstroDataService`
+- **Goal**: Create `AstroDataService extends ChangeNotifier`.
+  Listens to `SettingsService`; calculates solar + lunar data via Dart astro library for
+  (today, lat, lng); caches in memory for (date, lat, lng); midnight timer invalidates cache.
+  Exposes `AstroData? current` (null if no location or theme != astronomical). No network calls.
+  Write unit tests: correct solar times for known lat/lng; correct moonPhase for known dates;
+  cache hit; null when no location set.
+- **Files**:
+  - `app/lib/core/astro/astro_data_service.dart` ✦
+  - `app/test/core/astro/astro_data_service_test.dart` ✦
+- **Risk**: Medium — Dart astro library API varies by package
+- **Tests**: `make test` green
+
+---
+
+## Phase B — Painter Layers
+**Gate**: `make test` green; visual smoke: gradient + icons visible at correct timeline positions
+
+### AST-B1: `AstronomicalBackgroundLayer`
+- **Goal**: New `TimelineLayer` replacing `BackgroundLayer` when astronomical theme active.
+  Horizontal linear gradient with stops at civil twilight times:
+  - Before `civilTwilightBegin` → dark navy `Color(0xFF0A0E1A)`
+  - `civilTwilightBegin` → `sunrise` → warm orange/pink `Color(0xFFFF8C42)`
+  - `sunrise` → `sunset` → sky blue `Color(0xFF87CEEB)`
+  - `sunset` → `civilTwilightEnd` → warm orange/pink
+  - After `civilTwilightEnd` → dark navy
+  Uses `TimelineLayout.xForTime()` for pixel mapping; clips to visible window.
+  Write tests: gradient stop positions for known inputs.
+- **Files**:
+  - `app/lib/features/timeline/painters/astronomical_background_layer.dart` ✦
+  - `app/test/features/timeline/painters/astronomical_background_layer_test.dart` ✦
+- **Risk**: Low
+- **Tests**: `make test` green
+
+### AST-B2: `SolarMarkerLayer`
+- **Goal**: New `TimelineLayer` for solar event icons.
+  - Sunrise icon (☀️ or custom SVG) at `layout.xForTime(astroData.sunrise)`
+  - Sunset icon at `layout.xForTime(astroData.sunset)`
+  - Solar noon small tick + label at `layout.xForTime(astroData.solarNoon)`
+  All clipped to `[0, stripWidth]`; renders BELOW event blocks.
+  Write tests: icon x positions match expected for given solar times; clips correctly.
+- **Files**:
+  - `app/lib/features/timeline/painters/solar_marker_layer.dart` ✦
+  - `app/test/features/timeline/painters/solar_marker_layer_test.dart` ✦
+- **Risk**: Low
+- **Tests**: `make test` green
+
+### AST-B3: `LunarMarkerLayer` + `TimelinePainter` wiring
+- **Goal**: New `TimelineLayer` for moon event icons.
+  - Moonrise: 8-phase moon icon + upward arrow at `layout.xForTime(astroData.moonrise)` if in window
+  - Moonset: same phase icon (dimmer) + downward arrow at `layout.xForTime(astroData.moonset)` if in window
+  - Clips to `[0, stripWidth]`; no overflow artifact
+  Wire `TimelinePainter`:
+  - Add params: `astroData: AstroData?`, `isAstroTheme: bool`
+  - When `isAstroTheme && astroData != null`: replace `BackgroundLayer` → `AstronomicalBackgroundLayer`;
+    insert `SolarMarkerLayer` + `LunarMarkerLayer` after background, before `PastOverlayLayer`
+  - When not astronomical: existing layer order unchanged
+  Update `shouldRepaint` for new params.
+- **Files**:
+  - `app/lib/features/timeline/painters/lunar_marker_layer.dart` ✦
+  - `app/test/features/timeline/painters/lunar_marker_layer_test.dart` ✦
+  - `app/lib/features/timeline/timeline_painter.dart` ✎
+  - `app/test/features/timeline/timeline_painter_test.dart` ✎
+- **Risk**: Medium — `TimelinePainter` has many existing tests; param additions must not regress
+- **Tests**: `make test` green
+
+---
+
+## Phase C — Location Settings UI
+**Gate**: "Use Current Location" works on all platforms; city search resolves or errors correctly; prompt shown when no location
+
+### AST-C1: geolocator — "Use Current Location" button
+- **Goal**: Add "Location" section to `settings_panel.dart` (visible when Astronomical theme enabled).
+  "Use Current Location" button calls `geolocator.getCurrentPosition()`.
+  Permission UX (Smith Note 5):
+  - `granted` → save lat/lng to `AstroSettings`; show "Using device location" label
+  - `denied` → inline: "Location access denied. Grant permission in System Settings, or enter your location below."
+  - `deniedForever` → same message
+  Platform entitlements:
+  - macOS: add `NSLocationWhenInUseUsageDescription` to `macos/Runner/Info.plist`
+  - Windows: no extra config
+  - Linux: GeoClue2 — graceful fallback message if unavailable
+- **Files**:
+  - `app/lib/features/timeline/settings_panel.dart` ✎
+  - `app/macos/Runner/Info.plist` ✎
+  - `app/test/features/timeline/settings_panel_test.dart` ✎
+- **Risk**: Medium — permission flows vary per platform
+- **Tests**: `make test` green; manual smoke on all platforms
+
+### AST-C2: City search + lat/lng override + location preview
+- **Goal**: City search text field (primary manual fallback, Smith Note 2):
+  - Resolves city name to lat/lng via OS geocode or bundled lookup
+  - No match → "No results for '{query}' — try a larger nearby city, or use Advanced coordinates." (Smith Note 6)
+  - Match → preview "New York, NY → 40.71°N 74.00°W"; user confirms to save
+  Advanced section (collapsed): raw lat/lng decimal fields; validates range; inline error if invalid.
+  Location preview label always shown (city name or coordinate string).
+  No-location prompt: when astronomical + no location → "Set location to see sunrise & moon times" in strip (AC-F29-1-6).
+- **Files**:
+  - `app/lib/features/timeline/settings_panel.dart` ✎
+  - `app/test/features/timeline/settings_panel_test.dart` ✎
+- **Risk**: Low (UI only)
+- **Tests**: `make test` green
+
+---
+
+## Phase D — Badge + Theme Toggle
+**Gate**: `make test` green; Astronomical theme activates/deactivates correctly; moon badge visible
+
+### AST-D1: `AppTheme.astronomical` + settings persistence
+- **Goal**: Add `astronomical` to `AppTheme` enum in `settings_service.dart`.
+  Add `AstroSettings astroSettings` field to `AppSettings` (default: empty).
+  Update `toJson`/`fromJson`/`copyWith`. Existing `fromString` fallback is already safe.
+  Add Theme selector to settings panel: "Default" / "Astronomical".
+  Switching to Astronomical: if location saved → apply immediately; else → expand location section.
+  Switching to Default: removes all astro layers immediately, no restart.
 - **Files**:
   - `app/lib/core/settings/settings_service.dart` ✎
+  - `app/lib/features/timeline/settings_panel.dart` ✎
   - `app/test/core/settings/settings_service_test.dart` ✎
-  - All callers of `WindowMode.transparent` (grep to find)
-- **Risk**: Low (mechanical rename; compiler-guided)
-- **Tests**: `make test` passes after rename — settings serialisation test updated
+- **Risk**: Low (additive; safe fallbacks)
+- **Tests**: `make test` green
 
----
-
-## Phase B — Purge Pass-Through from Strategy + Service
-**Review**: [ ] pending
-**Gate**: `make test` green (tests will break here; fix inline as you go)
-
-### STB-B1: Purge `setPassThrough` + Refactor Strategy Hierarchy (T-03 + T-04)
-- **Goal**: Remove `setPassThrough(bool)` and `setFocused(bool)` from interface and all impls. Create `BaseWindowInteractionStrategy` with common `_wm`/`_mode` fields. `MacOsWindowInteractionStrategy` extends base (override `availability` only). Rename `WindowsWindowInteractionStrategy` → `ReservedWindowInteractionStrategy` (rename file too). Update factory routing: Linux → `ReservedWindowInteractionStrategy`. Remove `supportsTransparent` from `WindowModeAvailability`. Remove `supportsTransparentPassThrough` factory param.
+### AST-D2: `MoonPhaseBadge` + tree wiring
+- **Goal**: Create `MoonPhaseBadge` widget — always visible when astronomical + location set.
+  Shows: phase icon + phase name + illumination %. Tooltip on hover: full phase name + "X% illuminated" (Smith Note 7).
+  Position: right side of strip, 8px left of settings gear; does not reduce gear tap target (Smith Note 4).
+  Wire `AstroDataService` into widget tree from `main.dart`.
+  Wire `TimelineStrip`: consume `AstroDataService.current` → pass to `TimelinePainter`; add `MoonPhaseBadge`.
 - **Files**:
-  - `app/lib/core/window/interaction_strategy/window_interaction_strategy.dart` ✎
-  - `app/lib/core/window/interaction_strategy/base_window_interaction_strategy.dart` ✦ NEW
-  - `app/lib/core/window/interaction_strategy/macos_window_interaction_strategy.dart` ✎
-  - `app/lib/core/window/interaction_strategy/windows_window_interaction_strategy.dart` → `reserved_window_interaction_strategy.dart` ✎ RENAME
-  - `app/test/core/window/window_interaction_strategy_test.dart` ✎
-- **Risk**: Medium (coupled interface + hierarchy change — do as one commit)
-- **Tests**: Remove all pass-through tests from `window_interaction_strategy_test.dart`
-
-### STB-B2: Purge `setPassThroughEnabled` from `WindowService` (T-05)
-- **Goal**: Remove `setPassThroughEnabled(bool)`, `supportsTransparentPassThrough()`, `setInteractionFocused(bool)`, and `supportsTransparentPassThroughForTesting` ctor param. Update `main.dart`. Remove stale log lines.
-- **Files**:
-  - `app/lib/core/window/window_service.dart` ✎
-  - `app/lib/main.dart` ✎
-  - `app/test/core/window/window_service_test.dart` ✎
-  - `app/test/core/window/window_service_test.mocks.dart` ✎
-- **Risk**: Low (removals; compiler guides missing callers)
-- **Tests**: Remove pass-through tests from `window_service_test.dart`
-
----
-
-## Phase C — Simplify TimelineFocusController
-**Review**: [ ] pending
-**Gate**: `make test` green
-
-### STB-C1: Redesign `TimelineFocusController` + Delete `HoverFocusController` (T-06)
-- **Goal**: Remove `usesTransparentFocusModel`, `_enterIdleTransparentState()`, all `setPassThroughEnabled` calls, `_windowMode`, `_isFocused`, `_isInteractionHeld`, `isFocusedNotifier`. Simplify `initialize()` — always enters interactive state. Remove transparent branching from all methods. Delete `hover_focus_controller.dart`. Remove `_hoverFocusController` instantiation AND its import from `TimelineStrip` (stale import after file deletion = build failure).
-- **Files**:
-  - `app/lib/features/timeline/focus/timeline_focus_controller.dart` ✎ (full redesign)
-  - `app/lib/features/timeline/focus/hover_focus_controller.dart` 🗑 DELETE
-  - `app/lib/features/timeline/timeline_strip.dart` ✎ (remove _hoverFocusController, isFocusedNotifier listener, _clickThroughTimer, transparent branching)
-  - `app/test/features/timeline/timeline_focus_controller_test.dart` ✎
-  - `app/test/features/timeline/timeline_strip_test.dart` ✎
-  - `app/test/app_test.dart` ✎
-  - `app/test/goldens/timeline_strip_golden_test.dart` ✎
-- **Risk**: Medium (large surface area — work file by file, compile after each)
-- **Tests**: Remove click-through toggle test group; remove transparent focus model tests
-
----
-
-## Phase D — Tests Green Gate
-**Review**: [ ] pending (Trin owns this phase)
-**Gate**: `make test` ≥ 278 GREEN — hard stop before Phase E
-
-### STB-D1: Fix All Tests Post-Cleanup (T-07)
-- **Goal**: All tests GREEN after cleanup phases. Grep for any remaining `passThrough`, `click_through`, `setIgnoreMouseEvents`, `supportsTransparent`, `WindowMode.transparent` in `app/lib` and `app/test` — all must be gone.
-- **Owner**: @Trin (verify) + @Neo (fix remaining compilation errors)
-- **Files**: Any remaining broken test files
-- **Risk**: Low if Phase B/C were clean; medium if stray references remain
-- **Tests**: `make test` must pass at or above pre-sprint baseline
-
----
-
-## Phase E — Add sendToBack to Strategy + Service
-**Review**: [ ] pending
-**Gate**: unit tests for new methods pass
-
-### STB-E1: `sendToBack` / `restoreToFront` in Strategy + Service (T-08)
-- **Goal**: Add `sendToBack()` and `restoreToFront()` to `BaseWindowInteractionStrategy`. `sendToBack()`: `wm.setAlwaysOnTop(false)` + `wm.blur()` + `wm.lower()` (verify `lower()` availability first — see Smith Gate 2 note). `restoreToFront()`: `wm.setAlwaysOnTop(true)` only (no `focus()`). Add pass-through wrappers to `WindowService`. Add to `WindowInteractionStrategy` interface.
-- **Files**:
-  - `app/lib/core/window/interaction_strategy/base_window_interaction_strategy.dart` ✎
-  - `app/lib/core/window/interaction_strategy/window_interaction_strategy.dart` ✎
-  - `app/lib/core/window/window_service.dart` ✎
-- **Risk**: Medium — verify `wm.lower()` in `window_manager` v0.5.1 Linux plugin BEFORE marking done
-- **Tests**: Unit tests: `sendToBack` calls `setAlwaysOnTop(false)` + `blur()`; `restoreToFront` calls `setAlwaysOnTop(true)` only
-
----
-
-## Phase F — Wire Button + Controller
-**Review**: [ ] pending
-**Gate**: feature works end-to-end in running app
-
-### STB-F1: Wire `sendToBack` in `TimelineFocusController` (T-09)
-- **Goal**: Add `_isSentToBack`, `isSentToBackNotifier`, `_restoreTimer`. `sendToBack()`: sets state, calls `_windowService.sendToBack()`, starts 10s timer. `restoreToFront()`: cancels timer, clears state, calls `_windowService.restoreToFront()`. Re-press resets timer.
-- **Files**:
-  - `app/lib/features/timeline/focus/timeline_focus_controller.dart` ✎
-- **Risk**: Low
-- **Tests**: Timer auto-restores after 10s; second press resets timer
-
-### STB-F2: Wire Send-to-Back Button in `TimelineStrip` (T-10)
-- **Goal**: Existing pass-through button becomes send-to-back button. Available on ALL platforms (remove capability gate). Icon: `Icons.flip_to_back`. Active state when `_focusController.isSentToBack`. Subscribe to `isSentToBackNotifier`.
-- **Files**:
+  - `app/lib/features/timeline/moon_phase_badge.dart` ✦
   - `app/lib/features/timeline/timeline_strip.dart` ✎
-- **Risk**: Low
-- **Tests**: Button visible on all platforms; shows active state
-
----
-
-## Phase G — Send-to-Back Tests
-**Review**: [ ] pending (Trin owns)
-**Gate**: all new behavior covered; `make test` green
-
-### STB-G1: Tests for Send-to-Back Feature (T-11)
-- **Owner**: @Trin
-- **Goal**: `window_service_test.dart` — `sendToBack` calls `setAlwaysOnTop(false)` + `blur()`; `restoreToFront` calls `setAlwaysOnTop(true)`. `timeline_focus_controller_test.dart` — button triggers send-to-back; 10s timer auto-restores; second press resets timer. `timeline_strip_test.dart` — button available all platforms; active state correct; auto-restores.
-- **Files**:
-  - `app/test/core/window/window_service_test.dart` ✎
-  - `app/test/features/timeline/timeline_focus_controller_test.dart` ✎
+  - `app/lib/main.dart` ✎
+  - `app/test/features/timeline/moon_phase_badge_test.dart` ✦
   - `app/test/features/timeline/timeline_strip_test.dart` ✎
-- **Risk**: Low
-- **Tests**: All new AC covered
+- **Risk**: Medium — widget tree wiring; existing strip tests must still pass
+- **Tests**: `make test` green
 
 ---
 
-## Phase H — QA + Doc Close
-**Review**: [ ] pending
-**Gate**: sprint DONE
+## Phase E — QA + Review
+**Gate**: All US-F29 AC verified; Morpheus approved; docs updated
 
-### STB-H1: Trin Full QA Pass (T-12)
+### AST-E1: Trin UAT
 - **Owner**: @Trin
-- **Goal**: All tests GREEN ≥ 278. No dead imports. Grep confirms zero remaining `passThrough`/`click_through`/`setIgnoreMouseEvents`/`supportsTransparent`/`WindowMode.transparent` in `app/lib` and `app/test`. `make analyze` clean.
+- **Goal**: Full test suite (`make test`). Manual AC checklist:
+  - US-F29-1: device location, city search, lat/lng, persist, no-location prompt
+  - US-F29-2: gradient stops at civil twilight; icons at actual sunrise/sunset; solar noon tick; z-order
+  - US-F29-3: moonrise/moonset icons + directional arrows; badge always visible; phase + illumination %
+  - US-F29-4: theme toggle on/off; persisted; instant apply; location check on activation
+  Platform smoke: macOS, Windows, Linux. `make analyze` clean.
 - **Risk**: Low if all prior phases clean
 
-### STB-H2: Doc Final Pass (T-13)
-- **Owner**: @Oracle
-- **Goal**: Update `ARCH.md` interaction strategy section; `USER_GUIDE.md` remove pass-through, add send-to-back description; `README.md` remove transparent pass-through; `docs/LINUX_SIMPLIFICATION.md` final arch summary.
-- **Files**:
-  - `docs/ARCH.md` ✎
-  - `docs/USER_GUIDE.md` ✎
-  - `README.md` ✎
-  - `docs/LINUX_SIMPLIFICATION.md` ✎
+### AST-E2: Morpheus code review + Oracle doc pass
+- **Owner**: @Morpheus (review) + @Oracle (docs)
+- **Goal**: Morpheus: review `AstroDataService` (midnight timer, cache, ChangeNotifier lifecycle),
+  painter layer isolation, `TimelinePainter` param additions.
+  Oracle: update `docs/ARCH.md` (new astro subsystem), mark F-29 shipped in PRD.
 - **Risk**: Low
 
 ---
 
 ## Sprint Acceptance Criteria (Definition of Done)
-1. Zero references to `passThrough`, `click_through`, `setIgnoreMouseEvents`, `supportsTransparent`, `WindowMode.transparent` in `app/lib` or `app/test`
-2. Strategy hierarchy: `Base` → `MacOs` (macOS), `Base` → `Reserved` (Linux + Windows)
-3. Send-to-back button visible and functional on ALL platforms
-4. Button lowers window; 10s timer auto-restores always-on-top; no focus steal on restore
-5. All tests GREEN at or above pre-sprint baseline
-6. PRD F-26 removed; US-06 rewritten; no docs reference click-through as a feature
+1. "Astronomical" theme visible in settings, persisted across restarts
+2. Gradient: civil twilight begin → sunrise → day → sunset → civil twilight end (correct colors)
+3. Sunrise/sunset icons at actual solar event times (not twilight boundaries)
+4. Moonrise/moonset icons with 8-phase symbol + directional arrow; clip cleanly at window edge
+5. Moon phase badge always visible; positioned left of settings gear; tooltip on hover
+6. Location: geolocator button + permission UX; city search with error handling; lat/lng advanced override
+7. Switching theme off removes all astro elements immediately; no regression on default theme
+8. Zero network calls for astronomical data; fully offline after location saved
+9. `make test` green at or above pre-sprint baseline; `make analyze` clean
 
 ---
 
-## Previous Sprint (archived below)
-*Linux Click-Through Sprint — CANCELLED 2026-05-13. All CT-* tasks dropped. Feature replaced by Send-to-Back.*
+## Status Legend
+✦ New file | ✎ Modified | 🗑 Deleted
+
+---
+
+# Previous Sprint — Linux Reserved Space Sprint (F-28)
+**Updated**: 2026-05-16 | **Owner**: @Neo | **QA**: @Trin | **Arch**: @Morpheus
+**Status**: Phases A+B+hotfixes DONE (276/276 green) — Phase C PENDING
+
+---
+
+## Phase C — QA + Review (PENDING)
+
+### LRS-C1: Trin UAT
+- Run full test suite (`make test`).
+- Manual AC checklist: AC-L1-1 through AC-L3-2.
+- X11/XWayland smoke: maximize a terminal over strip; confirm strip not covered.
+- Wayland smoke: confirm app starts without crash, log shows `isDockable=false`.
+
+### LRS-C2: Morpheus code review
+- Review `linux_dock_window_manager_plugin.cc` for memory safety (atom reuse, no XFree leaks).
+- Review `WindowService` wiring for serialisation (no concurrent dock/undock race).
+- Approve or return to Neo.

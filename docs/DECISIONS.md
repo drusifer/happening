@@ -3,7 +3,7 @@
 This document records the architectural and technical decisions made during the development of Happening.
 
 ## TL;DR
-Linux keeps the GTK header bar disabled and uses Dart-side window sizing/constraint strategies for a thin strip. Linux shell-reservation code is no longer part of Happening: X11 struts/DOCK hints and Wayland layer-shell setup were removed in favor of transparent, non-reserving behavior where real-session validation proves it works.
+Linux keeps the GTK header bar disabled and uses Dart-side window sizing/constraint strategies for a thin strip. Linux shell-reservation is implemented via a `linux_dock_window_manager` Flutter plugin that sets `_NET_WM_STRUT_PARTIAL` — NOT via C++ runner code or `window_manager.dock()` (left/right only). DEC-006 supersedes DEC-005's non-reserving stance. Linux must use `LinuxResizeStrategy` (sets `resizable=true`) — GTK3 silently ignores `gtk_window_resize` on non-resizable windows (DEC-007).
 
 ## DEC-001: Linux Window Height Constraint (Wayland/GTK)
 **Date**: 2026-02-26
@@ -48,7 +48,7 @@ User feedback indicated that centered hover cards felt "detached" from the event
 
 ## DEC-005: Linux Uses Non-Reserving Window Behavior
 **Date**: 2026-04-25
-**Status**: Decided
+**Status**: Superseded by DEC-006 (2026-05-16)
 **Authors**: Drew, Morpheus (Lead), Neo (SWE), Trin (QA)
 
 ### Context
@@ -124,3 +124,110 @@ Manual refresh also calls `WindowService.reassertAppBar()` from the strip refres
 -   The Windows AppBar rect is recalculated in physical pixels after DPI changes.
 -   The refresh button now recovers both calendar data and stale Windows work-area reservations.
 -   A periodic AppBar reassert timer is not part of the solution; it caused width shrinkage in testing and was removed.
+
+## DEC-006: Linux Reserved Space via `linux_dock_window_manager` Plugin
+**Date**: 2026-05-16
+**Status**: Decided — supersedes DEC-005
+**Authors**: Drew, Morpheus (Lead), Oracle (Docs)
+
+### Context
+DEC-005 (2026-04-25) removed all Linux shell-reservation code because the previous
+implementation embedded X11 struts and `_NET_WM_WINDOW_TYPE_DOCK` in the C++ runner,
+which caused a black-screen bug (Mutter re-classified the window after mapping) and
+mixed startup concerns with feature behavior.
+
+The Send-to-Back sprint (complete, 2026-05-14) reintroduced `WindowMode.reserved` as
+the primary Linux/Windows mode, making it desirable to actually reserve desktop space
+on Linux so maximized windows stay below the strip — mirroring Windows AppBar behavior.
+
+**`window_manager.dock()` was evaluated and rejected.** Investigation revealed:
+- On Windows, `window_manager.dock()` implements `SHAppBarMessage` for `ABE_LEFT` /
+  `ABE_RIGHT` only. It does not support `ABE_TOP`, which is what the strip needs.
+- On Linux, `isDockable()`, `dock()`, and `undock()` are **stubs** that return hardcoded
+  values and perform no X11 operations.
+- The dock API does not embed the strip into the existing system panel (GNOME Shell,
+  KDE Plasma). Embedding requires platform-specific extension APIs (GNOME Shell
+  extensions, Plasma widgets) entirely outside Flutter's reach. The dock API creates a
+  separate independent panel, not an inset component.
+- The app already bypasses `window_manager.dock()` on Windows for this same reason
+  (`window_service.dart` calls `SHAppBarMessage` directly via FFI).
+
+### Decision
+Implement Linux desktop-space reservation via a dedicated Flutter platform-channel
+plugin (`linux_dock_window_manager`, channel `"linux_dock_window_manager"`) registered
+in the Linux runner. Only three methods are implemented:
+
+1. `isDockable()` → `bool`: returns true if `gdk_x11_get_default_xdisplay() != null`
+   (X11/XWayland), false on Wayland.
+2. `dock(height: int)` → void: sets `_NET_WM_STRUT_PARTIAL` and `_NET_WM_STRUT` for
+   a full-width top reservation of `height` physical pixels. No-op on Wayland.
+3. `undock()` → void: clears both strut atoms. No-op on Wayland.
+
+**Why not C++ runner code (as before):** The runner must remain startup-only. Strut
+behavior must be controllable at runtime (user can switch `WindowMode` in settings).
+A platform-channel plugin decouples the reservation from startup and allows `WindowService`
+to call `dock()`/`undock()` whenever the mode or display geometry changes.
+
+**Why `_NET_WM_STRUT_PARTIAL` and not `_NET_WM_WINDOW_TYPE_DOCK`:** The previous
+black-screen bug was caused specifically by setting `_NET_WM_WINDOW_TYPE_DOCK` after
+window mapping, which caused Mutter to re-classify and re-composite the window.
+`_NET_WM_STRUT_PARTIAL` can be set or cleared safely at any time post-mapping and
+does not change the window type.
+
+`WindowService` orchestrates calls to `LinuxDockWindowManager` (Dart wrapper) in the
+same locations it manages the Windows AppBar: `initialize()`, `setWindowMode()`,
+`_onDisplayChangedInner()`, and `dispose()`.
+
+### Consequences
+- Linux `WindowMode.reserved` now actually reserves screen space; maximized windows
+  snap below the strip on X11/XWayland.
+- Wayland sessions see no change (strut is silently skipped; a log warning is emitted).
+- The Linux runner remains minimal; no Happening-specific logic in C++.
+- `window_manager.dock()` is not called; the plugin is entirely additive.
+- DEC-005 is superseded; the "non-reserving" stance applied only while C++ runner
+  implementation was the only viable path.
+
+## DEC-007: Linux Resize Strategy Must Set `resizable=true`
+**Date**: 2026-05-18
+**Status**: Decided
+**Authors**: Drew, Neo (SWE)
+
+### Context
+After the `GDK_WINDOW_TYPE_HINT_DOCK` type hint was added to `my_application.cc`
+(pre-map, to support reserved-space struts) expand/collapse was observed to leave a
+transparent ~280px band below the collapsed strip that blocked clicks on underlying
+windows. The strip also reported that expanded timeline cards were not clickable.
+
+Investigation identified that `MacOsResizeStrategy` — the fallback for all non-Windows
+platforms — calls `setResizable(false)` in `initialize()`. On GTK 3, when a window is
+non-resizable, `gtk_window_resize()` is **silently ignored**; the window size is instead
+pinned to the Flutter widget's preferred size. Because the geometry-hint path
+(`setMinimumSize` / `setMaximumSize` → `gdk_window_set_geometry_hints`) did influence
+the expand direction (min=max=expandedH forces the WM to constrain the window), expand
+appeared to work. But on collapse, `gtk_window_resize(collapsedH)` was a no-op, so the
+X11 window stayed at the expanded height. The 280px transparent band was the X11 window
+boundary still at 340px while Flutter rendered only 60px of content.
+
+### Decision
+Create `LinuxResizeStrategy` (`resize_strategy/linux_resize_strategy.dart`) as a
+Linux-specific subclass with the same expand/collapse sequence as `MacOsResizeStrategy`
+but with `initialize()` calling `setResizable(true)` instead of `setResizable(false)`.
+
+`WindowResizeStrategy.create()` is updated to return `LinuxResizeStrategy` when
+`Platform.isLinux`, before falling through to `MacOsResizeStrategy` for macOS.
+
+`setResizable(true)` is safe on Linux because:
+- The window is frameless (`setAsFrameless()` removes all GTK decorations including
+  resize handles), so the user has no way to manually resize it.
+- The `_NET_WM_WINDOW_TYPE_DOCK` type hint discourages WM-initiated resizing.
+- `setMinimumSize` / `setMaximumSize` are still called to communicate constraints
+  to the WM via `WM_NORMAL_HINTS`.
+
+### Consequences
+- Expand and collapse both resize the X11 window correctly; the transparent band no
+  longer blocks clicks after collapse.
+- Expanded timeline cards are fully clickable.
+- `MacOsResizeStrategy` is unchanged; `setResizable(false)` remains correct for macOS
+  (prevents resize chrome from appearing on frameless macOS windows).
+- The Linux-specific strategy file is the canonical place for any future Linux-only
+  resize quirks.

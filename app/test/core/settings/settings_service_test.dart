@@ -70,7 +70,7 @@ void main() {
       expect(svc.current.timeWindowHours, 8);
       expect(svc.current.selectedCalendarIds, isEmpty);
       expect(svc.current.windowMode, WindowMode.reserved);
-      expect(svc.current.idleTimelineOpacity, 0.55);
+      expect(svc.current.idleTimelineOpacity, 1.0);
     });
 
     test('load() clamps idle opacity below supported range', () async {
@@ -83,7 +83,7 @@ void main() {
 
     test('load() clamps idle opacity above supported range', () async {
       File('${tmpDir.path}/settings.json').writeAsStringSync(jsonEncode({
-        'idleTimelineOpacity': 0.95,
+        'idleTimelineOpacity': 1.1,
       }));
       await svc.load();
       expect(svc.current.idleTimelineOpacity, kMaxIdleTimelineOpacity);

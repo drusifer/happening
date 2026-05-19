@@ -185,6 +185,7 @@ class _HappeningAppState extends State<HappeningApp> {
     final brightness = switch (settings.theme) {
       AppTheme.dark => Brightness.dark,
       AppTheme.light => Brightness.light,
+      AppTheme.astronomical => Brightness.dark,
       AppTheme.system =>
         WidgetsBinding.instance.platformDispatcher.platformBrightness,
     };

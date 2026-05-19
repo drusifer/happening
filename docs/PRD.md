@@ -101,6 +101,8 @@ A **narrow, persistent, horizontal bar** anchored to the top of the screen (all 
 | F-24 | **Event Start Time Labels** | Show HH:mm at the left edge of each event block; suppressed when block is too narrow or labels would overlap |
 | F-25 | **In-Meeting Countdown Mode** | When now indicator is inside an active event, countdown shows time until END of current event in amber; normal mode (white) shows time until NEXT event starts |
 | F-27 | **Send to Back** | A cross-platform control that temporarily lowers the strip behind all other windows for 10 seconds, then auto-restores always-on-top. Available on all platforms. Re-pressing while sent back resets the 10-second timer. |
+| F-28 | **Linux Screen Space Reservation** | Reserve the strip's height at the top of the primary Linux display via `_NET_WM_STRUT_PARTIAL` so maximized windows cannot cover it. Mirrors Windows AppBar behavior. Graceful no-op on Wayland. |
+| F-29 | **Astronomical Timeline Theme** | Opt-in theme that overlays sunrise, sunset, moonrise, and moonset markers on the timeline at their exact times for the user's location. Day/night gradient background reflects civil twilight cycle. Moon phase shown with 8-phase icon set. All astronomical data calculated offline via Dart astronomy library (no external API). Location via `geolocator` package with manual lat/lng fallback. |
 
 ### V3 (Nice to Have)
 

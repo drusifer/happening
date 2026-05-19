@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 #include "flutter/generated_plugin_registrant.h"
+#include "linux_dock_window_manager_plugin.h"
 
 struct _MyApplication {
   GtkApplication parent_instance;
@@ -48,6 +49,17 @@ static void my_application_activate(GApplication* application) {
   // in case the window manager does more exotic layout, e.g. tiling.
   // If running on Wayland assume the header bar will work (may need changing
   // if future cases occur).
+  // Declare this window as a dock/panel before it is mapped so the WM
+  // classifies it correctly from the first map event.  Setting
+  // _NET_WM_WINDOW_TYPE_DOCK after mapping causes Mutter to re-composite
+  // the window (black-screen bug).  Setting it here — before gtk_widget_show
+  // fires via first_frame_cb — is safe and tells the WM to keep the window
+  // at the edge it declares via _NET_WM_STRUT_PARTIAL without repositioning it.
+  gtk_window_set_type_hint(window, GDK_WINDOW_TYPE_HINT_DOCK);
+  // Dock windows default to accept_focus=FALSE, which blocks keyboard input.
+  // Explicitly re-enable so TextFields (e.g. city search) work.
+  gtk_window_set_accept_focus(window, TRUE);
+
   gboolean use_header_bar = FALSE;
   
   if (use_header_bar) {
@@ -101,6 +113,10 @@ static void my_application_activate(GApplication* application) {
                            self);
 
   fl_register_plugins(FL_PLUGIN_REGISTRY(view));
+  linux_dock_window_manager_plugin_register_with_registrar(
+      fl_plugin_registry_get_registrar_for_plugin(FL_PLUGIN_REGISTRY(view),
+                                                   "LinuxDockWindowManagerPlugin"),
+      window);
 
   gtk_widget_grab_focus(GTK_WIDGET(view));
 }

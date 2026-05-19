@@ -4,7 +4,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:happening/core/app_metadata.dart';
+import 'package:happening/core/astro/astro_settings.dart';
 import 'package:happening/core/settings/settings_service.dart';
+import 'package:happening/features/timeline/settings_panel.dart' show CityResult;
 import 'package:happening/features/calendar/calendar_controller.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/calendar/calendar_service.dart';
@@ -48,6 +50,14 @@ class _FakeSettingsService extends SettingsService {
 Widget _wrap(Widget child) => MaterialApp(
       home: Scaffold(body: Align(alignment: Alignment.topRight, child: child)),
     );
+
+/// Widens the test viewport to 1600×900 for tests that add the Location column.
+void _wideScreen(WidgetTester tester) {
+  tester.view.physicalSize = const Size(1600, 900);
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+}
 
 void main() {
   group('SettingsPanel', () {
@@ -112,9 +122,9 @@ void main() {
       )));
 
       expect(find.text('Transparency'), findsOneWidget);
-      expect(find.text('More visible'), findsOneWidget);
+      expect(find.text('See-through'), findsOneWidget);
       expect(find.text('Balanced'), findsOneWidget);
-      expect(find.text('More transparent'), findsOneWidget);
+      expect(find.text('Opaque'), findsOneWidget);
       expect(find.byType(Slider), findsOneWidget);
     });
 
@@ -235,6 +245,150 @@ void main() {
       final container = tester.widget<Container>(smallFinder.first);
       final decoration = container.decoration as BoxDecoration;
       expect(decoration.color, equals(theme.colorScheme.primary));
+    });
+  });
+
+  // ── Astronomical Location Section ─────────────────────────────────────────
+
+  group('Astronomical location section', () {
+    testWidgets('Location section not shown when theme is dark', (tester) async {
+      final svc = _FakeSettingsService();
+      await tester.pumpWidget(_wrap(SettingsPanel(
+        settingsService: svc,
+        calendarController: CalendarController(_FakeCalendarService()),
+        onSignOut: () {},
+      )));
+      expect(find.text('Location'), findsNothing);
+    });
+
+    testWidgets('Location section shown when theme is astronomical', (tester) async {
+      _wideScreen(tester);
+      final svc = _FakeSettingsService();
+      await svc.update(const AppSettings(theme: AppTheme.astronomical));
+      await tester.pumpWidget(_wrap(SettingsPanel(
+        settingsService: svc,
+        calendarController: CalendarController(_FakeCalendarService()),
+        onSignOut: () {},
+      )));
+      await tester.pump();
+      expect(find.text('Location'), findsOneWidget);
+    });
+
+    testWidgets('shows no-location prompt when astronomical + no location', (tester) async {
+      _wideScreen(tester);
+      final svc = _FakeSettingsService();
+      await svc.update(const AppSettings(theme: AppTheme.astronomical));
+      await tester.pumpWidget(_wrap(SettingsPanel(
+        settingsService: svc,
+        calendarController: CalendarController(_FakeCalendarService()),
+        onSignOut: () {},
+      )));
+      await tester.pump();
+      expect(find.text('Set location to see sunrise & moon times'),
+          findsOneWidget);
+    });
+
+    testWidgets('shows location preview when lat/lng saved', (tester) async {
+      _wideScreen(tester);
+      final svc = _FakeSettingsService();
+      await svc.update(AppSettings(
+        theme: AppTheme.astronomical,
+        astroSettings: const AstroSettings(
+          latitude: 40.71,
+          longitude: -74.0,
+          cityName: 'New York',
+        ),
+      ));
+      await tester.pumpWidget(_wrap(SettingsPanel(
+        settingsService: svc,
+        calendarController: CalendarController(_FakeCalendarService()),
+        onSignOut: () {},
+      )));
+      await tester.pump();
+      expect(find.textContaining('New York'), findsOneWidget);
+    });
+
+    testWidgets('city search no-match error shown on null resolve', (tester) async {
+      _wideScreen(tester);
+      final svc = _FakeSettingsService();
+      await svc.update(const AppSettings(theme: AppTheme.astronomical));
+
+      Future<CityResult?> alwaysNull(String q) async => null;
+
+      await tester.pumpWidget(_wrap(SettingsPanel(
+        settingsService: svc,
+        calendarController: CalendarController(_FakeCalendarService()),
+        onSignOut: () {},
+        resolveCityName: alwaysNull,
+      )));
+      await tester.pump();
+
+      await tester.enterText(find.byKey(const Key('city_search_field')), 'Xyzzy');
+      await tester.tap(find.byKey(const Key('city_search_button')));
+      await tester.pump();
+
+      expect(find.textContaining("No results for 'Xyzzy'"), findsOneWidget);
+    });
+
+    testWidgets('city search match shows preview and confirm', (tester) async {
+      _wideScreen(tester);
+      final svc = _FakeSettingsService();
+      await svc.update(const AppSettings(theme: AppTheme.astronomical));
+
+      Future<CityResult?> resolveNewYork(String q) async =>
+          (lat: 40.71, lng: -74.0, label: 'New York, NY');
+
+      await tester.pumpWidget(_wrap(SettingsPanel(
+        settingsService: svc,
+        calendarController: CalendarController(_FakeCalendarService()),
+        onSignOut: () {},
+        resolveCityName: resolveNewYork,
+      )));
+      await tester.pump();
+
+      await tester.enterText(
+          find.byKey(const Key('city_search_field')), 'New York');
+      await tester.tap(find.byKey(const Key('city_search_button')));
+      await tester.pump();
+
+      expect(find.textContaining('New York, NY'), findsOneWidget);
+      expect(find.text('Confirm'), findsOneWidget);
+    });
+
+    testWidgets('Advanced section hidden by default', (tester) async {
+      _wideScreen(tester);
+      final svc = _FakeSettingsService();
+      await svc.update(const AppSettings(theme: AppTheme.astronomical));
+      await tester.pumpWidget(_wrap(SettingsPanel(
+        settingsService: svc,
+        calendarController: CalendarController(_FakeCalendarService()),
+        onSignOut: () {},
+      )));
+      await tester.pump();
+      expect(find.byKey(const Key('lat_field')), findsNothing);
+    });
+
+    testWidgets('Apply saves invalid coords shows error', (tester) async {
+      _wideScreen(tester);
+      final svc = _FakeSettingsService();
+      await svc.update(const AppSettings(theme: AppTheme.astronomical));
+      await tester.pumpWidget(_wrap(SettingsPanel(
+        settingsService: svc,
+        calendarController: CalendarController(_FakeCalendarService()),
+        onSignOut: () {},
+      )));
+      await tester.pump();
+
+      // Open Advanced.
+      await tester.tap(find.text('Advanced'));
+      await tester.pump();
+
+      // Enter invalid lat.
+      await tester.enterText(find.byKey(const Key('lat_field')), '999');
+      await tester.tap(find.byKey(const Key('apply_coords_button')));
+      await tester.pump();
+
+      expect(find.textContaining('Invalid coordinates'), findsOneWidget);
     });
   });
 }

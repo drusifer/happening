@@ -1,32 +1,28 @@
-# Current Task
+# Current Task — 2026-05-18
 
-## Session 2026-05-14 — Send-to-Back Sprint Phase G/H UAT
-**Status**: COMPLETE — UAT PASS
-**Progress**: 100%
+## F-29 Astronomical Timeline Theme — AST-E1 UAT
 
-### Phase H1 Full QA Gate
+**Status**: UAT PASS (1 known non-blocking gap)
 
-| Check | Result |
-|-------|--------|
-| Zero `passThrough` in `app/lib` + `app/test` | ✅ CLEAN |
-| Zero `click_through` in `app/lib` + `app/test` | ✅ CLEAN |
-| Zero `setIgnoreMouseEvents` in `app/lib` + `app/test` | ✅ CLEAN (removed stale stub + verifyNever) |
-| Zero `supportsTransparent` in `app/lib` + `app/test` | ✅ CLEAN |
-| Zero `WindowMode.transparent` in `app/lib` + `app/test` | ✅ CLEAN |
-| Zero `HoverFocusController` / `hover_focus` | ✅ CLEAN |
-| Zero `linuxTransparentSupported` in lib | ✅ CLEAN |
-| Zero `isFocusedNotifier` in lib | ✅ CLEAN |
-| Strategy hierarchy: Base → MacOs + Reserved | ✅ |
-| `sendToBack()` implemented: `setAlwaysOnTop(false)` + `blur()` | ✅ |
-| `restoreToFront()` implemented: `setAlwaysOnTop(true)` | ✅ |
-| `wm.lower()` not available in window_manager | ⚠️ N/A — using blur() as fallback |
-| Button `Icons.flip_to_back` wired to TFC | ✅ |
-| 10s auto-restore timer in TFC | ✅ |
-| `make test` 266/266 GREEN | ✅ |
-| `flutter analyze` — sprint-introduced errors | ✅ CLEAN (only pre-existing) |
+### Test Gate
+- `flutter test`: 328/328 ✅
+- `flutter analyze`: No new errors in F-29 code ✅
 
-### Note on `wm.lower()`
-`window_manager` does not expose `lower()`. `sendToBack()` uses `setAlwaysOnTop(false)` + `blur()` instead. Window drops behind newly-focused windows; it doesn't actively push below existing windows. Acceptable behavior for v1.
+### AC Checklist
 
----
-*Last updated: 2026-05-14*
+| AC | Status | Notes |
+|----|--------|-------|
+| AC-1: Astronomical in theme picker | ✅ | AppTheme.astronomical enum value; in _PickerRow |
+| AC-2: Gradient correct colors/stops | ✅ | dark-navy→orange→sky-blue→orange→dark-navy at civil twilight/sunrise/sunset |
+| AC-3: Icons at actual sunrise/sunset | ✅ | astroData.sunrise / astroData.sunset (not twilight boundaries) |
+| AC-4: Moon icons + directional arrows | ✅ | up=rise, down=set; phase silhouette; clips at window edges |
+| AC-5: MoonPhaseBadge + tooltip | ✅ | 8px left of settings gear; Tooltip "Phase · X% illuminated" |
+| AC-6: Location UI | ✅ | geolocator button + permission error; city search error msg; lat/lng advanced |
+| AC-7: Theme toggle off removes layers | ✅ | AstroDataService emits null → useAstro=false → BackgroundLayer fallback |
+| AC-8: Zero network calls | ✅ | apsl_sun_calc is offline; geolocator uses OS APIs |
+| AC-9: 328/328 + analyze clean | ✅ | +52 tests from baseline; no new lint errors |
+
+### Known Gap (non-blocking)
+City name → lat/lng geocoding always returns null. `_defaultResolveCityName` returns null with a comment noting this. Users must use device location button or Advanced lat/lng fields. Error UX is correct per spec ("No results for 'X' — try a larger nearby city, or use Advanced coordinates.").
+
+*Last updated: 2026-05-18*

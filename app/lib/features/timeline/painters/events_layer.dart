@@ -32,8 +32,8 @@ class EventsLayer implements TimelineLayer {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final blockHeight = size.height - 2.0;
-    const top = 1.0;
+    final blockHeight = size.height - 6.0;
+    const top = 2.0;
 
     final renderList = [...events]
       ..sort((a, b) => b.duration.compareTo(a.duration));
@@ -71,6 +71,7 @@ class EventsLayer implements TimelineLayer {
       } else {
         final rect = RRect.fromLTRBR(
             x, top, x + w, top + blockHeight, const Radius.circular(4));
+        canvas.drawShadow(Path()..addRRect(rect), Colors.black, 3.0, false);
         if (event.isFree) {
           TimelinePaintUtils.paintHashFill(canvas, rect, color);
         } else {
