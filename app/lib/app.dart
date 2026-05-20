@@ -220,7 +220,7 @@ class _HappeningAppState extends State<HappeningApp> {
             body: switch (_authState) {
               _AuthState.loading => SizedBox(
                   width: double.infinity,
-                  height: settings.fontSize.px + 20,
+                  height: settings.fontSizePx + 20,
                 ),
               _AuthState.unauthenticated => TimelineStrip(
                   events: const [],

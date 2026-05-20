@@ -261,7 +261,7 @@ class _TimelineStripState extends State<TimelineStrip>
     _log.fine(
         'Timestrip: _updatgeHeights called:  strip height is to $_collapsedHeight');
     final settings = widget.settingsService.current;
-    unawaited(_windowService.updateHeights(settings.fontSize));
+    unawaited(_windowService.updateHeights(settings.fontSizePx));
   }
 
   // ── Focus / lifecycle handlers ────────────────────────────────────────────
@@ -463,7 +463,7 @@ class _TimelineStripState extends State<TimelineStrip>
     // _log.fine('Building $runtimeType');
     final theme = Theme.of(context);
     final settings = widget.settingsService.current;
-    final fontSize = settings.fontSize.px;
+    final fontSize = settings.fontSizePx;
 
     final stripBackgroundColor = theme.brightness == Brightness.dark
         ? const Color(0xFF1A1A2E)

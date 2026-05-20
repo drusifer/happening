@@ -98,7 +98,7 @@ class WindowService with WidgetsBindingObserver {
   final LinuxDockWindowManager _linuxDock;
   final WindowResizeStrategy _strategy;
 
-  FontSize _fontSize = FontSize.medium;
+  double _fontSizePx = kDefaultFontSizePx;
   WindowMode _windowMode = WindowMode.reserved;
 
   Pointer<_AppBarData>? _appBarData;
@@ -121,11 +121,11 @@ class WindowService with WidgetsBindingObserver {
 
   /// Call once, before [runApp], to set up the window.
   Future<void> initialize({
-    FontSize initialFontSize = FontSize.medium,
+    double initialFontSizePx = kDefaultFontSizePx,
     WindowMode initialWindowMode = WindowMode.reserved,
   }) async {
     await _wm.ensureInitialized();
-    _fontSize = initialFontSize;
+    _fontSizePx = initialFontSizePx;
     _windowMode = initialWindowMode;
 
     final double realDpr = _wm.getDevicePixelRatio();
@@ -337,11 +337,11 @@ class WindowService with WidgetsBindingObserver {
   }
 
   /// Updates the target heights for collapsed and expanded states.
-  Future<void> updateHeights(FontSize fontSize) async {
-    if (_fontSize == fontSize) return;
-    _fontSize = fontSize;
+  Future<void> updateHeights(double fontSizePx) async {
+    if (_fontSizePx == fontSizePx) return;
+    _fontSizePx = fontSizePx;
     _log.fine(
-        'WindowService.updateHeights: fontSize=$fontSize isExpanded=$_isExpanded');
+        'WindowService.updateHeights: fontSizePx=$fontSizePx isExpanded=$_isExpanded');
     if (_isExpanded) {
       await _doExpand();
       _log.fine('WindowService.updateHeights: _doExpand complete');
@@ -359,28 +359,10 @@ class WindowService with WidgetsBindingObserver {
   }
 
   /// Returns collapsed height in logical pixels (for window_manager APIs).
-  double getCollapsedHeight() {
-    switch (_fontSize) {
-      case FontSize.small:
-        return 50.0;
-      case FontSize.medium:
-        return 55.0;
-      case FontSize.large:
-        return 60.0;
-    }
-  }
+  double getCollapsedHeight() => _fontSizePx * 2.5 + 17.5;
 
   /// Returns expanded height in logical pixels (for window_manager APIs).
-  double getExpandedHeight() {
-    switch (_fontSize) {
-      case FontSize.small:
-        return 300.0;
-      case FontSize.medium:
-        return 320.0;
-      case FontSize.large:
-        return 340.0;
-    }
-  }
+  double getExpandedHeight() => _fontSizePx * 10.0 + 170.0;
 
   Future<void> _reserveCollapsedSpace() async {
     if (_appBarBusy) return;

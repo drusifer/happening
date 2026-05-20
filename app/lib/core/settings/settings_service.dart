@@ -14,18 +14,18 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:happening/core/astro/astro_settings.dart';
 
-/// Supported font sizes for event labels.
-enum FontSize {
-  small(13),
-  medium(15),
-  large(17);
+const double kMinFontSizePx = 11.0;
+const double kMaxFontSizePx = 22.0;
+const double kDefaultFontSizePx = 15.0;
 
-  const FontSize(this.px);
-  final double px;
+double _clampFontSizePx(double v) => v.clamp(kMinFontSizePx, kMaxFontSizePx);
 
-  static FontSize fromString(String val) => FontSize.values
-      .firstWhere((e) => e.name == val, orElse: () => FontSize.medium);
-}
+// Maps legacy enum names to their pixel values for backward-compat migration.
+double _legacyFontSizeFromName(String name) => switch (name) {
+      'small' => 13.0,
+      'large' => 17.0,
+      _ => kDefaultFontSizePx,
+    };
 
 /// Supported application themes.
 enum AppTheme {
@@ -60,7 +60,7 @@ double _clampIdleTimelineOpacity(double value) {
 /// App-wide settings model.
 class AppSettings {
   const AppSettings({
-    this.fontSize = FontSize.medium,
+    this.fontSizePx = kDefaultFontSizePx,
     this.theme = AppTheme.dark,
     this.timeWindowHours = 8,
     this.selectedCalendarIds = const [],
@@ -69,7 +69,7 @@ class AppSettings {
     this.astroSettings = const AstroSettings(),
   });
 
-  final FontSize fontSize;
+  final double fontSizePx;
   final AppTheme theme;
   final int timeWindowHours;
   final List<String> selectedCalendarIds;
@@ -81,7 +81,7 @@ class AppSettings {
   WindowMode get effectiveWindowMode => WindowMode.reserved;
 
   AppSettings copyWith({
-    FontSize? fontSize,
+    double? fontSizePx,
     AppTheme? theme,
     int? timeWindowHours,
     List<String>? selectedCalendarIds,
@@ -90,7 +90,7 @@ class AppSettings {
     AstroSettings? astroSettings,
   }) {
     return AppSettings(
-      fontSize: fontSize ?? this.fontSize,
+      fontSizePx: fontSizePx ?? this.fontSizePx,
       theme: theme ?? this.theme,
       timeWindowHours: timeWindowHours ?? this.timeWindowHours,
       selectedCalendarIds: selectedCalendarIds ?? this.selectedCalendarIds,
@@ -101,7 +101,7 @@ class AppSettings {
   }
 
   Map<String, dynamic> toJson() => {
-        'fontSize': fontSize.name,
+        'fontSizePx': fontSizePx,
         'theme': theme.name,
         'timeWindowHours': timeWindowHours,
         'selectedCalendarIds': selectedCalendarIds,
@@ -111,7 +111,11 @@ class AppSettings {
       };
 
   factory AppSettings.fromJson(Map<String, dynamic> json) => AppSettings(
-        fontSize: FontSize.fromString(json['fontSize'] as String? ?? 'medium'),
+        fontSizePx: _clampFontSizePx(
+          json['fontSizePx'] is num
+              ? (json['fontSizePx'] as num).toDouble()
+              : _legacyFontSizeFromName(json['fontSize'] as String? ?? ''),
+        ),
         theme: AppTheme.fromString(json['theme'] as String? ?? 'dark'),
         timeWindowHours: (json['timeWindowHours'] as num? ?? 8).toInt(),
         selectedCalendarIds: (json['selectedCalendarIds'] as List<dynamic>?)
