@@ -31,7 +31,8 @@
       "mcp__via__via_query",
       "Skill(make)",
       "WebFetch(domain:pub.dev)",
-      "Skill(chat)"
+      "Skill(chat)",
+      "Bash(grep -v \"^\\\\s*$\")"
     ]
   },
   "enabledMcpjsonServers": [

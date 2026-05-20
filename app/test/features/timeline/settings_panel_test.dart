@@ -24,9 +24,9 @@ class _FakeCalendarService implements CalendarService {
 }
 
 class _FakeSettingsService extends SettingsService {
-  _FakeSettingsService([FontSize initial = FontSize.medium])
+  _FakeSettingsService([double initial = kDefaultFontSizePx])
       : super(directory: Directory.systemTemp) {
-    _cur = AppSettings(fontSize: initial);
+    _cur = AppSettings(fontSizePx: initial);
   }
 
   late AppSettings _cur;
@@ -85,15 +85,16 @@ void main() {
       expect(find.text('Font Size'), findsOneWidget);
     });
 
-    testWidgets('renders S M L font size buttons', (tester) async {
+    testWidgets('renders font size slider with Smaller/Default/Larger labels',
+        (tester) async {
       await tester.pumpWidget(_wrap(SettingsPanel(
         settingsService: fakeSettings,
         calendarController: CalendarController(_FakeCalendarService()),
         onSignOut: () {},
       )));
-      expect(find.text('Small'), findsOneWidget);
-      expect(find.text('Medium'), findsOneWidget);
-      expect(find.text('Large'), findsOneWidget);
+      expect(find.text('Smaller'), findsOneWidget);
+      expect(find.text('Default'), findsOneWidget);
+      expect(find.text('Larger'), findsOneWidget);
     });
 
     testWidgets('renders Logout button', (tester) async {
@@ -125,30 +126,36 @@ void main() {
       expect(find.text('See-through'), findsOneWidget);
       expect(find.text('Balanced'), findsOneWidget);
       expect(find.text('Opaque'), findsOneWidget);
-      expect(find.byType(Slider), findsOneWidget);
+      expect(find.byType(Slider), findsNWidgets(2));
     });
 
     // ── Interactions ─────────────────────────────────────────────────────────
 
-    testWidgets('tapping Small calls update(FontSize.small)', (tester) async {
+    testWidgets('dragging font size slider does not update settings mid-drag',
+        (tester) async {
       await tester.pumpWidget(_wrap(SettingsPanel(
         settingsService: fakeSettings,
         calendarController: CalendarController(_FakeCalendarService()),
         onSignOut: () {},
       )));
-      await tester.tap(find.text('Small'));
-      expect(fakeSettings.updates, hasLength(1));
-      expect(fakeSettings.updates.first.fontSize, FontSize.small);
+      final sliders = tester.widgetList<Slider>(find.byType(Slider)).toList();
+      // onChanged (drag) must NOT call settingsService.update.
+      sliders.first.onChanged!(19.0);
+      expect(fakeSettings.updates, isEmpty);
     });
 
-    testWidgets('tapping Large calls update(FontSize.large)', (tester) async {
+    testWidgets('releasing font size slider commits fontSizePx', (tester) async {
       await tester.pumpWidget(_wrap(SettingsPanel(
         settingsService: fakeSettings,
         calendarController: CalendarController(_FakeCalendarService()),
         onSignOut: () {},
       )));
-      await tester.tap(find.text('Large'));
-      expect(fakeSettings.updates.first.fontSize, FontSize.large);
+      final sliders = tester.widgetList<Slider>(find.byType(Slider)).toList();
+      // onChangeEnd (release) commits the value.
+      sliders.first.onChangeEnd!(19.0);
+      await tester.pump();
+      expect(fakeSettings.updates, hasLength(1));
+      expect(fakeSettings.updates.first.fontSizePx, 19.0);
     });
 
     testWidgets('tapping Logout fires onSignOut', (tester) async {
@@ -180,8 +187,9 @@ void main() {
         onSignOut: () {},
       )));
 
-      final slider = tester.widget<Slider>(find.byType(Slider));
-      slider.onChanged!(0.75);
+      // Transparency slider is second (font size slider is first).
+      final sliders = tester.widgetList<Slider>(find.byType(Slider)).toList();
+      sliders.last.onChanged!(0.75);
 
       expect(fakeSettings.updates.last.idleTimelineOpacity, 0.75);
     });
@@ -205,46 +213,18 @@ void main() {
       expect(openedUrl, Uri.parse(appAboutUrl));
     });
 
-    // ── Selection state ───────────────────────────────────────────────────────
+    // ── Slider initial value ──────────────────────────────────────────────────
 
-    testWidgets('Medium button has highlight when selected', (tester) async {
-      // Default is medium.
-      await tester.pumpWidget(_wrap(SettingsPanel(
-        settingsService: fakeSettings,
-        calendarController: CalendarController(_FakeCalendarService()),
-        onSignOut: () {},
-      )));
-
-      final theme = Theme.of(tester.element(find.byType(SettingsPanel)));
-
-      // Find the Container around "Medium" and inspect its color.
-      final mediumFinder = find.ancestor(
-        of: find.text('Medium'),
-        matching: find.byType(Container),
-      );
-      final container = tester.widget<Container>(mediumFinder.first);
-      final decoration = container.decoration as BoxDecoration;
-      expect(decoration.color, equals(theme.colorScheme.primary));
-    });
-
-    testWidgets('selecting Small changes highlight to Small button',
-        (tester) async {
-      final svc = _FakeSettingsService(FontSize.small);
+    testWidgets('font size slider reflects current fontSizePx', (tester) async {
+      final svc = _FakeSettingsService(19.0);
       await tester.pumpWidget(_wrap(SettingsPanel(
         settingsService: svc,
         calendarController: CalendarController(_FakeCalendarService()),
         onSignOut: () {},
       )));
 
-      final theme = Theme.of(tester.element(find.byType(SettingsPanel)));
-
-      final smallFinder = find.ancestor(
-        of: find.text('Small'),
-        matching: find.byType(Container),
-      );
-      final container = tester.widget<Container>(smallFinder.first);
-      final decoration = container.decoration as BoxDecoration;
-      expect(decoration.color, equals(theme.colorScheme.primary));
+      final sliders = tester.widgetList<Slider>(find.byType(Slider)).toList();
+      expect(sliders.first.value, 19.0);
     });
   });
 

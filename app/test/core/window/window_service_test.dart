@@ -112,7 +112,7 @@ void main() {
     });
 
     test('initialize sets up the window with logical pixels', () async {
-      await service.initialize(initialFontSize: FontSize.medium);
+      await service.initialize(initialFontSizePx: kDefaultFontSizePx);
 
       verify(mockWM.ensureInitialized()).called(1);
       verify(mockWM.getDevicePixelRatio()).called(1);
@@ -122,7 +122,7 @@ void main() {
     test('initialize passes initial window mode to interaction strategy',
         () async {
       await service.initialize(
-        initialFontSize: FontSize.medium,
+        initialFontSizePx: kDefaultFontSizePx,
         initialWindowMode: WindowMode.overlay,
       );
 
@@ -143,7 +143,7 @@ void main() {
     // _screenWidth must NOT be updated and no resize must occur.
     test('_onDisplayChanged: ignores transient zero-width display event',
         () async {
-      await service.initialize(initialFontSize: FontSize.medium);
+      await service.initialize(initialFontSizePx: kDefaultFontSizePx);
 
       // Return width=0 (DPMS / wake transient)
       when(mockSR.getPrimaryDisplay()).thenAnswer((_) async => const Display(
@@ -176,7 +176,7 @@ void main() {
     // Concurrent _onDisplayChanged serialisation guard
     test('_onDisplayChanged: concurrent calls are serialised (no race)',
         () async {
-      await service.initialize(initialFontSize: FontSize.medium);
+      await service.initialize(initialFontSizePx: kDefaultFontSizePx);
       clearInteractions(mockWM);
 
       // Fire two back-to-back didChangeMetrics — only one should run the inner logic
@@ -203,7 +203,7 @@ void main() {
         () async {
       if (!Platform.isLinux) return;
 
-      await service.initialize(initialFontSize: FontSize.medium);
+      await service.initialize(initialFontSizePx: kDefaultFontSizePx);
 
       // Simulate external 3840px monitor connecting and becoming primary.
       when(mockSR.getPrimaryDisplay()).thenAnswer((_) async => const Display(
@@ -258,7 +258,7 @@ void main() {
           () async {
         final svc = linuxService();
         await svc.initialize(
-          initialFontSize: FontSize.medium,
+          initialFontSizePx: kDefaultFontSizePx,
           initialWindowMode: WindowMode.reserved,
         );
         // DPR=1.0 (mock), collapsedHeight=55 → physical=55
@@ -269,7 +269,7 @@ void main() {
       test('initialize overlay mode does NOT call dock', () async {
         final svc = linuxService();
         await svc.initialize(
-          initialFontSize: FontSize.medium,
+          initialFontSizePx: kDefaultFontSizePx,
           initialWindowMode: WindowMode.overlay,
         );
         expect(fakeLinuxDock.calls, isNot(contains('dock')));
@@ -278,7 +278,7 @@ void main() {
       test('setWindowMode reserved→dock, other→undock', () async {
         final svc = linuxService();
         await svc.initialize(
-          initialFontSize: FontSize.medium,
+          initialFontSizePx: kDefaultFontSizePx,
           initialWindowMode: WindowMode.overlay,
         );
         fakeLinuxDock.calls.clear();
@@ -294,7 +294,7 @@ void main() {
       test('dispose calls undock', () async {
         final svc = linuxService();
         await svc.initialize(
-          initialFontSize: FontSize.medium,
+          initialFontSizePx: kDefaultFontSizePx,
           initialWindowMode: WindowMode.reserved,
         );
         fakeLinuxDock.calls.clear();
@@ -307,7 +307,7 @@ void main() {
       test('display change re-docks with updated height', () async {
         final svc = linuxService();
         await svc.initialize(
-          initialFontSize: FontSize.medium,
+          initialFontSizePx: kDefaultFontSizePx,
           initialWindowMode: WindowMode.reserved,
         );
         fakeLinuxDock.calls.clear();

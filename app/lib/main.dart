@@ -41,7 +41,7 @@ void main() async {
     screenRetriever: screenRetriever,
   );
   await windowService.initialize(
-    initialFontSize: settingsSvc.current.fontSize,
+    initialFontSizePx: settingsSvc.current.fontSizePx,
     initialWindowMode: settingsSvc.current.effectiveWindowMode,
   );
   _log.fine('WindowService initialized.');

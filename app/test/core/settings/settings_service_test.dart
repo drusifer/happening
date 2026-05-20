@@ -21,22 +21,36 @@ void main() {
 
     // ── Defaults ──────────────────────────────────────────────────────────
 
-    test('current defaults to FontSize.medium before load', () {
-      expect(svc.current.fontSize, FontSize.medium);
+    test('current defaults to kDefaultFontSizePx before load', () {
+      expect(svc.current.fontSizePx, kDefaultFontSizePx);
     });
 
-    test('load() with no file uses default FontSize.medium', () async {
+    test('load() with no file uses default fontSizePx', () async {
       await svc.load();
-      expect(svc.current.fontSize, FontSize.medium);
+      expect(svc.current.fontSizePx, kDefaultFontSizePx);
     });
 
     // ── Load ──────────────────────────────────────────────────────────────
 
-    test('load() reads fontSize from existing settings.json', () async {
+    test('load() reads fontSizePx from existing settings.json', () async {
+      final file = File('${tmpDir.path}/settings.json');
+      file.writeAsStringSync(jsonEncode({'fontSizePx': 18.0}));
+      await svc.load();
+      expect(svc.current.fontSizePx, 18.0);
+    });
+
+    test('load() migrates legacy fontSize string "large" to 17.0', () async {
       final file = File('${tmpDir.path}/settings.json');
       file.writeAsStringSync(jsonEncode({'fontSize': 'large'}));
       await svc.load();
-      expect(svc.current.fontSize, FontSize.large);
+      expect(svc.current.fontSizePx, 17.0);
+    });
+
+    test('load() migrates legacy fontSize string "small" to 13.0', () async {
+      final file = File('${tmpDir.path}/settings.json');
+      file.writeAsStringSync(jsonEncode({'fontSize': 'small'}));
+      await svc.load();
+      expect(svc.current.fontSizePx, 13.0);
     });
 
     test('load() emits settings on stream', () async {
@@ -44,28 +58,43 @@ void main() {
       svc.settings.listen(emitted.add);
       await svc.load();
       expect(emitted, hasLength(1));
-      expect(emitted.first.fontSize, FontSize.medium);
+      expect(emitted.first.fontSizePx, kDefaultFontSizePx);
     });
 
     test('load() with corrupt JSON falls back to defaults', () async {
       File('${tmpDir.path}/settings.json').writeAsStringSync('{bad json}}}');
       await svc.load();
-      expect(svc.current.fontSize, FontSize.medium);
+      expect(svc.current.fontSizePx, kDefaultFontSizePx);
     });
 
-    test('load() with unknown fontSize value falls back to medium', () async {
+    test('load() with unknown legacy fontSize string falls back to default',
+        () async {
       File('${tmpDir.path}/settings.json')
           .writeAsStringSync(jsonEncode({'fontSize': 'enormous'}));
       await svc.load();
-      expect(svc.current.fontSize, FontSize.medium);
+      expect(svc.current.fontSizePx, kDefaultFontSizePx);
+    });
+
+    test('load() clamps fontSizePx below minimum', () async {
+      File('${tmpDir.path}/settings.json')
+          .writeAsStringSync(jsonEncode({'fontSizePx': 5.0}));
+      await svc.load();
+      expect(svc.current.fontSizePx, kMinFontSizePx);
+    });
+
+    test('load() clamps fontSizePx above maximum', () async {
+      File('${tmpDir.path}/settings.json')
+          .writeAsStringSync(jsonEncode({'fontSizePx': 99.0}));
+      await svc.load();
+      expect(svc.current.fontSizePx, kMaxFontSizePx);
     });
 
     test('load() with missing fields uses defaults (backward compatible)',
         () async {
       File('${tmpDir.path}/settings.json')
-          .writeAsStringSync(jsonEncode({'fontSize': 'large'}));
+          .writeAsStringSync(jsonEncode({'fontSizePx': 17.0}));
       await svc.load();
-      expect(svc.current.fontSize, FontSize.large);
+      expect(svc.current.fontSizePx, 17.0);
       expect(svc.current.theme, AppTheme.dark);
       expect(svc.current.timeWindowHours, 8);
       expect(svc.current.selectedCalendarIds, isEmpty);
@@ -92,21 +121,21 @@ void main() {
     // ── Update ────────────────────────────────────────────────────────────
 
     test('update() changes current immediately', () async {
-      await svc.update(const AppSettings(fontSize: FontSize.small));
-      expect(svc.current.fontSize, FontSize.small);
+      await svc.update(const AppSettings(fontSizePx: 13.0));
+      expect(svc.current.fontSizePx, 13.0);
     });
 
     test('update() emits on stream', () async {
       final emitted = <AppSettings>[];
       svc.settings.listen(emitted.add);
-      await svc.update(const AppSettings(fontSize: FontSize.large));
+      await svc.update(const AppSettings(fontSizePx: 17.0));
       expect(emitted, hasLength(1));
-      expect(emitted.first.fontSize, FontSize.large);
+      expect(emitted.first.fontSizePx, 17.0);
     });
 
     test('update() persists all fields to settings.json', () async {
       const settings = AppSettings(
-        fontSize: FontSize.small,
+        fontSizePx: 13.0,
         theme: AppTheme.light,
         timeWindowHours: 12,
         selectedCalendarIds: ['cal-1', 'cal-2'],
@@ -117,7 +146,7 @@ void main() {
 
       final raw = File('${tmpDir.path}/settings.json').readAsStringSync();
       final json = jsonDecode(raw) as Map<String, dynamic>;
-      expect(json['fontSize'], 'small');
+      expect(json['fontSizePx'], 13.0);
       expect(json['theme'], 'light');
       expect(json['timeWindowHours'], 12);
       expect(json['selectedCalendarIds'], ['cal-1', 'cal-2']);
@@ -127,7 +156,7 @@ void main() {
 
     test('reload after update returns all persisted values', () async {
       const settings = AppSettings(
-        fontSize: FontSize.large,
+        fontSizePx: 17.0,
         theme: AppTheme.system,
         timeWindowHours: 24,
         selectedCalendarIds: ['primary'],
@@ -139,7 +168,7 @@ void main() {
       final svc2 = SettingsService(directory: tmpDir);
       addTearDown(svc2.dispose);
       await svc2.load();
-      expect(svc2.current.fontSize, FontSize.large);
+      expect(svc2.current.fontSizePx, 17.0);
       expect(svc2.current.theme, AppTheme.system);
       expect(svc2.current.timeWindowHours, 24);
       expect(svc2.current.selectedCalendarIds, ['primary']);
@@ -162,17 +191,11 @@ void main() {
       );
     });
 
-    // ── FontSize enum ─────────────────────────────────────────────────────
+    // ── fontSizePx constants ──────────────────────────────────────────────
 
-    test('FontSize.small px is 13', () => expect(FontSize.small.px, 13.0));
-    test('FontSize.medium px is 15', () => expect(FontSize.medium.px, 15.0));
-    test('FontSize.large px is 17', () => expect(FontSize.large.px, 17.0));
-
-    test('FontSize.fromString round-trips all values', () {
-      for (final size in FontSize.values) {
-        expect(FontSize.fromString(size.name), size);
-      }
-    });
+    test('kDefaultFontSizePx is 15', () => expect(kDefaultFontSizePx, 15.0));
+    test('kMinFontSizePx is 11', () => expect(kMinFontSizePx, 11.0));
+    test('kMaxFontSizePx is 22', () => expect(kMaxFontSizePx, 22.0));
 
     // ── AppTheme enum ─────────────────────────────────────────────────────
 

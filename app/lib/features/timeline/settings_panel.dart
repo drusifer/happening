@@ -59,6 +59,7 @@ class SettingsPanel extends StatefulWidget {
 class _SettingsPanelState extends State<SettingsPanel> {
   List<CalendarMeta>? _availableCalendars;
   bool _isLoadingCalendars = true;
+  double? _pendingFontSize;
 
   @override
   void initState() {
@@ -120,7 +121,7 @@ class _SettingsPanelState extends State<SettingsPanel> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final settings = widget.settingsService.current;
-    final baseSize = settings.fontSize.px;
+    final baseSize = settings.fontSizePx;
     final scale = baseSize / 15.0; // Normalized to medium=15
 
     return Material(
@@ -221,16 +222,60 @@ class _SettingsPanelState extends State<SettingsPanel> {
                       title: 'Font Size',
                       fontSize: baseSize * 0.7),
                   const SizedBox(height: 6),
-                  _PickerRow<FontSize>(
-                    values: FontSize.values,
-                    current: settings.fontSize,
-                    fontSize: baseSize * 0.65,
-                    onSelect: (val) =>
-                        widget.settingsService.update(settings.copyWith(
-                      fontSize: val,
-                    )),
-                    labelBuilder: (v) =>
-                        v.name[0].toUpperCase() + v.name.substring(1),
+                  SizedBox(
+                    width: 190 * scale,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Slider(
+                          value: _pendingFontSize ?? settings.fontSizePx,
+                          min: kMinFontSizePx,
+                          max: kMaxFontSizePx,
+                          divisions: 11,
+                          label:
+                              '${(_pendingFontSize ?? settings.fontSizePx).round()} pt',
+                          onChanged: (value) =>
+                              setState(() => _pendingFontSize = value),
+                          onChangeEnd: (value) {
+                            setState(() => _pendingFontSize = null);
+                            unawaited(widget.settingsService.update(
+                              settings.copyWith(fontSizePx: value),
+                            ));
+                          },
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: _SliderLabel(
+                                  label: 'Smaller',
+                                  fontSize: baseSize * 0.55,
+                                  textAlign: TextAlign.left,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: _SliderLabel(
+                                label: 'Default',
+                                fontSize: baseSize * 0.55,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            Expanded(
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: _SliderLabel(
+                                  label: 'Larger',
+                                  fontSize: baseSize * 0.55,
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 10),
                   _SectionHeader(
