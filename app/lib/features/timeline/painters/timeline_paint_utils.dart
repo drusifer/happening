@@ -70,7 +70,7 @@ class TimelinePaintUtils {
       maxLines: 1,
       ellipsis: '…',
     )..layout(maxWidth: maxWidth);
-    painter.paint(canvas, Offset(x, top + height - painter.height - 4.0));
+    painter.paint(canvas, Offset(x, top + height - painter.height - 6.0));
   }
 
   static void paintTaskMarker(

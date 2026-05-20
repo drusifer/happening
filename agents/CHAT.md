@@ -2086,5 +2086,7 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
  Font size slider done. Replaced FontSize enum + S/M/L picker with continuous double fontSizePx (11–22pt, 1pt steps). Window heights scale linearly with font size. All tests green.
 
 ---
-[<small>2026-05-20 10:27:30</small>] [**make**]->[**all**] *build*:
+[<small>2026-05-20 14:01:46</small>] [**make**]->[**all**] *build*:
  Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:08 +335: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'

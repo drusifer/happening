@@ -32,7 +32,7 @@ class SignInLayer implements TimelineLayer {
       text: TextSpan(
         text: isSigningIn
             ? 'Signing in… tap to cancel'
-            : 'Tap to sign in with Google →',
+            : 'Tap to sign in with Google >',
         style: TextStyle(
           color: textColor.withValues(alpha: 0.7),
           fontSize: fontSize,
