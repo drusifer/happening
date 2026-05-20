@@ -126,6 +126,17 @@ class TimelinePainter extends CustomPainter {
         color: pastOverlayColor.withValues(
             alpha: pastOverlayColor.a * surfaceOpacity),
       ),
+      EventsLayer(
+        events: events,
+        layout: layout,
+        now: now,
+        hoveredEventId: hoveredEventId,
+        collidingIds: collidingIds,
+        tickColor: tickColor,
+        backgroundColor: backgroundColor,
+        fontSize: fontSize,
+        surfaceOpacity: surfaceOpacity,
+      ),
       TickLayer(
         layout: layout,
         now: now,
@@ -136,17 +147,6 @@ class TimelinePainter extends CustomPainter {
         backgroundColor: backgroundColor,
         fontSize: fontSize,
         alwaysUse24HourFormat: alwaysUse24HourFormat,
-        surfaceOpacity: surfaceOpacity,
-      ),
-      EventsLayer(
-        events: events,
-        layout: layout,
-        now: now,
-        hoveredEventId: hoveredEventId,
-        collidingIds: collidingIds,
-        tickColor: tickColor,
-        backgroundColor: backgroundColor,
-        fontSize: fontSize,
         surfaceOpacity: surfaceOpacity,
       ),
       NowIndicatorLayer(

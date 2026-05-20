@@ -32,8 +32,10 @@ class EventsLayer implements TimelineLayer {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final blockHeight = size.height - 6.0;
-    const top = 2.0;
+    const topInset = 1.0;
+    const bottomInset = 8.0; // 1px border + 3px shadow blur + 4px bottom margin
+    final top = topInset;
+    final blockHeight = size.height - topInset - bottomInset;
 
     final renderList = [...events]
       ..sort((a, b) => b.duration.compareTo(a.duration));
@@ -55,7 +57,7 @@ class EventsLayer implements TimelineLayer {
       Color color = event.isCompleted ? const Color(0xFF51B749) : event.color;
 
       final double targetOpacity =
-          (isHovered ? 1.0 : (isColliding ? 0.5 : 0.82)) * surfaceOpacity;
+          (isHovered ? 0.7 : (isColliding ? 0.3 : 0.35)) * surfaceOpacity;
       color = color.withValues(alpha: targetOpacity);
 
       if (event.isTask) {
@@ -77,6 +79,14 @@ class EventsLayer implements TimelineLayer {
         } else {
           canvas.drawRRect(rect, Paint()..color = color);
         }
+        final baseColor = event.isCompleted ? const Color(0xFF51B749) : event.color;
+        canvas.drawRRect(
+          rect,
+          Paint()
+            ..color = baseColor
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.0,
+        );
 
         if (isColliding) {
           for (final other in events) {
@@ -109,10 +119,12 @@ class EventsLayer implements TimelineLayer {
 
       if (!hasDuration || w > titleThreshold) {
         final taskDiamondWidth = fontSize * 0.5;
-        final labelX = event.isTask ? x + taskDiamondWidth + 4 : x + 4;
+        const leftPad = 8.0;
+        const rightPad = 6.0;
+        final labelX = event.isTask ? x + taskDiamondWidth + leftPad : x + leftPad;
         final labelWidth = (!hasDuration && event.isTask)
-            ? size.width - labelX - 8
-            : (event.isTask ? w - taskDiamondWidth - 8 : w - 8);
+            ? size.width - labelX - rightPad
+            : (event.isTask ? w - taskDiamondWidth - leftPad - rightPad : w - leftPad - rightPad);
 
         if (labelWidth > 10) {
           TimelinePaintUtils.paintEventLabel(

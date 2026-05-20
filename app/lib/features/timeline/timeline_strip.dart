@@ -783,6 +783,7 @@ class _TimelineStripState extends State<TimelineStrip>
                               child: HoverDetailOverlay(
                                 event: _hoveredEvent!,
                                 width: _cardWidth(stripWidth),
+                                fontSize: settings.fontSizePx,
                               ),
                             ),
                           if (widget.onSignIn == null &&

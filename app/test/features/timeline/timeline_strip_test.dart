@@ -136,12 +136,13 @@ class _FakeSettingsService extends SettingsService {
 
 void main() {
   final now = DateTime(2026, 3, 2, 10, 0);
-  final clock = _FakeClock(now);
+  late _FakeClock clock;
   late _MockService mockService;
   late _FakeCalendarService fakeController;
   late _FakeSettingsService fakeSettings;
 
   setUp(() {
+    clock = _FakeClock(now);
     mockService = _MockService();
     fakeSettings = _FakeSettingsService();
     fakeController =

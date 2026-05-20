@@ -29,7 +29,7 @@ import 'features/timeline/timeline_strip.dart';
 // Auth state
 // ---------------------------------------------------------------------------
 
-enum _AuthState { loading, unauthenticated, authenticated }
+enum _AuthState { loading, unauthenticated, authenticated, fatalError }
 
 const _kGoogleClientId =
     '732125393297-j5m383u2fdek7j24olmn2vnmjmf49cqn.apps.googleusercontent.com';
@@ -77,6 +77,7 @@ class _HappeningAppState extends State<HappeningApp> {
   CalendarController? _calendar;
 
   _AuthState _authState = _AuthState.loading;
+  String? _fatalErrorMessage;
   bool _isSigningIn = false;
 
   // ── Lifecycle ────────────────────────────────────────────────────────────
@@ -103,7 +104,22 @@ class _HappeningAppState extends State<HappeningApp> {
         _auth = widget.authServiceOverride!;
       } else {
         final tokenStore = FlutterSecureTokenStore();
-        _log.fine('OAuth Client ID loaded.');
+        try {
+          await tokenStore.write(key: '_health', value: '1');
+          await tokenStore.delete(key: '_health');
+        } catch (e) {
+          _log.severe('Secure storage unavailable: $e');
+          if (mounted) {
+            setState(() {
+              _fatalErrorMessage = 'Secure storage is unavailable.\n'
+                  'On Linux, ensure the GNOME keyring or Secret Service is running.\n\n'
+                  'Error: $e';
+              _authState = _AuthState.fatalError;
+            });
+          }
+          return;
+        }
+        _log.fine('Secure storage verified.');
         _auth = GoogleAuthService(
           clientId: ClientId(_kGoogleClientId, ''),
           scopes: _scopes,
@@ -222,6 +238,10 @@ class _HappeningAppState extends State<HappeningApp> {
                   width: double.infinity,
                   height: settings.fontSizePx + 20,
                 ),
+              _AuthState.fatalError => _FatalErrorScreen(
+                  message: _fatalErrorMessage ?? 'Secure storage unavailable.',
+                  fontSize: settings.fontSizePx,
+                ),
               _AuthState.unauthenticated => TimelineStrip(
                   events: const [],
                   clockService: _clock,
@@ -258,6 +278,24 @@ class _HappeningAppState extends State<HappeningApp> {
           ),
         );
       },
+    );
+  }
+}
+
+class _FatalErrorScreen extends StatelessWidget {
+  const _FatalErrorScreen({required this.message, required this.fontSize});
+  final String message;
+  final double fontSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFF1A1A2E),
+      padding: const EdgeInsets.all(16),
+      child: Text(
+        message,
+        style: TextStyle(color: Colors.red, fontSize: fontSize * 0.8),
+      ),
     );
   }
 }

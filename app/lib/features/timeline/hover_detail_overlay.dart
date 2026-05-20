@@ -9,6 +9,7 @@
 // ---------------------------------------------------------------------------
 
 import 'package:flutter/material.dart';
+import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -18,10 +19,12 @@ class HoverDetailOverlay extends StatelessWidget {
     super.key,
     required this.event,
     this.width = 260,
+    this.fontSize = kDefaultFontSizePx,
   });
 
   final CalendarEvent event;
   final double width;
+  final double fontSize;
 
   String _stripHtml(String html) {
     return html
@@ -49,6 +52,10 @@ class HoverDetailOverlay extends StatelessWidget {
         cleanDescription != null && cleanDescription.length > 200
             ? '${cleanDescription.substring(0, 197)}...'
             : cleanDescription;
+
+    final labelSize = fontSize * 0.67;
+    final titleSize = fontSize * 0.93;
+    final bodySize = fontSize * 0.80;
 
     return Material(
       color: Colors.transparent,
@@ -78,9 +85,9 @@ class HoverDetailOverlay extends StatelessWidget {
                     event.isTask
                         ? 'TASK:\n ${event.calendarName.toUpperCase()}'
                         : event.calendarName.toUpperCase(),
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white60,
-                      fontSize: 10, // S5-FIX: Increased from 10
+                      fontSize: labelSize,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.5,
                       shadows: _kShadows,
@@ -91,6 +98,7 @@ class HoverDetailOverlay extends StatelessWidget {
                   _LinkButton(
                     label: 'JOIN',
                     url: event.videoCallUrl!,
+                    fontSize: labelSize,
                     highlight: true,
                   ),
                   const SizedBox(width: 6),
@@ -99,15 +107,16 @@ class HoverDetailOverlay extends StatelessWidget {
                   _LinkButton(
                     label: 'OPEN',
                     url: event.calendarEventUrl!,
+                    fontSize: labelSize,
                   ),
               ],
             ),
             const SizedBox(height: 6),
             Text(
               event.title,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white,
-                fontSize: 14, // S5-FIX: Increased from 14
+                fontSize: titleSize,
                 fontWeight: FontWeight.w600,
                 shadows: _kShadows,
               ),
@@ -115,9 +124,9 @@ class HoverDetailOverlay extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               '${_fmt(context, event.startTime)} – ${_fmt(context, event.endTime)}',
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.white70,
-                fontSize: 12, // S5-FIX: Increased from 12
+                fontSize: bodySize,
                 shadows: _kShadows,
               ),
             ),
@@ -127,9 +136,9 @@ class HoverDetailOverlay extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 truncatedDescription,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 12, // S5-FIX: Increased from 12
+                  fontSize: bodySize,
                   height: 1.3,
                   shadows: _kShadows,
                 ),
@@ -148,11 +157,13 @@ class _LinkButton extends StatelessWidget {
   const _LinkButton({
     required this.label,
     required this.url,
+    required this.fontSize,
     this.highlight = false,
   });
 
   final String label;
   final String url;
+  final double fontSize;
   final bool highlight;
 
   @override
@@ -175,12 +186,12 @@ class _LinkButton extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
-            fontSize: 10, // S5-FIX: Increased from 10
+            fontSize: fontSize,
             fontWeight: FontWeight.bold,
             letterSpacing: 0.5,
-            shadows: [
+            shadows: const [
               Shadow(
                   color: Colors.black38, offset: Offset(0, 1), blurRadius: 1),
             ],

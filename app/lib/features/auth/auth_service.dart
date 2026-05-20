@@ -59,7 +59,7 @@ class _ProxyingClient extends http.BaseClient {
   }
 
   @override
-  void close() => _inner.close();
+  void close() {} // _inner is owned by GoogleAuthService, not by this wrapper
 }
 
 class GoogleAuthService implements AuthService {
