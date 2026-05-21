@@ -298,16 +298,28 @@ class _TimelineStripState extends State<TimelineStrip>
     final mouseY = details.localPosition.dy;
     final isOverStripZone = mouseY < _collapsedHeight;
 
+    // Overlap ranks must be computed before bounds so effectiveEndX trims
+    // stacked cards correctly, and before sort so rank breaks duration ties.
+    final overlapRanks = layout.computeExactOverlapRanks(widget.events, _now);
+
     // S5-FIX: Sort events by duration ascending so shorter ones are prioritized
-    // in hit-testing (latching the most specific event).
+    // in hit-testing (latching the most specific event). Within same-duration
+    // (exact-overlap) groups, higher rank = topmost card comes first so it wins
+    // in the shared region; only rank-0's wider bounds reach the peeking region.
     final sortedEvents = [...widget.events]
-      ..sort((a, b) => a.duration.compareTo(b.duration));
+      ..sort((a, b) {
+        final durCmp = a.duration.compareTo(b.duration);
+        if (durCmp != 0) return durCmp;
+        final aRank = overlapRanks[a.id]?.rank ?? 0;
+        final bRank = overlapRanks[b.id]?.rank ?? 0;
+        return bRank.compareTo(aRank); // higher rank first
+      });
 
     final boundsMap = <String, EventBounds>{};
     for (final e in sortedEvents) {
       if (isOverStripZone) {
         final startX = layout.xForTime(e.startTime, _now);
-        final endX = layout.effectiveEndX(e, _now);
+        final endX = layout.effectiveEndX(e, _now, overlapRanks);
         boundsMap[e.id] = EventBounds(
           left: startX,
           right: endX,

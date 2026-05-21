@@ -136,6 +136,7 @@ class TimelinePainter extends CustomPainter {
         backgroundColor: backgroundColor,
         fontSize: fontSize,
         surfaceOpacity: surfaceOpacity,
+        excludeEventId: stripOpacity < 1.0 ? hoveredEventId : null,
       ),
       TickLayer(
         layout: layout,
@@ -194,6 +195,26 @@ class TimelinePainter extends CustomPainter {
           ..color = Color.fromARGB((stripOpacity * 255).round(), 255, 255, 255),
       );
       canvas.restore();
+
+      // Repaint the hovered event at full opacity — outside the faded layer so
+      // the transparency slider doesn't dim the event the user is looking at.
+      if (hoveredEventId != null) {
+        final hoveredEvent =
+            events.where((e) => e.id == hoveredEventId).firstOrNull;
+        if (hoveredEvent != null) {
+          EventsLayer(
+            events: [hoveredEvent],
+            layout: layout,
+            now: now,
+            hoveredEventId: hoveredEventId,
+            collidingIds: collidingIds,
+            tickColor: tickColor,
+            backgroundColor: backgroundColor,
+            fontSize: fontSize,
+            surfaceOpacity: surfaceOpacity,
+          ).paint(canvas, size);
+        }
+      }
     }
   }
 

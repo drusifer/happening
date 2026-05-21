@@ -12,13 +12,17 @@ class TimelinePaintUtils {
     required Color backgroundColor,
     bool centered = false,
   }) {
-    const shadows = [
-      Shadow(
-        blurRadius: 3.0,
-        color: Color(0xAA000000),
-        offset: Offset(0.5, 0.5),
-      ),
-    ];
+    // Drop-shadows aid legibility on dark backgrounds but turn to muddy blurs
+    // on light ones — skip them when the background is light.
+    final shadows = backgroundColor.computeLuminance() < 0.5
+        ? const [
+            Shadow(
+              blurRadius: 3.0,
+              color: Color(0xAA000000),
+              offset: Offset(0.5, 0.5),
+            ),
+          ]
+        : const <Shadow>[];
 
     final span = TextSpan(
       text: text,

@@ -42,30 +42,82 @@ class TimelineLayout {
   /// expansion bounds so the two are always in sync.
   static const double kMinEventWidth = 12.0;
 
+  /// Pixels by which each stacked-overlap rank trims its right edge.
+  ///
+  /// Scales with zoom (2 minutes in pixels) so the peeking sliver stays
+  /// proportional to event width, with a 10px floor for reliable hover access.
+  double get overlapStepPx =>
+      (2.0 * 60 * pixelsPerSecond).clamp(10.0, double.infinity);
+
+  /// Groups non-task events whose rendered start AND end positions land on the
+  /// same integer pixel — i.e. visually indistinguishable at the current zoom.
+  ///
+  /// Returns a map from event ID → (rank, groupSize). rank=0 is the bottom
+  /// card (widest, no trim); rank=N−1 is the top card (most trimmed). Events
+  /// not in any same-pixel group are absent from the map.
+  Map<String, ({int rank, int groupSize})> computeExactOverlapRanks(
+      List<CalendarEvent> events, DateTime now) {
+    final groups = <String, List<CalendarEvent>>{};
+    for (final e in events) {
+      if (e.isTask) continue;
+      final startPx = xForTime(e.startTime, now).round();
+      final endPx = xForTime(e.endTime, now).round();
+      final key = '${startPx}_${endPx}';
+      groups.putIfAbsent(key, () => []).add(e);
+    }
+
+    final result = <String, ({int rank, int groupSize})>{};
+    for (final group in groups.values) {
+      if (group.length < 2) continue;
+      final sorted = [...group]..sort((a, b) => a.id.compareTo(b.id));
+      for (var i = 0; i < sorted.length; i++) {
+        result[sorted[i].id] = (rank: i, groupSize: sorted.length);
+      }
+    }
+    return result;
+  }
+
   /// Returns the effective right-edge X for [event], applying [kMinEventWidth]
-  /// so short/zero-duration events are still tappable.
-  double effectiveEndX(CalendarEvent event, DateTime now) {
+  /// and any exact-overlap stacking offset so hit-testing matches rendering.
+  double effectiveEndX(CalendarEvent event, DateTime now,
+      [Map<String, ({int rank, int groupSize})>? overlapRanks]) {
     final x = xForTime(event.startTime, now);
     final rawEndX = xForTime(event.endTime, now);
-    return rawEndX < x + kMinEventWidth ? x + kMinEventWidth : rawEndX;
+    final info = overlapRanks?[event.id];
+    final step = overlapStepPx;
+    final offset = info != null ? info.rank * step : 0.0;
+    final minW = info != null
+        ? kMinEventWidth + (info.groupSize - 1 - info.rank) * step
+        : kMinEventWidth;
+    final adjustedEndX = rawEndX - offset;
+    return adjustedEndX < x + minW ? x + minW : adjustedEndX;
   }
 
   /// Returns the [CalendarEvent] at the given [mouseX] position, or null if none.
-  /// If multiple events overlap at this point, the one with the shortest duration wins.
+  ///
+  /// Among hits: shortest duration wins. For equal-duration events (exact-overlap
+  /// groups), the highest rank (topmost card) wins except in the peeking region
+  /// where only the bottom card's wider effective end reaches.
   CalendarEvent? eventAtX(
       double mouseX, List<CalendarEvent> events, DateTime now) {
+    final overlapRanks = computeExactOverlapRanks(events, now);
     CalendarEvent? bestHit;
     Duration? minDuration;
+    int bestRank = -1;
 
     for (final event in events) {
       final x = xForTime(event.startTime, now);
-      final endX = effectiveEndX(event, now); // consistent with EventBounds
+      final endX = effectiveEndX(event, now, overlapRanks);
 
       if (mouseX >= x && mouseX <= endX) {
         final duration = event.endTime.difference(event.startTime);
-        if (minDuration == null || duration < minDuration) {
+        final rank = overlapRanks[event.id]?.rank ?? -1;
+        if (minDuration == null ||
+            duration < minDuration ||
+            (duration == minDuration && rank > bestRank)) {
           bestHit = event;
           minDuration = duration;
+          bestRank = rank;
         }
       }
     }

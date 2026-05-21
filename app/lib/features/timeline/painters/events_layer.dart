@@ -18,6 +18,7 @@ class EventsLayer implements TimelineLayer {
     required this.backgroundColor,
     required this.fontSize,
     required this.surfaceOpacity,
+    this.excludeEventId,
   });
 
   final List<CalendarEvent> events;
@@ -29,6 +30,7 @@ class EventsLayer implements TimelineLayer {
   final Color backgroundColor;
   final double fontSize;
   final double surfaceOpacity;
+  final String? excludeEventId;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -37,10 +39,20 @@ class EventsLayer implements TimelineLayer {
     final top = topInset;
     final blockHeight = size.height - topInset - bottomInset;
 
+    final overlapRanks = layout.computeExactOverlapRanks(events, now);
+
     final renderList = [...events]
-      ..sort((a, b) => b.duration.compareTo(a.duration));
+      ..sort((a, b) {
+        final durCmp = b.duration.compareTo(a.duration);
+        if (durCmp != 0) return durCmp;
+        // Same duration: draw lower rank first (bottom of the stack).
+        final aRank = overlapRanks[a.id]?.rank ?? 0;
+        final bRank = overlapRanks[b.id]?.rank ?? 0;
+        return aRank.compareTo(bRank);
+      });
 
     for (final event in renderList) {
+      if (event.id == excludeEventId) continue;
       if (!layout.isVisible(event.startTime) &&
           !layout.isVisible(event.endTime)) {
         continue;
@@ -48,8 +60,15 @@ class EventsLayer implements TimelineLayer {
 
       final x = layout.xForTime(event.startTime, now);
       final endX = layout.xForTime(event.endTime, now);
-      final w =
-          (endX - x).abs().clamp(event.isTask ? 0.0 : 12.0, double.infinity);
+
+      final overlapInfo = overlapRanks[event.id];
+      final step = layout.overlapStepPx;
+      final offset = overlapInfo != null ? overlapInfo.rank * step : 0.0;
+      final minW = overlapInfo != null
+          ? TimelineLayout.kMinEventWidth +
+              (overlapInfo.groupSize - 1 - overlapInfo.rank) * step
+          : (event.isTask ? 0.0 : TimelineLayout.kMinEventWidth);
+      final w = ((endX - x) - offset).clamp(minW, double.infinity);
 
       final isHovered = event.id == hoveredEventId;
       final isColliding = collidingIds.contains(event.id);
@@ -57,7 +76,7 @@ class EventsLayer implements TimelineLayer {
       Color color = event.isCompleted ? const Color(0xFF51B749) : event.color;
 
       final double targetOpacity =
-          (isHovered ? 0.7 : (isColliding ? 0.3 : 0.35)) * surfaceOpacity;
+          (isHovered ? 0.7 : 0.35) * surfaceOpacity;
       color = color.withValues(alpha: targetOpacity);
 
       if (event.isTask) {
