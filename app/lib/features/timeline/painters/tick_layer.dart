@@ -43,6 +43,16 @@ class TickLayer implements TimelineLayer {
     final tickPaint = Paint()
       ..color = tickColor.withValues(alpha: tickColor.a * surfaceOpacity);
 
+    // Blurred black shadow behind ticks aids contrast on dark backgrounds but
+    // produces muddy blurs on light ones — skip it for light themes.
+    final isLightBg = backgroundColor.computeLuminance() > 0.5;
+    final tickShadowPaint = isLightBg
+        ? null
+        : (Paint()
+          ..color = Colors.black.withValues(alpha: 0.35 * surfaceOpacity)
+          ..strokeWidth = 3.0
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.0));
+
     var current = DateTime(
       windowStart.year,
       windowStart.month,
@@ -55,6 +65,9 @@ class TickLayer implements TimelineLayer {
       final suppressionThreshold = (fontSize / 15.0) * 40;
 
       if (x >= 0 && x <= size.width) {
+        if (tickShadowPaint != null) {
+          canvas.drawLine(Offset(x, 0), Offset(x, size.height), tickShadowPaint);
+        }
         canvas.drawLine(
             Offset(x, 0), Offset(x, size.height), tickPaint..strokeWidth = 2.0);
 
@@ -63,7 +76,7 @@ class TickLayer implements TimelineLayer {
             canvas,
             _formatHourLabel(current),
             x + 4,
-            1,
+            5,
             fontSize: fontSize * 10 / 11,
             color: tickColor.withValues(alpha: 1.0 * surfaceOpacity),
             backgroundColor: backgroundColor,
@@ -75,6 +88,10 @@ class TickLayer implements TimelineLayer {
         final tickTime = current.add(const Duration(minutes: 30));
         final tx = layout.xForTime(tickTime, now);
         if (tx >= 0 && tx <= size.width) {
+          if (tickShadowPaint != null) {
+            canvas.drawLine(Offset(tx, 0), Offset(tx, size.height * 0.5),
+                tickShadowPaint..strokeWidth = 2.0);
+          }
           canvas.drawLine(Offset(tx, 0), Offset(tx, size.height * 0.5),
               tickPaint..strokeWidth = 0.75);
           if ((tx - nowIndicatorX).abs() > suppressionThreshold * 0.6) {
@@ -82,7 +99,7 @@ class TickLayer implements TimelineLayer {
               canvas,
               formatTimelineHalfHourTickLabel(),
               tx + 2,
-              1,
+              5,
               fontSize: fontSize * 8 / 11,
               color: tickColor.withValues(alpha: 0.85 * surfaceOpacity),
               backgroundColor: backgroundColor,
@@ -96,6 +113,10 @@ class TickLayer implements TimelineLayer {
           final tickTime = current.add(Duration(minutes: m));
           final tx = layout.xForTime(tickTime, now);
           if (tx >= 0 && tx <= size.width) {
+            if (tickShadowPaint != null) {
+              canvas.drawLine(Offset(tx, 0), Offset(tx, size.height * 0.25),
+                  tickShadowPaint..strokeWidth = 1.5);
+            }
             canvas.drawLine(Offset(tx, 0), Offset(tx, size.height * 0.25),
                 tickPaint..strokeWidth = 0.5);
           }
