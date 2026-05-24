@@ -144,16 +144,18 @@ void main() {
           );
 
       test('returns empty map when no events overlap exactly', () {
-        final ranks =
-            layout.computeExactOverlapRanks([evt('a', 9, 10), evt('b', 11, 12)], now);
+        final ranks = layout
+            .computeExactOverlapRanks([evt('a', 9, 10), evt('b', 11, 12)], now);
         expect(ranks, isEmpty);
       });
 
       test('returns empty map for a single event', () {
-        expect(layout.computeExactOverlapRanks([evt('a', 9, 10)], now), isEmpty);
+        expect(
+            layout.computeExactOverlapRanks([evt('a', 9, 10)], now), isEmpty);
       });
 
-      test('assigns rank 0 and 1 to two exactly-overlapping events sorted by id',
+      test(
+          'assigns rank 0 and 1 to two exactly-overlapping events sorted by id',
           () {
         final ranks = layout
             .computeExactOverlapRanks([evt('b', 9, 10), evt('a', 9, 10)], now);
@@ -206,8 +208,7 @@ void main() {
           isTask: true,
         );
         final regular = evt('a', 9, 10);
-        expect(
-            layout.computeExactOverlapRanks([task, regular], now), isEmpty);
+        expect(layout.computeExactOverlapRanks([task, regular], now), isEmpty);
       });
     });
 
@@ -227,8 +228,7 @@ void main() {
         final b = evt('b', 11, 12);
         final ranks = layout.computeExactOverlapRanks([a, b], now);
         final rawEndX = layout.xForTime(a.endTime, now);
-        expect(
-            layout.effectiveEndX(a, now, ranks), closeTo(rawEndX, 0.01));
+        expect(layout.effectiveEndX(a, now, ranks), closeTo(rawEndX, 0.01));
       });
 
       test('rank-1 event effectiveEndX is overlapStepPx less than rank-0', () {

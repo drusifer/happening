@@ -34,7 +34,7 @@ class ExpansionController {
   /// stream emits nothing until the first resize completes.
   Stream<PhysicalWindowState> get stateStream => _stateController.stream;
 
-  ExpansionState? _queued;    // next intent waiting to execute
+  ExpansionState? _queued; // next intent waiting to execute
   ExpansionState? _displayed; // last confirmed state
 
   bool _disposed = false;
@@ -70,7 +70,8 @@ class ExpansionController {
   Future<void> _execute() async {
     final intent = _queued!;
     _queued = null;
-    _displayed = intent; // update eagerly so sends during the await dedup correctly
+    _displayed =
+        intent; // update eagerly so sends during the await dedup correctly
 
     final targetHeight = intent == ExpansionState.expanded
         ? _executor.expandedHeight
@@ -91,6 +92,6 @@ class ExpansionController {
   void dispose() {
     _disposed = true;
     if (!_signal.isCompleted) _signal.complete();
-    _stateController.close();
+    unawaited(_stateController.close());
   }
 }

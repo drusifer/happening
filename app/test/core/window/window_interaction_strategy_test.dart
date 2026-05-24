@@ -28,7 +28,8 @@ void main() {
       wm: mockWM,
     );
 
-    expect(strategy.runtimeType.toString(), 'ReservedWindowInteractionStrategy');
+    expect(
+        strategy.runtimeType.toString(), 'ReservedWindowInteractionStrategy');
     expect(strategy.availability.supportsReserved, isTrue);
   });
 
@@ -38,7 +39,8 @@ void main() {
       wm: mockWM,
     );
 
-    expect(strategy.runtimeType.toString(), 'ReservedWindowInteractionStrategy');
+    expect(
+        strategy.runtimeType.toString(), 'ReservedWindowInteractionStrategy');
     expect(strategy.availability.supportsReserved, isTrue);
   });
 

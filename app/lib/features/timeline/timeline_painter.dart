@@ -8,12 +8,10 @@
 //
 // ---------------------------------------------------------------------------
 
-import 'package:logging/logging.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
-import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/core/astro/astro_settings.dart';
+import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/timeline/painters/astronomical_background_layer.dart';
 import 'package:happening/features/timeline/painters/background_layer.dart';
 import 'package:happening/features/timeline/painters/events_layer.dart';
@@ -23,6 +21,7 @@ import 'package:happening/features/timeline/painters/past_overlay_layer.dart';
 import 'package:happening/features/timeline/painters/sign_in_layer.dart';
 import 'package:happening/features/timeline/painters/tick_layer.dart';
 import 'package:happening/features/timeline/timeline_layout.dart';
+import 'package:logging/logging.dart';
 
 /// Paints the proportional event timeline onto the strip canvas.
 class TimelinePainter extends CustomPainter {
@@ -116,8 +115,11 @@ class TimelinePainter extends CustomPainter {
     final layers = [
       if (useAstro)
         AstronomicalBackgroundLayer(
-            astroData: astroData!, layout: layout, now: now,
-            lat: astroLat, lng: astroLng)
+            astroData: astroData!,
+            layout: layout,
+            now: now,
+            lat: astroLat,
+            lng: astroLng)
       else
         BackgroundLayer(color: backgroundColor),
       PastOverlayLayer(
@@ -252,8 +254,8 @@ class TimelinePainter extends CustomPainter {
         );
 
         final nodes = <CustomPainterSemantics>[];
-        final blockHeight = size.height - 2;
-        const top = 1.0;
+        final top = size.height * 0.5;
+        final blockHeight = size.height - top - 8.0;
 
         // ── Hour ticks + sub-ticks ─────────────────────────────────────────────
         final pixelsPerHour = layout.pixelsPerSecond * 3600;

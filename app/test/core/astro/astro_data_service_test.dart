@@ -31,7 +31,8 @@ AppSettings _astroSettings({
 }) =>
     AppSettings(
       theme: AppTheme.astronomical,
-      astroSettings: AstroSettings(latitude: lat, longitude: lng, cityName: city),
+      astroSettings:
+          AstroSettings(latitude: lat, longitude: lng, cityName: city),
     );
 
 void main() {
@@ -58,7 +59,8 @@ void main() {
       settings.dispose();
     });
 
-    test('current becomes null when settings change to non-astronomical', () async {
+    test('current becomes null when settings change to non-astronomical',
+        () async {
       final settings = _FakeSettingsService(_astroSettings());
       final svc = AstroDataService(settingsService: settings);
       svc.initialize();
@@ -123,7 +125,8 @@ void main() {
       settings.dispose();
     });
 
-    test('cache hit: notifyListeners not called again for same params', () async {
+    test('cache hit: notifyListeners not called again for same params',
+        () async {
       final settings = _FakeSettingsService(_astroSettings());
       final svc = AstroDataService(settingsService: settings);
       svc.initialize();

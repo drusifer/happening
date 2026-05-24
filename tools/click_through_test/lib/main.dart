@@ -63,8 +63,7 @@ class _TestPageState extends State<TestPage> {
 
   Future<void> _getWindowInfo() async {
     try {
-      final info =
-          await _ch.invokeMapMethod<String, dynamic>('getWindowInfo');
+      final info = await _ch.invokeMapMethod<String, dynamic>('getWindowInfo');
       if (info != null) {
         info.forEach((k, v) => _addLog('info.$k = $v'));
       }
@@ -77,8 +76,7 @@ class _TestPageState extends State<TestPage> {
 
   Future<void> _setClickThrough(bool enable) async {
     try {
-      await _ch
-          .invokeMethod<bool>('setIgnoreMouseEvents', {'ignore': enable});
+      await _ch.invokeMethod<bool>('setIgnoreMouseEvents', {'ignore': enable});
       setState(() => _clickThrough = enable);
       _addLog('setIgnoreMouseEvents($enable) → OK');
       // Re-query window state so log shows what changed.
@@ -92,8 +90,7 @@ class _TestPageState extends State<TestPage> {
 
   Future<void> _getWindowInfoQuiet() async {
     try {
-      final info =
-          await _ch.invokeMapMethod<String, dynamic>('getWindowInfo');
+      final info = await _ch.invokeMapMethod<String, dynamic>('getWindowInfo');
       if (info != null) {
         final acceptFocus = info['acceptFocus'];
         final focusOnMap = info['focusOnMap'];
@@ -139,8 +136,7 @@ class _TestPageState extends State<TestPage> {
     final bgColor = active
         ? Colors.indigo.withOpacity(0.18)
         : Colors.indigo.withOpacity(0.82);
-    final borderColor =
-        active ? Colors.lightBlueAccent : Colors.indigoAccent;
+    final borderColor = active ? Colors.lightBlueAccent : Colors.indigoAccent;
     final statusText = active
         ? 'CLICK-THROUGH ON — pointer events pass through'
         : 'CLICK-THROUGH OFF — window receives pointer events';
@@ -163,7 +159,9 @@ class _TestPageState extends State<TestPage> {
               Container(
                 color: Colors.black38,
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 10),
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 child: Row(
                   children: [
                     const Text(
@@ -178,8 +176,11 @@ class _TestPageState extends State<TestPage> {
                     _Badge(_displayServer.toUpperCase()),
                     const SizedBox(width: 8),
                     IconButton(
-                      icon: const Icon(Icons.info_outline,
-                          size: 18, color: Colors.white54),
+                      icon: const Icon(
+                        Icons.info_outline,
+                        size: 18,
+                        color: Colors.white54,
+                      ),
                       tooltip: 'Refresh diagnostics',
                       onPressed: _getWindowInfo,
                     ),
@@ -210,7 +211,9 @@ class _TestPageState extends State<TestPage> {
                       child: Text(
                         statusText,
                         style: const TextStyle(
-                            color: Colors.white70, fontSize: 13),
+                          color: Colors.white70,
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                   ],
@@ -222,12 +225,9 @@ class _TestPageState extends State<TestPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: ElevatedButton.icon(
                   onPressed: _toggle,
-                  icon: Icon(
-                      active ? Icons.visibility_off : Icons.visibility),
+                  icon: Icon(active ? Icons.visibility_off : Icons.visibility),
                   label: Text(
-                    active
-                        ? 'Disable Click-Through'
-                        : 'Enable Click-Through',
+                    active ? 'Disable Click-Through' : 'Enable Click-Through',
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: active
@@ -235,7 +235,9 @@ class _TestPageState extends State<TestPage> {
                         : Colors.green.shade700,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 12),
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
                   ),
                 ),
               ),
@@ -259,8 +261,7 @@ class _TestPageState extends State<TestPage> {
                         SizedBox(width: 8),
                         Text(
                           'Press  Esc  to disable click-through',
-                          style: TextStyle(
-                              color: Colors.orange, fontSize: 12),
+                          style: TextStyle(color: Colors.orange, fontSize: 12),
                         ),
                       ],
                     ),
@@ -271,7 +272,9 @@ class _TestPageState extends State<TestPage> {
               if (!active)
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 4),
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
                   child: const Text(
                     'How to test:\n'
                     '1. Open a terminal behind this window.\n'
@@ -279,7 +282,10 @@ class _TestPageState extends State<TestPage> {
                     '3. Click on the dimmed window area — clicks should reach the terminal.\n'
                     '4. Press Esc to get mouse control back.',
                     style: TextStyle(
-                        color: Colors.white54, fontSize: 11, height: 1.5),
+                      color: Colors.white54,
+                      fontSize: 11,
+                      height: 1.5,
+                    ),
                   ),
                 ),
 

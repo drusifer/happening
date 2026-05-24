@@ -66,7 +66,8 @@ class TickLayer implements TimelineLayer {
 
       if (x >= 0 && x <= size.width) {
         if (tickShadowPaint != null) {
-          canvas.drawLine(Offset(x, 0), Offset(x, size.height), tickShadowPaint);
+          canvas.drawLine(
+              Offset(x, 0), Offset(x, size.height), tickShadowPaint);
         }
         canvas.drawLine(
             Offset(x, 0), Offset(x, size.height), tickPaint..strokeWidth = 2.0);
@@ -75,67 +76,85 @@ class TickLayer implements TimelineLayer {
           TimelinePaintUtils.paintText(
             canvas,
             _formatHourLabel(current),
-            x + 4,
-            5,
-            fontSize: fontSize * 10 / 11,
-            color: tickColor.withValues(alpha: 1.0 * surfaceOpacity),
-            backgroundColor: backgroundColor,
+            TextPaintConfig(
+              x: x + 4,
+              top: 5,
+              fontSize: fontSize * 10 / 11,
+              color: tickColor.withValues(alpha: 1.0 * surfaceOpacity),
+              backgroundColor: backgroundColor,
+            ),
           );
         }
       }
 
       if (pixelsPerHour >= 80) {
-        final tickTime = current.add(const Duration(minutes: 30));
-        final tx = layout.xForTime(tickTime, now);
-        if (tx >= 0 && tx <= size.width) {
-          if (tickShadowPaint != null) {
-            canvas.drawLine(Offset(tx, 0), Offset(tx, size.height * 0.5),
-                tickShadowPaint..strokeWidth = 2.0);
-          }
-          canvas.drawLine(Offset(tx, 0), Offset(tx, size.height * 0.5),
-              tickPaint..strokeWidth = 0.75);
-          if ((tx - nowIndicatorX).abs() > suppressionThreshold * 0.6) {
-            TimelinePaintUtils.paintText(
-              canvas,
-              formatTimelineHalfHourTickLabel(),
-              tx + 2,
-              5,
-              fontSize: fontSize * 8 / 11,
-              color: tickColor.withValues(alpha: 0.85 * surfaceOpacity),
-              backgroundColor: backgroundColor,
-            );
-          }
-        }
-      }
-
-      if (pixelsPerHour >= 80) {
-        for (final m in const [15, 45]) {
-          final tickTime = current.add(Duration(minutes: m));
-          final tx = layout.xForTime(tickTime, now);
-          if (tx >= 0 && tx <= size.width) {
-            if (tickShadowPaint != null) {
-              canvas.drawLine(Offset(tx, 0), Offset(tx, size.height * 0.25),
-                  tickShadowPaint..strokeWidth = 1.5);
-            }
-            canvas.drawLine(Offset(tx, 0), Offset(tx, size.height * 0.25),
-                tickPaint..strokeWidth = 0.5);
-          }
-        }
+        _paintHalfAndQuarterTicks(canvas, size, current, suppressionThreshold,
+            tickPaint, tickShadowPaint);
       }
 
       if (pixelsPerHour >= 200) {
-        for (var m = 5; m < 60; m += 5) {
-          if (m % 15 == 0) continue;
-          final tickTime = current.add(Duration(minutes: m));
-          final tx = layout.xForTime(tickTime, now);
-          if (tx >= 0 && tx <= size.width) {
-            canvas.drawLine(
-                Offset(tx, 0), Offset(tx, 4), tickPaint..strokeWidth = 0.5);
-          }
-        }
+        _paintFiveMinuteTicks(canvas, size, current, tickPaint);
       }
 
       current = current.add(const Duration(hours: 1));
+    }
+  }
+
+  void _paintHalfAndQuarterTicks(
+    Canvas canvas,
+    Size size,
+    DateTime hourTime,
+    double suppressionThreshold,
+    Paint tickPaint,
+    Paint? tickShadowPaint,
+  ) {
+    final halfTime = hourTime.add(const Duration(minutes: 30));
+    final tx = layout.xForTime(halfTime, now);
+    if (tx >= 0 && tx <= size.width) {
+      if (tickShadowPaint != null) {
+        canvas.drawLine(Offset(tx, 0), Offset(tx, size.height * 0.5),
+            tickShadowPaint..strokeWidth = 2.0);
+      }
+      canvas.drawLine(Offset(tx, 0), Offset(tx, size.height * 0.5),
+          tickPaint..strokeWidth = 0.75);
+      if ((tx - nowIndicatorX).abs() > suppressionThreshold * 0.6) {
+        TimelinePaintUtils.paintText(
+          canvas,
+          formatTimelineHalfHourTickLabel(),
+          TextPaintConfig(
+            x: tx + 2,
+            top: 5,
+            fontSize: fontSize * 8 / 11,
+            color: tickColor.withValues(alpha: 0.85 * surfaceOpacity),
+            backgroundColor: backgroundColor,
+          ),
+        );
+      }
+    }
+
+    for (final m in const [15, 45]) {
+      final qTime = hourTime.add(Duration(minutes: m));
+      final qx = layout.xForTime(qTime, now);
+      if (qx >= 0 && qx <= size.width) {
+        if (tickShadowPaint != null) {
+          canvas.drawLine(Offset(qx, 0), Offset(qx, size.height * 0.25),
+              tickShadowPaint..strokeWidth = 1.5);
+        }
+        canvas.drawLine(Offset(qx, 0), Offset(qx, size.height * 0.25),
+            tickPaint..strokeWidth = 0.5);
+      }
+    }
+  }
+
+  void _paintFiveMinuteTicks(
+      Canvas canvas, Size size, DateTime hourTime, Paint tickPaint) {
+    for (var m = 5; m < 60; m += 5) {
+      if (m % 15 == 0) continue;
+      final tx = layout.xForTime(hourTime.add(Duration(minutes: m)), now);
+      if (tx >= 0 && tx <= size.width) {
+        canvas.drawLine(
+            Offset(tx, 0), Offset(tx, 4), tickPaint..strokeWidth = 0.5);
+      }
     }
   }
 }

@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:apsl_sun_calc/apsl_sun_calc.dart';
 import 'package:flutter/foundation.dart';
-import 'package:logging/logging.dart';
 import 'package:happening/core/astro/astro_settings.dart';
 import 'package:happening/core/astro/solar_calculator.dart';
 import 'package:happening/core/settings/settings_service.dart';
+import 'package:logging/logging.dart';
 
 class AstroDataService extends ChangeNotifier {
   static final _log = Logger('AstroDataService');
@@ -91,8 +91,7 @@ class AstroDataService extends ChangeNotifier {
         solarNoon: today.solarNoon,
         sunset: today.sunset,
         civilTwilightEnd: today.civilTwilightEnd,
-        phase: MoonPhase.fromFraction(
-            (moonIllum['phase'] as num).toDouble()),
+        phase: MoonPhase.fromFraction((moonIllum['phase'] as num).toDouble()),
         illuminationFraction: (moonIllum['fraction'] as num).toDouble(),
       );
 

@@ -2129,8 +2129,23 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
  Lunar rise/set transitions fixed. Dawn anchor prevents dark dip at civil twilight begin. Dusk anchor mirrors it. ABL deduplication ensures lunar upColor wins over solar nightNavy at boundaries. 371/371 green. @Drew ready for next task.
 
 ---
-[<small>2026-05-24 11:21:43</small>] [**make**]->[**all**] *build*:
- Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
-
-Application finished.
+[<small>2026-05-24 14:05:50</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make format | /home/drusifer/Projects/happening/build/build.out
+Formatted lib/features/timeline/timeline_strip.dart
+Formatted 82 files (5 changed) in 0.17 seconds.
 make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-24 15:16:25</small>] [**Neo**]->[**all**] *handoff*:
+ NEO: Lint partial. analyze=0, format/style/unused-files PASS. 352/352 green. 7 dead files deleted. 12 complexity warnings remain. Plan: neo.docs/next_steps.md. Ready for /clear.
+
+---
+[<small>2026-05-24 18:08:02</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make lint-style | /home/drusifer/Projects/happening/build/build.out
+Analyzing 3 items...
+No issues found! (ran in 2.0s)
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-24 18:10:03</small>] [**Neo**]->[**all**] *handoff*:
+ Lint cleanup sprint COMPLETE. make lint exits 0, 352/352 green. All 12 lint-metrics warnings cleared across 9 files. State saved in neo.docs/. Next: Oracle AST-E2 doc pass.

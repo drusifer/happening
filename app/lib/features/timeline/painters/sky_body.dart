@@ -19,7 +19,8 @@ abstract class SkyBody {
   ///
   /// When [riseBegin] == [riseEnd] (e.g. moonrise with no twilight zone) the
   /// same x gets two stops, producing an instant colour switch.
-  List<({double x, Color c})> gradientStops(TimelineLayout layout, DateTime now) {
+  List<({double x, Color c})> gradientStops(
+      TimelineLayout layout, DateTime now) {
     final result = <({double x, Color c})>[];
 
     void add(DateTime? t, Color c) {
@@ -55,12 +56,22 @@ abstract class SkyBody {
     if (x <= rb) return 1.0;
     if (re != null && re > rb && x < re) return 1.0 - (x - rb) / (re - rb);
     if (sb != null && x <= sb) return 0.0;
-    if (sb != null && se != null && se > sb && x <= se) return (x - sb) / (se - sb);
+    if (sb != null && se != null && se > sb && x <= se) {
+      return (x - sb) / (se - sb);
+    }
     return 1.0;
   }
 
-  /// Draw glyphs for this body's visible events onto [canvas].
-  void paintGlyphs(Canvas canvas, Size size, TimelineLayout layout, DateTime now);
+  /// Returns all glyph objects for this body (visibility not filtered).
+  List<AstroObject> buildGlyphs();
+
+  /// Draws each glyph that falls within the visible strip.
+  void paintGlyphs(
+      Canvas canvas, Size size, TimelineLayout layout, DateTime now) {
+    for (final obj in buildGlyphs()) {
+      drawIfVisible(canvas, size, layout, now, obj);
+    }
+  }
 
   /// Clip helper shared by subclasses.
   void drawIfVisible(Canvas canvas, Size size, TimelineLayout layout,

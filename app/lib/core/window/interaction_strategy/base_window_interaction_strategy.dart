@@ -13,7 +13,9 @@ abstract class BaseWindowInteractionStrategy extends WindowInteractionStrategy {
   static final _log = Logger('WindowInteractionStrategy');
 
   @override
-  Future<void> initialize(WindowMode mode) async {}
+  Future<void> initialize(WindowMode mode) async {
+    return;
+  }
 
   @override
   Future<void> sendToBack() async {
@@ -35,8 +37,7 @@ abstract class BaseWindowInteractionStrategy extends WindowInteractionStrategy {
     if (xWid != null && xWid.isNotEmpty) {
       try {
         // XLowerWindow via ctypes — no external tool dependency, libX11 always present.
-        const script =
-            "import ctypes,sys;"
+        const script = "import ctypes,sys;"
             "l=ctypes.CDLL('libX11.so.6');"
             "l.XOpenDisplay.restype=ctypes.c_void_p;"
             "d=l.XOpenDisplay(None);"
@@ -44,7 +45,8 @@ abstract class BaseWindowInteractionStrategy extends WindowInteractionStrategy {
             "l.XFlush(d);"
             "l.XCloseDisplay(d)";
         final r = await Process.run('python3', ['-c', script, xWid]);
-        _log.fine('sendToBack: XLowerWindow wid=$xWid exit=${r.exitCode} err=${r.stderr}');
+        _log.fine(
+            'sendToBack: XLowerWindow wid=$xWid exit=${r.exitCode} err=${r.stderr}');
       } catch (e) {
         _log.fine('sendToBack: XLowerWindow failed: $e');
       }

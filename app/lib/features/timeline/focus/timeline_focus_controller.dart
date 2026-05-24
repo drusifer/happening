@@ -18,7 +18,9 @@ class TimelineFocusController extends ChangeNotifier {
 
   bool get isSentToBack => isSentToBackNotifier.value;
 
-  Future<void> initialize() async {}
+  Future<void> initialize() async {
+    return;
+  }
 
   Future<void> setWindowMode(WindowMode mode) async {
     await _windowService.setWindowMode(mode);

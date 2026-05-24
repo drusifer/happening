@@ -32,7 +32,9 @@
       "Skill(make)",
       "WebFetch(domain:pub.dev)",
       "Skill(chat)",
-      "Bash(grep -v \"^\\\\s*$\")"
+      "Bash(grep -v \"^\\\\s*$\")",
+      "Bash(dart run *)",
+      "Bash(dart format *)"
     ]
   },
   "enabledMcpjsonServers": [

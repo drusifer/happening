@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:happening/core/window/expansion_controller.dart'
+    show ExpansionController;
 import 'package:happening/features/timeline/expansion_logic.dart';
 
 /// Interface between [ExpansionController] and the OS window layer.

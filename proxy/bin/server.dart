@@ -27,11 +27,13 @@ void main(List<String> args) async {
     exit(1);
   }
   final secretJson = jsonDecode(await File(secretPath).readAsString());
-  final secret = (secretJson['installed'] ?? secretJson['web'])['client_secret'] as String;
+  final secret =
+      (secretJson['installed'] ?? secretJson['web'])['client_secret'] as String;
 
   final port = _parsePort(args) ?? _defaultPort;
   final server = await HttpServer.bind('0.0.0.0', port);
-  stdout.writeln('[proxy] Happening token proxy listening on http://0.0.0.0:$port');
+  stdout.writeln(
+      '[proxy] Happening token proxy listening on http://0.0.0.0:$port');
   stdout.writeln('[proxy] Press Ctrl+C to stop.');
 
   await for (final request in server) {

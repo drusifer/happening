@@ -30,8 +30,7 @@ SolarDayTimes? getSolarTimes(DateTime date, double lat, double lng) {
   // is < 16 min, well inside the 2 h search buffer.
   final midnightUtc = DateTime.utc(date.year, date.month, date.day);
   final nadirHours = (24.0 - lng / 15.0) % 24.0;
-  final nadir =
-      midnightUtc.add(Duration(minutes: (nadirHours * 60).round()));
+  final nadir = midnightUtc.add(Duration(minutes: (nadirHours * 60).round()));
 
   final risingLo = nadir.subtract(const Duration(hours: 2));
   final risingHi = nadir.add(const Duration(hours: 14));
@@ -39,20 +38,36 @@ SolarDayTimes? getSolarTimes(DateTime date, double lat, double lng) {
   final fallingHi = nadir.add(const Duration(hours: 26));
 
   final civilTwilightBegin = _findSunCrossing(
-    lat: lat, lng: lng, targetDeg: -6.0, rising: true,
-    lo: risingLo, hi: risingHi,
+    lat: lat,
+    lng: lng,
+    targetDeg: -6.0,
+    rising: true,
+    lo: risingLo,
+    hi: risingHi,
   );
   final sunrise = _findSunCrossing(
-    lat: lat, lng: lng, targetDeg: 0.0, rising: true,
-    lo: risingLo, hi: risingHi,
+    lat: lat,
+    lng: lng,
+    targetDeg: 0.0,
+    rising: true,
+    lo: risingLo,
+    hi: risingHi,
   );
   final sunset = _findSunCrossing(
-    lat: lat, lng: lng, targetDeg: 0.0, rising: false,
-    lo: fallingLo, hi: fallingHi,
+    lat: lat,
+    lng: lng,
+    targetDeg: 0.0,
+    rising: false,
+    lo: fallingLo,
+    hi: fallingHi,
   );
   final civilTwilightEnd = _findSunCrossing(
-    lat: lat, lng: lng, targetDeg: -6.0, rising: false,
-    lo: fallingLo, hi: fallingHi,
+    lat: lat,
+    lng: lng,
+    targetDeg: -6.0,
+    rising: false,
+    lo: fallingLo,
+    hi: fallingHi,
   );
 
   if (civilTwilightBegin == null ||
@@ -103,9 +118,17 @@ DateTime? _findSunCrossing({
     );
     final altMid = _sunAltitudeDeg(mid, lat, lng);
     if (rising) {
-      if (altMid < targetDeg) { start = mid; } else { end = mid; }
+      if (altMid < targetDeg) {
+        start = mid;
+      } else {
+        end = mid;
+      }
     } else {
-      if (altMid > targetDeg) { start = mid; } else { end = mid; }
+      if (altMid > targetDeg) {
+        start = mid;
+      } else {
+        end = mid;
+      }
     }
   }
   return start.add(

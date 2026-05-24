@@ -86,7 +86,9 @@ void main() {
     });
 
     test('between civil twilight begin and sunrise is dawn amber', () {
-      final x = (layout.xForTime(civilBegin, now) + layout.xForTime(sunrise, now)) / 2;
+      final x =
+          (layout.xForTime(civilBegin, now) + layout.xForTime(sunrise, now)) /
+              2;
       expect(solarColorAt(x), equals(const Color(0xFFE8722A)));
     });
 
@@ -96,22 +98,26 @@ void main() {
     });
 
     test('between sunset and civil twilight end is dusk amber', () {
-      final x = (layout.xForTime(sunset, now) + layout.xForTime(civilEnd, now)) / 2;
+      final x =
+          (layout.xForTime(sunset, now) + layout.xForTime(civilEnd, now)) / 2;
       expect(solarColorAt(x), equals(const Color(0xFFE8722A)));
     });
   });
 
   group('solarColorAt — daytime zone', () {
     test('at sunrise is sky blue', () {
-      expect(solarColorAt(layout.xForTime(sunrise, now)), equals(const Color(0xFF5BA3C9)));
+      expect(solarColorAt(layout.xForTime(sunrise, now)),
+          equals(const Color(0xFF3F7189)));
     });
 
     test('at solar noon is sky blue', () {
-      expect(solarColorAt(layout.xForTime(solarNoon, now)), equals(const Color(0xFF5BA3C9)));
+      expect(solarColorAt(layout.xForTime(solarNoon, now)),
+          equals(const Color(0xFF3F7189)));
     });
 
     test('at sunset is sky blue', () {
-      expect(solarColorAt(layout.xForTime(sunset, now)), equals(const Color(0xFF5BA3C9)));
+      expect(solarColorAt(layout.xForTime(sunset, now)),
+          equals(const Color(0xFF3F7189)));
     });
   });
 

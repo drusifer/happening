@@ -8,16 +8,15 @@
 //
 // ---------------------------------------------------------------------------
 
-import 'package:logging/logging.dart';
 import 'package:flutter/material.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
+import 'package:logging/logging.dart';
 
 import 'calendar_event.dart';
 import 'video_link_extractor.dart';
 
 /// Metadata for a single Google Calendar.
 class CalendarMeta {
-  static final _log = Logger('CalendarMeta');
   const CalendarMeta({
     required this.id,
     required this.summary,
@@ -36,7 +35,6 @@ class CalendarMeta {
 }
 
 abstract class CalendarService {
-  static final _log = Logger('CalendarService');
   Future<List<CalendarMeta>> fetchCalendarList();
   Future<List<CalendarEvent>> fetchEvents(String calendarId);
   Future<List<CalendarEvent>> fetchTodayEvents();

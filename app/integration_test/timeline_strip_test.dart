@@ -14,9 +14,7 @@ class _FakeWindowService extends WindowService {
           screenRetriever: _FakeScreenRetriever(),
         );
 
-  @override
   Future<void> expand({double? height}) async {}
 
-  @override
   Future<void> collapse({double? height}) async {}
 }
