@@ -63,7 +63,7 @@ class ExpansionLogic {
   }) {
     // 1. Settings always forces expansion.
     if (isSettingsOpen) {
-      _log.fine('ExpansionLogic -> Expanded (Settings Open)');
+      _log.finer('ExpansionLogic -> Expanded (Settings Open)');
       return ExpansionState.expanded;
     }
 

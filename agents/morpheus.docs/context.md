@@ -30,5 +30,12 @@
 ## Linux Click-Through Research — 2026-04-26
 - DROPPED. Click-through replaced by Send-to-Back.
 
+## Astro Marker Layer Review — 2026-05-22
+- Reviewed: `astro_objects.dart`, `solar_marker_layer.dart`, `lunar_marker_layer.dart`, `sky_lights.dart`
+- **Issue 1 (LSP):** `MoonTransit.arrowUp = true` is vestigial — drawIcon overridden to skip arrow. Fix: make `arrowUp` nullable (`bool?`) and guard in `Moon.drawIcon`. Remove `MoonTransit.drawIcon` override.
+- **Issue 2 (DRY):** `_drawIfVisible()` + date-iteration loop duplicated in both marker layers. Fix: extract `AstroMarkerLayer` abstract base with `objectsForDate(DateTime) → List<AstroObject>`.
+- Design note: `AstronomicalBackgroundLayer` still sources solar times via `AstroData` while marker layers compute independently. Architectural inconsistency; defensible as caching trade-off.
+- Full review: `agents/morpheus.docs/astro_review_2026-05-22.md`
+
 ---
-*Last updated: 2026-05-18*
+*Last updated: 2026-05-22*
