@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:happening/core/window/expansion_controller.dart'
+    show ExpansionController;
 import 'package:happening/core/window/resize_executor.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:happening/features/timeline/expansion_logic.dart';

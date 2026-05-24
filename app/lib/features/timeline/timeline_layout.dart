@@ -62,7 +62,7 @@ class TimelineLayout {
       if (e.isTask) continue;
       final startPx = xForTime(e.startTime, now).round();
       final endPx = xForTime(e.endTime, now).round();
-      final key = '${startPx}_${endPx}';
+      final key = '${startPx}_$endPx';
       groups.putIfAbsent(key, () => []).add(e);
     }
 

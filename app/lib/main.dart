@@ -70,11 +70,11 @@ void _setupLogging(Directory dir) {
             : r.level >= Level.INFO
                 ? 'INF'
                 : 'DBG';
-    final line = '[${r.time.toIso8601String()}] [$tag] [${r.loggerName}] ${r.message}';
+    final line =
+        '[${r.time.toIso8601String()}] [$tag] [${r.loggerName}] ${r.message}';
     debugPrint(line);
     if (r.level >= Level.INFO) {
       logFile?.writeAsStringSync('$line\n', mode: FileMode.append, flush: true);
     }
   });
 }
-

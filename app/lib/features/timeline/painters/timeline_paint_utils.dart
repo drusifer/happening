@@ -1,20 +1,51 @@
 import 'package:flutter/material.dart';
 
+/// Config for [TimelinePaintUtils.paintText].
+class TextPaintConfig {
+  const TextPaintConfig({
+    required this.x,
+    required this.top,
+    required this.fontSize,
+    required this.color,
+    required this.backgroundColor,
+    this.centered = false,
+  });
+
+  final double x;
+  final double top;
+  final double fontSize;
+  final Color color;
+  final Color backgroundColor;
+  final bool centered;
+}
+
+/// Config for [TimelinePaintUtils.paintEventLabel].
+class EventLabelConfig {
+  const EventLabelConfig({
+    required this.x,
+    required this.top,
+    required this.maxWidth,
+    required this.height,
+    required this.fontSize,
+    required this.backgroundColor,
+    this.isTask = false,
+  });
+
+  final double x;
+  final double top;
+  final double maxWidth;
+  final double height;
+  final double fontSize;
+  final Color backgroundColor;
+  final bool isTask;
+}
+
 /// Static canvas painting helpers shared across timeline layers.
 class TimelinePaintUtils {
-  static void paintText(
-    Canvas canvas,
-    String text,
-    double x,
-    double top, {
-    required double fontSize,
-    required Color color,
-    required Color backgroundColor,
-    bool centered = false,
-  }) {
+  static void paintText(Canvas canvas, String text, TextPaintConfig cfg) {
     // Drop-shadows aid legibility on dark backgrounds but turn to muddy blurs
     // on light ones — skip them when the background is light.
-    final shadows = backgroundColor.computeLuminance() < 0.5
+    final shadows = cfg.backgroundColor.computeLuminance() < 0.5
         ? const [
             Shadow(
               blurRadius: 3.0,
@@ -27,8 +58,8 @@ class TimelinePaintUtils {
     final span = TextSpan(
       text: text,
       style: TextStyle(
-        color: color,
-        fontSize: fontSize,
+        color: cfg.color,
+        fontSize: cfg.fontSize,
         fontWeight: FontWeight.w400,
         shadows: shadows,
       ),
@@ -38,21 +69,12 @@ class TimelinePaintUtils {
       textDirection: TextDirection.ltr,
     )..layout();
 
-    final finalX = centered ? x - painter.width / 2 : x;
-    painter.paint(canvas, Offset(finalX, top));
+    final finalX = cfg.centered ? cfg.x - painter.width / 2 : cfg.x;
+    painter.paint(canvas, Offset(finalX, cfg.top));
   }
 
   static void paintEventLabel(
-    Canvas canvas,
-    String title,
-    double x,
-    double top,
-    double maxWidth,
-    double height, {
-    required double fontSize,
-    required Color backgroundColor,
-    bool isTask = false,
-  }) {
+      Canvas canvas, String title, EventLabelConfig cfg) {
     const shadow = Shadow(
       blurRadius: 3.0,
       color: Color(0xAA000000),
@@ -63,7 +85,7 @@ class TimelinePaintUtils {
       text: title,
       style: TextStyle(
         color: Colors.white,
-        fontSize: fontSize,
+        fontSize: cfg.fontSize,
         fontWeight: FontWeight.w500,
         shadows: const [shadow],
       ),
@@ -73,8 +95,9 @@ class TimelinePaintUtils {
       textDirection: TextDirection.ltr,
       maxLines: 1,
       ellipsis: '…',
-    )..layout(maxWidth: maxWidth);
-    painter.paint(canvas, Offset(x, top + height - painter.height - 6.0));
+    )..layout(maxWidth: cfg.maxWidth);
+    painter.paint(
+        canvas, Offset(cfg.x, cfg.top + (cfg.height - painter.height) / 2));
   }
 
   static void paintTaskMarker(

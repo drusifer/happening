@@ -1,41 +1,42 @@
-# Neo Current Task — 2026-05-22
+# Neo Current Task — 2026-05-24
 
-**Status**: Lunar transition fix — COMPLETE (371/371 green)
+**Status**: Lint cleanup — COMPLETE (352/352 green)
 
 ## What was completed this session
 
-### Sky Body Refactor (per agents/morpheus.docs/SKY_BODY_REFACTOR_PLAN.md)
+### All 12 lint-metrics warnings fixed
 
-**Goal**: Replace SkyArc/Sunlight/Moonlight + separate marker layers with unified SkyBody hierarchy.
+**Parameter count fixes:**
+- Introduced `TextPaintConfig` + `EventLabelConfig` classes in `timeline_paint_utils.dart`
+  → `paintText` (8→3 params) and `paintEventLabel` (9→3 params)
+- Updated callers in `tick_layer.dart` and `events_layer.dart`
+- Converted `AstronomicalBackgroundLayer.hitTest` from static (7 params) to instance method (2 params)
+  → Updated caller in `timeline_strip.dart`
+- Extracted `_buildLunarBodies` from `_buildBodies` (7→5 params; uses `solar1.riseBegin!` instead of `todayTimes`)
 
-#### New files created
-- `app/lib/features/timeline/painters/sky_body.dart` — Abstract base with `gradientStops`, `nightnessAt`, `paintGlyphs`, `drawIfVisible` helper
-- `app/lib/features/timeline/painters/solar_body.dart` — SolarBody(SolarDayTimes): dayBlue/nightNavy/dawnDusk gradient + SunRise/Sun/SunSet glyphs
-- `app/lib/features/timeline/painters/lunar_body.dart` — LunarBody(LunarDayTimes, SolarBody): transparent down/twilight, instant rise/set, daytime suppression, moon glyphs
+**Nesting level fix:**
+- `_HappeningAppState._initServices` (nesting 6→≤5): extracted `_verifySecureStorage()` helper in `app.dart`
 
-#### Rewritten
-- `app/lib/features/timeline/painters/astronomical_background_layer.dart` — Creates SolarBody×2 + LunarBody per date; merges gradient stops; draws stars; calls paintGlyphs on each body
+**Complexity fixes:**
+- `LunarBody.gradientStops` (45→≤20): extracted `_patternBStops`, `_addPatternAStops`, `_addPostDuskStops`;
+  introduced `_GradCtx` context class to bundle pre-computed x-positions (avoids >6 params in helpers)
+- `AstronomicalBackgroundLayer._buildBodies` (23→≤20): extracted `_buildLunarBodies` static helper
+- `EventsLayer.paint` (38→≤20): extracted `_paintEvent`, `_paintEventBlock`, `_paintCollisionOutlines`,
+  `_paintEventLabel`, `_paintGapLabels` helpers; `RRect` passed to avoid 8-param methods
+- `TickLayer.paint` (22→≤20): extracted `_paintHalfAndQuarterTicks` and `_paintFiveMinuteTicks`
+- `_TimelineStripState._handleMouse` (30→≤20): extracted `_computeEventBoundsMap` and `_findHoveredEvent`
+- `_TimelineStripState.build` (51 complexity, 8 nesting, 353 SLOC):
+  - Outer `build` delegates to `_buildLayout(ctx, isExpanded, constraints)` (3 params)
+  - `_buildLayout` contains the Stack with extracted helpers
+  - Extracted: `_buildPainterPositioned`, `_buildCountdownPositioned`, `_buildCountdownContent`,
+    `_buildLeftToolbar`, `_buildAstroTooltip`, `_buildSettingsWidgets`
+- `_SettingsPanelState.build` (331 SLOC): extracted `_buildLeftColumn`, `_buildMiddleColumn`,
+  `_buildRightColumn`, `_buildSliderLabels`, `_buildCalendarList` helpers
+- `_AstroLocationSectionState.build` (163 SLOC): extracted `_buildLocationDisplay`, `_buildCitySearch`,
+  `_buildAdvancedSection` (returning `List<Widget>`)
 
-#### Modified
-- `app/lib/features/timeline/timeline_painter.dart` — Removed SolarMarkerLayer + LunarMarkerLayer imports and layer instances (glyphs now owned by bodies in ABL)
-
-#### Deleted (obsolete)
-- `app/lib/features/timeline/painters/sky_lights.dart`
-- `app/lib/features/timeline/painters/solar_marker_layer.dart`
-- `app/lib/features/timeline/painters/lunar_marker_layer.dart`
-- `app/lib/features/timeline/painters/astro_marker_layer.dart`
-
-#### Test files
-- NEW: `test/features/timeline/painters/solar_body_test.dart` (7 tests)
-- NEW: `test/features/timeline/painters/lunar_body_test.dart` (8 tests)
-- UPDATED: `test/features/timeline/painters/astronomical_background_layer_test.dart` (removed colorAtX, added SolarBody tests)
-- DELETED: `test/features/timeline/painters/solar_marker_layer_test.dart`
-- DELETED: `test/features/timeline/painters/lunar_marker_layer_test.dart`
-
-## Test gate
-- Before: 355/355 green
-- After: 365/365 green (+10)
-
-## Sprint status
-- F-29 Astronomical Timeline Theme — All phases COMPLETE
-- SkyBody refactor was a post-sprint cleanup requested by Morpheus review
+## Final state
+- `make lint-style`: PASS
+- `make lint-format`: PASS
+- `make lint-metrics`: PASS (`✔ no issues found!`)
+- `make test`: PASS (352/352 green)

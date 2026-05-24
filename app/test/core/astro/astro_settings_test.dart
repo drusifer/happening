@@ -96,7 +96,8 @@ void main() {
   });
 
   group('AstroSettings', () {
-    const s = AstroSettings(latitude: 40.71, longitude: -74.0, cityName: 'New York');
+    const s =
+        AstroSettings(latitude: 40.71, longitude: -74.0, cityName: 'New York');
 
     test('hasLocation true when lat+lng present', () {
       expect(s.hasLocation, isTrue);
@@ -119,7 +120,8 @@ void main() {
     });
 
     test('equality', () {
-      const other = AstroSettings(latitude: 40.71, longitude: -74.0, cityName: 'New York');
+      const other = AstroSettings(
+          latitude: 40.71, longitude: -74.0, cityName: 'New York');
       expect(s, equals(other));
       expect(s.hashCode, other.hashCode);
     });

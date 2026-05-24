@@ -82,15 +82,13 @@ class CalendarController {
         'primary',
         ...selectedIds,
       };
-      _log.fine(
-          'Fetching ${idsToFetch.length} configured calendars');
+      _log.fine('Fetching ${idsToFetch.length} configured calendars');
 
       final results = <List<CalendarEvent>>[];
       for (final id in idsToFetch) {
         try {
           final events = await _service.fetchEvents(id);
-          _log.fine(
-              'Fetched configured calendar: ${events.length} events');
+          _log.fine('Fetched configured calendar: ${events.length} events');
           results.add(events);
         } catch (_) {
           _log.warning('Configured calendar fetch failed');
@@ -109,8 +107,7 @@ class CalendarController {
     } catch (_) {
       // S5-FIX: If the first fetch fails, emit an empty list to unblock the UI.
       if (_lastEvents == null) {
-        _log.fine(
-            'Initial fetch failed. Emitting empty list to unblock UI.');
+        _log.fine('Initial fetch failed. Emitting empty list to unblock UI.');
         _lastEvents = [];
         _eventsController.add([]);
       }

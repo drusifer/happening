@@ -9,11 +9,11 @@
 // ---------------------------------------------------------------------------
 
 import 'dart:async';
-import 'package:logging/logging.dart';
 
 import 'package:flutter/material.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:googleapis_auth/auth_io.dart';
+import 'package:logging/logging.dart';
 
 import 'core/settings/settings_service.dart';
 import 'core/time/clock_service.dart';
@@ -40,7 +40,6 @@ const _scopes = ['https://www.googleapis.com/auth/calendar.readonly'];
 // ---------------------------------------------------------------------------
 
 class HappeningApp extends StatefulWidget {
-  static final _log = Logger('HappeningApp');
   const HappeningApp({
     super.key,
     required this.settingsService,
@@ -104,21 +103,7 @@ class _HappeningAppState extends State<HappeningApp> {
         _auth = widget.authServiceOverride!;
       } else {
         final tokenStore = FlutterSecureTokenStore();
-        try {
-          await tokenStore.write(key: '_health', value: '1');
-          await tokenStore.delete(key: '_health');
-        } catch (e) {
-          _log.severe('Secure storage unavailable: $e');
-          if (mounted) {
-            setState(() {
-              _fatalErrorMessage = 'Secure storage is unavailable.\n'
-                  'On Linux, ensure the GNOME keyring or Secret Service is running.\n\n'
-                  'Error: $e';
-              _authState = _AuthState.fatalError;
-            });
-          }
-          return;
-        }
+        if (!await _verifySecureStorage(tokenStore)) return;
         _log.fine('Secure storage verified.');
         _auth = GoogleAuthService(
           clientId: ClientId(_kGoogleClientId, ''),
@@ -132,13 +117,31 @@ class _HappeningAppState extends State<HappeningApp> {
         _log.fine('Auth restored successfully.');
         await _startCalendar();
       } else {
-        _log.fine(
-            'Auth restore failed. Moving to unauthenticated state.');
+        _log.fine('Auth restore failed. Moving to unauthenticated state.');
         if (mounted) setState(() => _authState = _AuthState.unauthenticated);
       }
     } catch (e) {
       _log.fine('Service initialization FAILED: $e');
       if (mounted) setState(() => _authState = _AuthState.unauthenticated);
+    }
+  }
+
+  Future<bool> _verifySecureStorage(FlutterSecureTokenStore tokenStore) async {
+    try {
+      await tokenStore.write(key: '_health', value: '1');
+      await tokenStore.delete(key: '_health');
+      return true;
+    } catch (e) {
+      _log.severe('Secure storage unavailable: $e');
+      if (mounted) {
+        setState(() {
+          _fatalErrorMessage = 'Secure storage is unavailable.\n'
+              'On Linux, ensure the GNOME keyring or Secret Service is running.\n\n'
+              'Error: $e';
+          _authState = _AuthState.fatalError;
+        });
+      }
+      return false;
     }
   }
 

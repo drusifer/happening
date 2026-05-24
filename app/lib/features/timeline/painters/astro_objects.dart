@@ -7,6 +7,26 @@ import 'package:happening/core/astro/astro_settings.dart';
 const kAstroIconRadius = 5.5;
 
 // ---------------------------------------------------------------------------
+// Hit result
+// ---------------------------------------------------------------------------
+
+class AstroHit {
+  const AstroHit({
+    required this.label,
+    required this.time,
+    required this.glyphX,
+    required this.glyphCy,
+    this.fraction,
+  });
+
+  final String label;
+  final DateTime time;
+  final double glyphX;
+  final double glyphCy;
+  final double? fraction; // moon illumination 0–1; null for solar objects
+}
+
+// ---------------------------------------------------------------------------
 // Base
 // ---------------------------------------------------------------------------
 
@@ -15,20 +35,17 @@ abstract class AstroObject {
 
   final DateTime time;
 
+  String get label;
+
   static const _shadowBlur = 3.0;
   static const _shadowColor = Color(0x99000000);
   static const _shadowRadius = kAstroIconRadius + 3.0;
-  // Light source is top-left, so shadows fall down and to the right.
   static const _shadowDx = 1.5;
   static const _shadowDy = 1.5;
 
-  /// Vertical centre of the disc in canvas coordinates.
   double cy(double height);
-
-  /// Draws the icon body (no shadow — handled by [draw]).
   void drawIcon(Canvas canvas, Size size, double x, double cy);
 
-  /// Draws drop shadow then delegates to [drawIcon].
   void draw(Canvas canvas, Size size, double x) {
     final c = cy(size.height);
     canvas.drawCircle(
@@ -46,12 +63,14 @@ abstract class AstroObject {
 // Solar objects
 // ---------------------------------------------------------------------------
 
-/// Solar noon — full disc, vertically centred.
 class Sun extends AstroObject {
   const Sun({required super.time});
 
   static const _rayLength = 3.0;
   static const _rayCount = 8;
+
+  @override
+  String get label => 'Solar Noon';
 
   Color get color => const Color(0xFFFFE082);
 
@@ -80,9 +99,11 @@ class Sun extends AstroObject {
   }
 }
 
-/// Sunrise — disc above the bottom strip edge.
 class SunRise extends Sun {
   const SunRise({required super.time});
+
+  @override
+  String get label => 'Sunrise';
 
   @override
   Color get color => const Color(0xFFFFB347);
@@ -91,9 +112,11 @@ class SunRise extends Sun {
   double cy(double height) => height - kAstroIconRadius - 6;
 }
 
-/// Sunset — disc above the bottom strip edge.
 class SunSet extends Sun {
   const SunSet({required super.time});
+
+  @override
+  String get label => 'Sunset';
 
   @override
   Color get color => const Color(0xFFFF7043);
@@ -106,11 +129,12 @@ class SunSet extends Sun {
 // Lunar objects
 // ---------------------------------------------------------------------------
 
-/// Abstract base for moon markers.
 abstract class Moon extends AstroObject {
-  const Moon({required super.time, required this.phase});
+  const Moon(
+      {required super.time, required this.phase, required this.fraction});
 
   final MoonPhase phase;
+  final double fraction; // illumination 0–1
 
   Color get color;
 
@@ -121,16 +145,13 @@ abstract class Moon extends AstroObject {
 
   static void _drawDisc(
       Canvas canvas, double x, double cy, Color color, MoonPhase phase) {
-    // Isolated layer so BlendMode.clear punches the dark side to transparency,
-    // letting the sky gradient show through.
     final bounds =
         Rect.fromCircle(center: Offset(x, cy), radius: kAstroIconRadius * 2.2);
     canvas.saveLayer(bounds, Paint());
 
-    // New moon: faint outline only (disc is essentially unlit).
     final alpha = phase == MoonPhase.newMoon ? 40 : 220;
-    canvas.drawCircle(
-        Offset(x, cy), kAstroIconRadius, Paint()..color = color.withAlpha(alpha));
+    canvas.drawCircle(Offset(x, cy), kAstroIconRadius,
+        Paint()..color = color.withAlpha(alpha));
 
     canvas.drawCircle(
       Offset(x + _shadowOffsetForPhase(phase), cy),
@@ -151,12 +172,14 @@ abstract class Moon extends AstroObject {
         MoonPhase.lastQuarter => kAstroIconRadius,
         MoonPhase.waningCrescent => kAstroIconRadius * 1.2,
       };
-
 }
 
-/// Moonrise — disc at bottom strip edge.
 class MoonRise extends Moon {
-  const MoonRise({required super.time, required super.phase});
+  const MoonRise(
+      {required super.time, required super.phase, required super.fraction});
+
+  @override
+  String get label => 'Moonrise';
 
   @override
   Color get color => const Color(0xFFFFFBF0);
@@ -165,9 +188,12 @@ class MoonRise extends Moon {
   double cy(double height) => height - kAstroIconRadius - 6;
 }
 
-/// Lunar transit — full disc centred vertically.
 class MoonTransit extends Moon {
-  const MoonTransit({required super.time, required super.phase});
+  const MoonTransit(
+      {required super.time, required super.phase, required super.fraction});
+
+  @override
+  String get label => 'Lunar Transit';
 
   @override
   Color get color => const Color(0xFFFFFBF0);
@@ -176,9 +202,12 @@ class MoonTransit extends Moon {
   double cy(double height) => height * 0.5;
 }
 
-/// Moonset — disc at bottom strip edge.
 class MoonSet extends Moon {
-  const MoonSet({required super.time, required super.phase});
+  const MoonSet(
+      {required super.time, required super.phase, required super.fraction});
+
+  @override
+  String get label => 'Moonset';
 
   @override
   Color get color => const Color(0xFFFFFBF0);

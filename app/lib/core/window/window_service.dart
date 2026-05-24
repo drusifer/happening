@@ -1,15 +1,19 @@
 import 'dart:async';
 import 'dart:ffi' hide Size;
 import 'dart:io';
-import 'package:logging/logging.dart';
 
 import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:happening/core/settings/settings_service.dart';
+import 'package:happening/core/window/expansion_controller.dart'
+    show ExpansionController;
 import 'package:happening/core/window/interaction_strategy/window_interaction_strategy.dart';
 import 'package:happening/core/window/linux_dock_window_manager.dart';
 import 'package:happening/core/window/resize_strategy/window_resize_strategy.dart';
+import 'package:happening/core/window/window_service_resize_executor.dart'
+    show WindowServiceResizeExecutor;
 import 'package:happening/features/timeline/expansion_logic.dart';
+import 'package:logging/logging.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:win32/win32.dart';
 import 'package:window_manager/window_manager.dart';
@@ -253,8 +257,7 @@ class WindowService with WidgetsBindingObserver {
     }
 
     if (newDpr == _dpr && newWidth == _screenWidth) {
-      _log.fine(
-          'WindowService._onDisplayChanged: no change, skipping');
+      _log.fine('WindowService._onDisplayChanged: no change, skipping');
       return;
     }
 
@@ -321,16 +324,14 @@ class WindowService with WidgetsBindingObserver {
     // push the window below the reserved band. Collapse before touching the
     // AppBar registration so the window fits inside the band during negotiation.
     await _doCollapse();
-    _log.fine(
-        'WindowService: reassertAppBar() collapsed, running ABM cycle');
+    _log.fine('WindowService: reassertAppBar() collapsed, running ABM cycle');
     _shAppBarMessage(_abmRemove, _appBarData!);
     _shAppBarMessage(_abmNew, _appBarData!);
     await _reserveCollapsedSpace();
     // rcTop is trusted post-SETPOS for ABE_TOP. Force window back into the
     // band in case Windows nudged it during work-area contraction.
     final double rcTop = _appBarData!.ref.rcTop / _dpr;
-    _log.fine(
-        'WindowService: reassertAppBar() rcTop=$rcTop, repositioning');
+    _log.fine('WindowService: reassertAppBar() rcTop=$rcTop, repositioning');
     await _wm.setPosition(Offset(0, rcTop));
     await _doCollapse();
     _log.fine('WindowService: reassertAppBar() done');
@@ -352,8 +353,7 @@ class WindowService with WidgetsBindingObserver {
         _log.fine(
             'WindowService.updateHeights: calling _doCollapse (bypass gate)');
         await _doCollapse();
-        _log.fine(
-            'WindowService.updateHeights: _doCollapse complete');
+        _log.fine('WindowService.updateHeights: _doCollapse complete');
       }
     }
   }
@@ -375,8 +375,7 @@ class WindowService with WidgetsBindingObserver {
       final targetHeight = (getCollapsedHeight() * _dpr).round();
       _appBarData!.ref.rcBottom = targetHeight;
 
-      _log.fine(
-          'WindowService:  reserved targetHeight is $targetHeight');
+      _log.fine('WindowService:  reserved targetHeight is $targetHeight');
       _shAppBarMessage(_abmQuerypos, _appBarData!);
       _shAppBarMessage(_abmSetpos, _appBarData!);
 
@@ -426,7 +425,8 @@ class WindowService with WidgetsBindingObserver {
   Future<void> _doExpand() async {
     _isExpanded = true;
     final size = Size(_screenWidth, getExpandedHeight());
-    _log.fine('WindowService._doExpand() target=w${size.width}×h${size.height}');
+    _log.fine(
+        'WindowService._doExpand() target=w${size.width}×h${size.height}');
     await _strategy.expand(size);
   }
 
@@ -438,5 +438,4 @@ class WindowService with WidgetsBindingObserver {
     await _strategy.collapse(size);
     _log.fine('WindowService._doCollapse() complete');
   }
-
 }

@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'package:logging/logging.dart';
 
 import 'package:crypto/crypto.dart';
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
+import 'package:logging/logging.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'token_store.dart';
@@ -22,7 +22,6 @@ import 'token_store.dart';
 /// ---------------------------------------------------------------------------
 
 abstract class AuthService {
-  static final _log = Logger('AuthService');
   Future<bool> signIn();
   void cancelSignIn();
   Future<void> signOut();
@@ -40,7 +39,6 @@ const _kProxyUrl = String.fromEnvironment(
 /// Routes Google token requests through the proxy so client_secret is injected
 /// server-side and never embedded in the app binary.
 class _ProxyingClient extends http.BaseClient {
-  static final _log = Logger('_ProxyingClient');
   _ProxyingClient(this._inner, this._proxyUrl);
 
   final http.Client _inner;
@@ -59,7 +57,9 @@ class _ProxyingClient extends http.BaseClient {
   }
 
   @override
-  void close() {} // _inner is owned by GoogleAuthService, not by this wrapper
+  void close() {
+    return;
+  } // _inner is owned by GoogleAuthService; closing it here would break the outer service
 }
 
 class GoogleAuthService implements AuthService {

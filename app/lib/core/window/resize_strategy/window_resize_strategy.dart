@@ -27,5 +27,7 @@ abstract class WindowResizeStrategy {
   Future<void> initialize(Size initialSize, double dpr);
   Future<void> expand(Size targetSize);
   Future<void> collapse(Size targetSize);
-  void dispose() {}
+  void dispose() {
+    return;
+  }
 }

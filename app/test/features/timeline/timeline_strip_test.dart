@@ -3,16 +3,15 @@ import 'dart:io';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/time/clock_service.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:happening/features/calendar/calendar_controller.dart';
-import 'package:happening/features/timeline/expansion_logic.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/calendar/calendar_service.dart';
 import 'package:happening/features/timeline/countdown_display.dart';
+import 'package:happening/features/timeline/expansion_logic.dart';
 import 'package:happening/features/timeline/hover_detail_overlay.dart';
 import 'package:happening/features/timeline/settings_panel.dart';
 import 'package:happening/features/timeline/timeline_painter.dart';
@@ -132,7 +131,6 @@ class _FakeSettingsService extends SettingsService {
   @override
   Stream<AppSettings> get settings => const Stream.empty();
 }
-
 
 void main() {
   final now = DateTime(2026, 3, 2, 10, 0);
@@ -992,5 +990,4 @@ void main() {
 
     await gesture.removePointer();
   });
-
 }

@@ -1,40 +1,43 @@
-# Neo Context — 2026-05-19
+# Neo Context — 2026-05-24
 
 ## Current State
-F-29 Astronomical Timeline Theme Sprint — all phases complete + gradient hotfix session complete.
-333/333 tests green.
+F-29 Astronomical Timeline Theme — complete. Lint cleanup sprint — COMPLETE.
 
-## What was fixed this session
+## Lint cleanup (2026-05-24) — ALL DONE
 
-### 1. AstronomicalBackgroundLayer — full rewrite
-Old code used invented midpoints (midMorning, midEvening) not tied to solar events.
-New code: 4 stops exactly at civilTwilightBegin (amber), sunrise (sky blue), sunset (sky blue), civilTwilightEnd (amber).
-`colorAtX()` is package-visible for testing. Doc: `agents/neo.docs/astro_gradient_pre_rewrite.md`.
+### What was fixed (session 2)
+12 lint-metrics warnings cleared:
+- TextPaintConfig + EventLabelConfig introduced to reduce paintText/paintEventLabel params
+- AstronomicalBackgroundLayer.hitTest converted to instance method (7→2 params)
+- _verifySecureStorage() extracted from _initServices (reduces nesting 6→5)
+- _GradCtx context class introduced for LunarBody gradient helpers (avoids param bloat)
+- LunarBody.gradientStops split into _patternBStops/_addPatternAStops/_addPostDuskStops
+- AstronomicalBackgroundLayer._buildLunarBodies extracted (reduces _buildBodies complexity)
+- EventsLayer.paint split into 5 helpers; RRect passed to avoid >6 params
+- TickLayer.paint split into _paintHalfAndQuarterTicks + _paintFiveMinuteTicks
+- _handleMouse split: _computeEventBoundsMap + _findHoveredEvent extracted
+- _TimelineStripState.build refactored: outer build → _buildLayout → 6 child helpers
+- _SettingsPanelState.build: 3 column helpers + slider labels + calendar list
+- _AstroLocationSectionState.build: 3 List<Widget> section helpers
 
-### 2. AstroDataService — getTimes() replaced with binary search
-`SunCalc.getTimes()` has a Julian Day Number epoch bug — returns dates ~6700 years in future.
-Fix: binary search on `SunCalc.getSunPosition()` (confirmed correct from package docs/example).
-Key design decisions:
-- **Nadir-anchored windows**: `nadir_UTC_hour = (24 − lng/15) mod 24`. Rising events: [nadir−2h, nadir+14h]. Falling events: [nadir+10h, nadir+26h]. Covers all timezones without depending on local timezone of machine.
-- **Why nadir**: NY civil twilight end falls at 00:41 UTC; at UTC midnight the sun is already above the −6° threshold, breaking the binary search entry condition. Nadir is always at the true minimum.
-- **Solar noon**: float midpoint `(sunrise_ms + sunset_ms) / 2.0` — no integer truncation.
-- **Moon times**: validated with `_isReasonableDate()` before use; returns null if JDN bug produces wrong date.
-- **Error handling**: full try/catch with SEVERE log; null guards for polar day/night.
+### Final lint state
+- make lint-style: PASS
+- make lint-format: PASS
+- make lint-metrics: PASS (0 issues)
+- make test: 352/352 green
 
-### 3. Settings panel — lat/lng fields pre-populated
-`_AstroLocationSectionState.initState()` now pre-populates `_latController` and `_lngController` from saved `astroSettings`. Previously they were blank even when lat/lng were saved.
+## F-29 Sprint architecture (unchanged)
+- AstronomicalBackgroundLayer → SkyBody → SolarBody + LunarBody
+- Each body owns gradient stops + glyphs
+- AstroDataService in _TimelineStripState.initState()
+- Solar times: UTC DateTimes from binary search; solar noon is local
+- Hover tooltip: use hit.time.toLocal() for display
 
-## Key files changed
-- `app/lib/features/timeline/painters/astronomical_background_layer.dart` — rewritten
-- `app/lib/core/astro/astro_data_service.dart` — rewritten (no more getTimes(), binary search)
-- `app/lib/features/timeline/settings_panel.dart` — initState pre-populates lat/lng fields
-- `app/lib/features/timeline/timeline_strip.dart` — added _onAstroDataChanged log
-- `app/test/features/timeline/painters/astronomical_background_layer_test.dart` — rewritten for new API
-- `agents/neo.docs/astro_gradient_pre_rewrite.md` — documents old broken approach
+## Key patterns introduced
+- _GradCtx: context record pattern for methods that need many pre-computed values without param bloat
+- Instance method hitTest on ABL instead of static with many named params
+- Column helpers in settings returning Widget (not List<Widget>) to keep build clean
+- Section helpers in _AstroLocationSectionState returning List<Widget> (for spread in Column children)
 
-## Architecture (unchanged from F-29 sprint)
-- `AstroDataService extends ChangeNotifier` — listens to SettingsService, recalculates on change
-- `AstronomicalBackgroundLayer implements TimelineLayer` — draws gradient
-- `SolarMarkerLayer` — draws sun icons at sunrise/sunset + noon tick
-- `LunarMarkerLayer` — draws moon rise/set + phase
-- `MoonPhaseBadge` — widget left of settings gear
+## Important constraints
+- NEVER use Opacity widget on Linux (GTK regression → use canvas.saveLayer+BlendMode.dstIn)

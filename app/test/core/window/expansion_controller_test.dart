@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:happening/core/window/expansion_controller.dart';
 import 'package:happening/core/window/physical_window_state.dart';
@@ -71,7 +70,8 @@ void main() {
 
       executor.resizeGate!.complete();
       await pump();
-      expect(states, [const PhysicalWindowState(height: 340, isExpanded: true)]);
+      expect(
+          states, [const PhysicalWindowState(height: 340, isExpanded: true)]);
     });
 
     test('collapse: emits after resize() completes', () async {
@@ -82,7 +82,8 @@ void main() {
 
       executor.resizeGate!.complete();
       await pump();
-      expect(states, [const PhysicalWindowState(height: 60, isExpanded: false)]);
+      expect(
+          states, [const PhysicalWindowState(height: 60, isExpanded: false)]);
     });
 
     // ── Queue semantics ───────────────────────────────────────────────────
@@ -97,8 +98,10 @@ void main() {
       executor.resizeGate!.complete();
       await pump(5); // expand completes, collapse starts and finishes (no gate)
 
-      expect(executor.calls, [ExpansionState.expanded, ExpansionState.collapsed]);
-      expect(states.last, const PhysicalWindowState(height: 60, isExpanded: false));
+      expect(
+          executor.calls, [ExpansionState.expanded, ExpansionState.collapsed]);
+      expect(states.last,
+          const PhysicalWindowState(height: 60, isExpanded: false));
     });
 
     test('10x sends while busy → at most 2 resize calls', () async {
