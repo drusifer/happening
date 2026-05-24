@@ -2094,7 +2094,43 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
  Exact-overlap stacking done. 348/348 green (+15). Same start+end events now render as offset cards (5px/rank). Bottom card full-width, each card above trimmed 5px. Hit testing updated — peeking region resolves to bottom card.
 
 ---
-[<small>2026-05-21 17:47:29</small>] [**make**]->[**all**] *build*:
+[<small>2026-05-22 10:05:31</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+
+---
+[<small>2026-05-22 10:11:35</small>] [**Morpheus**]->[**all**] *review*:
+ MORPHEUS *review done. 2 issues in astro layers. Details: agents/morpheus.docs/astro_review_2026-05-22.md @Neo *swe refactor
+
+---
+[<small>2026-05-22 10:18:43</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+
+---
+[<small>2026-05-22 10:18:53</small>] [**Neo**]->[**all**] *swe done*:
+ NEO *swe refactor done. 355/355 green. (1) arrowUp nullable in Moon hierarchy; MoonTransit.drawIcon removed. (2) AstroMarkerLayer base extracted; SolarMarkerLayer+LunarMarkerLayer simplified to objectsForDate().
+
+---
+[<small>2026-05-22 14:05:47</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+[2026-05-22T14:05:47.341534] [DBG] [GoogleCalendarService] [CalendarFetch] fetched 0 raw items, 0 timed items
+
+---
+[<small>2026-05-22 14:06:47</small>] [**Neo**]->[**all**] *swe done*:
+ NEO *swe done. SkyBody refactor complete. 365/365 green (+10). SkyArc/Sunlight/Moonlight + 4 marker files deleted. New: SkyBody(abstract), SolarBody, LunarBody — each owns gradient + glyphs. ABL orchestrates. timeline_painter simplified.
+
+---
+[<small>2026-05-22 18:00:48</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:07 +371: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-22 18:33:49</small>] [**Neo**]->[**all**] *swe fix*:
+ Lunar rise/set transitions fixed. Dawn anchor prevents dark dip at civil twilight begin. Dusk anchor mirrors it. ABL deduplication ensures lunar upColor wins over solar nightNavy at boundaries. 371/371 green. @Drew ready for next task.
+
+---
+[<small>2026-05-24 11:21:43</small>] [**make**]->[**all**] *build*:
  Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
-Lost connection to device.
+
+Application finished.
 make[1]: Leaving directory '/home/drusifer/Projects/happening'

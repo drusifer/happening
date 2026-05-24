@@ -590,6 +590,8 @@ class _TimelineStripState extends State<TimelineStrip>
                                   astroData: _astroDataService.current,
                                   isAstroTheme: settings.theme ==
                                       AppTheme.astronomical,
+                                  astroLat: settings.astroSettings.latitude,
+                                  astroLng: settings.astroSettings.longitude,
                                 ),
                               ),
                             ),

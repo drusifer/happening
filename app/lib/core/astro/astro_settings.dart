@@ -30,8 +30,6 @@ class AstroData {
   final DateTime solarNoon;
   final DateTime sunset;
   final DateTime civilTwilightEnd;
-  final DateTime? moonrise;
-  final DateTime? moonset;
   final MoonPhase phase;
   final double illuminationFraction;
 
@@ -41,8 +39,6 @@ class AstroData {
     required this.solarNoon,
     required this.sunset,
     required this.civilTwilightEnd,
-    this.moonrise,
-    this.moonset,
     required this.phase,
     required this.illuminationFraction,
   });
@@ -56,8 +52,6 @@ class AstroData {
           solarNoon == other.solarNoon &&
           sunset == other.sunset &&
           civilTwilightEnd == other.civilTwilightEnd &&
-          moonrise == other.moonrise &&
-          moonset == other.moonset &&
           phase == other.phase &&
           illuminationFraction == other.illuminationFraction;
 
@@ -68,8 +62,6 @@ class AstroData {
         solarNoon,
         sunset,
         civilTwilightEnd,
-        moonrise,
-        moonset,
         phase,
         illuminationFraction,
       );

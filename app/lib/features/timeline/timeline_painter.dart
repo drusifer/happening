@@ -18,11 +18,9 @@ import 'package:happening/features/timeline/painters/astronomical_background_lay
 import 'package:happening/features/timeline/painters/background_layer.dart';
 import 'package:happening/features/timeline/painters/events_layer.dart';
 import 'package:happening/features/timeline/painters/fetching_layer.dart';
-import 'package:happening/features/timeline/painters/lunar_marker_layer.dart';
 import 'package:happening/features/timeline/painters/now_indicator_layer.dart';
 import 'package:happening/features/timeline/painters/past_overlay_layer.dart';
 import 'package:happening/features/timeline/painters/sign_in_layer.dart';
-import 'package:happening/features/timeline/painters/solar_marker_layer.dart';
 import 'package:happening/features/timeline/painters/tick_layer.dart';
 import 'package:happening/features/timeline/timeline_layout.dart';
 
@@ -54,6 +52,8 @@ class TimelinePainter extends CustomPainter {
     this.stripOpacity = 1.0,
     this.astroData,
     this.isAstroTheme = false,
+    this.astroLat,
+    this.astroLng,
   });
 
   final List<CalendarEvent> events;
@@ -83,6 +83,8 @@ class TimelinePainter extends CustomPainter {
   final double stripOpacity;
   final AstroData? astroData;
   final bool isAstroTheme;
+  final double? astroLat;
+  final double? astroLng;
 
   static DateTime? _lastPaintDebugAt;
 
@@ -114,13 +116,10 @@ class TimelinePainter extends CustomPainter {
     final layers = [
       if (useAstro)
         AstronomicalBackgroundLayer(
-            astroData: astroData!, layout: layout, now: now)
+            astroData: astroData!, layout: layout, now: now,
+            lat: astroLat, lng: astroLng)
       else
         BackgroundLayer(color: backgroundColor),
-      if (useAstro) ...[
-        SolarMarkerLayer(astroData: astroData!, layout: layout, now: now),
-        LunarMarkerLayer(astroData: astroData!, layout: layout, now: now),
-      ],
       PastOverlayLayer(
         nowIndicatorX: nowIndicatorX,
         color: pastOverlayColor.withValues(
@@ -233,7 +232,9 @@ class TimelinePainter extends CustomPainter {
       old.emphasisOpacity != emphasisOpacity ||
       old.stripOpacity != stripOpacity ||
       old.astroData != astroData ||
-      old.isAstroTheme != isAstroTheme;
+      old.isAstroTheme != isAstroTheme ||
+      old.astroLat != astroLat ||
+      old.astroLng != astroLng;
 
   /// Semantic nodes for canvas content — makes ticks, events, and task
   /// diamonds queryable by integration tests via find.bySemanticsLabel.

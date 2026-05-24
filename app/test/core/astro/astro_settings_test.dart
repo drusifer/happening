@@ -81,18 +81,17 @@ void main() {
       expect(base, isNot(equals(other)));
     });
 
-    test('moonrise/moonset nullable included in equality', () {
-      final withMoon = AstroData(
+    test('not equal when phase differs', () {
+      final other = AstroData(
         civilTwilightBegin: base.civilTwilightBegin,
         sunrise: base.sunrise,
         solarNoon: base.solarNoon,
         sunset: base.sunset,
         civilTwilightEnd: base.civilTwilightEnd,
-        moonrise: DateTime(2026, 5, 18, 21, 0),
-        phase: base.phase,
+        phase: MoonPhase.full,
         illuminationFraction: base.illuminationFraction,
       );
-      expect(base, isNot(equals(withMoon)));
+      expect(base, isNot(equals(other)));
     });
   });
 
