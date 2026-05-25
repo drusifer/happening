@@ -40,8 +40,20 @@ static void linux_dock_window_manager_plugin_init(
     LinuxDockWindowManagerPlugin* self) {}
 
 // Sets _NET_WM_STRUT_PARTIAL and _NET_WM_STRUT for a full-width top strip.
-static void set_strut(Display* display, Window xid, int height) {
-  int screen_width = DisplayWidth(display, DefaultScreen(display));
+// Uses the geometry of the monitor the window is on so struts are scoped to
+// that monitor only (not accidentally applied to every display).
+static void set_strut(Display* display, Window xid, GdkWindow* gdk_window,
+                      int height) {
+  GdkDisplay* gdk_display = gdk_window_get_display(gdk_window);
+  GdkMonitor* monitor =
+      gdk_display_get_monitor_at_window(gdk_display, gdk_window);
+
+  GdkRectangle geom;
+  gdk_monitor_get_geometry(monitor, &geom);
+  int scale = gdk_monitor_get_scale_factor(monitor);
+
+  int x_start = geom.x * scale;
+  int x_end = (geom.x + geom.width) * scale - 1;
 
   // _NET_WM_STRUT_PARTIAL: left, right, top, bottom,
   //   left_start, left_end, right_start, right_end,
@@ -49,7 +61,7 @@ static void set_strut(Display* display, Window xid, int height) {
   long strut12[12] = {
       0, 0, height, 0,
       0, 0, 0,      0,
-      0, screen_width - 1, 0, 0};
+      x_start, x_end, 0, 0};
   Atom partial = XInternAtom(display, "_NET_WM_STRUT_PARTIAL", False);
   XChangeProperty(display, xid, partial, XA_CARDINAL, 32, PropModeReplace,
                   (unsigned char*)strut12, 12);
@@ -119,7 +131,7 @@ static void method_call_cb(FlMethodChannel* channel,
     }
 
     Window xid = gdk_x11_window_get_xid(gdk_window);
-    set_strut(display, xid, height);
+    set_strut(display, xid, gdk_window, height);
     fl_method_call_respond_success(method_call, nullptr, nullptr);
     return;
   }
