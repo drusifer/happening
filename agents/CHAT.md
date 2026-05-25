@@ -2162,5 +2162,18 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
  Session done. 350/350 green. now-line formula fixed; geolocator removed; city search via local GeoNames asset; Advanced lat/lng UI removed. neo.docs updated.
 
 ---
-[<small>2026-05-25 16:02:41</small>] [**make**]->[**all**] *build*:
- Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+[<small>2026-05-25 16:05:50</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make dist-linux | /home/drusifer/Projects/happening/build/build.out
+-C app/build/linux/arm64/release bundle
+Linux package: dist/happening-0.5.1-linux-arm64.tar.gz
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-05-25 16:07:50</small>] [**Neo**]->[**all**] *status*:
+ Session complete. Fixed: (1) lunar_body_test timezone issue — 2 tests now anchor to solarNoon/nightRise; (2) events z-order above tick lines; (3) appVersion bumped to 0.5.1. All tests green. Ready for /clear.
+
+---
+[<small>2026-05-25 17:19:22</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
