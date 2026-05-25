@@ -1,42 +1,27 @@
-# Neo Current Task — 2026-05-24
+# Neo Current Task — 2026-05-25
 
-**Status**: Lint cleanup — COMPLETE (352/352 green)
+## Status: ALL COMPLETE
 
-## What was completed this session
+## Completed this session
+- [x] Now-line DPI/font scaling fix (nowIndicatorX formula based on button + countdown size)
+- [x] Geolocator package removed entirely
+- [x] City search implemented using local GeoNames asset (no network calls)
+- [x] fetch-cities Makefile target added
+- [x] Advanced lat/lng UI removed from settings panel
+- [x] 350/350 tests green
 
-### All 12 lint-metrics warnings fixed
+## Pending (not blocking /clear)
+- [ ] User to run `make fetch-cities` for full 25k-city dataset (seed file with 170 cities committed)
+- [ ] Oracle AST-E2 doc pass (carried over from previous sprint)
 
-**Parameter count fixes:**
-- Introduced `TextPaintConfig` + `EventLabelConfig` classes in `timeline_paint_utils.dart`
-  → `paintText` (8→3 params) and `paintEventLabel` (9→3 params)
-- Updated callers in `tick_layer.dart` and `events_layer.dart`
-- Converted `AstronomicalBackgroundLayer.hitTest` from static (7 params) to instance method (2 params)
-  → Updated caller in `timeline_strip.dart`
-- Extracted `_buildLunarBodies` from `_buildBodies` (7→5 params; uses `solar1.riseBegin!` instead of `todayTimes`)
-
-**Nesting level fix:**
-- `_HappeningAppState._initServices` (nesting 6→≤5): extracted `_verifySecureStorage()` helper in `app.dart`
-
-**Complexity fixes:**
-- `LunarBody.gradientStops` (45→≤20): extracted `_patternBStops`, `_addPatternAStops`, `_addPostDuskStops`;
-  introduced `_GradCtx` context class to bundle pre-computed x-positions (avoids >6 params in helpers)
-- `AstronomicalBackgroundLayer._buildBodies` (23→≤20): extracted `_buildLunarBodies` static helper
-- `EventsLayer.paint` (38→≤20): extracted `_paintEvent`, `_paintEventBlock`, `_paintCollisionOutlines`,
-  `_paintEventLabel`, `_paintGapLabels` helpers; `RRect` passed to avoid 8-param methods
-- `TickLayer.paint` (22→≤20): extracted `_paintHalfAndQuarterTicks` and `_paintFiveMinuteTicks`
-- `_TimelineStripState._handleMouse` (30→≤20): extracted `_computeEventBoundsMap` and `_findHoveredEvent`
-- `_TimelineStripState.build` (51 complexity, 8 nesting, 353 SLOC):
-  - Outer `build` delegates to `_buildLayout(ctx, isExpanded, constraints)` (3 params)
-  - `_buildLayout` contains the Stack with extracted helpers
-  - Extracted: `_buildPainterPositioned`, `_buildCountdownPositioned`, `_buildCountdownContent`,
-    `_buildLeftToolbar`, `_buildAstroTooltip`, `_buildSettingsWidgets`
-- `_SettingsPanelState.build` (331 SLOC): extracted `_buildLeftColumn`, `_buildMiddleColumn`,
-  `_buildRightColumn`, `_buildSliderLabels`, `_buildCalendarList` helpers
-- `_AstroLocationSectionState.build` (163 SLOC): extracted `_buildLocationDisplay`, `_buildCitySearch`,
-  `_buildAdvancedSection` (returning `List<Widget>`)
-
-## Final state
-- `make lint-style`: PASS
-- `make lint-format`: PASS
-- `make lint-metrics`: PASS (`✔ no issues found!`)
-- `make test`: PASS (352/352 green)
+## Files changed this session
+- app/lib/features/timeline/timeline_strip.dart — now indicator formula
+- app/lib/features/timeline/settings_panel.dart — removed geolocator, Advanced UI; wired city search
+- app/lib/core/astro/city_search.dart — NEW: local city search (GeoNames asset)
+- app/assets/data/cities.csv — NEW: seed city database (~170 cities)
+- app/pubspec.yaml — removed geolocator, added assets/data/
+- app/pubspec.lock — 6 geolocator packages removed
+- Makefile — fetch-cities target + setup dependency
+- app/test/features/timeline/timeline_strip_test.dart — hover x updated 140→260
+- app/test/features/timeline/settings_panel_test.dart — 2 Advanced section tests deleted
+- app/test/goldens/goldens/hover_card_alignment.png — regenerated (now line moved)

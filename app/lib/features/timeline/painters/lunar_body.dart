@@ -101,6 +101,7 @@ class LunarBody extends SkyBody {
 
   List<({double x, Color c})> _patternBStops(_GradCtx ctx) {
     final xMoonset = ctx.xMoonset!;
+    final w = ctx.layout.stripWidth;
     final result = <({double x, Color c})>[];
     final xDusk = (ctx.xPrevDusk != null && ctx.xPrevDusk! < xMoonset)
         ? ctx.xPrevDusk
@@ -112,15 +113,21 @@ class LunarBody extends SkyBody {
     } else if (xMoonset > 0) {
       result.add((x: 1.0, c: ctx.up));
     }
-    result.add((x: xMoonset, c: ctx.up));
-    final xRampEnd =
-        ctx.layout.xForTime(lunar.moonset!.add(ctx.duration), ctx.now);
-    if (!ctx.inDay(xRampEnd)) result.add((x: xRampEnd, c: ctx.dark));
+    result.add((x: math.min(xMoonset, w), c: ctx.up));
+    if (xMoonset < w) {
+      final xRampEnd =
+          ctx.layout.xForTime(lunar.moonset!.add(ctx.duration), ctx.now);
+      if (!ctx.inDay(xRampEnd)) {
+        result.add((x: math.min(xRampEnd, w), c: ctx.dark));
+      }
+    }
     return result;
   }
 
   void _addPatternAStops(List<({double x, Color c})> result, _GradCtx ctx) {
     final xMoonrise = ctx.xMoonrise!;
+    final w = ctx.layout.stripWidth;
+    if (xMoonrise >= w) return; // arc starts off the right edge — nothing visible
     final xRampStart =
         ctx.layout.xForTime(lunar.moonrise!.subtract(ctx.duration), ctx.now);
     if (!ctx.inDay(xRampStart)) {
@@ -135,16 +142,24 @@ class LunarBody extends SkyBody {
         : null;
     if (xNextDawn != null &&
         (ctx.xMoonset == null || ctx.xMoonset! > xNextDawn)) {
-      result.add((x: xNextDawn, c: ctx.up));
+      // Hold to dawn (or strip edge if dawn is off-screen).
+      result.add((x: math.min(xNextDawn, w), c: ctx.up));
     } else if (ctx.xMoonset != null) {
-      result.add((x: ctx.xMoonset!, c: ctx.up));
-      final xRampEnd =
-          ctx.layout.xForTime(lunar.moonset!.add(ctx.duration), ctx.now);
-      if (!ctx.inDay(xRampEnd)) {
-        result.add((x: xRampEnd, c: ctx.dark));
-      } else if (xNextDawn != null) {
-        result.add((x: xNextDawn, c: ctx.dark));
+      // Hold to moonset (or strip edge if moonset is off-screen).
+      result.add((x: math.min(ctx.xMoonset!, w), c: ctx.up));
+      if (ctx.xMoonset! < w) {
+        // Moonset is visible — add the fade-out ramp.
+        final xRampEnd =
+            ctx.layout.xForTime(lunar.moonset!.add(ctx.duration), ctx.now);
+        if (!ctx.inDay(xRampEnd)) {
+          result.add((x: math.min(xRampEnd, w), c: ctx.dark));
+        } else if (xNextDawn != null) {
+          result.add((x: math.min(xNextDawn, w), c: ctx.dark));
+        }
       }
+    } else {
+      // No dawn or moonset in view — moon stays bright to strip edge.
+      result.add((x: w, c: ctx.up));
     }
   }
 
@@ -152,12 +167,20 @@ class LunarBody extends SkyBody {
     if (ctx.xDuskEnd == null) return;
     if (ctx.xMoonrise != null && ctx.xMoonrise! >= ctx.xDuskEnd!) return;
     if (ctx.xMoonset != null && ctx.xMoonset! <= ctx.xDuskEnd!) return;
+    final w = ctx.layout.stripWidth;
     result.add((x: ctx.xDuskEnd!, c: ctx.up));
     if (ctx.xMoonset != null) {
-      result.add((x: ctx.xMoonset!, c: ctx.up));
-      final xRampEnd =
-          ctx.layout.xForTime(lunar.moonset!.add(ctx.duration), ctx.now);
-      if (!ctx.inDay(xRampEnd)) result.add((x: xRampEnd, c: ctx.dark));
+      result.add((x: math.min(ctx.xMoonset!, w), c: ctx.up));
+      if (ctx.xMoonset! < w) {
+        final xRampEnd =
+            ctx.layout.xForTime(lunar.moonset!.add(ctx.duration), ctx.now);
+        if (!ctx.inDay(xRampEnd)) {
+          result.add((x: math.min(xRampEnd, w), c: ctx.dark));
+        }
+      }
+    } else {
+      // Moon stays up past strip edge.
+      result.add((x: w, c: ctx.up));
     }
   }
 

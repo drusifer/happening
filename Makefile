@@ -51,7 +51,7 @@ else
 endif
 
 .PHONY: setup install-hooks
-setup: install-hooks
+setup: install-hooks fetch-cities
 	./scripts/setup.sh
 	cd $(APP_DIR) && $(FLUTTER) pub get
 
@@ -211,6 +211,21 @@ export-proxy-image: dist-proxy-linux ## Compile proxy + build container image + 
 	@echo "Image exported to $(PROXY_TAR)"
 	@echo "Deploy with: make -C /path/to/pi-patch/cluster deploy-happening TAR=$(CURDIR)/$(PROXY_TAR) VERSION=$(VERSION)"
 
+CITIES_URL  := https://download.geonames.org/export/dump/cities15000.zip
+CITIES_CSV  := $(APP_DIR)/assets/data/cities.csv
+
+.PHONY: fetch-cities
+fetch-cities: ## Download GeoNames cities15000 and generate app/assets/data/cities.csv
+	@echo "Downloading GeoNames cities15000..."
+	@mkdir -p $(APP_DIR)/assets/data
+	@curl -sL $(CITIES_URL) -o /tmp/cities15000.zip
+	@unzip -o /tmp/cities15000.zip cities15000.txt -d /tmp/
+	@echo "Processing: name|country|lat|lng ..."
+	@awk -F'\t' 'BEGIN{OFS="|"} {name=$$3; gsub(/\|/," ",name); print name,$$9,$$5,$$6}' \
+	    /tmp/cities15000.txt > $(CITIES_CSV)
+	@rm -f /tmp/cities15000.zip /tmp/cities15000.txt
+	@echo "Done: $(CITIES_CSV) ($$(wc -l < $(CITIES_CSV)) cities)"
+
 .PHONY: clean
 clean:
 	cd $(APP_DIR) && $(FLUTTER) clean
@@ -364,13 +379,14 @@ else
 .PHONY: run-click-test run-click-test-x11 build-click-test
 .PHONY: test update-goldens test-watch integration-test integration-test-linux integration-test-macos integration-test-windows
 .PHONY: build-linux build-macos build-windows dist dist-linux dist-macos dist-windows dist-windows-msix dist-proxy-linux
-.PHONY: format analyze lint lint-style lint-metrics lint-format proxy proxy-setup export-proxy-image clean tldr via_index
+.PHONY: format analyze lint lint-style lint-metrics lint-format proxy proxy-setup export-proxy-image clean tldr via_index fetch-cities
 
 MKF_TARGETS := setup install-hooks run run-linux run-macos run-windows run-windows-test run-windows-simple \
 	run-click-test run-click-test-x11 build-click-test \
 	test update-goldens test-watch integration-test integration-test-linux integration-test-macos integration-test-windows \
 	build-linux build-macos build-windows dist dist-linux dist-macos dist-windows dist-windows-msix dist-proxy-linux \
-	format analyze lint lint-style lint-metrics lint-format proxy proxy-setup export-proxy-image clean tldr via_index
+	format analyze lint lint-style lint-metrics lint-format proxy proxy-setup export-proxy-image clean tldr via_index \
+	fetch-cities
 
 install_bob: ## Copy agents into a project and set up skill links (usage: make install_bob TARGET=/path/to/project)
 	@$(MAKE) MKF_ACTIVE=1 install_bob TARGET="$(TARGET)"

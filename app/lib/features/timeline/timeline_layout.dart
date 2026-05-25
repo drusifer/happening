@@ -77,20 +77,31 @@ class TimelineLayout {
     return result;
   }
 
+  /// Returns the effective left-edge X for [event], shifted right by
+  /// [rank * overlapStepPx] for stacked exact-overlap groups so hit-testing
+  /// matches the painter's [adjustedX].
+  double effectiveStartX(CalendarEvent event, DateTime now,
+      [Map<String, ({int rank, int groupSize})>? overlapRanks]) {
+    final startX = xForTime(event.startTime, now);
+    final info = overlapRanks?[event.id];
+    if (info == null) return startX;
+    return startX + info.rank * overlapStepPx;
+  }
+
   /// Returns the effective right-edge X for [event], applying [kMinEventWidth]
   /// and any exact-overlap stacking offset so hit-testing matches rendering.
+  /// The right edge is the raw event end (the painter does not trim it), with
+  /// a minimum width floor measured from [effectiveStartX].
   double effectiveEndX(CalendarEvent event, DateTime now,
       [Map<String, ({int rank, int groupSize})>? overlapRanks]) {
-    final x = xForTime(event.startTime, now);
+    final adjStartX = effectiveStartX(event, now, overlapRanks);
     final rawEndX = xForTime(event.endTime, now);
     final info = overlapRanks?[event.id];
-    final step = overlapStepPx;
-    final offset = info != null ? info.rank * step : 0.0;
     final minW = info != null
-        ? kMinEventWidth + (info.groupSize - 1 - info.rank) * step
+        ? kMinEventWidth + (info.groupSize - 1 - info.rank) * overlapStepPx
         : kMinEventWidth;
-    final adjustedEndX = rawEndX - offset;
-    return adjustedEndX < x + minW ? x + minW : adjustedEndX;
+    final minEndX = adjStartX + minW;
+    return rawEndX > minEndX ? rawEndX : minEndX;
   }
 
   /// Returns the [CalendarEvent] at the given [mouseX] position, or null if none.
@@ -106,7 +117,7 @@ class TimelineLayout {
     int bestRank = -1;
 
     for (final event in events) {
-      final x = xForTime(event.startTime, now);
+      final x = effectiveStartX(event, now, overlapRanks);
       final endX = effectiveEndX(event, now, overlapRanks);
 
       if (mouseX >= x && mouseX <= endX) {

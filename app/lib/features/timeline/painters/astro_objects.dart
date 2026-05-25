@@ -138,39 +138,115 @@ abstract class Moon extends AstroObject {
 
   Color get color;
 
+  // Skip the base-class circular shadow; _drawDisc paints a shaped one.
   @override
-  void drawIcon(Canvas canvas, Size size, double x, double cy) {
-    _drawDisc(canvas, x, cy, color, phase);
+  void draw(Canvas canvas, Size size, double x) {
+    drawIcon(canvas, size, x, cy(size.height));
   }
 
-  static void _drawDisc(
-      Canvas canvas, double x, double cy, Color color, MoonPhase phase) {
-    final bounds =
-        Rect.fromCircle(center: Offset(x, cy), radius: kAstroIconRadius * 2.2);
-    canvas.saveLayer(bounds, Paint());
+  @override
+  void drawIcon(Canvas canvas, Size size, double x, double cy) {
+    _drawDisc(canvas, x, cy, color, phase, fraction);
+  }
 
-    final alpha = phase == MoonPhase.newMoon ? 40 : 220;
-    canvas.drawCircle(Offset(x, cy), kAstroIconRadius,
-        Paint()..color = color.withAlpha(alpha));
+  static const _shadowColor = Color(0x99000000);
+  static const _shadowBlur = 3.0;
+  static const _shadowDx = 1.5;
+  static const _shadowDy = 1.5;
 
-    canvas.drawCircle(
-      Offset(x + _shadowOffsetForPhase(phase), cy),
-      kAstroIconRadius * 0.95,
-      Paint()..blendMode = BlendMode.clear,
+  static void _drawDisc(Canvas canvas, double x, double cy, Color color,
+      MoonPhase phase, double fraction) {
+    final r = kAstroIconRadius;
+    final discRect = Rect.fromCircle(center: Offset(x, cy), radius: r);
+
+    if (fraction < 0.02) {
+      // New moon: dim disc only, no shadow.
+      canvas.saveLayer(discRect.inflate(1), Paint());
+      canvas.drawCircle(
+          Offset(x, cy), r, Paint()..color = color.withAlpha(40));
+      canvas.restore();
+      return;
+    }
+
+    // Build paths for shadow and glyph.
+    final discPath = Path()..addOval(discRect);
+    final darkPath =
+        fraction > 0.98 ? null : _darkRegionPath(x, cy, r, fraction, phase);
+    final litPath = darkPath != null
+        ? Path.combine(PathOperation.difference, discPath, darkPath)
+        : discPath;
+
+    // Shaped drop shadow: blurred lit region, shifted down-right.
+    canvas.drawPath(
+      litPath.shift(const Offset(_shadowDx, _shadowDy)),
+      Paint()
+        ..color = _shadowColor
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, _shadowBlur),
     );
 
+    // Glyph: full disc with dark region erased via BlendMode.clear.
+    canvas.saveLayer(discRect.inflate(2), Paint());
+    canvas.drawCircle(
+        Offset(x, cy), r, Paint()..color = color.withAlpha(220));
+    if (darkPath != null) {
+      canvas.drawPath(darkPath, Paint()..blendMode = BlendMode.clear);
+    }
     canvas.restore();
   }
 
-  static double _shadowOffsetForPhase(MoonPhase phase) => switch (phase) {
-        MoonPhase.newMoon => kAstroIconRadius * 2.5,
-        MoonPhase.waxingCrescent => -kAstroIconRadius * 1.2,
-        MoonPhase.firstQuarter => -kAstroIconRadius,
-        MoonPhase.waxingGibbous => -kAstroIconRadius * 0.5,
-        MoonPhase.full => kAstroIconRadius * 2,
-        MoonPhase.waningGibbous => kAstroIconRadius * 0.5,
-        MoonPhase.lastQuarter => kAstroIconRadius,
-        MoonPhase.waningCrescent => kAstroIconRadius * 1.2,
+  /// Builds a path covering the unlit (dark) region of the moon disc.
+  ///
+  /// The dark region is bounded by one half of the disc arc (on the shadow
+  /// side) and the terminator arc — an ellipse with rx = |1−2f|·r sharing
+  /// the disc's full height. For crescent phases (f < 0.5) the terminator
+  /// opens toward the lit side; for gibbous (f > 0.5) it opens toward the
+  /// dark side.
+  static Path _darkRegionPath(
+      double x, double cy, double r, double fraction, MoonPhase phase) {
+    final bool waxing = _isWaxing(phase);
+    // Terminator semi-axis: 0 at quarter, r at new/full.
+    final double rxTerm = (1.0 - 2.0 * fraction).abs() * r;
+
+    final discRect = Rect.fromCircle(center: Offset(x, cy), radius: r);
+    final termRect = Rect.fromCenter(
+        center: Offset(x, cy), width: 2 * rxTerm, height: 2 * r);
+
+    final path = Path()..moveTo(x, cy - r); // top anchor (shared by disc & terminator)
+
+    if (waxing) {
+      // Dark side is LEFT — trace left arc of disc, then close via terminator.
+      path.arcTo(discRect, -math.pi / 2, -math.pi, false); // CCW: top→left→bottom
+      if (rxTerm >= 0.5) {
+        // crescent: close via right arc of terminator (CCW through right apex).
+        // gibbous: close via left arc of terminator (CW through left apex).
+        path.arcTo(termRect, math.pi / 2,
+            fraction < 0.5 ? -math.pi : math.pi, false);
+      } else {
+        path.lineTo(x, cy - r); // degenerate terminator → straight half-disc
+      }
+    } else {
+      // Dark side is RIGHT — trace right arc of disc, then close via terminator.
+      path.arcTo(discRect, -math.pi / 2, math.pi, false); // CW: top→right→bottom
+      if (rxTerm >= 0.5) {
+        // crescent: close via left arc of terminator (CW through left apex).
+        // gibbous: close via right arc of terminator (CCW through right apex).
+        path.arcTo(termRect, math.pi / 2,
+            fraction < 0.5 ? math.pi : -math.pi, false);
+      } else {
+        path.lineTo(x, cy - r);
+      }
+    }
+
+    return path..close();
+  }
+
+  static bool _isWaxing(MoonPhase phase) => switch (phase) {
+        MoonPhase.newMoon ||
+        MoonPhase.waxingCrescent ||
+        MoonPhase.firstQuarter ||
+        MoonPhase.waxingGibbous =>
+          true,
+        _ => false,
       };
 }
 
