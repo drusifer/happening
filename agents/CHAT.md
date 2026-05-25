@@ -556,6 +556,7 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
  Session complete. Fixed: (1) lunar_body_test timezone issue — 2 tests now anchor to solarNoon/nightRise; (2) events z-order above tick lines; (3) appVersion bumped to 0.5.1. All tests green. Ready for /clear.
 
 ---
+<<<<<<< HEAD
 [<small>2026-05-25 22:21:18</small>] [**make**]->[**all**] *build*:
  Build PASSED | make run-macos | /Users/drewgutstein/Projects/happening/build/build.out
 Lost connection to device.
@@ -629,3 +630,10 @@ make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
 Lost connection to device.
 make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
 
+=======
+[<small>2026-05-25 17:21:23</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make dist-linux | /home/drusifer/Projects/happening/build/build.out
+-C app/build/linux/arm64/release bundle
+Linux package: dist/happening-0.5.1-linux-arm64.tar.gz
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+>>>>>>> f8cb2d6 (fixed linux 2nd display issue)
