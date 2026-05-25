@@ -74,11 +74,12 @@ class EventsLayer implements TimelineLayer {
     final overlapInfo = overlapRanks[event.id];
     final step = layout.overlapStepPx;
     final offset = overlapInfo != null ? overlapInfo.rank * step : 0.0;
+    final adjustedX = x + offset;
     final minW = overlapInfo != null
         ? TimelineLayout.kMinEventWidth +
             (overlapInfo.groupSize - 1 - overlapInfo.rank) * step
         : (event.isTask ? 0.0 : TimelineLayout.kMinEventWidth);
-    final w = ((endX - x) - offset).clamp(minW, double.infinity);
+    final w = (endX - adjustedX).clamp(minW, double.infinity);
 
     final int rank = overlapInfo?.rank ?? 0;
     final baseColor = event.isCompleted ? const Color(0xFF51B749) : event.color;
@@ -86,10 +87,10 @@ class EventsLayer implements TimelineLayer {
         baseColor.withValues(alpha: (rank == 0 ? 1.0 : 0.55) * surfaceOpacity);
 
     if (event.isTask) {
-      final taskEndX = event.endTime.isAfter(event.startTime) ? endX : x;
+      final taskEndX = event.endTime.isAfter(event.startTime) ? endX : adjustedX;
       TimelinePaintUtils.paintTaskMarker(
         canvas,
-        x,
+        adjustedX,
         taskEndX,
         top + blockHeight * 0.4,
         color,
@@ -97,11 +98,11 @@ class EventsLayer implements TimelineLayer {
       );
     } else {
       final rect = RRect.fromLTRBR(
-          x, top, x + w, top + blockHeight, const Radius.circular(4));
+          adjustedX, top, adjustedX + w, top + blockHeight, const Radius.circular(4));
       _paintEventBlock(canvas, event, rect, color, baseColor);
     }
 
-    _paintEventLabel(canvas, event, x, w, size);
+    _paintEventLabel(canvas, event, adjustedX, w, size);
   }
 
   void _paintEventBlock(
