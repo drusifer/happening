@@ -29,7 +29,9 @@ endif
 
 ifeq ($(OS),Windows_NT)
   ARCH       := x64
+  UNAME_OS   := Windows_NT
 else
+  UNAME_OS   := $(shell uname -s)
   UNAME_ARCH := $(shell uname -m)
   ifeq ($(UNAME_ARCH),aarch64)
     ARCH     := arm64
@@ -46,13 +48,21 @@ PUB_STAMP    := $(APP_DIR)/.dart_tool/package_config.json
 $(FLUTTER):
 ifeq ($(OS),Windows_NT)
 	@powershell -Command "if (-not (Test-Path '$(FLUTTER)')) { Write-Host '==> Flutter SDK not found — cloning stable into .flutter/flutter ...'; mkdir -p .flutter; git clone https://github.com/flutter/flutter.git --branch stable --depth 1 .flutter/flutter; Write-Host '✓ flutter SDK cloned' }"
+else ifeq ($(UNAME_OS),Darwin)
+	./scripts/setup-macos.sh
 else
 	./scripts/setup.sh
 endif
 
 .PHONY: setup install-hooks
 setup: install-hooks fetch-cities
+ifeq ($(UNAME_OS),Darwin)
+	./scripts/setup-macos.sh
+else ifeq ($(OS),Windows_NT)
+	@echo "Windows setup: ensure Flutter SDK and Visual Studio are installed."
+else
 	./scripts/setup.sh
+endif
 	cd $(APP_DIR) && $(FLUTTER) pub get
 
 $(PUB_STAMP): $(FLUTTER) $(APP_DIR)/pubspec.yaml $(APP_DIR)/pubspec.lock
