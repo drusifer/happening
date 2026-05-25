@@ -148,9 +148,17 @@ void main() {
     test(
         'gradientStops fade-in has nightNavy at start when moonrise is at night',
         () {
-      // Anchor moonrise/moonset relative to actual solar times (which are UTC)
-      // so the test is timezone-independent.
-      // Moonrise 1.5 h after civil twilight end, moonset 2 h before next dawn.
+      // Solar times are returned in UTC; anchor testNow to solarNoon so the
+      // post-dusk events fall within the ±12 h window regardless of timezone.
+      final testNow = solarTimes.solarNoon;
+      final layoutLocal = TimelineLayout(
+        stripWidth: stripWidth,
+        nowIndicatorX: nowIndicatorX,
+        windowStart: testNow.subtract(const Duration(hours: 12)),
+        windowEnd: testNow.add(const Duration(hours: 12)),
+      );
+      // Moonrise 1.5 h after civil twilight end; moonset (~22 h later) is well
+      // past windowEnd (+12 h) so no fade-out appears within the strip.
       final nightRise = solarTimes.civilTwilightEnd
           .add(const Duration(hours: 1, minutes: 30));
       final nightSet = solarTimes.civilTwilightBegin
@@ -162,13 +170,46 @@ void main() {
         illuminationFraction: 1.0,
       );
       final body = LunarBody(lunar: nightLunar, solar: solar);
-      final stops = body.gradientStops(layout, now);
+      final stops = body.gradientStops(layoutLocal, testNow);
       expect(stops, isNotEmpty);
 
       final sorted = [...stops]..sort((a, b) => a.x.compareTo(b.x));
       // First stop is the fade-in start — should be nightNavy.
       expect(sorted.first.c, equals(SolarBody.nightNavy));
-      // Last stop is the fade-out end — should also be nightNavy.
+      // Moonset is past the strip edge; moon is still up at the right edge, so
+      // the last stop holds upColor (no in-window fade-out).
+      expect(sorted.last.c, equals(body.upColor));
+      expect(sorted.last.x, closeTo(layoutLocal.stripWidth, 0.01));
+    });
+
+    test('gradientStops fade-out ends at nightNavy when moonset is in-window',
+        () {
+      // Moonrise 1.5 h after dusk, moonset 3 h later — both within the
+      // ±12 h window so the full ramp-in → hold → ramp-out is visible.
+      final nightRise = solarTimes.civilTwilightEnd
+          .add(const Duration(hours: 1, minutes: 30));
+      final inWindowSet = nightRise.add(const Duration(hours: 3));
+      // Center the window on nightRise so both rise (+0 h) and set (+3 h) are
+      // well within the ±12 h range, independent of machine timezone.
+      final testNow = nightRise;
+      final layoutLocal = TimelineLayout(
+        stripWidth: stripWidth,
+        nowIndicatorX: nowIndicatorX,
+        windowStart: testNow.subtract(const Duration(hours: 12)),
+        windowEnd: testNow.add(const Duration(hours: 12)),
+      );
+      final inWindowLunar = LunarDayTimes(
+        moonrise: nightRise,
+        moonset: inWindowSet,
+        phase: MoonPhase.full,
+        illuminationFraction: 1.0,
+      );
+      final body = LunarBody(lunar: inWindowLunar, solar: solar);
+      final stops = body.gradientStops(layoutLocal, testNow);
+      expect(stops, isNotEmpty);
+
+      final sorted = [...stops]..sort((a, b) => a.x.compareTo(b.x));
+      expect(sorted.first.c, equals(SolarBody.nightNavy));
       expect(sorted.last.c, equals(SolarBody.nightNavy));
     });
 

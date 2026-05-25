@@ -11,9 +11,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:happening/core/app_metadata.dart';
+import 'package:happening/core/astro/city_search.dart' as city_search;
 import 'package:happening/core/astro/astro_settings.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/features/calendar/calendar_controller.dart';
@@ -28,9 +27,6 @@ typedef CityResult = ({double lat, double lng, String label});
 /// Callback type for resolving a city name to coordinates.
 typedef ResolveCityName = Future<CityResult?> Function(String query);
 
-/// Callback type for getting the device's current position.
-typedef GetDevicePosition = Future<({double lat, double lng})?> Function();
-
 /// Popup panel for app settings (Font size, Logout).
 class SettingsPanel extends StatefulWidget {
   const SettingsPanel({
@@ -40,7 +36,6 @@ class SettingsPanel extends StatefulWidget {
     required this.onSignOut,
     this.launchAboutUrl = _launchAboutUrl,
     this.platformOverride,
-    this.getDevicePosition = _defaultGetDevicePosition,
     this.resolveCityName = _defaultResolveCityName,
   });
 
@@ -49,7 +44,6 @@ class SettingsPanel extends StatefulWidget {
   final VoidCallback onSignOut;
   final AboutUrlLauncher launchAboutUrl;
   final TargetPlatform? platformOverride;
-  final GetDevicePosition getDevicePosition;
   final ResolveCityName resolveCityName;
 
   @override
@@ -163,7 +157,6 @@ class _SettingsPanelState extends State<SettingsPanel> {
                 width: 200 * scale,
                 child: _AstroLocationSection(
                   settingsService: widget.settingsService,
-                  getDevicePosition: widget.getDevicePosition,
                   resolveCityName: widget.resolveCityName,
                   baseSize: baseSize,
                 ),
@@ -546,27 +539,10 @@ class _PickerRow<T> extends StatelessWidget {
 
 // ── Default location callbacks ─────────────────────────────────────────────────
 
-Future<({double lat, double lng})?> _defaultGetDevicePosition() async {
-  try {
-    var permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) {
-      return null;
-    }
-    final pos = await Geolocator.getCurrentPosition();
-    return (lat: pos.latitude, lng: pos.longitude);
-  } catch (_) {
-    return null;
-  }
-}
-
 Future<CityResult?> _defaultResolveCityName(String query) async {
-  // City geocoding is not bundled. On supported platforms, this could be
-  // extended with a geocoding package. For now, returns null (no match).
-  return null;
+  final result = await city_search.searchCity(query);
+  if (result == null) return null;
+  return (lat: result.lat, lng: result.lng, label: result.label);
 }
 
 // ── Astronomical location section ─────────────────────────────────────────────
@@ -574,13 +550,11 @@ Future<CityResult?> _defaultResolveCityName(String query) async {
 class _AstroLocationSection extends StatefulWidget {
   const _AstroLocationSection({
     required this.settingsService,
-    required this.getDevicePosition,
     required this.resolveCityName,
     required this.baseSize,
   });
 
   final SettingsService settingsService;
-  final GetDevicePosition getDevicePosition;
   final ResolveCityName resolveCityName;
   final double baseSize;
 
@@ -590,33 +564,13 @@ class _AstroLocationSection extends StatefulWidget {
 
 class _AstroLocationSectionState extends State<_AstroLocationSection> {
   final _cityController = TextEditingController();
-  final _latController = TextEditingController();
-  final _lngController = TextEditingController();
 
-  bool _loadingPosition = false;
-  String? _positionError;
   String? _cityError;
   CityResult? _cityPreview;
-  bool _showAdvanced = false;
-  String? _coordError;
-
-  @override
-  void initState() {
-    super.initState();
-    final astro = widget.settingsService.current.astroSettings;
-    if (astro.latitude != null) {
-      _latController.text = astro.latitude!.toStringAsFixed(4);
-    }
-    if (astro.longitude != null) {
-      _lngController.text = astro.longitude!.toStringAsFixed(4);
-    }
-  }
 
   @override
   void dispose() {
     _cityController.dispose();
-    _latController.dispose();
-    _lngController.dispose();
     super.dispose();
   }
 
@@ -633,33 +587,6 @@ class _AstroLocationSectionState extends State<_AstroLocationSection> {
     )));
   }
 
-  Future<void> _useDeviceLocation() async {
-    setState(() {
-      _loadingPosition = true;
-      _positionError = null;
-    });
-
-    final result = await widget.getDevicePosition();
-    if (!mounted) return;
-
-    if (result == null) {
-      final perm = await Geolocator.checkPermission()
-          .catchError((_) => LocationPermission.denied);
-      setState(() {
-        _loadingPosition = false;
-        _positionError = perm == LocationPermission.deniedForever
-            ? 'Location permanently denied. Enable in System Settings, or enter your location below.'
-            : 'Location access denied. Grant permission when prompted, or enter your location below.';
-      });
-    } else {
-      _saveLocation(result.lat, result.lng, cityName: _astro.cityName);
-      setState(() {
-        _loadingPosition = false;
-        _positionError = null;
-      });
-    }
-  }
-
   Future<void> _searchCity() async {
     final query = _cityController.text.trim();
     if (query.isEmpty) return;
@@ -670,8 +597,7 @@ class _AstroLocationSectionState extends State<_AstroLocationSection> {
 
     if (result == null) {
       setState(() {
-        _cityError =
-            "No results for '$query' — try a larger nearby city, or use Advanced coordinates.";
+        _cityError = "No results for '$query' — try a different or nearby city.";
         _cityPreview = null;
       });
     } else {
@@ -689,23 +615,6 @@ class _AstroLocationSectionState extends State<_AstroLocationSection> {
     });
   }
 
-  void _applyCoords() {
-    final lat = double.tryParse(_latController.text.trim());
-    final lng = double.tryParse(_lngController.text.trim());
-    if (lat == null ||
-        lng == null ||
-        lat < -90 ||
-        lat > 90 ||
-        lng < -180 ||
-        lng > 180) {
-      setState(() =>
-          _coordError = 'Invalid coordinates. Lat: -90–90, Lng: -180–180.');
-      return;
-    }
-    _saveLocation(lat, lng, cityName: _astro.cityName);
-    setState(() => _coordError = null);
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -720,29 +629,6 @@ class _AstroLocationSectionState extends State<_AstroLocationSection> {
         ..._buildLocationDisplay(theme, fs),
         const SizedBox(height: 8),
         ..._buildCitySearch(theme, fs),
-        const SizedBox(height: 8),
-        GestureDetector(
-          onTap: () => setState(() => _showAdvanced = !_showAdvanced),
-          child: Row(
-            children: [
-              Text(
-                'Advanced',
-                style: TextStyle(
-                  fontSize: fs * 0.6,
-                  color:
-                      theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
-                ),
-              ),
-              const SizedBox(width: 4),
-              Icon(
-                _showAdvanced ? Icons.expand_less : Icons.expand_more,
-                size: fs * 0.8,
-                color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
-              ),
-            ],
-          ),
-        ),
-        if (_showAdvanced) ..._buildAdvancedSection(theme, fs),
       ],
     );
   }
@@ -767,27 +653,6 @@ class _AstroLocationSectionState extends State<_AstroLocationSection> {
             fontStyle: FontStyle.italic,
           ),
         ),
-      const SizedBox(height: 8),
-      _loadingPosition
-          ? const SizedBox(
-              width: 12,
-              height: 12,
-              child: CircularProgressIndicator(strokeWidth: 1.5),
-            )
-          : _MiniButton(
-              label: 'Use Current Location',
-              onTap: _useDeviceLocation,
-              color: theme.colorScheme.primary.withValues(alpha: 0.15),
-              textColor: theme.colorScheme.primary,
-              fontSize: fs * 0.55,
-            ),
-      if (_positionError != null) ...[
-        const SizedBox(height: 4),
-        Text(
-          _positionError!,
-          style: TextStyle(color: Colors.orangeAccent, fontSize: fs * 0.55),
-        ),
-      ],
     ];
   }
 
@@ -849,97 +714,12 @@ class _AstroLocationSectionState extends State<_AstroLocationSection> {
     ];
   }
 
-  List<Widget> _buildAdvancedSection(ThemeData theme, double fs) {
-    return [
-      const SizedBox(height: 6),
-      _CoordField(
-          key: const Key('lat_field'),
-          label: 'Lat',
-          controller: _latController,
-          fontSize: fs),
-      const SizedBox(height: 4),
-      _CoordField(
-          key: const Key('lng_field'),
-          label: 'Lng',
-          controller: _lngController,
-          fontSize: fs),
-      if (_coordError != null) ...[
-        const SizedBox(height: 4),
-        Text(
-          _coordError!,
-          style: TextStyle(color: Colors.redAccent, fontSize: fs * 0.55),
-        ),
-      ],
-      const SizedBox(height: 6),
-      _MiniButton(
-        key: const Key('apply_coords_button'),
-        label: 'Apply',
-        onTap: _applyCoords,
-        color: theme.colorScheme.primary.withValues(alpha: 0.15),
-        textColor: theme.colorScheme.primary,
-        fontSize: fs * 0.55,
-      ),
-    ];
-  }
 }
 
 String _formatCoord(double lat, double lng) {
   final latDir = lat >= 0 ? 'N' : 'S';
   final lngDir = lng >= 0 ? 'E' : 'W';
   return '${lat.abs().toStringAsFixed(2)}°$latDir ${lng.abs().toStringAsFixed(2)}°$lngDir';
-}
-
-class _CoordField extends StatelessWidget {
-  const _CoordField({
-    super.key,
-    required this.label,
-    required this.controller,
-    required this.fontSize,
-  });
-
-  final String label;
-  final TextEditingController controller;
-  final double fontSize;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Row(
-      children: [
-        SizedBox(
-          width: 24,
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: fontSize * 0.6,
-              color: theme.textTheme.bodySmall?.color,
-            ),
-          ),
-        ),
-        const SizedBox(width: 4),
-        Expanded(
-          child: TextField(
-            controller: controller,
-            style: TextStyle(
-                fontSize: fontSize * 0.6,
-                color: theme.textTheme.bodyMedium?.color),
-            keyboardType: const TextInputType.numberWithOptions(
-                signed: true, decimal: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[-0-9.]')),
-            ],
-            decoration: InputDecoration(
-              isDense: true,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(4)),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 class _MiniButton extends StatelessWidget {

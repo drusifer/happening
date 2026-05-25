@@ -266,7 +266,7 @@ void main() {
 
       final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
       await gesture.addPointer(location: Offset.zero);
-      await gesture.moveTo(const Offset(140, 10));
+      await gesture.moveTo(const Offset(260, 10));
       await tester.pump(const Duration(seconds: 10));
 
       expect(find.byType(HoverDetailOverlay), findsOneWidget);
@@ -309,13 +309,13 @@ void main() {
       await gesture.addPointer(location: Offset.zero);
 
       // 1. Hover
-      await gesture.moveTo(const Offset(140, 10));
+      await gesture.moveTo(const Offset(260, 10));
       await tester.pump(const Duration(seconds: 10));
 
       expect(find.byType(HoverDetailOverlay), findsOneWidget);
 
       // 2. Tap — card stays visible, no collapse
-      await tester.tapAt(const Offset(140, 10));
+      await tester.tapAt(const Offset(260, 10));
       await tester.pump();
 
       expect(find.byType(HoverDetailOverlay), findsOneWidget);
@@ -355,11 +355,11 @@ void main() {
       await gesture.addPointer(location: Offset.zero);
 
       // Hover and jiggle — card appears and stays visible
-      await gesture.moveTo(const Offset(140, 10));
+      await gesture.moveTo(const Offset(260, 10));
       await tester.pump(const Duration(seconds: 10));
-      await gesture.moveTo(const Offset(145, 10));
+      await gesture.moveTo(const Offset(265, 10));
       await tester.pump();
-      await gesture.moveTo(const Offset(142, 10));
+      await gesture.moveTo(const Offset(262, 10));
       await tester.pump();
 
       expect(find.byType(HoverDetailOverlay), findsOneWidget,
@@ -404,7 +404,7 @@ void main() {
       final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
       await gesture.addPointer(location: Offset.zero);
 
-      await gesture.moveTo(const Offset(140, 10));
+      await gesture.moveTo(const Offset(260, 10));
       await tester.pump(const Duration(seconds: 1));
 
       expect(find.byType(HoverDetailOverlay), findsOneWidget);
@@ -445,7 +445,7 @@ void main() {
 
       final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
       await gesture.addPointer(location: Offset.zero);
-      await gesture.moveTo(const Offset(140, 10));
+      await gesture.moveTo(const Offset(260, 10));
       await tester.pump(const Duration(seconds: 10));
 
       expect(find.byType(HoverDetailOverlay), findsOneWidget);
@@ -485,7 +485,7 @@ void main() {
       final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
       await gesture.addPointer(location: Offset.zero);
 
-      await gesture.moveTo(const Offset(140, 10));
+      await gesture.moveTo(const Offset(260, 10));
       await tester.pump(const Duration(seconds: 10));
 
       expect(find.byType(HoverDetailOverlay), findsOneWidget);
@@ -522,7 +522,7 @@ void main() {
 
       final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
       await gesture.addPointer(location: Offset.zero);
-      await gesture.moveTo(const Offset(140, 10));
+      await gesture.moveTo(const Offset(260, 10));
       await tester.pump(const Duration(seconds: 10));
 
       expect(find.byType(HoverDetailOverlay), findsOneWidget);
@@ -631,7 +631,7 @@ void main() {
         final gesture =
             await tester.createGesture(kind: PointerDeviceKind.mouse);
         await gesture.addPointer(location: Offset.zero);
-        await gesture.moveTo(const Offset(140, 10));
+        await gesture.moveTo(const Offset(260, 10));
         await tester.pump(const Duration(seconds: 10));
 
         expect(find.byType(HoverDetailOverlay), findsOneWidget);
@@ -691,7 +691,7 @@ void main() {
 
       final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
       await gesture.addPointer(location: Offset.zero);
-      await gesture.moveTo(const Offset(140, 10));
+      await gesture.moveTo(const Offset(260, 10));
       await tester.pump(const Duration(seconds: 1));
 
       expect(find.byType(HoverDetailOverlay), findsOneWidget);
@@ -964,7 +964,7 @@ void main() {
     // collapsed (no rect matches) → _isHoveringStrip=true but no expand.
     final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
     await gesture.addPointer(location: Offset.zero);
-    await gesture.moveTo(const Offset(140, 10));
+    await gesture.moveTo(const Offset(260, 10));
     await tester.pump();
 
     expect(fakeWS.expandCalls, 0,

@@ -226,6 +226,11 @@ class TimelinePainter extends CustomPainter {
       old.hoveredEventId != hoveredEventId ||
       old.collidingIds != collidingIds ||
       old.countdownColor != countdownColor ||
+      old.fontSize != fontSize ||
+      old.backgroundColor != backgroundColor ||
+      old.pastOverlayColor != pastOverlayColor ||
+      old.tickColor != tickColor ||
+      old.nowIndicatorX != nowIndicatorX ||
       old.isLoading != isLoading ||
       old.isSignIn != isSignIn ||
       old.isSigningIn != isSigningIn ||
@@ -236,7 +241,9 @@ class TimelinePainter extends CustomPainter {
       old.astroData != astroData ||
       old.isAstroTheme != isAstroTheme ||
       old.astroLat != astroLat ||
-      old.astroLng != astroLng;
+      old.astroLng != astroLng ||
+      old.windowStart != windowStart ||
+      old.windowEnd != windowEnd;
 
   /// Semantic nodes for canvas content — makes ticks, events, and task
   /// diamonds queryable by integration tests via find.bySemanticsLabel.

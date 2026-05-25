@@ -212,7 +212,7 @@ void main() {
       });
     });
 
-    group('effectiveEndX with overlap ranks', () {
+    group('effectiveStartX / effectiveEndX with overlap ranks', () {
       CalendarEvent evt(String id, int startHour, int endHour) => CalendarEvent(
             id: id,
             title: id,
@@ -223,33 +223,44 @@ void main() {
             videoCallUrl: null,
           );
 
-      test('rank-0 event has same effectiveEndX as raw end', () {
+      test('rank-0 effectiveStartX equals raw start', () {
         final a = evt('a', 11, 12);
         final b = evt('b', 11, 12);
         final ranks = layout.computeExactOverlapRanks([a, b], now);
-        final rawEndX = layout.xForTime(a.endTime, now);
-        expect(layout.effectiveEndX(a, now, ranks), closeTo(rawEndX, 0.01));
+        expect(layout.effectiveStartX(a, now, ranks),
+            closeTo(layout.xForTime(a.startTime, now), 0.01));
       });
 
-      test('rank-1 event effectiveEndX is overlapStepPx less than rank-0', () {
+      test('rank-1 effectiveStartX is overlapStepPx right of rank-0', () {
         final a = evt('a', 11, 12);
         final b = evt('b', 11, 12);
         final ranks = layout.computeExactOverlapRanks([a, b], now);
-        final endA = layout.effectiveEndX(a, now, ranks);
-        final endB = layout.effectiveEndX(b, now, ranks);
-        expect(endA - endB, closeTo(layout.overlapStepPx, 0.01));
+        final startA = layout.effectiveStartX(a, now, ranks);
+        final startB = layout.effectiveStartX(b, now, ranks);
+        expect(startB - startA, closeTo(layout.overlapStepPx, 0.01));
       });
 
-      test('each rank step is exactly overlapStepPx apart', () {
+      test('each rank step shifts effectiveStartX by overlapStepPx', () {
         final a = evt('a', 11, 12);
         final b = evt('b', 11, 12);
         final c = evt('c', 11, 12);
         final ranks = layout.computeExactOverlapRanks([a, b, c], now);
-        final endA = layout.effectiveEndX(a, now, ranks);
-        final endB = layout.effectiveEndX(b, now, ranks);
-        final endC = layout.effectiveEndX(c, now, ranks);
-        expect(endA - endB, closeTo(layout.overlapStepPx, 0.01));
-        expect(endB - endC, closeTo(layout.overlapStepPx, 0.01));
+        final startA = layout.effectiveStartX(a, now, ranks);
+        final startB = layout.effectiveStartX(b, now, ranks);
+        final startC = layout.effectiveStartX(c, now, ranks);
+        expect(startB - startA, closeTo(layout.overlapStepPx, 0.01));
+        expect(startC - startB, closeTo(layout.overlapStepPx, 0.01));
+      });
+
+      test('all ranks share the same effectiveEndX (raw end)', () {
+        final a = evt('a', 11, 12);
+        final b = evt('b', 11, 12);
+        final c = evt('c', 11, 12);
+        final ranks = layout.computeExactOverlapRanks([a, b, c], now);
+        final rawEndX = layout.xForTime(a.endTime, now);
+        expect(layout.effectiveEndX(a, now, ranks), closeTo(rawEndX, 0.01));
+        expect(layout.effectiveEndX(b, now, ranks), closeTo(rawEndX, 0.01));
+        expect(layout.effectiveEndX(c, now, ranks), closeTo(rawEndX, 0.01));
       });
     });
 
@@ -269,33 +280,35 @@ void main() {
 
       test('in the shared overlap region, returns the top (highest-rank) event',
           () {
-        final a = evt('a'); // rank 0
-        final b = evt('b'); // rank 1
-        // Mouse well inside both events (left of b's trimmed right edge)
-        final midX = layout.xForTime(start, now) + 10;
+        final a = evt('a'); // rank 0 — starts at rawStartX
+        final b = evt('b'); // rank 1 — starts at rawStartX + step
+        // Mouse at exactly rank-1's left edge: both events are hit
+        final rawStartX = layout.xForTime(start, now);
+        final midX = rawStartX + layout.overlapStepPx;
         expect(layout.eventAtX(midX, [a, b], now), equals(b));
       });
 
-      test('in the peeking region, returns the bottom (rank-0) event', () {
-        final a = evt('a'); // rank 0 — full width
-        final b = evt('b'); // rank 1 — trimmed by overlapStepPx (10px)
-        final rawEndX = layout.xForTime(end, now);
-        // Mouse 5px inside rank-0's end — past rank-1's trimmed edge
-        final peekX = rawEndX - 5;
+      test('in the left-peeking region, returns the bottom (rank-0) event', () {
+        final a = evt('a'); // rank 0 — starts at rawStartX
+        final b = evt('b'); // rank 1 — starts at rawStartX + overlapStepPx
+        final rawStartX = layout.xForTime(start, now);
+        // Mouse 5px past rank-0 start but before rank-1 starts
+        final peekX = rawStartX + layout.overlapStepPx - 5;
         expect(layout.eventAtX(peekX, [a, b], now), equals(a));
       });
 
-      test('three stacked events: peeking regions resolve correctly', () {
-        final a = evt('a'); // rank 0 — no trim
-        final b = evt('b'); // rank 1 — trimmed by 10px
-        final c = evt('c'); // rank 2 — trimmed by 20px
-        final rawEndX = layout.xForTime(end, now);
-        // Rank-0 only: mouse inside last 10px (past rank-1's edge at rawEndX-10)
-        expect(layout.eventAtX(rawEndX - 5, [a, b, c], now), equals(a));
-        // Rank-0 + rank-1: between 10px and 20px from end (past rank-2's edge)
-        expect(layout.eventAtX(rawEndX - 15, [a, b, c], now), equals(b));
-        // All three: well inside all events
-        expect(layout.eventAtX(rawEndX - 25, [a, b, c], now), equals(c));
+      test('three stacked events: left-peeking regions resolve correctly', () {
+        final a = evt('a'); // rank 0 — starts at rawStartX
+        final b = evt('b'); // rank 1 — starts at rawStartX + step
+        final c = evt('c'); // rank 2 — starts at rawStartX + 2*step
+        final rawStartX = layout.xForTime(start, now);
+        final step = layout.overlapStepPx;
+        // Only rank-0 visible: before rank-1's left edge
+        expect(layout.eventAtX(rawStartX + step - 5, [a, b, c], now), equals(a));
+        // Rank-0 + rank-1 visible: between rank-1 and rank-2 left edges → rank-1 wins
+        expect(layout.eventAtX(rawStartX + step + 5, [a, b, c], now), equals(b));
+        // All three visible: past rank-2's left edge → rank-2 wins
+        expect(layout.eventAtX(rawStartX + step * 2 + 5, [a, b, c], now), equals(c));
       });
     });
 

@@ -378,7 +378,7 @@ class _TimelineStripState extends State<TimelineStrip>
     final boundsMap = <String, EventBounds>{};
     for (final e in sortedEvents) {
       if (isOverStripZone) {
-        final startX = layout.xForTime(e.startTime, _now);
+        final startX = layout.effectiveStartX(e, _now, overlapRanks);
         final endX = layout.effectiveEndX(e, _now, overlapRanks);
         boundsMap[e.id] = EventBounds(
             left: startX, right: endX, top: 0, bottom: _collapsedHeight);
@@ -537,13 +537,27 @@ class _TimelineStripState extends State<TimelineStrip>
     final stripWidth = constraints.maxWidth;
     final now = _now;
 
+    // Left toolbar: left:8 + 3×(pad4+icon16+pad4) + 2×4px spacers = 88px right edge.
+    const double leftToolbarRight = 8.0 + 3 * 24.0 + 2 * 4.0;
+    // CountdownDisplay (untilNext mode) sits just left of the now line.
+    // Its width is padding(12) + text — longest format "X h YY min" ≈ fontSize × 5.0.
+    // Now line must clear: toolbar + 8px gap + countdown widget + 8px gap.
+    final double countdownEst = fontSize * 5.0 + 12.0;
+    final double nowIndicatorX =
+        (leftToolbarRight + 16.0 + countdownEst).clamp(0.0, stripWidth * 0.35);
+    final double actualFraction = nowIndicatorX / stripWidth;
+
     final layout = TimelineLayout(
       stripWidth: stripWidth,
-      nowIndicatorX: stripWidth * 0.10,
+      nowIndicatorX: nowIndicatorX,
       windowStart: now.subtract(Duration(
-          milliseconds: (settings.timeWindowHours * 3600000 * 0.125).toInt())),
+          milliseconds:
+              (settings.timeWindowHours * 3600000 * actualFraction).toInt())),
       windowEnd: now.add(Duration(
-          milliseconds: (settings.timeWindowHours * 3600000 * 0.875).toInt())),
+          milliseconds: (settings.timeWindowHours *
+                  3600000 *
+                  (1.0 - actualFraction))
+              .toInt())),
     );
     _layout = layout;
 

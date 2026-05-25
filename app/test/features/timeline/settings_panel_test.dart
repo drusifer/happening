@@ -340,40 +340,5 @@ void main() {
       expect(find.text('Confirm'), findsOneWidget);
     });
 
-    testWidgets('Advanced section hidden by default', (tester) async {
-      _wideScreen(tester);
-      final svc = _FakeSettingsService();
-      await svc.update(const AppSettings(theme: AppTheme.astronomical));
-      await tester.pumpWidget(_wrap(SettingsPanel(
-        settingsService: svc,
-        calendarController: CalendarController(_FakeCalendarService()),
-        onSignOut: () {},
-      )));
-      await tester.pump();
-      expect(find.byKey(const Key('lat_field')), findsNothing);
-    });
-
-    testWidgets('Apply saves invalid coords shows error', (tester) async {
-      _wideScreen(tester);
-      final svc = _FakeSettingsService();
-      await svc.update(const AppSettings(theme: AppTheme.astronomical));
-      await tester.pumpWidget(_wrap(SettingsPanel(
-        settingsService: svc,
-        calendarController: CalendarController(_FakeCalendarService()),
-        onSignOut: () {},
-      )));
-      await tester.pump();
-
-      // Open Advanced.
-      await tester.tap(find.text('Advanced'));
-      await tester.pump();
-
-      // Enter invalid lat.
-      await tester.enterText(find.byKey(const Key('lat_field')), '999');
-      await tester.tap(find.byKey(const Key('apply_coords_button')));
-      await tester.pump();
-
-      expect(find.textContaining('Invalid coordinates'), findsOneWidget);
-    });
   });
 }

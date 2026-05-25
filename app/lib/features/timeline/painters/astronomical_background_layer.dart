@@ -240,13 +240,17 @@ class AstronomicalBackgroundLayer implements TimelineLayer {
     final colors = <Color>[edgeLeft];
     final stops = <double>[0.0];
     for (final (:x, :c) in deduped) {
-      if (x > 0 && x < w) {
+      if (x > 0 && x <= w) {
         colors.add(c);
         stops.add(x / w);
       }
     }
-    colors.add(edgeRight);
-    stops.add(1.0);
+    // Only add the solar edge anchor if no stop has already landed at 1.0
+    // (a clamped lunar stop at x == w already covers the right edge).
+    if (stops.last < 1.0) {
+      colors.add(edgeRight);
+      stops.add(1.0);
+    }
 
     canvas.drawRect(
       Rect.fromLTWH(0, 0, w, size.height),
