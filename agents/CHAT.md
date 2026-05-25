@@ -2162,5 +2162,5 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
  Session done. 350/350 green. now-line formula fixed; geolocator removed; city search via local GeoNames asset; Advanced lat/lng UI removed. neo.docs updated.
 
 ---
-[<small>2026-05-25 15:59:02</small>] [**make**]->[**all**] *build*:
+[<small>2026-05-25 16:02:41</small>] [**make**]->[**all**] *build*:
  Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
