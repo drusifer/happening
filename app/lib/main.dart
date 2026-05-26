@@ -14,7 +14,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:happening/app.dart';
 import 'package:happening/core/settings/settings_service.dart';
+import 'package:happening/core/window/linux_window_service.dart';
+import 'package:happening/core/window/macos_window_service.dart';
 import 'package:happening/core/window/window_service.dart';
+import 'package:happening/core/window/windows_window_service.dart';
 import 'package:logging/logging.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
@@ -36,10 +39,23 @@ void main() async {
   _log.fine('Settings loaded.');
 
   // 3. Initialize window management.
-  final windowService = WindowService(
-    windowManager: windowManager,
-    screenRetriever: screenRetriever,
-  );
+  final WindowService windowService;
+  if (Platform.isMacOS) {
+    windowService = MacOSWindowService(
+      windowManager: windowManager,
+      screenRetriever: screenRetriever,
+    );
+  } else if (Platform.isWindows) {
+    windowService = WindowsWindowService(
+      windowManager: windowManager,
+      screenRetriever: screenRetriever,
+    );
+  } else {
+    windowService = LinuxWindowService(
+      windowManager: windowManager,
+      screenRetriever: screenRetriever,
+    );
+  }
   await windowService.initialize(
     initialFontSizePx: settingsSvc.current.fontSizePx,
     initialWindowMode: settingsSvc.current.effectiveWindowMode,

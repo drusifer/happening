@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/window/interaction_strategy/window_interaction_strategy.dart';
 import 'package:happening/core/window/linux_dock_window_manager.dart';
+import 'package:happening/core/window/linux_window_service.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
@@ -71,7 +72,6 @@ void main() {
         windowManager: mockWM,
         screenRetriever: mockSR,
         interactionStrategy: fakeInteractionStrategy,
-        linuxDockWindowManager: fakeLinuxDock,
       );
 
       // Default mock behavior for initialization
@@ -245,11 +245,9 @@ void main() {
     });
 
     group('Linux strut (F-28)', () {
-      WindowService linuxService() => WindowService(
+      LinuxWindowService linuxService() => LinuxWindowService(
             windowManager: mockWM,
             screenRetriever: mockSR,
-            platformOverride: TargetPlatform.linux,
-            interactionStrategy: fakeInteractionStrategy,
             linuxDockWindowManager: fakeLinuxDock,
           );
 
