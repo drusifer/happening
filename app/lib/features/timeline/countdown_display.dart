@@ -49,8 +49,9 @@ class CountdownDisplay extends StatelessWidget {
         borderRadius: BorderRadius.circular(4),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
+            color: Colors.black.withValues(alpha: 0.35),
             blurRadius: 3,
+            offset: const Offset(1, 1),
           ),
         ],
       ),

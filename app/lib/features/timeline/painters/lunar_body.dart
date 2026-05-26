@@ -1,3 +1,13 @@
+// Concrete lunar cycle data wrapper and glyph builder.
+//
+// TLDR:
+// Overview: Represents the Moon's daily cycle on the timeline.
+// Problem:  Need concrete twilight intervals, dynamic moon glow intensity based on phase, and exact glyph mappings.
+// Solution: Encapsulates LunarDayTimes, tracks rising/setting gradients, and builds MoonRise, MoonTransit, and MoonSet glyphs.
+// Breaking Changes: No.
+//
+// ---------------------------------------------------------------------------
+
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';

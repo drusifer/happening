@@ -1,3 +1,13 @@
+// Abstract sky body base class for astronomical events.
+//
+// TLDR:
+// Overview: Abstract base class representing celestial bodies (Sun, Moon) tracking rise, set, and peak times.
+// Problem:  Need unified logic to manage daylight gradients and coordinate glyph positioning across bodies.
+// Solution: Defines shared mathematical interpolation routines for nightness scaling and gradient calculations.
+// Breaking Changes: No.
+//
+// ---------------------------------------------------------------------------
+
 import 'package:flutter/material.dart';
 import 'package:happening/features/timeline/painters/astro_objects.dart';
 import 'package:happening/features/timeline/timeline_layout.dart';

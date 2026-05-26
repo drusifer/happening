@@ -1,5 +1,12 @@
-// TLDR: Local city name → (lat, lng) search backed by bundled GeoNames data.
-// Run `make fetch-cities` once to generate app/assets/data/cities.csv.
+// Local city name → (lat, lng) search backed by bundled GeoNames data.
+//
+// TLDR:
+// Overview: Provides off-line city coordinate lookup using a bundled GeoNames dataset.
+// Problem:  Need zero-dependency, off-line city-to-coordinate geocoding for location configuration.
+// Solution: Searches a local CSV of 33,742 cities (cities.csv), preferring prefix matches, and parses lat/lng.
+// Breaking Changes: No.
+//
+// ---------------------------------------------------------------------------
 
 import 'package:flutter/services.dart';
 

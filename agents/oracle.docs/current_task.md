@@ -1,5 +1,17 @@
 # Current Task
 
+## Groom Documentation for v0.5.1 — 2026-05-26
+**Status**: DONE ✅
+
+### Done
+- [x] Updated root README.md with v0.5.1 status, F-27/F-28/F-29 milestones, and revised Architecture Overview (AstroDataService, SkyBody layers, GeoNames offline search, Send-to-Back mechanism).
+- [x] Updated root USER_GUIDE.md with detailed Send-to-Back behaviors (10s timer, continuous lowering, non-intrusive focus).
+- [x] Added USER_GUIDE.md Section 7 on the Astronomical Theme & Location Settings (sky gradients, celestial markers, offline computations, GeoNames local search setup).
+- [x] Documented z-ordering refinements and locale-specific 12/24h formats in USER_GUIDE.md.
+- [x] Resolved Windows compatibility issues in chat.py (UTF-8 encoding) and Makefile (bash check removal).
+- [x] Archived 1,627 lines of CHAT.md into `agents/chat_archive/CHAT-ARCHIVE-20260526.md` and added dynamic summaries for v0.3.1, v0.4.0, and F-27/F-28/F-29 sprints.
+- [x] Standardized structured TLDR blocks across 11 newly created or modified files in core astronomy, rendering layers, and window resize strategies.
+
 ## F-28 Linux Reserved Space — Documentation — 2026-05-18
 **Status**: DONE ✅
 

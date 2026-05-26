@@ -1,3 +1,13 @@
+// Service providing real-time solar and lunar events.
+//
+// TLDR:
+// Overview: Computes and exposes offline astronomical data (sunrise, sunset, moon phases) for the timeline.
+// Problem:  Need local, real-time daylight gradients and celestial markers based on user location.
+// Solution: Listens to SettingsService, calculates solar/lunar times locally, and caches results.
+// Breaking Changes: No.
+//
+// ---------------------------------------------------------------------------
+
 import 'dart:async';
 
 import 'package:apsl_sun_calc/apsl_sun_calc.dart';

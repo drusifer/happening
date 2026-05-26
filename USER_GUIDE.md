@@ -53,6 +53,7 @@ The strip is always visible at the top of your primary display. It stays above o
 - **Event Blocks**: Solid colored blocks representing meeting durations.
 - **Task Markers (◇)**: Diamond-shaped markers for tasks or zero-duration items.
 - **Collision Detection**: Overlapping events are drawn with red outlines and transparency. **Note: Shorter events are always drawn on top** so you can easily hover over them.
+- **Z-Order Refinement**: Calendar events are painted on top of tick lines for maximum readability, preventing lines from dividing your visual schedule. Tick time labels remain perfectly legible.
 
 ![Event and Tick Rendering](app/test/goldens/goldens/ticks_over_events.png)
 
@@ -72,6 +73,14 @@ Happening uses "Smart Bounding" to make interaction stable:
 - **JOIN**: Opens your video call link (Meet, Zoom, Teams, etc.) instantly.
 - **OPEN**: Opens the event directly in your Google Calendar web interface.
 
+### Send-to-Back
+If Happening is blocking a window title bar, browser tab, or menu that you need to access:
+- **Activate**: Tap the **Send to Back** (`⧉` flip icon) on the strip.
+- **Temporary Lowering**: The strip immediately lowers itself behind all other active desktop windows. You can now resize, move, or click whatever was obscured underneath.
+- **Auto-Restore**: An inactivity timer automatically restores the strip to its always-on-top position after exactly **10 seconds**.
+- **Non-Intrusive Focus**: When the strip auto-restores to the front, it does so quietly without stealing keyboard focus from whatever application you are currently typing in.
+- **Continuous Lowering**: If you need more time to interact with underlying windows, simply tap the Send-to-Back button again before the 10 seconds expire to reset and extend the timer for another 10 seconds.
+
 ---
 
 ## 6. Strip Controls & Settings
@@ -86,7 +95,7 @@ Four icon buttons are always visible on the strip (once signed in):
 ### Settings Panel
 Click the **Gear** icon to open the Settings Panel:
 
-- **Theme**: Switch between **Dark**, **Light**, and **System** themes.
+- **Theme**: Switch between **Dark**, **Light**, **System**, and **Astronomical** themes.
 - **Time Window**: Control how many hours of your day are visible (8h, 12h, or 24h).
 - **Multi-Calendar**: Toggle visibility for all your synced Google Calendars.
 - **Font Size**: Adjust the UI scale. The strip height adapts automatically.
@@ -95,7 +104,37 @@ Click the **Gear** icon to open the Settings Panel:
 
 ---
 
-## 7. Performance & Efficiency
+## 7. Astronomical Theme & Location Settings
+
+For an organic, visual connection to your day, select the **Astronomical** theme under settings. This overlays sunrise, sunset, moonrise, and moonset events directly onto the timeline scale, complete with dynamically rendered skies and accurate moon phase visualizations.
+
+### Dynamic Sky Backgrounds
+The timeline strip renders a beautiful day/night gradient representing the natural progression of light based on your local coordinates:
+- **Midnight Sky**: A deep, night-navy gradient (`#0A0E1A`) when the sun is below the horizon.
+- **Twilight Transitions (Dawn & Dusk)**: A warm orange/pink transition gradient (`#FF8C42`) that shifts smoothly at civil twilight begin and end boundaries, preventing sudden visual jumps.
+- **Daylight**: A clear, calming sky blue (`#87CEEB`) when the sun is above the horizon.
+
+### Timeline Celestial Markers
+Celestial bodies and boundaries are marked at their precise daily times along the timeline scale:
+- **Sunrise (🌅)**: Anchored exactly at the start of civil twilight (dawn begin).
+- **Sunset**: Anchored exactly at the end of civil twilight (dusk end).
+- **Solar Noon**: Marked by a small solar marker at the sun's peak elevation.
+- **Moonrise & Moonset**: A moon icon representing your **actual local moon phase** (New Moon, Waxing/Waning Crescent, First/Last Quarter, Waxing/Waning Gibbous, or Full Moon) rises with an upward arrow and sets with a downward arrow at their exact daily times.
+- **Tonight's Moon Phase Badge**: A static moon phase badge is always displayed at the far right of the strip (near the settings gear) showing tonight's phase name and illumination percentage (e.g., `Waxing Gibbous 72%`), regardless of whether moonrise/set are inside the currently scrolled timeline window.
+
+### Offline & Zero Network Dependencies
+All solar, twilight, and lunar data calculations are performed locally and offline on your computer. There are absolutely no external network requests or API dependencies for the Astronomical theme!
+
+### Configuring Your Location (Offline GeoNames Search)
+To compute precise times, the app needs your latitude and longitude. When you select the **Astronomical** theme, a **Location** section will appear in the settings panel:
+1. In the text field, type your city name (e.g. `Boston`, `Berlin`, `Tokyo`).
+2. Click the **Search** icon (or press Enter). The app queries a built-in, local database of **33,742 cities** completely offline.
+3. Once your city is found, its coordinates and name will be previewed.
+4. Click **Confirm** to save the location. The coordinates are stored securely in your app settings, and astronomical markers will instantly project onto your timeline strip!
+
+---
+
+## 8. Performance & Efficiency
 
 Happening is optimized for ultra-low CPU usage:
 - **Tiered Updates**: The main timeline repaints every 10 seconds, while the countdown timer updates every 1 second.
@@ -103,7 +142,7 @@ Happening is optimized for ultra-low CPU usage:
 
 ---
 
-## 8. Troubleshooting
+## 9. Troubleshooting
 
 - **Windows overlap after changing display scale or resolution**: Click the **Refresh** icon on the left side of the strip. It refreshes calendar events and asks Windows to reapply the reserved space at the top of the screen.
 - **Strip Positioning**: If the strip appears in the center of the screen (Linux/Wayland), ensure `GDK_BACKEND=x11` is set.
@@ -112,5 +151,5 @@ Happening is optimized for ultra-low CPU usage:
 
 ---
 
-## 9. Feedback & Bugs
+## 10. Feedback & Bugs
 Reach out to us at [drusifer@gmail.com].

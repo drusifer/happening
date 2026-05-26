@@ -1,3 +1,13 @@
+// Replaces BackgroundLayer when the astronomical theme is active.
+//
+// TLDR:
+// Overview: Renders scrollable daylight, twilight, and star-filled night gradients behind the timeline.
+// Problem:  Need dynamic, realistic background rendering representing local sky light cycles at strip height.
+// Solution: Merges solar and lunar gradient arcs and projects them via a horizontal LinearGradient.
+// Breaking Changes: No.
+//
+// ---------------------------------------------------------------------------
+
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';

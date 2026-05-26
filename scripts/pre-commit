@@ -12,3 +12,13 @@ if [ $EXIT_CODE -ne 0 ]; then
   echo "     git commit --no-verify"
   exit 1
 fi
+
+# Reject filenames with characters invalid on Windows: \ : * ? " < > |
+INVALID=$(git diff --cached --name-only | grep -P '[\\:*?"<>|]')
+if [ -n "$INVALID" ]; then
+  echo ""
+  echo "❌ Filenames contain characters invalid on Windows:"
+  echo "$INVALID"
+  echo "   Rename using dashes or underscores before committing."
+  exit 1
+fi

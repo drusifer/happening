@@ -4,9 +4,15 @@ import 'package:window_manager/window_manager.dart';
 
 import 'window_resize_strategy.dart';
 
-/// TLDR: Linux resize strategy. setResizable(true) on init so gtk_window_resize
-/// is honoured; GTK3 ignores resize calls on non-resizable windows.
-/// Expand: setMax→setSize→setMin. Collapse: setMin→setMax→setSize.
+// Linux platform window resize strategy implementation.
+//
+// TLDR:
+// Overview: Handles X11/Wayland GTK3 frameless window expansion and collapse transitions.
+// Problem:  GTK3 silently ignores gtk_window_resize calls on non-resizable windows.
+// Solution: Enforces setResizable(true) on initialization, then coordinates strict order of operations.
+// Breaking Changes: No.
+//
+// ---------------------------------------------------------------------------
 class LinuxResizeStrategy extends WindowResizeStrategy {
   LinuxResizeStrategy({
     required WindowManager wm,

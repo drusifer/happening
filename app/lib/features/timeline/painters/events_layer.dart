@@ -34,7 +34,7 @@ class EventsLayer implements TimelineLayer {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final top = size.height * 0.5;
+    final top = size.height * 0.44;
     const bottomInset = 8.0; // 1px border + 3px shadow blur + 4px bottom margin
     final blockHeight = size.height - top - bottomInset;
 
@@ -102,7 +102,7 @@ class EventsLayer implements TimelineLayer {
       _paintEventBlock(canvas, event, rect, color, baseColor);
     }
 
-    _paintEventLabel(canvas, event, adjustedX, w, size);
+    _paintEventLabel(canvas, event, adjustedX, w, top, blockHeight, size);
   }
 
   void _paintEventBlock(
@@ -126,7 +126,7 @@ class EventsLayer implements TimelineLayer {
     canvas.drawRRect(
       rect,
       Paint()
-        ..color = baseColor
+        ..color = Color.lerp(baseColor, Colors.black, 0.4)!
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.0,
     );
@@ -160,10 +160,7 @@ class EventsLayer implements TimelineLayer {
   }
 
   void _paintEventLabel(
-      Canvas canvas, CalendarEvent event, double x, double w, Size size) {
-    final top = size.height * 0.5;
-    const bottomInset = 8.0;
-    final blockHeight = size.height - top - bottomInset;
+      Canvas canvas, CalendarEvent event, double x, double w, double top, double blockHeight, Size size) {
     final hasDuration = event.endTime.isAfter(event.startTime);
     final titleThreshold = (fontSize / 15.0) * 36;
     if (hasDuration && w <= titleThreshold) return;

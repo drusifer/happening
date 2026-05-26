@@ -1,8 +1,16 @@
 # Oracle Context
 
 ## Project: Happening
-**Date**: 2026-04-02
-**Status**: Post-v0.3.x. Sign-in refactored to TimelineStrip compositor layer. Settings panel overflow fixed. OAuth cancellation implemented.
+**Date**: 2026-05-26
+**Status**: Post-v0.5.1. Astronomical theme fully implemented and documented. Send-to-Back shipped and documented. GeoNames offline city search integrated. Tooling fixed for Windows compatibility.
+
+## Recent Changes Documented (2026-05-26)
+- README.md: Bumped version status to v0.5.1. Documented F-27 (Send-to-Back), F-28 (Linux Reserved Space), F-29 (Astronomical Theme), GeoNames city geocoding, and z-order rendering updates. Added `AstroDataService` and `SkyBody` subsystems to the Architecture Overview.
+- USER_GUIDE.md: Expanded description of the Send-to-Back feature (10-second auto-restore, non-intrusive focus behavior, continuous extending). Added a comprehensive section explaining the opt-in Astronomical Theme (dynamic sky gradients, celestial timeline markers, moon phase badge, offline computing) and instructions for GeoNames-backed local city search location setup. Documented z-ordering refinements.
+- CHAT.md: Archived 1,627 lines of chat history into `chat_archive/CHAT-ARCHIVE-20260526.md`, keeping the active chat file lightweight and clean, and added summaries for past milestones.
+- chat.py: Added explicit `encoding="utf-8"` handling to read/write routines, resolving `UnicodeDecodeError` crashes on Windows.
+- Makefile: Removed bash-specific validation syntax from `make chat` to support Windows PowerShell/cmd environments.
+- TLDR: Added and updated standardized TLDR blocks across 11 core astronomical modules, rendering layers, and window resize strategies (city_search.dart, astro_data_service.dart, astro_settings.dart, solar_calculator.dart, astronomical_background_layer.dart, sky_body.dart, solar_body.dart, lunar_body.dart, astro_objects.dart, linux_resize_strategy.dart, macos_resize_strategy.dart).
 
 ## Recent Changes Documented (2026-04-14)
 - ARCH.md v0.6: Added Display/DPI Metric Refresh under Window Strategy.

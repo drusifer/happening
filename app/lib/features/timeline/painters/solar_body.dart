@@ -1,3 +1,13 @@
+// Concrete solar cycle data wrapper and glyph builder.
+//
+// TLDR:
+// Overview: Represents the Sun's daily cycle on the timeline.
+// Problem:  Need concrete time mappings and specific colors representing sunlight and twilight blocks.
+// Solution: Encapsulates SolarDayTimes, provides daylight colors, and returns Sunrise, Sun, and Sunset glyphs.
+// Breaking Changes: No.
+//
+// ---------------------------------------------------------------------------
+
 import 'package:flutter/material.dart';
 import 'package:happening/core/astro/solar_calculator.dart';
 import 'package:happening/features/timeline/painters/astro_objects.dart';

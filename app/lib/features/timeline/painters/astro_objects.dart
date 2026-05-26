@@ -1,3 +1,13 @@
+// Timeline glyph objects representing celestial bodies and events.
+//
+// TLDR:
+// Overview: Declares drawable celestial glyph objects (Sun, Sunrise/set, Moon, Moonrise/set/transit) for the timeline.
+// Problem:  Need highly visible, shaded, and custom-clipped icon rendering for both solar noon and phase-accurate lunar shapes.
+// Solution: Uses shaped paths, elliptical terminator calculations, and circular masking with BlendMode.clear to paint exact moon shapes.
+// Breaking Changes: No.
+//
+// ---------------------------------------------------------------------------
+
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';

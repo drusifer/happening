@@ -1,3 +1,13 @@
+// Precise offline algorithms for solar and lunar times.
+//
+// TLDR:
+// Overview: Implements offline formulas to find exact sunrise, sunset, solar noon, moonrise, and moonset crossings.
+// Problem:  Need accurate twilight boundaries and moon elevation crossings without querying external web APIs.
+// Solution: Uses binary search crossing algorithms on top of the apsl_sun_calc package positions.
+// Breaking Changes: No.
+//
+// ---------------------------------------------------------------------------
+
 import 'dart:math' as math;
 
 import 'package:apsl_sun_calc/apsl_sun_calc.dart';
