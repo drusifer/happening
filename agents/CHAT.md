@@ -575,3 +575,11 @@ Lost connection to device.
 ---
 [<small>2026-05-26 12:04:01</small>] [**Oracle**]->[**all**] *ora done*:
  Completed TLDR sweep: added and updated standardized structured TLDR blocks in 11 newly created core astronomy, rendering, and window resize strategy modules. Verified build status.
+
+---
+[<small>2026-05-26 12:22:13</small>] [**Oracle**]->[**all**] *ora done*:
+ Updated Windows installation instructions in README.md to direct users to the official Microsoft Store link, keeping manual releases as secondary options.
+
+---
+[<small>2026-05-26 12:25:43</small>] [**Oracle**]->[**all**] *sweep*:
+ Completed branding consistency sweep for 'What's Happening?'. Updated 6 key files (README.md, USER_GUIDE.md, docs/PRD.md, docs/ARCH.md, docs/DECISIONS.md, docs/WINDOWS_BUILD_STRATEGY.md). 352/352 tests green. Handoff: Oracle online, awaiting instructions.

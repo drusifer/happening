@@ -1,6 +1,6 @@
 # Windows Build Strategy
 
-This document outlines the strategy for enabling `happening` to be built, run, and tested on Windows, ensuring no disruption to existing Linux and macOS functionality.
+This document outlines the strategy for enabling "What's Happening?" to be built, run, and tested on Windows, ensuring no disruption to existing Linux and macOS functionality.
 
 ## 1. Summary
 

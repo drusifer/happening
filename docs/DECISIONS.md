@@ -1,6 +1,6 @@
-# Project Decisions: Happening
+# Project Decisions: What's Happening?
 
-This document records the architectural and technical decisions made during the development of Happening.
+This document records the architectural and technical decisions made during the development of "What's Happening?".
 
 ## TL;DR
 Linux keeps the GTK header bar disabled and uses Dart-side window sizing/constraint strategies for a thin strip. Linux shell-reservation is implemented via a `linux_dock_window_manager` Flutter plugin that sets `_NET_WM_STRUT_PARTIAL` — NOT via C++ runner code or `window_manager.dock()` (left/right only). DEC-006 supersedes DEC-005's non-reserving stance. Linux must use `LinuxResizeStrategy` (sets `resizable=true`) — GTK3 silently ignores `gtk_window_resize` on non-resizable windows (DEC-007).
@@ -52,27 +52,27 @@ User feedback indicated that centered hover cards felt "detached" from the event
 **Authors**: Drew, Morpheus (Lead), Neo (SWE), Trin (QA)
 
 ### Context
-Happening previously used native Linux runner code to reserve desktop space:
+"What's Happening?" previously used native Linux runner code to reserve desktop space:
 X11 `_NET_WM_STRUT_PARTIAL` plus DOCK window type, and optional Wayland
 `gtk-layer-shell` exclusive-zone setup. That path added compositor-specific
 startup behavior, direct X11 linkage, optional layer-shell build detection, and
-C++ parsing of Happening settings.
+C++ parsing of "What's Happening?" settings.
 
 The Transparent Timestrip product direction changes the goal from "push other
 windows down" to "stay visible without getting in the user's way."
 
 ### Decision
-Remove Happening-owned Linux shell-reservation behavior:
+Remove "What's Happening?"-owned Linux shell-reservation behavior:
 
 1. Do not set X11 struts or DOCK window type.
 2. Do not use Wayland `gtk-layer-shell` for exclusive zones.
-3. Do not parse Happening settings from the C++ runner to calculate reserved height.
+3. Do not parse "What's Happening?" settings from the C++ runner to calculate reserved height.
 4. Keep Linux transparent/pass-through behavior behind explicit real-session validation.
 5. Keep normal sizing/positioning and pass-through policy in Dart strategy classes.
 6. Prefer the X11/XWayland GTK backend for current Linux runs because it preserves top strip placement without shell reservation.
 
 ### Consequences
-- Linux build no longer needs direct Happening-owned X11 linkage or optional layer-shell detection.
+- Linux build no longer needs direct "What's Happening?"-owned X11 linkage or optional layer-shell detection.
 - Linux windows are no longer expected to push maximized windows below the strip.
 - Unsupported Linux transparent mode remains hidden. X11/XWayland placement is acceptable for current Linux runs, but native Wayland remains unsupported for the strip behavior: real-session testing showed compositor-managed center placement and a GTK protocol disconnect during interaction.
 - Windows AppBar reservation remains unchanged.
@@ -106,7 +106,7 @@ Coordination between event hit-testing, mouse coordinates, and window expansion 
 **Authors**: Morpheus (Lead), Neo (SWE), Oracle (Docs)
 
 ### Context
-On Windows, the strip's AppBar reservation worked at launch, but could become stale after the user changed DPI scaling, changed resolution, or otherwise altered display metrics while Happening was running. Once stale, newly opened or repositioned windows could overlap the strip because the shell work area was still based on launch-time physical-pixel values.
+On Windows, the strip's AppBar reservation worked at launch, but could become stale after the user changed DPI scaling, changed resolution, or otherwise altered display metrics while "What's Happening?" was running. Once stale, newly opened or repositioned windows could overlap the strip because the shell work area was still based on launch-time physical-pixel values.
 
 ### Decision
 `WindowService` must observe Flutter display metric changes via `WidgetsBindingObserver.didChangeMetrics()` and refresh its cached display state from live APIs:
@@ -182,7 +182,7 @@ same locations it manages the Windows AppBar: `initialize()`, `setWindowMode()`,
 - Linux `WindowMode.reserved` now actually reserves screen space; maximized windows
   snap below the strip on X11/XWayland.
 - Wayland sessions see no change (strut is silently skipped; a log warning is emitted).
-- The Linux runner remains minimal; no Happening-specific logic in C++.
+- The Linux runner remains minimal; no "What's Happening?"-specific logic in C++.
 - `window_manager.dock()` is not called; the plugin is entirely additive.
 - DEC-005 is superseded; the "non-reserving" stance applied only while C++ runner
   implementation was the only viable path.
