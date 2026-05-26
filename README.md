@@ -16,7 +16,7 @@ Happening is a persistent, always-on-top horizontal timeline strip that reads yo
 
 ---
 
-## Project Status: v0.4.0
+## Project Status: v0.5.1
 - [x] **Sprint 1**: Foundation & Shell (Always-on-top window, mock timeline)
 - [x] **Sprint 2**: Google Calendar Integration (OAuth flow, real event fetching, polling)
 - [x] **Sprint 3**: Refactor & Polish (Hover details, settings, platform optimization)
@@ -25,7 +25,10 @@ Happening is a persistent, always-on-top horizontal timeline strip that reads yo
 - [x] **Sprint 6**: v0.3.0 Linux window sizing, hover card fixes, always-visible quit button
 - [x] **v0.3.1**: Secure credential storage, OAuth cancellation, calendar isolation, settings panel polish
 - [x] **v0.4.0**: Display/DPI metric refresh, Windows AppBar reservation recovery, refresh-button overlap fix
-- [x] **Linux Simplification + Send-to-Back**: Removed click-through C++ plugin; Linux shares macOS code paths; Send-to-Back replaces click-through cross-platform
+- [x] **Send-to-Back (F-27)**: Removed fragile C++ pass-through; strip can be temporarily lowered behind other windows for 10 seconds cross-platform
+- [x] **Linux Reserved Space (F-28)**: Robust window struts/docks for X11/XWayland without complex plugins
+- [x] **Astronomical Theme (F-29)**: Local day/night gradient background with sunrise, sunset, moon rise/set times and real-time moon phase display
+- [x] **v0.5.1**: Bundled GeoNames offline city coordinate search (33,742 cities), system-locale 12/24h time formatting, and event z-ordering fixes
 
 ---
 
@@ -135,9 +138,10 @@ make run          # Lists all options
 
 ## Architecture Overview
 - **Framework**: Flutter (Desktop)
-- **Window Management**: `window_manager` for frameless, always-on-top behavior. Linux development runs force X11/XWayland because native Wayland does not allow reliable absolute strip placement through standard Flutter/GTK APIs. Platform-specific resize sequences (`WindowResizeStrategy`) handle GTK/XWayland sizing behavior. `WindowService` refreshes display width and DPI on metric changes, and the refresh button can reassert the Windows AppBar reservation if another window overlaps the strip.
-- **Rendering**: `CustomPainter` decomposed into 5 composited layers (`BackgroundLayer`, `PastOverlayLayer`, `TickLayer`, `NowIndicatorLayer`, `EventsLayer`).
-- **State Management**: `StreamBuilder` driven by a 1Hz clock tick. `AsyncGate<T>` serializes async window ops and deduplicates rapid intent changes.
-- **Hover / Focus**: `TimelineFocusController` manages expand/collapse and Send-to-Back state. Hover over any event to expand its detail card; move away to collapse.
+- **Window Management**: `window_manager` for frameless, always-on-top behavior. Linux runs on X11/XWayland because native Wayland does not support reliable absolute strip placement. Platform-specific resize sequences (`WindowResizeStrategy`) and docking strategies (`ReservedWindowInteractionStrategy`, `MacOsWindowInteractionStrategy`) manage screen strut alignment. `WindowService` manages real-time DPI changes, and can trigger **Send-to-Back** (lowering the window behind other apps via `XLowerWindow` or platform APIs) with a 10-second automatic restore timer.
+- **Rendering**: Decomposed into composited custom painter layers (`BackgroundLayer`, `PastOverlayLayer`, `TickLayer`, `NowIndicatorLayer`, `EventsLayer`). Under the **Astronomical** theme, `AstronomicalBackgroundLayer` takes over to draw horizontal gradients reflecting daylight/twilight/moonlight, and `SolarMarkerLayer` and `LunarMarkerLayer` draw celestial events. Events are rendered above tick lines in the final paint pass.
+- **State Management**: `StreamBuilder` driven by a 1Hz clock tick. `AsyncGate<T>` serializes async window operations and deduplicates rapid intent changes.
+- **Hover / Focus**: `TimelineFocusController` coordinates expand/collapse and the Send-to-Back timer. Hovering over an event latches the detail card open.
 - **Auth**: PKCE OAuth flow with cancellable `HttpServer` redirect capture. Credentials persisted via `FlutterSecureTokenStore` (OS keychain on all platforms).
-- **Data**: Google Calendar API v3 via `googleapis`. Per-calendar fetch failures are isolated — one bad calendar does not block others.
+- **Data**: Google Calendar API v3 via `googleapis`. Per-calendar fetches are isolated and catch errors individually.
+- **Geocoding / Astronomy**: Offline calculations powered by a local GeoNames dataset containing 33,742 cities (`assets/data/cities.csv` fetched via `make fetch-cities`). Used to compute coordinates, dawn/dusk boundaries, solar angles, and 8-phase moon visualizations offline without external web API calls.

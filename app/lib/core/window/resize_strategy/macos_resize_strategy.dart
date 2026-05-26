@@ -4,9 +4,15 @@ import 'package:window_manager/window_manager.dart';
 
 import 'window_resize_strategy.dart';
 
-/// TLDR: macOS resize strategy. setResizable(false) + setPosition(zero) on init.
-/// Expand: fires onExpanded first, then setMax→setSize→setMin.
-/// Collapse: setMin→setMax→setSize.
+// macOS platform window resize strategy implementation.
+//
+// TLDR:
+// Overview: Handles macOS frameless window expansion and collapse transitions.
+// Problem:  Accidental user resizes and window displacement must be prevented on macOS.
+// Solution: Enforces setResizable(false) on initialization, then coordinates strict order of size adjustments.
+// Breaking Changes: No.
+//
+// ---------------------------------------------------------------------------
 class MacOsResizeStrategy extends WindowResizeStrategy {
   MacOsResizeStrategy({
     required WindowManager wm,

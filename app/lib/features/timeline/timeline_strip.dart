@@ -540,9 +540,9 @@ class _TimelineStripState extends State<TimelineStrip>
     // Left toolbar: left:8 + 3×(pad4+icon16+pad4) + 2×4px spacers = 88px right edge.
     const double leftToolbarRight = 8.0 + 3 * 24.0 + 2 * 4.0;
     // CountdownDisplay (untilNext mode) sits just left of the now line.
-    // Its width is padding(12) + text — longest format "X h YY min" ≈ fontSize × 5.0.
+    // Its width is padding(12) + text — longest format "X h YY min" ≈ fontSize × 6.0.
     // Now line must clear: toolbar + 8px gap + countdown widget + 8px gap.
-    final double countdownEst = fontSize * 5.0 + 12.0;
+    final double countdownEst = fontSize * 6.0 + 12.0;
     final double nowIndicatorX =
         (leftToolbarRight + 16.0 + countdownEst).clamp(0.0, stripWidth * 0.35);
     final double actualFraction = nowIndicatorX / stripWidth;
@@ -973,8 +973,9 @@ class _IconButton extends StatelessWidget {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.15),
+              color: Colors.black.withValues(alpha: 0.35),
               blurRadius: 3,
+              offset: const Offset(1, 1),
             ),
           ],
         ),

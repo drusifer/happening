@@ -436,7 +436,6 @@ help: ## Show available make targets
 	@echo ""
 
 chat: ## Post a message to CHAT.md (usage: make chat MSG="<msg>" [PERSONA="<name>"] [CMD="<cmd>"] [TO="<recipient>"])
-	@[ -n "$(MSG)" ] || { echo "Usage: make chat MSG=\"<message>\" [PERSONA=\"<name>\"] [CMD=\"<cmd>\"] [TO=\"<recipient>\"]"; exit 1; }
 	@python agents/tools/chat.py "$(MSG)" \
 		$(if $(PERSONA),--persona "$(PERSONA)") \
 		$(if $(CMD),--cmd "$(CMD)") \

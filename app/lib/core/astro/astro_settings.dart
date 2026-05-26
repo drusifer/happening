@@ -1,3 +1,13 @@
+// Value objects and models for astronomical configurations and states.
+//
+// TLDR:
+// Overview: Represents user location settings (lat, lng, city) and high-precision computed astronomical data.
+// Problem:  Need structured, immutable models for storing geocoding state and plotting celestial positions.
+// Solution: Declares AstroSettings (json storage), AstroData (calculated markers), and MoonPhase enum mapping.
+// Breaking Changes: No.
+//
+// ---------------------------------------------------------------------------
+
 import 'package:flutter/foundation.dart';
 
 enum MoonPhase {

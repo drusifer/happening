@@ -67,7 +67,7 @@ class TickLayer implements TimelineLayer {
       if (x >= 0 && x <= size.width) {
         if (tickShadowPaint != null) {
           canvas.drawLine(
-              Offset(x, 0), Offset(x, size.height), tickShadowPaint);
+              Offset(x + 1, 0), Offset(x + 1, size.height), tickShadowPaint);
         }
         canvas.drawLine(
             Offset(x, 0), Offset(x, size.height), tickPaint..strokeWidth = 2.0);
@@ -112,7 +112,7 @@ class TickLayer implements TimelineLayer {
     final tx = layout.xForTime(halfTime, now);
     if (tx >= 0 && tx <= size.width) {
       if (tickShadowPaint != null) {
-        canvas.drawLine(Offset(tx, 0), Offset(tx, size.height * 0.5),
+        canvas.drawLine(Offset(tx + 1, 0), Offset(tx + 1, size.height * 0.5),
             tickShadowPaint..strokeWidth = 2.0);
       }
       canvas.drawLine(Offset(tx, 0), Offset(tx, size.height * 0.5),
@@ -137,7 +137,7 @@ class TickLayer implements TimelineLayer {
       final qx = layout.xForTime(qTime, now);
       if (qx >= 0 && qx <= size.width) {
         if (tickShadowPaint != null) {
-          canvas.drawLine(Offset(qx, 0), Offset(qx, size.height * 0.25),
+          canvas.drawLine(Offset(qx + 1, 0), Offset(qx + 1, size.height * 0.25),
               tickShadowPaint..strokeWidth = 1.5);
         }
         canvas.drawLine(Offset(qx, 0), Offset(qx, size.height * 0.25),
