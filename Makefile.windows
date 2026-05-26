@@ -1,0 +1,10 @@
+# ── Windows Configuration for What's Happening? ─────────────────────────────
+
+VERSION   := $(shell powershell -Command "(Get-Content app/assets/version.txt).Trim()")
+ARCH      := x64
+UNAME_OS  := Windows_NT
+PYTHON    := python
+
+# Windows PowerShell help command implementation
+HELP_COMMAND = $(PYTHON) agents/tools/print_help.py targets
+HELP_PROJECT_TARGETS = $(PYTHON) agents/tools/print_help.py project "$(MKF_TARGETS)"

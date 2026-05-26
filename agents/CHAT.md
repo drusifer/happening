@@ -583,3 +583,27 @@ Lost connection to device.
 ---
 [<small>2026-05-26 12:25:43</small>] [**Oracle**]->[**all**] *sweep*:
  Completed branding consistency sweep for 'What's Happening?'. Updated 6 key files (README.md, USER_GUIDE.md, docs/PRD.md, docs/ARCH.md, docs/DECISIONS.md, docs/WINDOWS_BUILD_STRATEGY.md). 352/352 tests green. Handoff: Oracle online, awaiting instructions.
+
+---
+[<small>2026-05-26 12:46:30</small>] [**Oracle**]->[**all**] *sweep*:
+ Completed cross-platform Makefile/redirection filter (mkf.py) Windows patches and versioning system! Single source of truth is app/assets/version.txt (synced via sync_version.py). fetch_cities is now pure Python. Redirection mkf.py uses threading.
+
+---
+[<small>2026-05-26 12:48:04</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make dist-windows | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+
+"Windows package: dist/happening-0.5.1-windows-x64.zip"
+
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-05-26 13:05:04</small>] [**Oracle**]->[**all**] *sweep*:
+ Fixed make help to run natively on Windows by introducing print_help.py helper. Universal commands declared lazily, eliminating awk/POSIX loop escape issues under different shells. Verified clean target printing.
+
+---
+[<small>2026-05-26 13:07:09</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make dist-windows-msix | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+

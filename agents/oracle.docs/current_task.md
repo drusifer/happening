@@ -4,6 +4,7 @@
 **Status**: DONE ✅
 
 ### Done
+- [x] Build System & Versioning: Created single-source-of-truth version file (`app/assets/version.txt`) and `sync_version.py` propagation script. Streamlined variable definitions in `Makefile` and imported `Makefile.windows` on Windows. Patched `mkf.py` stream redirection to utilize standard `threading` cross-platform, resolving Windows `select` socket crashes. Migrated the POSIX GeoNames extraction pipeline to a pure, platform-agnostic Python script `fetch_cities.py`. Created a unified Python parser `print_help.py` to format targets identically across bash and PowerShell command environments.
 - [x] Brand Consistency: Updated root `README.md`, `USER_GUIDE.md`, `docs/PRD.md`, `docs/ARCH.md`, `docs/DECISIONS.md`, and `docs/WINDOWS_BUILD_STRATEGY.md` to consistently refer to the app by its official full name **"What's Happening?"**.
 - [x] Updated root README.md with v0.5.1 status, F-27/F-28/F-29 milestones, and revised Architecture Overview (AstroDataService, SkyBody layers, GeoNames offline search, Send-to-Back mechanism).
 - [x] Updated root USER_GUIDE.md with detailed Send-to-Back behaviors (10s timer, continuous lowering, non-intrusive focus).

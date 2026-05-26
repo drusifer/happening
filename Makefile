@@ -4,17 +4,6 @@
 # Detect if this file is being run directly as Makefile.bob
 _IS_BOB_ENTRY := $(filter %Makefile.bob,$(firstword $(MAKEFILE_LIST)))
 
-ifdef MKF_ACTIVE
-
-# ── Re-invocation Layer ──────────────────────────────────────────────────────
-# Included by mkf.py to run the actual target.
-
-# ── Happening Project Targets ────────────────────────────────────────────────
-
-ifneq ($(OS),Windows_NT)
-  SHELL := /bin/bash
-endif
-
 FLUTTER      := flutter
 DART         := dart
 APP_DIR      := app
@@ -22,15 +11,10 @@ PROXY_DIR    := proxy
 DIST_DIR     := dist
 
 ifeq ($(OS),Windows_NT)
-  VERSION    := $(shell powershell -Command "(Select-String -Path $(APP_DIR)/pubspec.yaml -Pattern '^version:').Line.Split(' ')[1]")
+  include Makefile.windows
 else
-  VERSION    := $(shell grep '^version:' $(APP_DIR)/pubspec.yaml | awk '{print $$2}')
-endif
-
-ifeq ($(OS),Windows_NT)
-  ARCH       := x64
-  UNAME_OS   := Windows_NT
-else
+  SHELL      := /bin/bash
+  VERSION    := $(shell cat app/assets/version.txt 2>/dev/null || echo "0.5.1")
   UNAME_OS   := $(shell uname -s)
   UNAME_ARCH := $(shell uname -m)
   ifeq ($(UNAME_ARCH),aarch64)
@@ -40,10 +24,22 @@ else
   else
     ARCH     := x64
   endif
+  PYTHON     := python
 endif
+
+# Universal help commands utilizing the Python print_help utility
+HELP_COMMAND = $(PYTHON) agents/tools/print_help.py targets
+HELP_PROJECT_TARGETS = $(PYTHON) agents/tools/print_help.py project "$(MKF_TARGETS)"
 
 LLVM_BIN     := /usr/lib/llvm-22/bin
 PUB_STAMP    := $(APP_DIR)/.dart_tool/package_config.json
+
+ifdef MKF_ACTIVE
+
+# ── Re-invocation Layer ──────────────────────────────────────────────────────
+# Included by mkf.py to run the actual target.
+
+# ── Happening Project Targets ────────────────────────────────────────────────
 
 $(FLUTTER):
 ifeq ($(OS),Windows_NT)
@@ -221,20 +217,9 @@ export-proxy-image: dist-proxy-linux ## Compile proxy + build container image + 
 	@echo "Image exported to $(PROXY_TAR)"
 	@echo "Deploy with: make -C /path/to/pi-patch/cluster deploy-happening TAR=$(CURDIR)/$(PROXY_TAR) VERSION=$(VERSION)"
 
-CITIES_URL  := https://download.geonames.org/export/dump/cities15000.zip
-CITIES_CSV  := $(APP_DIR)/assets/data/cities.csv
-
 .PHONY: fetch-cities
 fetch-cities: ## Download GeoNames cities15000 and generate app/assets/data/cities.csv
-	@echo "Downloading GeoNames cities15000..."
-	@mkdir -p $(APP_DIR)/assets/data
-	@curl -sL $(CITIES_URL) -o /tmp/cities15000.zip
-	@unzip -o /tmp/cities15000.zip cities15000.txt -d /tmp/
-	@echo "Processing: name|country|lat|lng ..."
-	@awk -F'\t' 'BEGIN{OFS="|"} {name=$$3; gsub(/\|/," ",name); print name,$$9,$$5,$$6}' \
-	    /tmp/cities15000.txt > $(CITIES_CSV)
-	@rm -f /tmp/cities15000.zip /tmp/cities15000.txt
-	@echo "Done: $(CITIES_CSV) ($$(wc -l < $(CITIES_CSV)) cities)"
+	@$(PYTHON) agents/tools/fetch_cities.py
 
 .PHONY: clean
 clean:
@@ -242,7 +227,13 @@ clean:
 
 # ── Bob Protocol Targets ─────────────────────────────────────────────────────
 
-.PHONY: tldr via_index install_bob update_bob pull_bob clean_bob diff_bob
+.PHONY: tldr via_index install_bob update_bob pull_bob clean_bob diff_bob sync-version set-version
+
+sync-version: ## Synchronize build configurations based on app/assets/version.txt
+	@$(PYTHON) agents/tools/sync_version.py
+
+set-version: ## Set a new version number and sync all files (usage: make set-version VERSION=0.5.2)
+	@$(PYTHON) agents/tools/sync_version.py --set "$(VERSION)"
 
 tldr: ## Show TL;DR summaries from all project files (quick orientation for agents)
 	@rg --no-heading "TL;DR:" --glob "*.md" -N | sed 's|^\./||' | sort
@@ -384,7 +375,7 @@ else
 #   make tldr V=-vv        stderr + filtered failures to terminal
 #   make tldr V=-vvv       stderr + full stdout to terminal
 
-.PHONY: help chat install_bob update_bob pull_bob clean_bob diff_bob
+.PHONY: help chat install_bob update_bob pull_bob clean_bob diff_bob sync-version set-version
 .PHONY: setup install-hooks run run-linux run-macos run-windows run-windows-test run-windows-simple
 .PHONY: run-click-test run-click-test-x11 build-click-test
 .PHONY: test update-goldens test-watch integration-test integration-test-linux integration-test-macos integration-test-windows
@@ -396,7 +387,7 @@ MKF_TARGETS := setup install-hooks run run-linux run-macos run-windows run-windo
 	test update-goldens test-watch integration-test integration-test-linux integration-test-macos integration-test-windows \
 	build-linux build-macos build-windows dist dist-linux dist-macos dist-windows dist-windows-msix dist-proxy-linux \
 	format analyze lint lint-style lint-metrics lint-format proxy proxy-setup export-proxy-image clean tldr via_index \
-	fetch-cities
+	fetch-cities sync-version set-version
 
 install_bob: ## Copy agents into a project and set up skill links (usage: make install_bob TARGET=/path/to/project)
 	@$(MAKE) MKF_ACTIVE=1 install_bob TARGET="$(TARGET)"
@@ -429,10 +420,10 @@ help: ## Show available make targets
 	@echo "    make update_bob V=-vvv # full output"
 	@echo ""
 	@echo "  Targets:"
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / && !seen[$$1]++ {printf "    \033[36m%-22s\033[0m %s\n", $$1, $$2}' $(firstword $(MAKEFILE_LIST))
+	@$(HELP_COMMAND)
 	@echo ""
 	@echo "  Project targets:"
-	@for target in $(MKF_TARGETS); do printf "    \033[36m%-22s\033[0m\n" "$$target"; done
+	@$(HELP_PROJECT_TARGETS)
 	@echo ""
 
 chat: ## Post a message to CHAT.md (usage: make chat MSG="<msg>" [PERSONA="<name>"] [CMD="<cmd>"] [TO="<recipient>"])
@@ -442,7 +433,7 @@ chat: ## Post a message to CHAT.md (usage: make chat MSG="<msg>" [PERSONA="<name
 		$(if $(TO),--to "$(TO)")
 
 $(MKF_TARGETS):
-	@./agents/tools/mkf.py $(V) $@ \
+	@$(PYTHON) agents/tools/mkf.py $(V) $@ \
 		$(if $(FILE),FILE=$(FILE)) \
 		$(if $(ARGS),ARGS=$(ARGS))
 
@@ -452,7 +443,7 @@ $(MKF_TARGETS):
 ifeq ($(MKF_ACTIVE),)
 ifdef _IS_BOB_ENTRY
 %:
-	@./agents/tools/mkf.py $(V) $@
+	@$(PYTHON) agents/tools/mkf.py $(V) $@
 endif
 endif
 
