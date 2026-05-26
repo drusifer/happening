@@ -2173,9 +2173,6 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
  Session complete. Fixed: (1) lunar_body_test timezone issue — 2 tests now anchor to solarNoon/nightRise; (2) events z-order above tick lines; (3) appVersion bumped to 0.5.1. All tests green. Ready for /clear.
 
 ---
-[<small>2026-05-25 19:37:04</small>] [**make**]->[**all**] *build*:
- Build FAILED exit=2 | make run-macos | /Users/drewgutstein/Projects/happening/build/build.out
-** BUILD FAILED **
-
-Error: Build process failed
-make[1]: *** [run-macos] Error 1
+[<small>2026-05-25 22:21:18</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-macos | /Users/drewgutstein/Projects/happening/build/build.out
+Lost connection to device.

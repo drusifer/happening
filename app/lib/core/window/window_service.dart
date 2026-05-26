@@ -1,94 +1,42 @@
 import 'dart:async';
-import 'dart:ffi' hide Size;
-import 'dart:io';
 
-import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/window/expansion_controller.dart'
     show ExpansionController;
 import 'package:happening/core/window/interaction_strategy/window_interaction_strategy.dart';
-import 'package:happening/core/window/linux_dock_window_manager.dart';
 import 'package:happening/core/window/resize_strategy/window_resize_strategy.dart';
 import 'package:happening/core/window/window_service_resize_executor.dart'
     show WindowServiceResizeExecutor;
 import 'package:happening/features/timeline/expansion_logic.dart';
 import 'package:logging/logging.dart';
 import 'package:screen_retriever/screen_retriever.dart';
-import 'package:win32/win32.dart';
 import 'package:window_manager/window_manager.dart';
 
-// ── Constants ────────────────────────────────────────────────────────────────
-
-const int _uCallbackMessage = 0x0400 + 100; // WM_USER + 100
-const int _abmNew = 0;
-const int _abmRemove = 1;
-const int _abmQuerypos = 2;
-const int _abmSetpos = 3;
-const int _abeTop = 1;
-
-// Flutter Windows runner class name — used to find the HWND.
-const String _flutterWindowClass = 'FLUTTER_RUNNER_WIN32_WINDOW';
-
-// ── APPBARDATA FFI struct ────────────────────────────────────────────────────
-
-final class _AppBarData extends Struct {
-  @Uint32()
-  external int cbSize;
-  @IntPtr()
-  external int hWnd;
-  @Uint32()
-  external int uCallbackMessage;
-  @Uint32()
-  external int uEdge;
-  @Int32()
-  external int rcLeft;
-  @Int32()
-  external int rcTop;
-  @Int32()
-  external int rcRight;
-  @Int32()
-  external int rcBottom;
-  @IntPtr()
-  external int lParam;
-}
-
-// ── SHAppBarMessage via shell32.dll ──────────────────────────────────────────
-
-typedef _SHNative = IntPtr Function(
-    Uint32 dwMessage, Pointer<_AppBarData> pData);
-typedef _SHDart = int Function(int dwMessage, Pointer<_AppBarData> pData);
-
-/// Window management service for resizing the app between strip and hover states.
-///
-/// TLDR:
-/// Overview: Controls physical OS window dimensions via window_manager.
-/// Problem: Platform-specific resize sequences differ across macOS/Windows/Linux.
-/// Solution: [WindowResizeStrategy] isolates platform-specific resize sequences;
-///           [ExpansionController] serialises expand/collapse and confirms via GTK.
-/// Breaking Changes: No.
-///
-/// ---------------------------------------------------------------------------
+// ── WindowService ────────────────────────────────────────────────────────────
+//
+// TLDR:
+// Overview: Controls physical OS window dimensions via window_manager.
+// Problem: Platform-specific resize sequences differ across macOS/Windows/Linux.
+// Solution: [WindowResizeStrategy] isolates platform-specific resize sequences;
+//           [ExpansionController] serialises expand/collapse and confirms via GTK.
+//           Platform-specific window lifecycle hooks are overridden by subclasses
+//           (MacOSWindowService, WindowsWindowService, LinuxWindowService).
+// Breaking Changes: No.
+//
+// ---------------------------------------------------------------------------
 
 class WindowService with WidgetsBindingObserver {
   static final _log = Logger('WindowService');
+
   WindowService({
     required WindowManager windowManager,
     required ScreenRetriever screenRetriever,
-    TargetPlatform? platformOverride,
-    bool enableWindowsAppBar = true,
     WindowInteractionStrategy? interactionStrategy,
-    LinuxDockWindowManager? linuxDockWindowManager,
   })  : _wm = windowManager,
         _sr = screenRetriever,
-        _platformOverride = platformOverride,
-        _enableWindowsAppBar = enableWindowsAppBar,
         _interactionStrategy = interactionStrategy ??
-            WindowInteractionStrategy.create(
-              wm: windowManager,
-              platformOverride: platformOverride,
-            ),
-        _linuxDock = linuxDockWindowManager ?? LinuxDockWindowManager(),
+            WindowInteractionStrategy.create(wm: windowManager),
         _strategy = WindowResizeStrategy.create(
           wm: windowManager,
           sr: screenRetriever,
@@ -96,32 +44,45 @@ class WindowService with WidgetsBindingObserver {
 
   final WindowManager _wm;
   final ScreenRetriever _sr;
-  final TargetPlatform? _platformOverride;
-  final bool _enableWindowsAppBar;
   final WindowInteractionStrategy _interactionStrategy;
-  final LinuxDockWindowManager _linuxDock;
   final WindowResizeStrategy _strategy;
 
   double _fontSizePx = kDefaultFontSizePx;
   WindowMode _windowMode = WindowMode.reserved;
 
-  Pointer<_AppBarData>? _appBarData;
-  late final _SHDart _shAppBarMessage;
-  bool _appBarBusy =
-      false; // guards against concurrent _reserveCollapsedSpace calls
-  bool _displayChangeInProgress = false; // serialises _onDisplayChanged calls
-  bool _isExpanded = false; // tracks last executed resize intent
+  bool _displayChangeInProgress = false;
+  bool _isExpanded = false;
 
   double _dpr = 1.0;
   double _screenWidth = 0;
 
-  bool get _isWindows =>
-      _platformOverride == TargetPlatform.windows ||
-      (_platformOverride == null && Platform.isWindows);
+  // ── Protected accessors for subclasses ────────────────────────────────────
 
-  bool get _isLinux =>
-      _platformOverride == TargetPlatform.linux ||
-      (_platformOverride == null && Platform.isLinux);
+  @protected
+  WindowManager get wm => _wm;
+
+  @protected
+  double get dpr => _dpr;
+
+  @protected
+  double get screenWidth => _screenWidth;
+
+  @protected
+  bool get isExpanded => _isExpanded;
+
+  // ── Public API ────────────────────────────────────────────────────────────
+
+  WindowMode get windowMode => _windowMode;
+
+  Future<void> sendToBack() => _interactionStrategy.sendToBack();
+
+  Future<void> restoreToFront() => _interactionStrategy.restoreToFront();
+
+  Future<void> focus() => _wm.focus();
+
+  /// Re-registers any platform AppBar reservation.
+  /// No-op by default; overridden by WindowsWindowService.
+  Future<void> reassertAppBar() async {}
 
   /// Call once, before [runApp], to set up the window.
   Future<void> initialize({
@@ -141,7 +102,8 @@ class WindowService with WidgetsBindingObserver {
     final size = Size(width, targetHeight);
 
     _log.fine(
-        'WindowService: init dpr=$_dpr displaySize=${display.size} collapsedHeight=$targetHeight expandedHeight=${getExpandedHeight()}');
+        'WindowService: init dpr=$_dpr displaySize=${display.size} '
+        'collapsedHeight=$targetHeight expandedHeight=${getExpandedHeight()}');
 
     final windowOptions = WindowOptions(
       size: size,
@@ -151,22 +113,17 @@ class WindowService with WidgetsBindingObserver {
       titleBarStyle: TitleBarStyle.hidden,
     );
 
-    await _wm.waitUntilReadyToShow(windowOptions, () async {
-      if (_isWindows &&
-          _enableWindowsAppBar &&
-          _windowMode == WindowMode.reserved) {
-        await _registerAppBar();
-      }
+    final readyToShow = _wm.waitUntilReadyToShow(windowOptions, () async {
+      await beforeShow(size, _dpr, _windowMode);
       await _strategy.initialize(size, _dpr);
       await _wm.setAsFrameless();
-      await _wm.show();
-      await _wm.focus();
+      await performShow();
       await _interactionStrategy.initialize(_windowMode);
     });
 
-    if (_isLinux && _windowMode == WindowMode.reserved) {
-      await _reserveLinuxStrut();
-    }
+    await awaitReadyToShow(readyToShow);
+
+    await afterReadyToShow(_windowMode);
 
     // Register lifecycle observer AFTER initial setup so spurious resumed
     // events emitted during GTK window creation do not queue extra collapses
@@ -177,10 +134,7 @@ class WindowService with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _strategy.dispose();
-    _disposeAppBar();
-    if (_isLinux) {
-      unawaited(_linuxDock.undock());
-    }
+    onDispose();
   }
 
   @override
@@ -188,43 +142,87 @@ class WindowService with WidgetsBindingObserver {
     unawaited(_onDisplayChanged());
   }
 
-  WindowMode get windowMode => _windowMode;
-
-  Future<void> sendToBack() => _interactionStrategy.sendToBack();
-
-  Future<void> restoreToFront() => _interactionStrategy.restoreToFront();
-
-  Future<void> focus() => _wm.focus();
-
   Future<void> setWindowMode(WindowMode mode) async {
     if (_windowMode == mode) return;
     _windowMode = mode;
-
-    if (_isWindows && _enableWindowsAppBar) {
-      if (_windowMode == WindowMode.reserved) {
-        if (_appBarData == null) {
-          await _registerAppBar();
-        } else {
-          await reassertAppBar();
-        }
-      } else {
-        _disposeAppBar();
-      }
-    }
-
-    if (_isLinux) {
-      if (_windowMode == WindowMode.reserved) {
-        await _reserveLinuxStrut();
-      } else {
-        await _linuxDock.undock();
-      }
-    }
-
+    await onWindowModeChanged(mode);
     await _interactionStrategy.initialize(_windowMode);
   }
 
+  Future<void> updateHeights(double fontSizePx) async {
+    if (_fontSizePx == fontSizePx) return;
+    _fontSizePx = fontSizePx;
+    _log.fine(
+        'WindowService.updateHeights: fontSizePx=$fontSizePx isExpanded=$_isExpanded');
+    if (_isExpanded) {
+      await _doExpand();
+      _log.fine('WindowService.updateHeights: _doExpand complete');
+    } else {
+      await _doCollapse();
+      _log.fine('WindowService.updateHeights: _doCollapse complete');
+    }
+  }
+
+  /// Returns collapsed height in logical pixels (for window_manager APIs).
+  double getCollapsedHeight() => _fontSizePx * 2.5 + 17.5;
+
+  /// Returns expanded height in logical pixels (for window_manager APIs).
+  double getExpandedHeight() => _fontSizePx * 10.0 + 170.0;
+
+  /// Executes the platform resize sequence for [intent].
+  ///
+  /// Called by [WindowServiceResizeExecutor] on behalf of [ExpansionController].
+  Future<void> performResize(ExpansionState intent) async {
+    if (intent == ExpansionState.expanded) {
+      await _doExpand();
+    } else {
+      await _doCollapse();
+    }
+  }
+
+  // ── Virtual hooks ─────────────────────────────────────────────────────────
+
+  /// Called inside the readyToShow callback before [performShow].
+  /// Subclasses override for pre-show platform setup (e.g. Windows AppBar).
+  @protected
+  Future<void> beforeShow(Size size, double dpr, WindowMode mode) async {}
+
+  /// Shows and focuses the window. Subclasses override to change timing
+  /// (e.g. macOS defers until after the first rendered frame).
+  @protected
+  Future<void> performShow() async {
+    await _wm.show();
+    await _wm.focus();
+  }
+
+  /// Controls whether the readyToShow future is awaited before returning
+  /// from [initialize]. Default: await (correct for Windows/Linux).
+  /// macOS overrides to [unawaited] so [runApp] fires first.
+  @protected
+  Future<void> awaitReadyToShow(Future<void> f) => f;
+
+  /// Called after readyToShow completes (or is unawaited). Subclasses
+  /// override for post-show platform setup (e.g. Linux strut reservation).
+  @protected
+  Future<void> afterReadyToShow(WindowMode mode) async {}
+
+  /// Called during [dispose] for platform-specific cleanup.
+  @protected
+  void onDispose() {}
+
+  /// Called when [windowMode] changes. Subclasses override to toggle
+  /// platform reservations (AppBar on Windows, strut on Linux).
+  @protected
+  Future<void> onWindowModeChanged(WindowMode mode) async {}
+
+  /// Called when the display geometry changes, after common state is updated.
+  /// Subclasses override to re-assert platform reservations.
+  @protected
+  Future<void> onDisplayChangedExtra() async {}
+
+  // ── Internal ──────────────────────────────────────────────────────────────
+
   Future<void> _onDisplayChanged() async {
-    // Serialise: drop concurrent calls fired by GTK spurious didChangeMetrics.
     if (_displayChangeInProgress) {
       _log.fine(
           'WindowService._onDisplayChanged: already in progress, skipping');
@@ -243,13 +241,9 @@ class WindowService with WidgetsBindingObserver {
     final display = await _sr.getPrimaryDisplay();
     final newWidth = display.size.width;
 
-    // [DBG] Log every didChangeMetrics call to detect spurious Linux firings.
     _log.fine(
         'WindowService._onDisplayChanged: dpr=$_dpr→$newDpr width=$_screenWidth→$newWidth isExpanded=$_isExpanded');
 
-    // Guard against transient zero-width from DPMS wake / display reinit.
-    // If width is 0 we must not update _screenWidth or resize, as that would
-    // collapse the window to 0px and make all UI invisible.
     if (newWidth <= 0) {
       _log.fine(
           'WindowService._onDisplayChanged: invalid width ($newWidth), skipping');
@@ -265,157 +259,11 @@ class WindowService with WidgetsBindingObserver {
     _dpr = newDpr;
     _screenWidth = newWidth;
 
-    if (_isWindows &&
-        _windowMode == WindowMode.reserved &&
-        _appBarData != null) {
-      // Re-assert AppBar band with updated physical-pixel values.
-      await _reserveCollapsedSpace();
-      // Re-anchor window position — display change can nudge the window.
-      // rcTop is trusted post-SETPOS for ABE_TOP.
-      await _wm.setPosition(Offset(0, _appBarData!.ref.rcTop / _dpr));
-    }
+    await onDisplayChangedExtra();
 
-    if (_isLinux && _windowMode == WindowMode.reserved) {
-      await _reserveLinuxStrut();
-    }
-
-    // Resize window to match new display dimensions via the strategy.
-    // _reserveCollapsedSpace alone is not sufficient — setBounds is unreliable.
     _log.fine(
         'WindowService._onDisplayChanged: triggering resize isExpanded=$_isExpanded');
     if (_isExpanded) {
-      await _doExpand();
-    } else {
-      await _doCollapse();
-    }
-  }
-
-  Future<void> _registerAppBar() async {
-    _shAppBarMessage = DynamicLibrary.open('shell32.dll')
-        .lookupFunction<_SHNative, _SHDart>('SHAppBarMessage');
-    final classNamePtr = _flutterWindowClass.toNativeUtf16();
-    final hwnd = FindWindow(PCWSTR(classNamePtr), null);
-    calloc.free(classNamePtr);
-
-    _appBarData = calloc<_AppBarData>();
-    _appBarData!.ref.cbSize = sizeOf<_AppBarData>();
-    _appBarData!.ref.hWnd = hwnd.value.address;
-    _appBarData!.ref.uCallbackMessage = _uCallbackMessage;
-    _shAppBarMessage(_abmNew, _appBarData!);
-
-    await _reserveCollapsedSpace();
-  }
-
-  /// Re-registers the AppBar with Windows, restoring the work area reservation.
-  ///
-  /// Triggers a full ABM_REMOVE → ABM_NEW → ABM_SETPOS cycle, which forces
-  /// Windows to re-broadcast the updated work area to all running apps. Call
-  /// this when the strip is observed overlapping other window title bars.
-  /// No-op on non-Windows platforms.
-  Future<void> reassertAppBar() async {
-    if (!_isWindows ||
-        _windowMode != WindowMode.reserved ||
-        _appBarData == null) {
-      return;
-    }
-    _log.fine('WindowService: reassertAppBar() start');
-    // Collapse first — the AppBar band equals the collapsed window height (55px).
-    // Running ABM_REMOVE/NEW/SETPOS while expanded (250px) causes Windows to
-    // push the window below the reserved band. Collapse before touching the
-    // AppBar registration so the window fits inside the band during negotiation.
-    await _doCollapse();
-    _log.fine('WindowService: reassertAppBar() collapsed, running ABM cycle');
-    _shAppBarMessage(_abmRemove, _appBarData!);
-    _shAppBarMessage(_abmNew, _appBarData!);
-    await _reserveCollapsedSpace();
-    // rcTop is trusted post-SETPOS for ABE_TOP. Force window back into the
-    // band in case Windows nudged it during work-area contraction.
-    final double rcTop = _appBarData!.ref.rcTop / _dpr;
-    _log.fine('WindowService: reassertAppBar() rcTop=$rcTop, repositioning');
-    await _wm.setPosition(Offset(0, rcTop));
-    await _doCollapse();
-    _log.fine('WindowService: reassertAppBar() done');
-  }
-
-  /// Updates the target heights for collapsed and expanded states.
-  Future<void> updateHeights(double fontSizePx) async {
-    if (_fontSizePx == fontSizePx) return;
-    _fontSizePx = fontSizePx;
-    _log.fine(
-        'WindowService.updateHeights: fontSizePx=$fontSizePx isExpanded=$_isExpanded');
-    if (_isExpanded) {
-      await _doExpand();
-      _log.fine('WindowService.updateHeights: _doExpand complete');
-    } else {
-      if (!_isWindows) {
-        // NOTE: calls _doCollapse() directly, bypassing _gate — concurrent with
-        // gated collapse() calls from TimelineStrip.initState(). [DBG WATCH]
-        _log.fine(
-            'WindowService.updateHeights: calling _doCollapse (bypass gate)');
-        await _doCollapse();
-        _log.fine('WindowService.updateHeights: _doCollapse complete');
-      }
-    }
-  }
-
-  /// Returns collapsed height in logical pixels (for window_manager APIs).
-  double getCollapsedHeight() => _fontSizePx * 2.5 + 17.5;
-
-  /// Returns expanded height in logical pixels (for window_manager APIs).
-  double getExpandedHeight() => _fontSizePx * 10.0 + 170.0;
-
-  Future<void> _reserveCollapsedSpace() async {
-    if (_appBarBusy) return;
-    _appBarBusy = true;
-    try {
-      _appBarData!.ref.uEdge = _abeTop;
-      _appBarData!.ref.rcLeft = 0;
-      _appBarData!.ref.rcTop = 0;
-      _appBarData!.ref.rcRight = (_screenWidth * _dpr).round();
-      final targetHeight = (getCollapsedHeight() * _dpr).round();
-      _appBarData!.ref.rcBottom = targetHeight;
-
-      _log.fine('WindowService:  reserved targetHeight is $targetHeight');
-      _shAppBarMessage(_abmQuerypos, _appBarData!);
-      _shAppBarMessage(_abmSetpos, _appBarData!);
-
-      if (!_isExpanded) {
-        await _wm.setMinimumSize(Size.zero);
-        await _wm.setMaximumSize(Size.infinite);
-        // rcLeft and rcBottom are mutated by ABM_SETPOS — use stored values instead.
-        // Only rcTop is trusted for ABE_TOP (Windows does not mutate it).
-        await _wm.setBounds(Rect.fromLTWH(
-          0,
-          _appBarData!.ref.rcTop / _dpr,
-          _screenWidth,
-          getCollapsedHeight(),
-        ));
-      }
-    } finally {
-      _appBarBusy = false;
-    }
-  }
-
-  void _disposeAppBar() {
-    if (_isWindows && _appBarData != null) {
-      _shAppBarMessage(_abmRemove, _appBarData!);
-      calloc.free(_appBarData!);
-      _appBarData = null;
-    }
-  }
-
-  Future<void> _reserveLinuxStrut() async {
-    final height = (getCollapsedHeight() * _dpr).round();
-    _log.fine('WindowService._reserveLinuxStrut: height=$height (dpr=$_dpr)');
-    await _linuxDock.dock(height: height);
-  }
-
-  /// Executes the platform resize sequence for [intent].
-  ///
-  /// Called by [WindowServiceResizeExecutor] on behalf of [ExpansionController].
-  /// Bypasses the old AsyncGate — serialisation is now owned by the controller.
-  Future<void> performResize(ExpansionState intent) async {
-    if (intent == ExpansionState.expanded) {
       await _doExpand();
     } else {
       await _doCollapse();

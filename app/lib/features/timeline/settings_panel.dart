@@ -12,8 +12,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:happening/core/app_metadata.dart';
-import 'package:happening/core/astro/city_search.dart' as city_search;
 import 'package:happening/core/astro/astro_settings.dart';
+import 'package:happening/core/astro/city_search.dart' as city_search;
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/features/calendar/calendar_controller.dart';
 import 'package:happening/features/calendar/calendar_service.dart';
