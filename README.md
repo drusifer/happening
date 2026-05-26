@@ -1,4 +1,4 @@
-# happening
+# What's Happening?
 A sliding calendar strip that always shows you what's happening next. Optimized for those with "event-based time keeping" brains.
 
 Here is what it looks like at 20x speed:
@@ -6,13 +6,13 @@ Here is what it looks like at 20x speed:
 
 
 ## Table of Contents
-- [USER_GUIDE.md](USER_GUIDE.md) — How to use Happening (End-user docs)
+- [USER_GUIDE.md](USER_GUIDE.md) — How to use "What's Happening?" (End-user docs)
 - [Docs](docs/) — Architecture, Decisions, and PRD
 - [Agents](agents/) — Persona documentation and CHAT.md
 - [App](app/) — Flutter application source code
 
 ## TL;DR
-Happening is a persistent, always-on-top horizontal timeline strip that reads your Google Calendar events and animates them in real time toward a fixed "Now" indicator. It's designed specifically for event-based thinkers (including those with ADHD) to provide immediate, glanceable awareness of their day without the cognitive load of a full calendar grid.
+What's Happening? is a persistent, always-on-top horizontal timeline strip that reads your Google Calendar events and animates them in real time toward a fixed "Now" indicator. It's designed specifically for event-based thinkers (including those with ADHD) to provide immediate, glanceable awareness of their day without the cognitive load of a full calendar grid.
 
 ---
 
@@ -63,9 +63,8 @@ Download the latest release for your platform from the [releases page](https://g
 3. Sign in with Google when prompted.
 
 ### Windows
-1. Download `happening-<version>-windows-x64.msix` (recommended installer) or the `.zip` for a portable install.
-2. **MSIX**: Double-click to install, then launch from the Start menu.
-   **ZIP**: Extract to a folder of your choice and run `happening.exe` from the `Release/` folder.
+1. **Microsoft Store (Recommended)**: Download and install What's Happening? directly from the [Official Microsoft Store](https://apps.microsoft.com/detail/9nnj0vk9g85p?hl=en-US&gl=US). This handles background updates and offers the easiest configuration.
+2. **Manual release**: Alternatively, download `happening-<version>-windows-x64.msix` or the `.zip` for a portable install from our [releases page](https://github.com/drusifer/happening/releases). Double-click the `.msix` to install, or extract the `.zip` and run `happening.exe` inside the `Release/` folder.
 3. Sign in with Google when prompted — a browser window will open automatically.
 
 ---

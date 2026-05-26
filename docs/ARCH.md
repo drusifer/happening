@@ -1,4 +1,4 @@
-# ARCH: Happening — System Architecture
+# ARCH: What's Happening? — System Architecture
 
 **Version**: 0.7
 **Author**: Morpheus (Tech Lead) / Ora (Knowledge Officer)
@@ -12,7 +12,7 @@ A stateless-first Flutter desktop app using a tiered `StreamBuilder` architectur
 
 ## 1. Overview
 
-Happening is a Flutter desktop application that renders a persistent, always-on-top horizontal timeline strip. It reads events from Google Calendar and animates them in real time toward a fixed "Now" indicator.
+"What's Happening?" is a Flutter desktop application that renders a persistent, always-on-top horizontal timeline strip. It reads events from Google Calendar and animates them in real time toward a fixed "Now" indicator.
 
 ---
 
@@ -131,14 +131,14 @@ the app title/icon, creates the Flutter view, gives the view a transparent
 background before first frame, and defers showing the window until Flutter has
 content.
 
-Linux no longer uses Happening-owned shell-reservation code. The runner does not
+Linux no longer uses "What's Happening?"-owned shell-reservation code. The runner does not
 set X11 `_NET_WM_STRUT_PARTIAL`, does not mark the window as an X11 DOCK, and
 does not use Wayland `gtk-layer-shell`.
 
 Current Linux development runs prefer X11/XWayland (`GDK_BACKEND=x11`) because
 standard native Wayland clients cannot reliably request absolute top-of-screen
 placement through Flutter/GTK window APIs. Native Wayland is treated as
-unsupported for the strip behavior until Happening either adopts a compositor
+unsupported for the strip behavior until "What's Happening?" either adopts a compositor
 protocol such as layer-shell or implements a separate conservative Wayland mode.
 
 ### Display/DPI Metric Refresh

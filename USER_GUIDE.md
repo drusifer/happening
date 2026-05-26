@@ -1,12 +1,12 @@
-# User Guide — Happening
+# User Guide — What's Happening?
 
-Welcome to Happening! This guide will help you understand how to use the timeline strip and get the most out of your schedule.
+Welcome to "What's Happening?"! This guide will help you understand how to use the timeline strip and get the most out of your schedule.
 
 ---
 
-## 1. What is Happening?
+## 1. What is "What's Happening?"
 
-Happening is a **persistent, always-on-top horizontal timeline strip** that lives at the top of your screen. It shows your Google Calendar events flowing toward a fixed "Now" indicator in real time.
+"What's Happening?" is a **persistent, always-on-top horizontal timeline strip** that lives at the top of your screen. It shows your Google Calendar events flowing toward a fixed "Now" indicator in real time.
 
 > "The schedule comes to you."
 
@@ -26,7 +26,7 @@ On first launch the strip shows:
 
 > **Tap to sign in with Google →**
 
-Tap anywhere on the strip to open a Google sign-in page in your browser. Once you authorize Happening, the browser closes and the timeline appears automatically.
+Tap anywhere on the strip to open a Google sign-in page in your browser. Once you authorize "What's Happening?", the browser closes and the timeline appears automatically.
 
 **Credentials are stored securely in your OS keychain** — you only need to sign in once. On subsequent launches the app restores your session automatically.
 
@@ -62,7 +62,7 @@ The strip is always visible at the top of your primary display. It stays above o
 ## 5. Interaction Features
 
 ### Latch-on-Expand Hover
-Happening uses "Smart Bounding" to make interaction stable:
+"What's Happening?" uses "Smart Bounding" to make interaction stable:
 1. **Selection**: Hover over any event on the strip to expand its detail card.
 2. **Stability (The Latch)**: Once a card is open, the hit-zone expands to the full width of the card. This "latches" the card open, allowing you to move your mouse horizontally to click the **JOIN** or **OPEN** buttons without accidentally switching to an adjacent event.
 3. **Dismiss**: Move your mouse outside the card area to collapse the window.
@@ -74,7 +74,7 @@ Happening uses "Smart Bounding" to make interaction stable:
 - **OPEN**: Opens the event directly in your Google Calendar web interface.
 
 ### Send-to-Back
-If Happening is blocking a window title bar, browser tab, or menu that you need to access:
+If "What's Happening?" is blocking a window title bar, browser tab, or menu that you need to access:
 - **Activate**: Tap the **Send to Back** (`⧉` flip icon) on the strip.
 - **Temporary Lowering**: The strip immediately lowers itself behind all other active desktop windows. You can now resize, move, or click whatever was obscured underneath.
 - **Auto-Restore**: An inactivity timer automatically restores the strip to its always-on-top position after exactly **10 seconds**.
@@ -136,7 +136,7 @@ To compute precise times, the app needs your latitude and longitude. When you se
 
 ## 8. Performance & Efficiency
 
-Happening is optimized for ultra-low CPU usage:
+"What's Happening?" is optimized for ultra-low CPU usage:
 - **Tiered Updates**: The main timeline repaints every 10 seconds, while the countdown timer updates every 1 second.
 - **Idle Mode**: Animations and high-frequency timers automatically deactivate when no transitions are imminent.
 

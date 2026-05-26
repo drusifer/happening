@@ -1,4 +1,4 @@
-# PRD: Happening — Always-On Timeline Calendar Strip
+# PRD: What's Happening? — Always-On Timeline Calendar Strip
 
 **Version**: 0.2
 **Author**: Cypher (PM)
@@ -22,7 +22,7 @@ The result: users must navigate menus, switch views, and interpret dense grids j
 
 ## 2. Product Vision
 
-**Happening** is a persistent, always-visible horizontal timeline strip that lives at the top of the screen. It shows exactly one thing: today's events flowing toward a "Now" indicator in real time — so users always know what's next without lifting a finger.
+**What's Happening?** is a persistent, always-visible horizontal timeline strip that lives at the top of the screen. It shows exactly one thing: today's events flowing toward a "Now" indicator in real time — so users always know what's next without lifting a finger.
 
 > "The calendar comes to you."
 

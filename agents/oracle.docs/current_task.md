@@ -4,6 +4,7 @@
 **Status**: DONE ✅
 
 ### Done
+- [x] Brand Consistency: Updated root `README.md`, `USER_GUIDE.md`, `docs/PRD.md`, `docs/ARCH.md`, `docs/DECISIONS.md`, and `docs/WINDOWS_BUILD_STRATEGY.md` to consistently refer to the app by its official full name **"What's Happening?"**.
 - [x] Updated root README.md with v0.5.1 status, F-27/F-28/F-29 milestones, and revised Architecture Overview (AstroDataService, SkyBody layers, GeoNames offline search, Send-to-Back mechanism).
 - [x] Updated root USER_GUIDE.md with detailed Send-to-Back behaviors (10s timer, continuous lowering, non-intrusive focus).
 - [x] Added USER_GUIDE.md Section 7 on the Astronomical Theme & Location Settings (sky gradients, celestial markers, offline computations, GeoNames local search setup).
@@ -11,6 +12,7 @@
 - [x] Resolved Windows compatibility issues in chat.py (UTF-8 encoding) and Makefile (bash check removal).
 - [x] Archived 1,627 lines of CHAT.md into `agents/chat_archive/CHAT-ARCHIVE-20260526.md` and added dynamic summaries for v0.3.1, v0.4.0, and F-27/F-28/F-29 sprints.
 - [x] Standardized structured TLDR blocks across 11 newly created or modified files in core astronomy, rendering layers, and window resize strategies.
+- [x] Updated Windows installation instructions in `README.md` to highlight the official Microsoft Store download link.
 
 ## F-28 Linux Reserved Space — Documentation — 2026-05-18
 **Status**: DONE ✅
