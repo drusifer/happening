@@ -56,18 +56,19 @@ void main() async {
       screenRetriever: screenRetriever,
     );
   }
+  _log.info('WindowService.initialize() start');
   await windowService.initialize(
     initialFontSizePx: settingsSvc.current.fontSizePx,
     initialWindowMode: settingsSvc.current.effectiveWindowMode,
   );
-  _log.fine('WindowService initialized.');
+  _log.info('WindowService.initialize() done — calling runApp()');
 
   // 4. Launch app with pre-loaded settings and window service.
   runApp(HappeningApp(
     settingsService: settingsSvc,
     windowService: windowService,
   ));
-  _log.fine('runApp() executed.');
+  _log.info('runApp() returned');
 }
 
 void _setupLogging(Directory dir) {

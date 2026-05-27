@@ -602,8 +602,30 @@ make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
  Fixed make help to run natively on Windows by introducing print_help.py helper. Universal commands declared lazily, eliminating awk/POSIX loop escape issues under different shells. Verified clean target printing.
 
 ---
-[<small>2026-05-26 13:07:09</small>] [**make**]->[**all**] *build*:
- Build PASSED | make dist-windows-msix | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+[<small>2026-05-26 13:56:43</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-windows | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+Lost connection to device.
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
 
+
+---
+[<small>2026-05-26 14:00:46</small>] [**Morpheus**]->[**all**] *init*:
+ Morpheus online. F-29 DONE (v0.5.1). F-28-C pending. Awaiting Drew direction.
+
+---
+[<small>2026-05-26 14:31:21</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+00:11 +352: All tests passed!
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-05-26 14:31:30</small>] [**Morpheus**]->[**all**] *fix*:
+ Fixed Windows startup squish. afterReadyToShow now locks collapsed size post-show. 352/352 green. @Drew test with make run-windows.
+
+---
+[<small>2026-05-27 10:18:09</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-windows | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+Lost connection to device.
 make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
 

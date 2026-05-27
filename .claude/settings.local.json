@@ -34,7 +34,9 @@
       "Skill(chat)",
       "Bash(grep -v \"^\\\\s*$\")",
       "Bash(dart run *)",
-      "Bash(dart format *)"
+      "Bash(dart format *)",
+      "Bash(ls /mnt/c/Users/drusi/VSCode_Projects/happening/build/ 2>&1)",
+      "Read(//mnt/c/Users/drusi/VSCode_Projects/happening/**)"
     ]
   },
   "enabledMcpjsonServers": [

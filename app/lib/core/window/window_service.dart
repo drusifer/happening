@@ -101,9 +101,9 @@ class WindowService with WidgetsBindingObserver {
     final targetHeight = getCollapsedHeight();
     final size = Size(width, targetHeight);
 
-    _log.fine(
-        'WindowService: init dpr=$_dpr displaySize=${display.size} '
-        'collapsedHeight=$targetHeight expandedHeight=${getExpandedHeight()}');
+    _log.info(
+        'WindowService.initialize: dpr=$_dpr displaySize=${display.size} '
+        'size=$size collapsedHeight=$targetHeight expandedHeight=${getExpandedHeight()}');
 
     final windowOptions = WindowOptions(
       size: size,
@@ -113,21 +113,32 @@ class WindowService with WidgetsBindingObserver {
       titleBarStyle: TitleBarStyle.hidden,
     );
 
+    _log.info('WindowService.initialize: calling waitUntilReadyToShow');
     final readyToShow = _wm.waitUntilReadyToShow(windowOptions, () async {
+      _log.info('WindowService.initialize: readyToShow callback — calling beforeShow');
       await beforeShow(size, _dpr, _windowMode);
+      _log.info('WindowService.initialize: readyToShow callback — calling strategy.initialize');
       await _strategy.initialize(size, _dpr);
+      _log.info('WindowService.initialize: readyToShow callback — calling setAsFrameless');
       await _wm.setAsFrameless();
+      _log.info('WindowService.initialize: readyToShow callback — calling performShow');
       await performShow();
+      _log.info('WindowService.initialize: readyToShow callback — calling interactionStrategy.initialize');
       await _interactionStrategy.initialize(_windowMode);
+      _log.info('WindowService.initialize: readyToShow callback — done');
     });
 
+    _log.info('WindowService.initialize: awaiting readyToShow');
     await awaitReadyToShow(readyToShow);
+    _log.info('WindowService.initialize: readyToShow complete, calling afterReadyToShow');
 
     await afterReadyToShow(_windowMode);
+    _log.info('WindowService.initialize: afterReadyToShow complete');
 
     // Register lifecycle observer AFTER initial setup so spurious resumed
     // events emitted during GTK window creation do not queue extra collapses
     // that race with first_frame_cb showing the window.
+    _log.info('WindowService.initialize: registering WidgetsBindingObserver');
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -224,7 +235,7 @@ class WindowService with WidgetsBindingObserver {
 
   Future<void> _onDisplayChanged() async {
     if (_displayChangeInProgress) {
-      _log.fine(
+      _log.info(
           'WindowService._onDisplayChanged: already in progress, skipping');
       return;
     }
@@ -241,28 +252,28 @@ class WindowService with WidgetsBindingObserver {
     final display = await _sr.getPrimaryDisplay();
     final newWidth = display.size.width;
 
-    _log.fine(
-        'WindowService._onDisplayChanged: dpr=$_dpr→$newDpr width=$_screenWidth→$newWidth isExpanded=$_isExpanded');
+    _log.info(
+        'WindowService._onDisplayChangedInner: dpr=$_dpr→$newDpr width=$_screenWidth→$newWidth isExpanded=$_isExpanded');
 
     if (newWidth <= 0) {
-      _log.fine(
-          'WindowService._onDisplayChanged: invalid width ($newWidth), skipping');
+      _log.info(
+          'WindowService._onDisplayChangedInner: invalid width ($newWidth), skipping');
       return;
     }
 
     if (newDpr == _dpr && newWidth == _screenWidth) {
-      _log.fine('WindowService._onDisplayChanged: no change, skipping');
+      _log.info('WindowService._onDisplayChangedInner: no change, skipping');
       return;
     }
 
-    _log.fine('WindowService: display CHANGED — applying resize');
+    _log.info('WindowService._onDisplayChangedInner: display CHANGED — applying resize');
     _dpr = newDpr;
     _screenWidth = newWidth;
 
     await onDisplayChangedExtra();
 
-    _log.fine(
-        'WindowService._onDisplayChanged: triggering resize isExpanded=$_isExpanded');
+    _log.info(
+        'WindowService._onDisplayChangedInner: triggering resize isExpanded=$_isExpanded');
     if (_isExpanded) {
       await _doExpand();
     } else {
