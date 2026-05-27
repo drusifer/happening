@@ -1,3 +1,6 @@
+// Smoke tests for LunarBody using real lat/lng moon calculations.
+// See lunar_body_scenarios_test.dart for the night-arc logic matrix.
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:happening/core/astro/astro_settings.dart';
 import 'package:happening/core/astro/solar_calculator.dart';
@@ -41,7 +44,7 @@ void main() {
     });
   });
 
-  group('LunarBody.getArcs', () {
+  group('LunarBody.getArcs (real lat/lng smoke)', () {
     test('returns empty when illumination is zero', () {
       final dark = AstroData(
         civilTwilightBegin: astroFull.civilTwilightBegin,
@@ -59,13 +62,11 @@ void main() {
           isEmpty);
     });
 
-    test('night-only: all emitted arcs lie outside [sunrise, sunset]', () {
+    test('emitted arcs never overlap the [sunrise, sunset] daytime window', () {
       final body = LunarBody(astroData: astroFull, lat: lat, lng: lng);
       final ws = solarTimes.solarNoon.subtract(const Duration(hours: 24));
       final we = solarTimes.solarNoon.add(const Duration(hours: 24));
-      final arcs = body.getArcs(ws, we);
-      // Each arc must end before sunrise OR start at/after sunset (across any day).
-      for (final arc in arcs) {
+      for (final arc in body.getArcs(ws, we)) {
         final sNear = solarTimesNear(arc.startTime, astroFull);
         final overlapsDay = arc.startTime.isBefore(sNear.sunset) &&
             arc.endTime.isAfter(sNear.sunrise);
@@ -75,43 +76,27 @@ void main() {
       }
     });
 
-    test('fade-in starts at navy, fade-out ends at navy', () {
+    test('first/last colors are navy or amber (never dayBlue)', () {
       final body = LunarBody(astroData: astroFull, lat: lat, lng: lng);
       final arcs = body.getArcs(
           solarTimes.solarNoon.subtract(const Duration(hours: 24)),
           solarTimes.solarNoon.add(const Duration(hours: 24)))
         ..sort((a, b) => a.startTime.compareTo(b.startTime));
       expect(arcs, isNotEmpty);
-      expect(arcs.first.startColor, equals(SolarBody.nightNavy));
-      expect(arcs.last.endColor, equals(SolarBody.nightNavy));
-    });
-
-    test('moon-up-at-sunset: first arc starts exactly at sunset', () {
-      // Force a moon arc that starts before sunset and ends well into night.
-      // We test the clipping behavior via the helper: arcs emitted by LunarBody
-      // should begin no earlier than the sunset of the moonrise's day.
-      final body = LunarBody(astroData: astroFull, lat: lat, lng: lng);
-      final arcs = body.getArcs(
-          solarTimes.solarNoon.subtract(const Duration(hours: 24)),
-          solarTimes.solarNoon.add(const Duration(hours: 24)));
-      for (final arc in arcs) {
-        final sNear = solarTimesNear(arc.startTime, astroFull);
-        // Arc start must be >= sunset of its day OR within night (before sunrise).
-        final atOrAfterSunset = !arc.startTime.isBefore(sNear.sunset);
-        final beforeSunrise = arc.startTime.isBefore(sNear.sunrise);
-        expect(atOrAfterSunset || beforeSunrise, isTrue,
-            reason: 'Arc start ${arc.startTime} must be in night');
-      }
+      final boundaryColors = {SolarBody.nightNavy, SolarBody.dawnDusk};
+      expect(boundaryColors.contains(arcs.first.startColor), isTrue,
+          reason: 'lead-in must start at navy or amber, got ${arcs.first.startColor}');
+      expect(boundaryColors.contains(arcs.last.endColor), isTrue,
+          reason: 'lead-out must end at navy or amber, got ${arcs.last.endColor}');
     });
   });
 
   group('LunarBody.getGlyphs', () {
-    test('emits MoonRise, MoonTransit, MoonSet for each visible arc', () {
+    test('emits MoonRise, MoonTransit, MoonSet per arc', () {
       final body = LunarBody(astroData: astroFull, lat: lat, lng: lng);
       final glyphs = body.getGlyphs(
           solarTimes.solarNoon.subtract(const Duration(hours: 24)),
           solarTimes.solarNoon.add(const Duration(hours: 24)));
-      // At mid-latitudes a 48 h window contains at least one full moon arc.
       expect(glyphs.length, greaterThanOrEqualTo(3));
       expect(glyphs.length % 3, equals(0));
     });

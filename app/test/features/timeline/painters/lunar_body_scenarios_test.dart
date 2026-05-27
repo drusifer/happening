@@ -9,8 +9,9 @@ import 'package:happening/features/timeline/painters/sky_body.dart';
 import 'package:happening/features/timeline/painters/solar_body.dart';
 
 void main() {
-  // Fixed reference day. All times UTC for determinism.
+  // Fixed reference day, all UTC for determinism.
   // sunrise 06:00, sunset 20:00, civil twilight ±30 min on each side.
+  // duskMid = 20:15, dawnMid = 05:45.
   final day0 = DateTime.utc(2026, 5, 18);
   final civilBegin = day0.add(const Duration(hours: 5, minutes: 30));
   final sunrise = day0.add(const Duration(hours: 6));
@@ -30,10 +31,13 @@ void main() {
 
   final up = LunarBody.upColorFor(1.0);
   const navy = SolarBody.nightNavy;
+  const amber = SolarBody.dawnDusk;
 
-  // Convenience: next-day boundaries.
+  // Convenience boundary times.
+  final duskMid = day0.add(const Duration(hours: 20, minutes: 15));
   final nextCivilBegin = civilBegin.add(const Duration(hours: 24));
-  final nextSunrise = sunrise.add(const Duration(hours: 24));
+  final nextDawnMid =
+      day0.add(const Duration(hours: 24 + 5, minutes: 45));
 
   List<Arc> arcsFor(DateTime rise, DateTime set) =>
       LunarBody.nightArcsFor(
@@ -43,128 +47,46 @@ void main() {
         upColor: up,
       );
 
-  group('LunarBody.nightArcsFor scenarios', () {
-    // -------------------------------------------------------------------
-    // Daytime-only moon → no glow at all
-    // -------------------------------------------------------------------
-    test('moon rises and sets entirely during daytime → empty', () {
-      // Rise 09:00, set 15:00 — both inside [sunrise, sunset].
+  group('Daytime-only moon → no glow', () {
+    test('rise and set entirely during daytime → empty', () {
       final rise = day0.add(const Duration(hours: 9));
       final set = day0.add(const Duration(hours: 15));
       expect(arcsFor(rise, set), isEmpty);
     });
 
-    test('moon rises and sets during dusk twilight (before civilEnd) → empty',
-        () {
-      // Rise 20:05, set 20:25 — both inside [sunset, civilEnd].
-      final rise = day0.add(const Duration(hours: 20, minutes: 5));
+    test('rise and set entirely within dusk-finish window → empty', () {
+      // 20:20→20:25 — both inside (duskMid, civilEnd).
+      final rise = day0.add(const Duration(hours: 20, minutes: 20));
       final set = day0.add(const Duration(hours: 20, minutes: 25));
       expect(arcsFor(rise, set), isEmpty);
     });
+  });
 
-    // -------------------------------------------------------------------
-    // Moon rises at night, sets at night — fully inside one night
-    // -------------------------------------------------------------------
-    test('moon rises after civilEnd, sets before next civilBegin → full glow',
-        () {
-      // Rise 22:00, set next-day 03:00.
+  group('Moon rises and sets at night → standard fadeIn/hold/fadeOut', () {
+    test('navy→up→up→up→navy with three arcs', () {
+      // Rise 22:00, set next-day 03:00 — clean night with margin on both ends.
       final rise = day0.add(const Duration(hours: 22));
-      final set = day0.add(const Duration(hours: 27)); // 03:00 next day
+      final set = day0.add(const Duration(hours: 27));
       final arcs = arcsFor(rise, set)
         ..sort((a, b) => a.startTime.compareTo(b.startTime));
       expect(arcs.length, 3);
-      expect(arcs.first.startTime, equals(rise));
-      expect(arcs.first.startColor, equals(navy));
-      expect(arcs.last.endTime, equals(set));
-      expect(arcs.last.endColor, equals(navy));
+      expect(arcs[0].startTime, equals(rise));
+      expect(arcs[0].startColor, equals(navy));
+      expect(arcs[0].endColor, equals(up));
+      expect(arcs[2].endTime, equals(set));
+      expect(arcs[2].endColor, equals(navy));
     });
 
-    // -------------------------------------------------------------------
-    // Moon up at sunset — rose during day, sets at night
-    // -------------------------------------------------------------------
-    test('moon rose in afternoon, up at sunset → glow starts at civilEnd', () {
-      // Rise 16:00 (in daytime), set next-day 02:00.
-      final rise = day0.add(const Duration(hours: 16));
-      final set = day0.add(const Duration(hours: 26));
-      final arcs = arcsFor(rise, set)
-        ..sort((a, b) => a.startTime.compareTo(b.startTime));
-      expect(arcs.first.startTime, equals(civilEnd));
-      expect(arcs.first.startColor, equals(navy));
-      expect(arcs.last.endTime, equals(set));
-    });
-
-    // -------------------------------------------------------------------
-    // Moon sets after sunrise — was up overnight through dawn
-    // -------------------------------------------------------------------
-    test('moon sets after next sunrise → glow ends at next civilBegin', () {
-      // Rise 22:00 (at night), set next-day 09:00 (in daytime).
+    test('arcs are contiguous: each end equals next start', () {
       final rise = day0.add(const Duration(hours: 22));
-      final set = day0.add(const Duration(hours: 33)); // 09:00 next day
+      final set = day0.add(const Duration(hours: 28));
       final arcs = arcsFor(rise, set)
         ..sort((a, b) => a.startTime.compareTo(b.startTime));
-      expect(arcs.first.startTime, equals(rise));
-      expect(arcs.last.endTime, equals(nextCivilBegin));
-      expect(arcs.last.endColor, equals(navy));
-    });
-
-    // -------------------------------------------------------------------
-    // Moon up all night — rose during prev day, sets during next day
-    // -------------------------------------------------------------------
-    test('moon up through entire night → glow spans full civilEnd→civilBegin',
-        () {
-      // Rise 14:00 (in daytime), set next-day 10:00 (in daytime).
-      final rise = day0.add(const Duration(hours: 14));
-      final set = day0.add(const Duration(hours: 34)); // 10:00 next day
-      final arcs = arcsFor(rise, set)
-        ..sort((a, b) => a.startTime.compareTo(b.startTime));
-      expect(arcs.first.startTime, equals(civilEnd));
-      expect(arcs.last.endTime, equals(nextCivilBegin));
-    });
-
-    // -------------------------------------------------------------------
-    // Boundary cases — rise/set exactly on civil twilight edges
-    // -------------------------------------------------------------------
-    test('moonrise exactly at civilEnd → glow starts at civilEnd', () {
-      final set = day0.add(const Duration(hours: 26)); // 02:00 next day
-      final arcs = arcsFor(civilEnd, set)
-        ..sort((a, b) => a.startTime.compareTo(b.startTime));
-      expect(arcs.first.startTime, equals(civilEnd));
-    });
-
-    test('moonset exactly at next civilBegin → glow ends at civilBegin', () {
-      final rise = day0.add(const Duration(hours: 22));
-      final arcs = arcsFor(rise, nextCivilBegin)
-        ..sort((a, b) => a.startTime.compareTo(b.startTime));
-      expect(arcs.last.endTime, equals(nextCivilBegin));
-    });
-
-    // -------------------------------------------------------------------
-    // Short night gap — fade clamping so fades don't overlap
-    // -------------------------------------------------------------------
-    test('night portion shorter than 2×fade → no hold arc; fades stay separate',
-        () {
-      // Rise 22:00, set 22:20 → 20-minute night portion.
-      final rise = day0.add(const Duration(hours: 22));
-      final set = day0.add(const Duration(hours: 22, minutes: 20));
-      final arcs = arcsFor(rise, set)
-        ..sort((a, b) => a.startTime.compareTo(b.startTime));
-      expect(arcs.length, 2); // fadeIn + fadeOut, no hold
       expect(arcs[0].endTime, equals(arcs[1].startTime));
+      expect(arcs[1].endTime, equals(arcs[2].startTime));
     });
 
-    // -------------------------------------------------------------------
-    // Inverted / degenerate — moon only up during day-and-twilight
-    // -------------------------------------------------------------------
-    test('rise mid-morning, set early-evening (still in dusk) → empty', () {
-      final rise = day0.add(const Duration(hours: 10));
-      final set = day0.add(const Duration(hours: 20, minutes: 15));
-      expect(arcsFor(rise, set), isEmpty);
-    });
-
-    // -------------------------------------------------------------------
-    // upColor scaling
-    // -------------------------------------------------------------------
-    test('hold arc uses upColor derived from illumination', () {
+    test('hold arc is solid upColor', () {
       final rise = day0.add(const Duration(hours: 22));
       final set = day0.add(const Duration(hours: 27));
       final arcs = arcsFor(rise, set)
@@ -172,48 +94,124 @@ void main() {
       expect(arcs[1].startColor, equals(up));
       expect(arcs[1].endColor, equals(up));
     });
+  });
 
+  group('Moon up at dusk → amber→up bridge replaces dusk-finish', () {
+    test('rose in afternoon, sets at night: lead-in is amber→up at [duskMid, civilEnd]',
+        () {
+      final rise = day0.add(const Duration(hours: 16));
+      final set = day0.add(const Duration(hours: 26));
+      final arcs = arcsFor(rise, set)
+        ..sort((a, b) => a.startTime.compareTo(b.startTime));
+      expect(arcs.first.startTime, equals(duskMid),
+          reason: 'lead-in must start at duskMid, not civilEnd');
+      expect(arcs.first.endTime, equals(civilEnd));
+      expect(arcs.first.startColor, equals(amber),
+          reason: 'lead-in must begin in amber, not navy');
+      expect(arcs.first.endColor, equals(up));
+    });
+
+    test('moonrise exactly at duskMid still triggers the amber bridge', () {
+      final rise = duskMid;
+      final set = day0.add(const Duration(hours: 26));
+      final arcs = arcsFor(rise, set)
+        ..sort((a, b) => a.startTime.compareTo(b.startTime));
+      expect(arcs.first.startTime, equals(duskMid));
+      expect(arcs.first.startColor, equals(amber));
+    });
+
+    test('moonrise just after duskMid → standard fadeIn (no bridge)', () {
+      final rise = day0.add(const Duration(hours: 20, minutes: 20));
+      final set = day0.add(const Duration(hours: 26));
+      final arcs = arcsFor(rise, set)
+        ..sort((a, b) => a.startTime.compareTo(b.startTime));
+      expect(arcs.first.startTime, equals(rise));
+      expect(arcs.first.startColor, equals(navy));
+    });
+  });
+
+  group('Moon up at dawn → up→amber bridge replaces dawn-rise', () {
+    test('rises at night, sets after sunrise: lead-out is up→amber at [civilBegin, dawnMid]',
+        () {
+      // Rise 22:00 (night), set next-day 09:00 (daytime → moon was up through dawn).
+      final rise = day0.add(const Duration(hours: 22));
+      final set = day0.add(const Duration(hours: 33));
+      final arcs = arcsFor(rise, set)
+        ..sort((a, b) => a.startTime.compareTo(b.startTime));
+      expect(arcs.last.startTime, equals(nextCivilBegin));
+      expect(arcs.last.endTime, equals(nextDawnMid),
+          reason: 'lead-out must end at dawnMid, not civilBegin');
+      expect(arcs.last.startColor, equals(up));
+      expect(arcs.last.endColor, equals(amber),
+          reason: 'lead-out must finish in amber, not navy');
+    });
+
+    test('moonset exactly at next dawnMid still triggers the amber bridge', () {
+      final rise = day0.add(const Duration(hours: 22));
+      final set = nextDawnMid;
+      final arcs = arcsFor(rise, set)
+        ..sort((a, b) => a.startTime.compareTo(b.startTime));
+      expect(arcs.last.endTime, equals(nextDawnMid));
+      expect(arcs.last.endColor, equals(amber));
+    });
+
+    test('moonset just before next dawnMid → standard fadeOut (no bridge)', () {
+      final rise = day0.add(const Duration(hours: 22));
+      final set = day0.add(const Duration(hours: 24 + 5, minutes: 40));
+      final arcs = arcsFor(rise, set)
+        ..sort((a, b) => a.startTime.compareTo(b.startTime));
+      expect(arcs.last.endTime, equals(set));
+      expect(arcs.last.endColor, equals(navy));
+    });
+  });
+
+  group('Moon up all night (both bridges)', () {
+    test('rose afternoon, sets after next sunrise: amber→up...up→amber', () {
+      final rise = day0.add(const Duration(hours: 14));
+      final set = day0.add(const Duration(hours: 34)); // 10:00 next day
+      final arcs = arcsFor(rise, set)
+        ..sort((a, b) => a.startTime.compareTo(b.startTime));
+      expect(arcs.first.startTime, equals(duskMid));
+      expect(arcs.first.startColor, equals(amber));
+      expect(arcs.last.endTime, equals(nextDawnMid));
+      expect(arcs.last.endColor, equals(amber));
+    });
+  });
+
+  group('Short-night fallback (fades would overlap)', () {
+    test('moon up only 30 min mid-night → 2 navy↔up arcs, no hold', () {
+      final rise = day0.add(const Duration(hours: 22));
+      final set = day0.add(const Duration(hours: 22, minutes: 30));
+      final arcs = arcsFor(rise, set)
+        ..sort((a, b) => a.startTime.compareTo(b.startTime));
+      expect(arcs.length, 2);
+      expect(arcs[0].startColor, equals(navy));
+      expect(arcs[0].endColor, equals(up));
+      expect(arcs[1].startColor, equals(up));
+      expect(arcs[1].endColor, equals(navy));
+      expect(arcs[0].endTime, equals(arcs[1].startTime));
+    });
+  });
+
+  group('upColor scaling', () {
     test('new moon (zero illumination) yields nightNavy upColor', () {
       expect(LunarBody.upColorFor(0.0), equals(navy));
     });
 
-    test('full moon upColor is distinct from nightNavy', () {
+    test('full moon upColor is distinguishable from nightNavy', () {
       expect(LunarBody.upColorFor(1.0), isNot(equals(navy)));
     });
-  });
 
-  group('LunarBody.nightArcsFor — arc continuity', () {
-    test('fadeIn ends where hold begins; hold ends where fadeOut begins', () {
-      final rise = day0.add(const Duration(hours: 22));
-      final set = day0.add(const Duration(hours: 28)); // 04:00 next day
-      final arcs = arcsFor(rise, set)
-        ..sort((a, b) => a.startTime.compareTo(b.startTime));
-      expect(arcs.length, 3);
-      expect(arcs[0].endTime, equals(arcs[1].startTime));
-      expect(arcs[1].endTime, equals(arcs[2].startTime));
-    });
-
-    test('fade colors are navy → up → up → up → up → navy', () {
-      final rise = day0.add(const Duration(hours: 22));
-      final set = day0.add(const Duration(hours: 28));
-      final arcs = arcsFor(rise, set)
-        ..sort((a, b) => a.startTime.compareTo(b.startTime));
-      expect(arcs[0].startColor, equals(navy));
-      expect(arcs[0].endColor, equals(up));
-      expect(arcs[1].startColor, equals(up));
-      expect(arcs[1].endColor, equals(up));
-      expect(arcs[2].startColor, equals(up));
-      expect(arcs[2].endColor, equals(navy));
-    });
-  });
-
-  group('astro reference — sanity', () {
-    test('nextSunrise is exactly 24h after sunrise (synthetic data)', () {
-      expect(nextSunrise.difference(sunrise), const Duration(hours: 24));
-    });
-
-    test('upColor is a Color value', () {
-      expect(up, isA<Color>());
+    test('upColor used in hold arc matches passed-in upColor', () {
+      final custom = const Color(0xFF123456);
+      final arcs = LunarBody.nightArcsFor(
+        moonrise: day0.add(const Duration(hours: 22)),
+        moonset: day0.add(const Duration(hours: 28)),
+        astroData: astro,
+        upColor: custom,
+      )..sort((a, b) => a.startTime.compareTo(b.startTime));
+      expect(arcs[1].startColor, equals(custom));
+      expect(arcs[1].endColor, equals(custom));
     });
   });
 }
