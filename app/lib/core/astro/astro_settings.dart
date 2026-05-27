@@ -77,6 +77,57 @@ class AstroData {
       );
 }
 
+/// Returns solar event times for the calendar day nearest to [t], by shifting
+/// [astroData]'s reference day by an integer number of 24 h intervals.
+///
+/// Sun/moon times shift by a few minutes per day; the ±12 h snap is accurate
+/// enough for background-paint purposes across the visible window.
+({
+  DateTime civilTwilightBegin,
+  DateTime sunrise,
+  DateTime solarNoon,
+  DateTime sunset,
+  DateTime civilTwilightEnd,
+}) solarTimesNear(DateTime t, AstroData astroData) {
+  final hoursFromNoon = t.difference(astroData.solarNoon).inMinutes / 60.0;
+  final dayOffset = (hoursFromNoon / 24.0).round();
+  final shift = Duration(hours: 24 * dayOffset);
+  return (
+    civilTwilightBegin: astroData.civilTwilightBegin.add(shift),
+    sunrise: astroData.sunrise.add(shift),
+    solarNoon: astroData.solarNoon.add(shift),
+    sunset: astroData.sunset.add(shift),
+    civilTwilightEnd: astroData.civilTwilightEnd.add(shift),
+  );
+}
+
+/// True if [t] is between sunrise and sunset for the nearest day in
+/// [astroData]. Sharp boundary — twilight is NOT daytime.
+bool isDaytime(DateTime t, AstroData astroData) {
+  final s = solarTimesNear(t, astroData);
+  return !t.isBefore(s.sunrise) && t.isBefore(s.sunset);
+}
+
+/// Star-painting nightness at [t]: 0.0 = full day, 1.0 = full night. Smooth
+/// ramp across civil twilight on either side of the day.
+double nightnessAt(DateTime t, AstroData astroData) {
+  final s = solarTimesNear(t, astroData);
+  if (t.isBefore(s.civilTwilightBegin)) return 1.0;
+  if (t.isBefore(s.sunrise)) {
+    final span = s.sunrise.difference(s.civilTwilightBegin).inMicroseconds;
+    if (span <= 0) return 0.0;
+    return 1.0 -
+        t.difference(s.civilTwilightBegin).inMicroseconds / span;
+  }
+  if (t.isBefore(s.sunset)) return 0.0;
+  if (t.isBefore(s.civilTwilightEnd)) {
+    final span = s.civilTwilightEnd.difference(s.sunset).inMicroseconds;
+    if (span <= 0) return 1.0;
+    return t.difference(s.sunset).inMicroseconds / span;
+  }
+  return 1.0;
+}
+
 @immutable
 class AstroSettings {
   final double? latitude;

@@ -1,272 +1,199 @@
-// Concrete lunar cycle data wrapper and glyph builder.
+// Concrete lunar body — enumerates moon arcs and emits night-clipped glow.
 //
 // TLDR:
-// Overview: Represents the Moon's daily cycle on the timeline.
-// Problem:  Need concrete twilight intervals, dynamic moon glow intensity based on phase, and exact glyph mappings.
-// Solution: Encapsulates LunarDayTimes, tracks rising/setting gradients, and builds MoonRise, MoonTransit, and MoonSet glyphs.
-// Breaking Changes: No.
+// Overview: For each moon arc that intersects the window, emits fadeIn / hold / fadeOut arcs covering only the moon-up portion at night.
+// Problem:  Lunar glow must not bleed into daytime; previous design used solar arcs and pattern branching to suppress this.
+// Solution: Compute each arc's night portion as max(moonrise, sunset) → min(moonset, next sunrise) using astroData; emit no arcs if it's empty.
+// Breaking Changes: Replaces the prior per-arc LunarBody with one that owns the entire window.
 //
 // ---------------------------------------------------------------------------
 
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:happening/core/astro/astro_settings.dart';
 import 'package:happening/core/astro/solar_calculator.dart';
 import 'package:happening/features/timeline/painters/astro_objects.dart';
 import 'package:happening/features/timeline/painters/sky_body.dart';
 import 'package:happening/features/timeline/painters/solar_body.dart';
-import 'package:happening/features/timeline/timeline_layout.dart';
 
 class LunarBody extends SkyBody {
-  const LunarBody({required this.lunar, required this.solar, this.prevSolar});
+  const LunarBody({
+    required this.astroData,
+    required this.lat,
+    required this.lng,
+  });
 
-  final LunarDayTimes lunar;
-  final SolarBody solar;
-  // When this body uses solar2, prevSolar is solar1 (today) — provides the
-  // current night's dusk for moon-already-up cases.
-  final SolarBody? prevSolar;
+  final AstroData astroData;
+  final double lat;
+  final double lng;
 
   static const _moonlitPeak = Color(0xFF102552);
+  static const _fadeDuration = Duration(minutes: 25);
 
-  @override
-  Color get upColor {
-    final effective = math.pow(lunar.illuminationFraction, 0.4).toDouble();
+  /// Lunar glow colour scaled by [illuminationFraction] (0..1).
+  static Color upColorFor(double illuminationFraction) {
+    final effective = math.pow(illuminationFraction, 0.4).toDouble();
     return Color.lerp(SolarBody.nightNavy, _moonlitPeak, effective)!;
   }
 
-  // Night sky is always nightNavy when the moon is absent.
   @override
-  Color get downColor => SolarBody.nightNavy;
-  @override
-  Color get twilightColor => SolarBody.nightNavy;
-
-  // Twilight zone: same duration as solar twilight at this location.
-  Duration get _twilightDuration {
-    if (solar.riseBegin == null || solar.riseEnd == null) {
-      return const Duration(minutes: 25);
+  List<Arc> getArcs(DateTime windowStart, DateTime windowEnd) {
+    if (astroData.illuminationFraction <= 0) return const [];
+    final up = upColorFor(astroData.illuminationFraction);
+    final arcs = <Arc>[];
+    for (final ma in _moonArcsInWindow(windowStart, windowEnd)) {
+      arcs.addAll(nightArcsFor(
+        moonrise: ma.moonrise,
+        moonset: ma.moonset,
+        astroData: astroData,
+        upColor: up,
+      ));
     }
-    return solar.riseEnd!.difference(solar.riseBegin!);
+    return arcs;
   }
 
-  // Fade-in starts one twilight-duration before moonrise.
-  @override
-  DateTime? get riseBegin => lunar.moonrise?.subtract(_twilightDuration);
-  @override
-  DateTime? get riseEnd => lunar.moonrise;
-  @override
-  DateTime? get peak => _transit;
-  @override
-  DateTime? get setBegin => lunar.moonset;
-  // Fade-out ends one twilight-duration after moonset.
-  @override
-  DateTime? get setEnd => lunar.moonset?.add(_twilightDuration);
-
-  // Both bounds must be known — arcs are always fully paired in _buildBodies.
-  DateTime? get _transit {
-    final rise = lunar.moonrise;
-    final set = lunar.moonset;
-    if (rise == null || set == null) return null;
-    return DateTime.fromMillisecondsSinceEpoch(
-        (rise.millisecondsSinceEpoch + set.millisecondsSinceEpoch) ~/ 2);
-  }
-
-  /// Lunar glow: ramp in before moonrise, hold until dawn or moonset, then taper.
+  /// Pure: given one moon-arc and the local [astroData], returns the lunar
+  /// arcs clipped to the night portion `[civilTwilightEnd, nextCivilTwilightBegin]`
+  /// intersected with `[moonrise, moonset]`. Returns `[]` if the moon is up
+  /// only during daytime/twilight.
   ///
-  /// Two patterns:
-  ///   A) Moon rises at night → dark ramp → flat upColor → dawn anchor or moonset ramp.
-  ///   B) Moon already up at dusk (rose in afternoon) → upColor from dusk → moonset ramp.
-  ///      Detected when moonset precedes moonrise on the same calendar date.
-  @override
-  List<({double x, Color c})> gradientStops(
-      TimelineLayout layout, DateTime now) {
-    if (lunar.illuminationFraction <= 0) return const [];
-    if (lunar.moonrise == null && lunar.moonset == null) return const [];
-
-    final ctx = _GradCtx.build(
-        lunar, solar, prevSolar, layout, now, _twilightDuration, upColor);
-
-    // Pattern B: moonset precedes moonrise — moon was already up from a prev-day rise.
-    final moonSetBeforeRise = lunar.moonset != null &&
-        lunar.moonrise != null &&
-        lunar.moonset!.isBefore(lunar.moonrise!);
-
-    if (moonSetBeforeRise &&
-        ctx.xMoonset != null &&
-        !ctx.inDay(ctx.xMoonset!)) {
-      return _patternBStops(ctx);
-    }
-
-    final result = <({double x, Color c})>[];
-
-    // Pattern A: moon rises at night — ramp in, hold to dawn or moonset.
-    if (ctx.xMoonrise != null && !ctx.inDay(ctx.xMoonrise!)) {
-      _addPatternAStops(result, ctx);
-    }
-
-    // Post-dusk anchor: moon rose before this dusk and hasn't set yet.
-    _addPostDuskStops(result, ctx);
-
-    return result;
-  }
-
-  List<({double x, Color c})> _patternBStops(_GradCtx ctx) {
-    final xMoonset = ctx.xMoonset!;
-    final w = ctx.layout.stripWidth;
-    final result = <({double x, Color c})>[];
-    final xDusk = (ctx.xPrevDusk != null && ctx.xPrevDusk! < xMoonset)
-        ? ctx.xPrevDusk
-        : (ctx.xDuskEnd != null && ctx.xDuskEnd! < xMoonset
-            ? ctx.xDuskEnd
-            : null);
-    if (xDusk != null) {
-      result.add((x: xDusk, c: ctx.up));
-    } else if (xMoonset > 0) {
-      result.add((x: 1.0, c: ctx.up));
-    }
-    result.add((x: math.min(xMoonset, w), c: ctx.up));
-    if (xMoonset < w) {
-      final xRampEnd =
-          ctx.layout.xForTime(lunar.moonset!.add(ctx.duration), ctx.now);
-      if (!ctx.inDay(xRampEnd)) {
-        result.add((x: math.min(xRampEnd, w), c: ctx.dark));
-      }
-    }
-    return result;
-  }
-
-  void _addPatternAStops(List<({double x, Color c})> result, _GradCtx ctx) {
-    final xMoonrise = ctx.xMoonrise!;
-    final w = ctx.layout.stripWidth;
-    if (xMoonrise >= w) return; // arc starts off the right edge — nothing visible
-    final xRampStart =
-        ctx.layout.xForTime(lunar.moonrise!.subtract(ctx.duration), ctx.now);
-    if (!ctx.inDay(xRampStart)) {
-      result.add((x: xRampStart, c: ctx.dark));
-    } else if (ctx.xDuskEnd != null && xMoonrise > ctx.xDuskEnd!) {
-      result.add((x: ctx.xDuskEnd!, c: ctx.dark));
-    }
-    result.add((x: xMoonrise, c: ctx.up));
-
-    final xNextDawn = (ctx.xDawnBegin != null && ctx.xDawnBegin! > xMoonrise)
-        ? ctx.xDawnBegin
-        : null;
-    if (xNextDawn != null &&
-        (ctx.xMoonset == null || ctx.xMoonset! > xNextDawn)) {
-      // Hold to dawn (or strip edge if dawn is off-screen).
-      result.add((x: math.min(xNextDawn, w), c: ctx.up));
-    } else if (ctx.xMoonset != null) {
-      // Hold to moonset (or strip edge if moonset is off-screen).
-      result.add((x: math.min(ctx.xMoonset!, w), c: ctx.up));
-      if (ctx.xMoonset! < w) {
-        // Moonset is visible — add the fade-out ramp.
-        final xRampEnd =
-            ctx.layout.xForTime(lunar.moonset!.add(ctx.duration), ctx.now);
-        if (!ctx.inDay(xRampEnd)) {
-          result.add((x: math.min(xRampEnd, w), c: ctx.dark));
-        } else if (xNextDawn != null) {
-          result.add((x: math.min(xNextDawn, w), c: ctx.dark));
-        }
-      }
-    } else {
-      // No dawn or moonset in view — moon stays bright to strip edge.
-      result.add((x: w, c: ctx.up));
-    }
-  }
-
-  void _addPostDuskStops(List<({double x, Color c})> result, _GradCtx ctx) {
-    if (ctx.xDuskEnd == null) return;
-    if (ctx.xMoonrise != null && ctx.xMoonrise! >= ctx.xDuskEnd!) return;
-    if (ctx.xMoonset != null && ctx.xMoonset! <= ctx.xDuskEnd!) return;
-    final w = ctx.layout.stripWidth;
-    result.add((x: ctx.xDuskEnd!, c: ctx.up));
-    if (ctx.xMoonset != null) {
-      result.add((x: math.min(ctx.xMoonset!, w), c: ctx.up));
-      if (ctx.xMoonset! < w) {
-        final xRampEnd =
-            ctx.layout.xForTime(lunar.moonset!.add(ctx.duration), ctx.now);
-        if (!ctx.inDay(xRampEnd)) {
-          result.add((x: math.min(xRampEnd, w), c: ctx.dark));
-        }
-      }
-    } else {
-      // Moon stays up past strip edge.
-      result.add((x: w, c: ctx.up));
-    }
+  /// Exposed for unit testing scenarios independent of getLunarTimes.
+  static List<Arc> nightArcsFor({
+    required DateTime moonrise,
+    required DateTime moonset,
+    required AstroData astroData,
+    required Color upColor,
+  }) {
+    // Night = after dusk twilight ends, before dawn twilight begins. This
+    // leaves solar's dawn/dusk amber arcs visible (lunar would otherwise
+    // clip them away in the overlap region).
+    final nightStart = _laterOf(
+        moonrise, solarTimesNear(moonrise, astroData).civilTwilightEnd);
+    final nightEnd = _earlierOf(
+        moonset,
+        solarTimesNear(moonset.add(const Duration(hours: 12)), astroData)
+            .civilTwilightBegin);
+    if (!nightEnd.isAfter(nightStart)) return const [];
+    return _fadeArcs(nightStart, nightEnd, upColor);
   }
 
   @override
-  List<AstroObject> buildGlyphs() {
-    final transit = _transit;
-    final frac = lunar.illuminationFraction;
+  List<AstroObject> getGlyphs(DateTime windowStart, DateTime windowEnd) {
+    final glyphs = <AstroObject>[];
+    for (final ma in _moonArcsInWindow(windowStart, windowEnd)) {
+      glyphs.add(MoonRise(
+          time: ma.moonrise, phase: ma.phase, fraction: ma.fraction));
+      final transit = DateTime.fromMillisecondsSinceEpoch(
+        (ma.moonrise.millisecondsSinceEpoch +
+                ma.moonset.millisecondsSinceEpoch) ~/
+            2,
+      );
+      glyphs.add(MoonTransit(time: transit, phase: ma.phase, fraction: ma.fraction));
+      glyphs.add(MoonSet(time: ma.moonset, phase: ma.phase, fraction: ma.fraction));
+    }
+    return glyphs;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------------
+
+  /// Enumerates moon arcs (rise→set pairs) overlapping [windowStart, windowEnd]
+  /// by pairing each rise with the next chronological set in a ±1-day search.
+  Iterable<_MoonArc> _moonArcsInWindow(DateTime ws, DateTime we) sync* {
+    final searchStart = ws.subtract(const Duration(days: 1)).toLocal();
+    final searchEnd = we.add(const Duration(days: 1)).toLocal();
+    var date = DateTime(searchStart.year, searchStart.month, searchStart.day);
+    final lastDate = DateTime(searchEnd.year, searchEnd.month, searchEnd.day);
+
+    final rises = <_RawRise>[];
+    final sets = <DateTime>[];
+    while (!date.isAfter(lastDate)) {
+      final lt = getLunarTimes(date, lat, lng);
+      if (lt.moonrise != null) {
+        rises.add(_RawRise(
+            t: lt.moonrise!,
+            phase: lt.phase,
+            fraction: lt.illuminationFraction));
+      }
+      if (lt.moonset != null) sets.add(lt.moonset!);
+      date = date.add(const Duration(days: 1));
+    }
+    rises.sort((a, b) => a.t.compareTo(b.t));
+    sets.sort();
+
+    final usedSets = <DateTime>{};
+    for (final rise in rises) {
+      final set = sets.firstWhere(
+        (s) => s.isAfter(rise.t) && !usedSets.contains(s),
+        orElse: () => DateTime.fromMillisecondsSinceEpoch(0),
+      );
+      if (set.millisecondsSinceEpoch == 0) continue; // no matching set
+      usedSets.add(set);
+      if (set.isBefore(ws) || rise.t.isAfter(we)) continue;
+      yield _MoonArc(
+          moonrise: rise.t,
+          moonset: set,
+          phase: rise.phase,
+          fraction: rise.fraction);
+    }
+  }
+
+  /// FadeIn → hold → fadeOut, clamped so the fades don't overrun the night.
+  static List<Arc> _fadeArcs(
+      DateTime nightStart, DateTime nightEnd, Color up) {
+    final navy = SolarBody.nightNavy;
+    final fadeMs = _fadeDuration.inMicroseconds;
+    final nightMs = nightEnd.difference(nightStart).inMicroseconds;
+    // Clamp each fade to at most half the night so they don't overlap.
+    final eachFadeMs = math.min(fadeMs, nightMs ~/ 2);
+    final fadeInEnd = nightStart.add(Duration(microseconds: eachFadeMs));
+    final fadeOutStart = nightEnd.subtract(Duration(microseconds: eachFadeMs));
     return [
-      if (lunar.moonrise != null)
-        MoonRise(time: lunar.moonrise!, phase: lunar.phase, fraction: frac),
-      if (transit != null)
-        MoonTransit(time: transit, phase: lunar.phase, fraction: frac),
-      if (lunar.moonset != null)
-        MoonSet(time: lunar.moonset!, phase: lunar.phase, fraction: frac),
+      Arc(
+          startTime: nightStart,
+          endTime: fadeInEnd,
+          startColor: navy,
+          endColor: up),
+      if (fadeOutStart.isAfter(fadeInEnd))
+        Arc(
+            startTime: fadeInEnd,
+            endTime: fadeOutStart,
+            startColor: up,
+            endColor: up),
+      Arc(
+          startTime: fadeOutStart,
+          endTime: nightEnd,
+          startColor: up,
+          endColor: navy),
     ];
   }
+
+  static DateTime _laterOf(DateTime a, DateTime b) => a.isAfter(b) ? a : b;
+  static DateTime _earlierOf(DateTime a, DateTime b) => a.isBefore(b) ? a : b;
 }
 
-/// Pre-computed x-positions and styling bundled for gradient-stop helpers.
-class _GradCtx {
-  _GradCtx._({
-    required this.xDawnBegin,
-    required this.xDuskEnd,
-    required this.xPrevDusk,
-    required this.xMoonrise,
-    required this.xMoonset,
-    required this.duration,
-    required this.up,
-    required this.layout,
-    required this.now,
+@immutable
+class _MoonArc {
+  const _MoonArc({
+    required this.moonrise,
+    required this.moonset,
+    required this.phase,
+    required this.fraction,
   });
 
-  factory _GradCtx.build(
-    LunarDayTimes lunar,
-    SolarBody solar,
-    SolarBody? prevSolar,
-    TimelineLayout layout,
-    DateTime now,
-    Duration duration,
-    Color up,
-  ) {
-    return _GradCtx._(
-      xDawnBegin: solar.riseBegin != null
-          ? layout.xForTime(solar.riseBegin!, now)
-          : null,
-      xDuskEnd:
-          solar.setEnd != null ? layout.xForTime(solar.setEnd!, now) : null,
-      xPrevDusk: prevSolar?.setEnd != null
-          ? layout.xForTime(prevSolar!.setEnd!, now)
-          : null,
-      xMoonrise:
-          lunar.moonrise != null ? layout.xForTime(lunar.moonrise!, now) : null,
-      xMoonset:
-          lunar.moonset != null ? layout.xForTime(lunar.moonset!, now) : null,
-      duration: duration,
-      up: up,
-      layout: layout,
-      now: now,
-    );
-  }
+  final DateTime moonrise;
+  final DateTime moonset;
+  final MoonPhase phase;
+  final double fraction;
+}
 
-  final double? xDawnBegin;
-  final double? xDuskEnd;
-  final double? xPrevDusk;
-  final double? xMoonrise;
-  final double? xMoonset;
-  final Duration duration;
-  final Color up;
-  final TimelineLayout layout;
-  final DateTime now;
+@immutable
+class _RawRise {
+  const _RawRise({required this.t, required this.phase, required this.fraction});
 
-  Color get dark => SolarBody.nightNavy;
-
-  bool inDay(double x) =>
-      xDawnBegin != null &&
-      xDuskEnd != null &&
-      x >= xDawnBegin! &&
-      x <= xDuskEnd!;
+  final DateTime t;
+  final MoonPhase phase;
+  final double fraction;
 }

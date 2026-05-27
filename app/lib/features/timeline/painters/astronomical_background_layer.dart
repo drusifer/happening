@@ -1,10 +1,10 @@
 // Replaces BackgroundLayer when the astronomical theme is active.
 //
 // TLDR:
-// Overview: Renders scrollable daylight, twilight, and star-filled night gradients behind the timeline.
-// Problem:  Need dynamic, realistic background rendering representing local sky light cycles at strip height.
-// Solution: Merges solar and lunar gradient arcs and projects them via a horizontal LinearGradient.
-// Breaking Changes: No.
+// Overview: Asks each SkyBody for its Arcs over the window, clips solar where lunar overlaps, paints as one LinearGradient.
+// Problem:  Need a single horizontal gradient that blends solar phases with moon glow without per-pattern branching.
+// Solution: Two SkyBody instances (Solar, Lunar). Lunar wins over solar where they overlap. Gaps default to night navy.
+// Breaking Changes: No (callers unchanged).
 //
 // ---------------------------------------------------------------------------
 
@@ -12,7 +12,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:happening/core/astro/astro_settings.dart';
-import 'package:happening/core/astro/solar_calculator.dart';
 import 'package:happening/features/timeline/painters/astro_objects.dart';
 import 'package:happening/features/timeline/painters/background_layer.dart'
     show BackgroundLayer;
@@ -51,145 +50,18 @@ class AstronomicalBackgroundLayer implements TimelineLayer {
   final double? lat;
   final double? lng;
 
-  // ---------------------------------------------------------------------------
-  // Static helpers
-  // ---------------------------------------------------------------------------
-
-  /// Builds all sky bodies for the current window — today + tomorrow solar,
-  /// plus one [LunarBody] per calendar date in the window.
-  static ({SolarBody solar1, SolarBody solar2, List<LunarBody> lunars})
-      _buildBodies(
-    AstroData astroData,
-    TimelineLayout layout,
-    DateTime now,
-    double? lat,
-    double? lng,
-  ) {
-    final todayTimes = SolarDayTimes(
-      civilTwilightBegin: astroData.civilTwilightBegin,
-      sunrise: astroData.sunrise,
-      solarNoon: astroData.solarNoon,
-      sunset: astroData.sunset,
-      civilTwilightEnd: astroData.civilTwilightEnd,
-    );
-    final tomorrowTimes = SolarDayTimes(
-      civilTwilightBegin:
-          astroData.civilTwilightBegin.add(const Duration(hours: 24)),
-      sunrise: astroData.sunrise.add(const Duration(hours: 24)),
-      solarNoon: astroData.solarNoon.add(const Duration(hours: 24)),
-      sunset: astroData.sunset.add(const Duration(hours: 24)),
-      civilTwilightEnd:
-          astroData.civilTwilightEnd.add(const Duration(hours: 24)),
-    );
-    final solar1 = SolarBody(times: todayTimes);
-    final solar2 = SolarBody(times: tomorrowTimes);
-
-    final lunars = <LunarBody>[];
-    if (lat != null && lng != null) {
-      lunars.addAll(_buildLunarBodies(layout, lat, lng, solar1, solar2));
-    }
-
-    return (solar1: solar1, solar2: solar2, lunars: lunars);
-  }
-
-  /// Collects all lunar arcs visible in the layout window and pairs rises with sets.
-  static List<LunarBody> _buildLunarBodies(
-    TimelineLayout layout,
-    double lat,
-    double lng,
-    SolarBody solar1,
-    SolarBody solar2,
-  ) {
-    // Search ±1 day beyond the window so arcs straddling day boundaries
-    // are always captured with both rise AND set known.
-    final searchStart =
-        layout.windowStart.subtract(const Duration(days: 1)).toLocal();
-    final searchEnd = layout.windowEnd.add(const Duration(days: 1)).toLocal();
-    var date = DateTime(searchStart.year, searchStart.month, searchStart.day);
-    final lastDate = DateTime(searchEnd.year, searchEnd.month, searchEnd.day);
-
-    final rises = <({DateTime t, MoonPhase phase, double fraction})>[];
-    final sets = <DateTime>[];
-
-    while (!date.isAfter(lastDate)) {
-      final lt = getLunarTimes(date, lat, lng);
-      if (lt.moonrise != null) {
-        rises.add((
-          t: lt.moonrise!,
-          phase: lt.phase,
-          fraction: lt.illuminationFraction
-        ));
-      }
-      if (lt.moonset != null) sets.add(lt.moonset!);
-      date = date.add(const Duration(days: 1));
-    }
-
-    rises.sort((a, b) => a.t.compareTo(b.t));
-    sets.sort();
-
-    final s1Ms = solar1.riseBegin!.millisecondsSinceEpoch;
-    final s2Ms = solar2.riseBegin!.millisecondsSinceEpoch;
-
-    LunarBody makeLunar(LunarDayTimes arc, int refMs) {
-      final useSolar1 = (refMs - s1Ms).abs() <= (refMs - s2Ms).abs();
-      return LunarBody(
-        lunar: arc,
-        solar: useSolar1 ? solar1 : solar2,
-        prevSolar: useSolar1 ? null : solar1,
-      );
-    }
-
-    final usedSets = <DateTime>{};
-    final lunars = <LunarBody>[];
-
-    // Pair each rise with the next available set (greedy, chronological).
-    for (final rise in rises) {
-      final moonset = sets
-          .where((s) => s.isAfter(rise.t) && !usedSets.contains(s))
-          .firstOrNull;
-      if (moonset != null) usedSets.add(moonset);
-
-      final arc = LunarDayTimes(
-        moonrise: rise.t,
-        moonset: moonset,
-        phase: rise.phase,
-        illuminationFraction: rise.fraction,
-      );
-      final arcEnd = moonset ?? rise.t.add(const Duration(hours: 14));
-      if (rise.t.isAfter(layout.windowEnd) ||
-          arcEnd.isBefore(layout.windowStart)) {
-        continue;
-      }
-      lunars.add(makeLunar(arc, rise.t.millisecondsSinceEpoch));
-    }
-
-    // Orphaned sets: moon was up at window start, rose before search range.
-    for (final s in sets.where((s) => !usedSets.contains(s))) {
-      if (s.isBefore(layout.windowStart) || s.isAfter(layout.windowEnd)) {
-        continue;
-      }
-      final arc = LunarDayTimes(
-        moonrise: null,
-        moonset: s,
-        phase: rises.firstOrNull?.phase ?? MoonPhase.waningGibbous,
-        illuminationFraction: rises.firstOrNull?.fraction ?? 0.8,
-      );
-      lunars.add(makeLunar(arc, s.millisecondsSinceEpoch));
-    }
-
-    return lunars;
-  }
+  List<SkyBody> get _bodies => [
+        SolarBody(astroData: astroData),
+        if (lat != null && lng != null)
+          LunarBody(astroData: astroData, lat: lat!, lng: lng!),
+      ];
 
   /// Returns the [AstroHit] for whichever glyph [pos] is within touch range of,
   /// or null if the pointer is not over any glyph.
   AstroHit? hitTest(Offset pos, Size size) {
     const hitR = kAstroIconRadius + 6.0;
-    final (:solar1, :solar2, :lunars) =
-        _buildBodies(astroData, layout, now, lat, lng);
-    final bodies = <SkyBody>[solar1, solar2, ...lunars];
-
-    for (final body in bodies) {
-      for (final obj in body.buildGlyphs()) {
+    for (final body in _bodies) {
+      for (final obj in body.getGlyphs(layout.windowStart, layout.windowEnd)) {
         final gx = layout.xForTime(obj.time, now);
         if (gx < -kAstroIconRadius || gx > size.width + kAstroIconRadius) {
           continue;
@@ -218,85 +90,123 @@ class AstronomicalBackgroundLayer implements TimelineLayer {
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width;
-    final (:solar1, :solar2, :lunars) =
-        _buildBodies(astroData, layout, now, lat, lng);
-    final bodies = <SkyBody>[solar1, solar2, ...lunars];
+    final bodies = _bodies;
 
-    double combinedNightness(double x) => math.min(
-          solar1.nightnessAt(x, layout, now),
-          solar2.nightnessAt(x, layout, now),
-        );
+    final solar = bodies.whereType<SolarBody>().first;
+    final lunarArcs = bodies
+        .whereType<LunarBody>()
+        .expand((b) => b.getArcs(layout.windowStart, layout.windowEnd))
+        .toList();
+    final solarArcs = _clipBy(
+      solar.getArcs(layout.windowStart, layout.windowEnd),
+      lunarArcs,
+    );
 
-    // Collect and merge all gradient stops.
-    final allStops = [
-      for (final body in bodies) ...body.gradientStops(layout, now),
-    ];
-    allStops.sort((a, b) => a.x.compareTo(b.x));
-
-    final deduped = <({double x, Color c})>[];
-    for (final s in allStops) {
-      if (deduped.isNotEmpty && (s.x - deduped.last.x).abs() < 0.5) {
-        if (s.c.computeLuminance() > deduped.last.c.computeLuminance()) {
-          deduped[deduped.length - 1] = s;
-        }
-      } else {
-        deduped.add(s);
-      }
-    }
-
-    final edgeLeft = _solarColorAt(0, solar1, solar2);
-    final edgeRight = _solarColorAt(w, solar1, solar2);
-
-    final colors = <Color>[edgeLeft];
-    final stops = <double>[0.0];
-    for (final (:x, :c) in deduped) {
-      if (x > 0 && x <= w) {
-        colors.add(c);
-        stops.add(x / w);
-      }
-    }
-    // Only add the solar edge anchor if no stop has already landed at 1.0
-    // (a clamped lunar stop at x == w already covers the right edge).
-    if (stops.last < 1.0) {
-      colors.add(edgeRight);
-      stops.add(1.0);
-    }
+    final arcs = [...solarArcs, ...lunarArcs]
+      ..sort((a, b) => a.startTime.compareTo(b.startTime));
 
     canvas.drawRect(
       Rect.fromLTWH(0, 0, w, size.height),
       Paint()
-        ..shader = LinearGradient(colors: colors, stops: stops)
-            .createShader(Rect.fromLTWH(0, 0, w, size.height)),
+        ..shader = _buildShader(arcs, w, size.height),
     );
 
-    _paintStars(canvas, size, combinedNightness);
+    _paintStars(canvas, size);
 
     for (final body in bodies) {
-      body.paintGlyphs(canvas, size, layout, now);
+      for (final obj in body.getGlyphs(layout.windowStart, layout.windowEnd)) {
+        final x = layout.xForTime(obj.time, now);
+        if (x < -kAstroIconRadius || x > w + kAstroIconRadius) continue;
+        obj.draw(canvas, size, x);
+      }
     }
   }
 
-  Color _solarColorAt(double x, SolarBody s1, SolarBody s2) {
-    for (final solar in [s1, s2]) {
-      final xCtb = layout.xForTime(solar.riseBegin!, now);
-      final xRise = layout.xForTime(solar.riseEnd!, now);
-      final xSet = layout.xForTime(solar.setBegin!, now);
-      final xCte = layout.xForTime(solar.setEnd!, now);
-      if (x < xCtb) return SolarBody.nightNavy;
-      if (x < xRise) return SolarBody.dawnDusk;
-      if (x <= xSet) return SolarBody.dayBlue;
-      if (x <= xCte) return SolarBody.dawnDusk;
+  /// Builds a horizontal LinearGradient shader from the chronologically-sorted
+  /// [arcs]. Gaps default to night navy.
+  Shader _buildShader(List<Arc> arcs, double w, double h) {
+    final colors = <Color>[];
+    final stops = <double>[];
+
+    void addStop(DateTime t, Color c) {
+      final x = layout.xForTime(t, now).clamp(0.0, w);
+      colors.add(c);
+      stops.add(x / w);
     }
-    return SolarBody.nightNavy;
+
+    var cur = layout.windowStart;
+    for (final arc in arcs) {
+      if (arc.startTime.isAfter(cur)) {
+        addStop(cur, SolarBody.nightNavy);
+        addStop(arc.startTime, SolarBody.nightNavy);
+      }
+      addStop(arc.startTime, arc.startColor);
+      addStop(arc.endTime, arc.endColor);
+      cur = arc.endTime;
+    }
+    if (cur.isBefore(layout.windowEnd)) {
+      addStop(cur, SolarBody.nightNavy);
+      addStop(layout.windowEnd, SolarBody.nightNavy);
+    }
+    if (colors.isEmpty) {
+      colors.addAll([SolarBody.nightNavy, SolarBody.nightNavy]);
+      stops.addAll([0.0, 1.0]);
+    }
+
+    return LinearGradient(colors: colors, stops: stops)
+        .createShader(Rect.fromLTWH(0, 0, w, h));
   }
 
-  void _paintStars(
-      Canvas canvas, Size size, double Function(double x) nightness) {
+  /// Removes the portions of [solar] arcs that overlap with any [lunar] arc.
+  /// Where overlap occurs, the solar arc is split into the leading and
+  /// trailing remainders (either may be empty). Solar arcs that are fully
+  /// covered by a lunar arc are dropped.
+  static List<Arc> _clipBy(List<Arc> solar, List<Arc> lunar) {
+    var result = solar;
+    for (final la in lunar) {
+      final next = <Arc>[];
+      for (final sa in result) {
+        if (!la.endTime.isAfter(sa.startTime) ||
+            !la.startTime.isBefore(sa.endTime)) {
+          next.add(sa);
+          continue;
+        }
+        if (la.startTime.isAfter(sa.startTime)) {
+          next.add(Arc(
+            startTime: sa.startTime,
+            endTime: la.startTime,
+            startColor: sa.startColor,
+            endColor: _interp(sa, la.startTime),
+          ));
+        }
+        if (la.endTime.isBefore(sa.endTime)) {
+          next.add(Arc(
+            startTime: la.endTime,
+            endTime: sa.endTime,
+            startColor: _interp(sa, la.endTime),
+            endColor: sa.endColor,
+          ));
+        }
+      }
+      result = next;
+    }
+    return result;
+  }
+
+  static Color _interp(Arc arc, DateTime t) {
+    final span = arc.endTime.difference(arc.startTime).inMicroseconds;
+    if (span <= 0) return arc.startColor;
+    final pos = t.difference(arc.startTime).inMicroseconds / span;
+    return Color.lerp(arc.startColor, arc.endColor, pos.clamp(0.0, 1.0))!;
+  }
+
+  void _paintStars(Canvas canvas, Size size) {
     final starPaint = Paint();
     for (final star in _stars) {
       final px = star.fx * size.width;
       final py = star.fy * size.height;
-      final n = nightness(px);
+      final t = _timeForX(px);
+      final n = nightnessAt(t, astroData);
       if (n <= 0) continue;
       final alpha = n * (0.45 + star.brightness * 0.55);
       final radius = 0.4 + star.brightness * 0.9;
@@ -306,5 +216,10 @@ class AstronomicalBackgroundLayer implements TimelineLayer {
         starPaint..color = Colors.white.withValues(alpha: alpha),
       );
     }
+  }
+
+  DateTime _timeForX(double x) {
+    final secs = (x - layout.nowIndicatorX) / layout.pixelsPerSecond;
+    return now.add(Duration(milliseconds: (secs * 1000).round()));
   }
 }

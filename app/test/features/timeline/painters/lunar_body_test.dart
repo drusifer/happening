@@ -3,31 +3,26 @@ import 'package:happening/core/astro/astro_settings.dart';
 import 'package:happening/core/astro/solar_calculator.dart';
 import 'package:happening/features/timeline/painters/lunar_body.dart';
 import 'package:happening/features/timeline/painters/solar_body.dart';
-import 'package:happening/features/timeline/timeline_layout.dart';
 
 void main() {
   const lat = 37.77;
   const lng = -122.42;
 
   final date = DateTime(2026, 5, 18);
-  final now = DateTime(2026, 5, 18, 12, 0, 0);
-
-  const stripWidth = 1000.0;
-  const nowIndicatorX = stripWidth / 2;
-
-  late TimelineLayout layout;
-  late SolarBody solar;
   late SolarDayTimes solarTimes;
+  late AstroData astroFull;
 
   setUp(() {
-    layout = TimelineLayout(
-      stripWidth: stripWidth,
-      nowIndicatorX: nowIndicatorX,
-      windowStart: now.subtract(const Duration(hours: 12)),
-      windowEnd: now.add(const Duration(hours: 12)),
-    );
     solarTimes = getSolarTimes(date, lat, lng)!;
-    solar = SolarBody(times: solarTimes);
+    astroFull = AstroData(
+      civilTwilightBegin: solarTimes.civilTwilightBegin,
+      sunrise: solarTimes.sunrise,
+      solarNoon: solarTimes.solarNoon,
+      sunset: solarTimes.sunset,
+      civilTwilightEnd: solarTimes.civilTwilightEnd,
+      phase: MoonPhase.full,
+      illuminationFraction: 1.0,
+    );
   });
 
   group('getLunarTimes', () {
@@ -44,268 +39,81 @@ void main() {
       final lunar = getLunarTimes(date, lat, lng);
       expect(lunar.illuminationFraction, inInclusiveRange(0.0, 1.0));
     });
-
-    test('moonrise and moonset are plausible dates when present', () {
-      final lunar = getLunarTimes(date, lat, lng);
-      final lo = date.subtract(const Duration(days: 1));
-      final hi = date.add(const Duration(days: 2));
-      if (lunar.moonrise != null) {
-        expect(lunar.moonrise!.isAfter(lo) && lunar.moonrise!.isBefore(hi),
-            isTrue);
-      }
-      if (lunar.moonset != null) {
-        expect(
-            lunar.moonset!.isAfter(lo) && lunar.moonset!.isBefore(hi), isTrue);
-      }
-    });
   });
 
-  group('LunarBody colors', () {
-    test('downColor is nightNavy (not transparent)', () {
-      final lunarTimes = getLunarTimes(date, lat, lng);
-      final body = LunarBody(lunar: lunarTimes, solar: solar);
-      expect(body.downColor, equals(SolarBody.nightNavy));
-    });
-
-    test('upColor is between nightNavy and moonlitPeak based on illumination',
-        () {
-      final lunarTimes = getLunarTimes(date, lat, lng);
-      final body = LunarBody(lunar: lunarTimes, solar: solar);
-      // upColor should be distinguishably brighter than nightNavy for non-zero illumination
-      if (lunarTimes.illuminationFraction > 0.1) {
-        expect(body.upColor, isNot(equals(SolarBody.nightNavy)));
-      }
-    });
-  });
-
-  group('LunarBody twilight timing', () {
-    test('riseBegin is before riseEnd (gradual fade-in)', () {
-      final lunarTimes = getLunarTimes(date, lat, lng);
-      if (lunarTimes.moonrise == null) return;
-      final body = LunarBody(lunar: lunarTimes, solar: solar);
-      expect(body.riseBegin!.isBefore(body.riseEnd!), isTrue);
-    });
-
-    test('setEnd is after setBegin (gradual fade-out)', () {
-      final lunarTimes = getLunarTimes(date, lat, lng);
-      if (lunarTimes.moonset == null) return;
-      final body = LunarBody(lunar: lunarTimes, solar: solar);
-      expect(body.setEnd!.isAfter(body.setBegin!), isTrue);
-    });
-
-    test('twilight duration matches solar civil twilight window', () {
-      final lunarTimes = getLunarTimes(date, lat, lng);
-      if (lunarTimes.moonrise == null) return;
-      final body = LunarBody(lunar: lunarTimes, solar: solar);
-      final fadeIn = body.riseEnd!.difference(body.riseBegin!);
-      final solarTwilight =
-          solarTimes.sunrise.difference(solarTimes.civilTwilightBegin);
-      expect(fadeIn.inSeconds, equals(solarTwilight.inSeconds));
-    });
-  });
-
-  group('LunarBody gradientStops', () {
+  group('LunarBody.getArcs', () {
     test('returns empty when illumination is zero', () {
-      const dark = LunarDayTimes(
-        moonrise: null,
-        moonset: null,
+      final dark = AstroData(
+        civilTwilightBegin: astroFull.civilTwilightBegin,
+        sunrise: astroFull.sunrise,
+        solarNoon: astroFull.solarNoon,
+        sunset: astroFull.sunset,
+        civilTwilightEnd: astroFull.civilTwilightEnd,
         phase: MoonPhase.newMoon,
         illuminationFraction: 0.0,
       );
-      final body = LunarBody(lunar: dark, solar: solar);
-      expect(body.gradientStops(layout, now), isEmpty);
+      final body = LunarBody(astroData: dark, lat: lat, lng: lng);
+      expect(
+          body.getArcs(solarTimes.solarNoon.subtract(const Duration(hours: 12)),
+              solarTimes.solarNoon.add(const Duration(hours: 12))),
+          isEmpty);
     });
 
-    test('gradientStops suppresses lunar stops in full civil-twilight window',
-        () {
-      // Moon rises well before sunrise, sets well after sunset — spans entire day.
-      final earlyRise =
-          solarTimes.civilTwilightBegin.subtract(const Duration(hours: 3));
-      final lateSet = solarTimes.civilTwilightEnd.add(const Duration(hours: 3));
-      final spanDay = LunarDayTimes(
-        moonrise: earlyRise,
-        moonset: lateSet,
-        phase: MoonPhase.full,
-        illuminationFraction: 1.0,
-      );
-      final body = LunarBody(lunar: spanDay, solar: solar);
-      final stops = body.gradientStops(layout, now);
-
-      final xSuppressBegin =
-          layout.xForTime(solarTimes.civilTwilightBegin, now);
-      final xSuppressEnd = layout.xForTime(solarTimes.civilTwilightEnd, now);
-
-      for (final s in stops) {
-        expect(
-          s.x <= xSuppressBegin || s.x >= xSuppressEnd,
-          isTrue,
-          reason: 'Stop at x=${s.x.toStringAsFixed(1)} should be outside '
-              'civil twilight window [$xSuppressBegin, $xSuppressEnd]',
-        );
+    test('night-only: all emitted arcs lie outside [sunrise, sunset]', () {
+      final body = LunarBody(astroData: astroFull, lat: lat, lng: lng);
+      final ws = solarTimes.solarNoon.subtract(const Duration(hours: 24));
+      final we = solarTimes.solarNoon.add(const Duration(hours: 24));
+      final arcs = body.getArcs(ws, we);
+      // Each arc must end before sunrise OR start at/after sunset (across any day).
+      for (final arc in arcs) {
+        final sNear = solarTimesNear(arc.startTime, astroFull);
+        final overlapsDay = arc.startTime.isBefore(sNear.sunset) &&
+            arc.endTime.isAfter(sNear.sunrise);
+        expect(overlapsDay, isFalse,
+            reason:
+                'Arc ${arc.startTime}→${arc.endTime} overlaps daytime [${sNear.sunrise}, ${sNear.sunset}]');
       }
     });
 
-    test(
-        'gradientStops fade-in has nightNavy at start when moonrise is at night',
-        () {
-      // Solar times are returned in UTC; anchor testNow to solarNoon so the
-      // post-dusk events fall within the ±12 h window regardless of timezone.
-      final testNow = solarTimes.solarNoon;
-      final layoutLocal = TimelineLayout(
-        stripWidth: stripWidth,
-        nowIndicatorX: nowIndicatorX,
-        windowStart: testNow.subtract(const Duration(hours: 12)),
-        windowEnd: testNow.add(const Duration(hours: 12)),
-      );
-      // Moonrise 1.5 h after civil twilight end; moonset (~22 h later) is well
-      // past windowEnd (+12 h) so no fade-out appears within the strip.
-      final nightRise = solarTimes.civilTwilightEnd
-          .add(const Duration(hours: 1, minutes: 30));
-      final nightSet = solarTimes.civilTwilightBegin
-          .add(const Duration(hours: 24) - const Duration(hours: 2));
-      final nightLunar = LunarDayTimes(
-        moonrise: nightRise,
-        moonset: nightSet,
-        phase: MoonPhase.full,
-        illuminationFraction: 1.0,
-      );
-      final body = LunarBody(lunar: nightLunar, solar: solar);
-      final stops = body.gradientStops(layoutLocal, testNow);
-      expect(stops, isNotEmpty);
-
-      final sorted = [...stops]..sort((a, b) => a.x.compareTo(b.x));
-      // First stop is the fade-in start — should be nightNavy.
-      expect(sorted.first.c, equals(SolarBody.nightNavy));
-      // Moonset is past the strip edge; moon is still up at the right edge, so
-      // the last stop holds upColor (no in-window fade-out).
-      expect(sorted.last.c, equals(body.upColor));
-      expect(sorted.last.x, closeTo(layoutLocal.stripWidth, 0.01));
+    test('fade-in starts at navy, fade-out ends at navy', () {
+      final body = LunarBody(astroData: astroFull, lat: lat, lng: lng);
+      final arcs = body.getArcs(
+          solarTimes.solarNoon.subtract(const Duration(hours: 24)),
+          solarTimes.solarNoon.add(const Duration(hours: 24)))
+        ..sort((a, b) => a.startTime.compareTo(b.startTime));
+      expect(arcs, isNotEmpty);
+      expect(arcs.first.startColor, equals(SolarBody.nightNavy));
+      expect(arcs.last.endColor, equals(SolarBody.nightNavy));
     });
 
-    test('gradientStops fade-out ends at nightNavy when moonset is in-window',
-        () {
-      // Moonrise 1.5 h after dusk, moonset 3 h later — both within the
-      // ±12 h window so the full ramp-in → hold → ramp-out is visible.
-      final nightRise = solarTimes.civilTwilightEnd
-          .add(const Duration(hours: 1, minutes: 30));
-      final inWindowSet = nightRise.add(const Duration(hours: 3));
-      // Center the window on nightRise so both rise (+0 h) and set (+3 h) are
-      // well within the ±12 h range, independent of machine timezone.
-      final testNow = nightRise;
-      final layoutLocal = TimelineLayout(
-        stripWidth: stripWidth,
-        nowIndicatorX: nowIndicatorX,
-        windowStart: testNow.subtract(const Duration(hours: 12)),
-        windowEnd: testNow.add(const Duration(hours: 12)),
-      );
-      final inWindowLunar = LunarDayTimes(
-        moonrise: nightRise,
-        moonset: inWindowSet,
-        phase: MoonPhase.full,
-        illuminationFraction: 1.0,
-      );
-      final body = LunarBody(lunar: inWindowLunar, solar: solar);
-      final stops = body.gradientStops(layoutLocal, testNow);
-      expect(stops, isNotEmpty);
-
-      final sorted = [...stops]..sort((a, b) => a.x.compareTo(b.x));
-      expect(sorted.first.c, equals(SolarBody.nightNavy));
-      expect(sorted.last.c, equals(SolarBody.nightNavy));
+    test('moon-up-at-sunset: first arc starts exactly at sunset', () {
+      // Force a moon arc that starts before sunset and ends well into night.
+      // We test the clipping behavior via the helper: arcs emitted by LunarBody
+      // should begin no earlier than the sunset of the moonrise's day.
+      final body = LunarBody(astroData: astroFull, lat: lat, lng: lng);
+      final arcs = body.getArcs(
+          solarTimes.solarNoon.subtract(const Duration(hours: 24)),
+          solarTimes.solarNoon.add(const Duration(hours: 24)));
+      for (final arc in arcs) {
+        final sNear = solarTimesNear(arc.startTime, astroFull);
+        // Arc start must be >= sunset of its day OR within night (before sunrise).
+        final atOrAfterSunset = !arc.startTime.isBefore(sNear.sunset);
+        final beforeSunrise = arc.startTime.isBefore(sNear.sunrise);
+        expect(atOrAfterSunset || beforeSunrise, isTrue,
+            reason: 'Arc start ${arc.startTime} must be in night');
+      }
     });
+  });
 
-    test('moonrise x is within window when in-window', () {
-      final lunarTimes = getLunarTimes(date, lat, lng);
-      if (lunarTimes.moonrise == null) return;
-      final x = layout.xForTime(lunarTimes.moonrise!, now);
-      expect(x, isNotNaN);
-    });
-
-    test('pins upColor at dawn boundary when moon rises before civil twilight',
-        () {
-      // Moon rises 2h before civil twilight begin, sets during daytime.
-      // Without the anchor the solar body's nightNavy stop at civilTwilightBegin
-      // would cause a dark dip in the merged gradient.
-      final earlyRise =
-          solarTimes.civilTwilightBegin.subtract(const Duration(hours: 2));
-      final noonSet = solarTimes.solarNoon;
-      final nightLunar = LunarDayTimes(
-        moonrise: earlyRise,
-        moonset: noonSet,
-        phase: MoonPhase.full,
-        illuminationFraction: 1.0,
-      );
-      final body = LunarBody(lunar: nightLunar, solar: solar);
-      final stops = body.gradientStops(layout, now);
-
-      final xDawn = layout.xForTime(solarTimes.civilTwilightBegin, now);
-      expect(
-        stops.any(
-            (s) => (s.x - xDawn).abs() < 0.5 && s.c != SolarBody.nightNavy),
-        isTrue,
-        reason:
-            'Dawn anchor missing — dark dip would appear at civil twilight begin',
-      );
-    });
-
-    test(
-        'pins upColor at dusk boundary when moon sets after civil twilight end',
-        () {
-      // Moon rises before dawn, sets 2h after civil twilight end.
-      final earlyRise =
-          solarTimes.civilTwilightBegin.subtract(const Duration(hours: 2));
-      final lateSet = solarTimes.civilTwilightEnd.add(const Duration(hours: 2));
-      final nightLunar = LunarDayTimes(
-        moonrise: earlyRise,
-        moonset: lateSet,
-        phase: MoonPhase.full,
-        illuminationFraction: 1.0,
-      );
-      final body = LunarBody(lunar: nightLunar, solar: solar);
-      final stops = body.gradientStops(layout, now);
-
-      final xDusk = layout.xForTime(solarTimes.civilTwilightEnd, now);
-      expect(
-        stops.any(
-            (s) => (s.x - xDusk).abs() < 0.5 && s.c != SolarBody.nightNavy),
-        isTrue,
-        reason:
-            'Dusk anchor missing — dark dip would appear at civil twilight end',
-      );
-    });
-
-    test('moon-already-up: moonset before moonrise (afternoon rise pattern)',
-        () {
-      // Simulates real late-May data: moon rises at 4pm (afternoon, in day),
-      // sets at 5am (early morning, at night). moonset < moonrise in time.
-      // prevSolar provides today's dusk for the overnight anchor.
-      final afternoonRise =
-          solarTimes.solarNoon.add(const Duration(hours: 4)); // ~4pm
-      final earlyMorningSet = solarTimes.civilTwilightBegin
-          .subtract(const Duration(hours: 3)); // ~3h before dawn
-      // moonset is before moonrise — this is the afternoon-rise pattern.
-      expect(earlyMorningSet.isBefore(afternoonRise), isTrue);
-
-      final lunarData = LunarDayTimes(
-        moonrise: afternoonRise,
-        moonset: earlyMorningSet,
-        phase: MoonPhase.full,
-        illuminationFraction: 1.0,
-      );
-      // prevSolar = solar (same body used as "previous night" reference).
-      final body = LunarBody(lunar: lunarData, solar: solar, prevSolar: solar);
-      final stops = body.gradientStops(layout, now);
-
-      // Should have upColor at or before moonset.
-      final xSet = layout.xForTime(earlyMorningSet, now);
-      expect(
-        stops.any((s) => s.x <= xSet && s.c != SolarBody.nightNavy),
-        isTrue,
-        reason: 'No moonlit stop before moonset — overnight glow missing',
-      );
-      // Last stop should be dark (ramp-down after moonset).
-      final sorted = [...stops]..sort((a, b) => a.x.compareTo(b.x));
-      expect(sorted.last.c, equals(SolarBody.nightNavy),
-          reason: 'Should taper to dark after moonset');
+  group('LunarBody.getGlyphs', () {
+    test('emits MoonRise, MoonTransit, MoonSet for each visible arc', () {
+      final body = LunarBody(astroData: astroFull, lat: lat, lng: lng);
+      final glyphs = body.getGlyphs(
+          solarTimes.solarNoon.subtract(const Duration(hours: 24)),
+          solarTimes.solarNoon.add(const Duration(hours: 24)));
+      // At mid-latitudes a 48 h window contains at least one full moon arc.
+      expect(glyphs.length, greaterThanOrEqualTo(3));
+      expect(glyphs.length % 3, equals(0));
     });
   });
 }

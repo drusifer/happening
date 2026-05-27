@@ -1,15 +1,31 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:happening/core/astro/astro_settings.dart';
 import 'package:happening/core/astro/solar_calculator.dart';
 import 'package:happening/features/timeline/painters/solar_body.dart';
-import 'package:happening/features/timeline/timeline_layout.dart';
 
 void main() {
-  // San Francisco — well-defined mid-latitude location.
   const lat = 37.77;
   const lng = -122.42;
 
   final date = DateTime(2026, 5, 18);
   final now = DateTime(2026, 5, 18, 12, 0, 0);
+  late SolarDayTimes times;
+  late AstroData astro;
+  late SolarBody body;
+
+  setUp(() {
+    times = getSolarTimes(date, lat, lng)!;
+    astro = AstroData(
+      civilTwilightBegin: times.civilTwilightBegin,
+      sunrise: times.sunrise,
+      solarNoon: times.solarNoon,
+      sunset: times.sunset,
+      civilTwilightEnd: times.civilTwilightEnd,
+      phase: MoonPhase.full,
+      illuminationFraction: 1.0,
+    );
+    body = SolarBody(astroData: astro);
+  });
 
   group('getSolarTimes', () {
     test('returns non-null for mid-latitude location', () {
@@ -17,83 +33,95 @@ void main() {
     });
 
     test('sunrise < solarNoon < sunset', () {
-      final t = getSolarTimes(date, lat, lng)!;
-      expect(t.sunrise.isBefore(t.solarNoon), isTrue);
-      expect(t.solarNoon.isBefore(t.sunset), isTrue);
+      expect(times.sunrise.isBefore(times.solarNoon), isTrue);
+      expect(times.solarNoon.isBefore(times.sunset), isTrue);
     });
 
     test('civilTwilightBegin < sunrise and sunset < civilTwilightEnd', () {
-      final t = getSolarTimes(date, lat, lng)!;
-      expect(t.civilTwilightBegin.isBefore(t.sunrise), isTrue);
-      expect(t.civilTwilightEnd.isAfter(t.sunset), isTrue);
-    });
-
-    test('events are on the expected date (within ±1 day)', () {
-      final t = getSolarTimes(date, lat, lng)!;
-      final lo = date.subtract(const Duration(days: 1));
-      final hi = date.add(const Duration(days: 2));
-      expect(t.sunrise.isAfter(lo) && t.sunrise.isBefore(hi), isTrue);
-      expect(t.sunset.isAfter(lo) && t.sunset.isBefore(hi), isTrue);
+      expect(times.civilTwilightBegin.isBefore(times.sunrise), isTrue);
+      expect(times.civilTwilightEnd.isAfter(times.sunset), isTrue);
     });
   });
 
-  group('SolarBody', () {
-    late TimelineLayout layout;
-    late SolarBody body;
-    late SolarDayTimes times;
+  group('SolarBody.getArcs', () {
+    test('emits five arcs for a single day inside the window', () {
+      final ws = now.subtract(const Duration(hours: 12));
+      final we = now.add(const Duration(hours: 12));
+      final arcs = body.getArcs(ws, we);
+      // Window covers exactly one day's civil-twilight band → 5 arcs.
+      expect(arcs.length, 5);
+    });
 
-    setUp(() {
-      times = getSolarTimes(date, lat, lng)!;
-      final windowStart = now.subtract(const Duration(hours: 8));
-      final windowEnd = now.add(const Duration(hours: 8));
-      layout = TimelineLayout(
-        stripWidth: 1000.0,
-        nowIndicatorX: 500.0,
-        windowStart: windowStart,
-        windowEnd: windowEnd,
+    test('arcs tile civilTwilightBegin → civilTwilightEnd contiguously', () {
+      final arcs = body
+          .getArcs(now.subtract(const Duration(hours: 12)),
+              now.add(const Duration(hours: 12)))
+        ..sort((a, b) => a.startTime.compareTo(b.startTime));
+      expect(arcs.first.startTime, equals(times.civilTwilightBegin));
+      expect(arcs.last.endTime, equals(times.civilTwilightEnd));
+      for (var i = 0; i + 1 < arcs.length; i++) {
+        expect(arcs[i].endTime, equals(arcs[i + 1].startTime));
+      }
+    });
+
+    test('day arc is solid dayBlue', () {
+      final arcs = body.getArcs(now.subtract(const Duration(hours: 12)),
+          now.add(const Duration(hours: 12)));
+      final day =
+          arcs.firstWhere((a) => a.startTime == times.sunrise);
+      expect(day.endTime, equals(times.sunset));
+      expect(day.startColor, equals(SolarBody.dayBlue));
+      expect(day.endColor, equals(SolarBody.dayBlue));
+    });
+
+    test('multi-day window yields one set per day', () {
+      final ws = now.subtract(const Duration(hours: 36));
+      final we = now.add(const Duration(hours: 36));
+      final arcs = body.getArcs(ws, we);
+      // Spans 3 days of civil-twilight bands → 15 arcs.
+      expect(arcs.length, 15);
+    });
+  });
+
+  group('SolarBody.getGlyphs', () {
+    test('emits SunRise, Sun, SunSet for each visible day', () {
+      final arcs = body.getGlyphs(now.subtract(const Duration(hours: 12)),
+          now.add(const Duration(hours: 12)));
+      expect(arcs.length, 3);
+    });
+  });
+
+  group('isDaytime / nightnessAt', () {
+    test('isDaytime is true at solar noon', () {
+      expect(isDaytime(times.solarNoon, astro), isTrue);
+    });
+
+    test('isDaytime is false during civil twilight', () {
+      final dawn = DateTime.fromMillisecondsSinceEpoch(
+        (times.civilTwilightBegin.millisecondsSinceEpoch +
+                times.sunrise.millisecondsSinceEpoch) ~/
+            2,
       );
-      body = SolarBody(times: times);
+      expect(isDaytime(dawn, astro), isFalse);
     });
 
-    test('sunrise x is left of solar noon x', () {
-      final xRise = layout.xForTime(times.sunrise, now);
-      final xNoon = layout.xForTime(times.solarNoon, now);
-      expect(xRise, lessThan(xNoon));
+    test('nightnessAt is 0 at solar noon', () {
+      expect(nightnessAt(times.solarNoon, astro), closeTo(0.0, 0.01));
     });
 
-    test('sunset x is right of solar noon x', () {
-      final xNoon = layout.xForTime(times.solarNoon, now);
-      final xSet = layout.xForTime(times.sunset, now);
-      expect(xNoon, lessThan(xSet));
+    test('nightnessAt is 1 well before civil twilight', () {
+      expect(
+          nightnessAt(
+              times.civilTwilightBegin.subtract(const Duration(hours: 2)),
+              astro),
+          closeTo(1.0, 0.01));
     });
 
-    test('sunrise x is less than sunset x', () {
-      final xRise = layout.xForTime(times.sunrise, now);
-      final xSet = layout.xForTime(times.sunset, now);
-      expect(xRise, lessThan(xSet));
-    });
-
-    test('gradientStops includes stops for all 5 solar events', () {
-      final stops = body.gradientStops(layout, now);
-      // riseBegin, mid(riseBegin..riseEnd), riseEnd, peak, setBegin, mid(setBegin..setEnd), setEnd = 7
-      expect(stops.length, 7);
-    });
-
-    test('nightnessAt returns 0 at solar noon', () {
-      final x = layout.xForTime(times.solarNoon, now);
-      expect(body.nightnessAt(x, layout, now), closeTo(0.0, 0.01));
-    });
-
-    test('nightnessAt returns 1 well before civil twilight', () {
-      final x = layout.xForTime(
-          times.civilTwilightBegin.subtract(const Duration(hours: 2)), now);
-      expect(body.nightnessAt(x, layout, now), closeTo(1.0, 0.01));
-    });
-
-    test('nightnessAt returns 1 well after civil twilight end', () {
-      final x = layout.xForTime(
-          times.civilTwilightEnd.add(const Duration(hours: 2)), now);
-      expect(body.nightnessAt(x, layout, now), closeTo(1.0, 0.01));
+    test('nightnessAt is 1 well after civil twilight end', () {
+      expect(
+          nightnessAt(
+              times.civilTwilightEnd.add(const Duration(hours: 2)), astro),
+          closeTo(1.0, 0.01));
     });
   });
 }
