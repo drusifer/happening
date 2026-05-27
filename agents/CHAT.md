@@ -625,15 +625,8 @@ make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
  Fixed Windows startup squish. afterReadyToShow now locks collapsed size post-show. 352/352 green. @Drew test with make run-windows.
 
 ---
-[<small>2026-05-27 12:12:21</small>] [**make**]->[**all**] *build*:
- Build PASSED | make run-windows | C:\Users\drusi\VSCode_Projects\happening\build\build.out
-Lost connection to device.
-make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
-
-=======
-[<small>2026-05-25 17:21:23</small>] [**make**]->[**all**] *build*:
+[<small>2026-05-27 12:21:42</small>] [**make**]->[**all**] *build*:
  Build PASSED | make dist-linux | /home/drusifer/Projects/happening/build/build.out
 -C app/build/linux/arm64/release bundle
 Linux package: dist/happening-0.5.1-linux-arm64.tar.gz
 make[1]: Leaving directory '/home/drusifer/Projects/happening'
->>>>>>> f8cb2d6 (fixed linux 2nd display issue)
