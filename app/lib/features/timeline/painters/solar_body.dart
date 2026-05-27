@@ -1,49 +1,135 @@
-// Concrete solar cycle data wrapper and glyph builder.
+// Concrete solar body — tiles each day in the window with five colour arcs.
 //
 // TLDR:
-// Overview: Represents the Sun's daily cycle on the timeline.
-// Problem:  Need concrete time mappings and specific colors representing sunlight and twilight blocks.
-// Solution: Encapsulates SolarDayTimes, provides daylight colors, and returns Sunrise, Sun, and Sunset glyphs.
-// Breaking Changes: No.
+// Overview: Emits the navy → amber → blue → amber → navy progression for every day touched by the window.
+// Problem:  Need consistent solar background covering arbitrarily long windows without per-day branching at the caller.
+// Solution: Iterates day offsets from AstroData.solarNoon, shifting by 24 h per step, and emits five Arcs per day plus rise/noon/set glyphs.
+// Breaking Changes: Replaces the prior single-day SolarBody with one that owns the entire window.
 //
 // ---------------------------------------------------------------------------
 
 import 'package:flutter/material.dart';
-import 'package:happening/core/astro/solar_calculator.dart';
+import 'package:happening/core/astro/astro_settings.dart';
 import 'package:happening/features/timeline/painters/astro_objects.dart';
 import 'package:happening/features/timeline/painters/sky_body.dart';
 
 class SolarBody extends SkyBody {
-  const SolarBody({required this.times});
+  const SolarBody({required this.astroData});
 
-  final SolarDayTimes times;
+  final AstroData astroData;
 
   static const nightNavy = Color(0xFF05080F);
   static const dawnDusk = Color(0xFFE8722A);
   static const dayBlue = Color(0xFF3F7189);
 
   @override
-  Color get upColor => dayBlue;
-  @override
-  Color get downColor => nightNavy;
-  @override
-  Color get twilightColor => dawnDusk;
+  List<Arc> getArcs(DateTime windowStart, DateTime windowEnd) {
+    final arcs = <Arc>[];
+    for (final offset in _dayOffsetsInWindow(windowStart, windowEnd)) {
+      final t = _timesAtOffset(offset);
+      arcs.addAll(_arcsForDay(t));
+    }
+    return arcs;
+  }
 
   @override
-  DateTime? get riseBegin => times.civilTwilightBegin;
-  @override
-  DateTime? get riseEnd => times.sunrise;
-  @override
-  DateTime? get peak => times.solarNoon;
-  @override
-  DateTime? get setBegin => times.sunset;
-  @override
-  DateTime? get setEnd => times.civilTwilightEnd;
+  List<AstroObject> getGlyphs(DateTime windowStart, DateTime windowEnd) {
+    final glyphs = <AstroObject>[];
+    for (final offset in _dayOffsetsInWindow(windowStart, windowEnd)) {
+      final t = _timesAtOffset(offset);
+      glyphs.add(SunRise(time: t.sunrise));
+      glyphs.add(Sun(time: t.solarNoon));
+      glyphs.add(SunSet(time: t.sunset));
+    }
+    return glyphs;
+  }
 
-  @override
-  List<AstroObject> buildGlyphs() => [
-        SunRise(time: times.sunrise),
-        Sun(time: times.solarNoon),
-        SunSet(time: times.sunset),
-      ];
+  // ---------------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------------
+
+  /// All integer day offsets whose `[civilTwilightBegin, civilTwilightEnd]`
+  /// range intersects the window. Range ±1 covers any plausible window.
+  Iterable<int> _dayOffsetsInWindow(DateTime ws, DateTime we) sync* {
+    final startHours = ws.difference(astroData.solarNoon).inMinutes / 60.0;
+    final endHours = we.difference(astroData.solarNoon).inMinutes / 60.0;
+    final loOffset = (startHours / 24.0).floor() - 1;
+    final hiOffset = (endHours / 24.0).ceil() + 1;
+    for (var i = loOffset; i <= hiOffset; i++) {
+      final t = _timesAtOffset(i);
+      if (!t.civilTwilightEnd.isBefore(ws) &&
+          !t.civilTwilightBegin.isAfter(we)) {
+        yield i;
+      }
+    }
+  }
+
+  ({
+    DateTime civilTwilightBegin,
+    DateTime sunrise,
+    DateTime solarNoon,
+    DateTime sunset,
+    DateTime civilTwilightEnd,
+  }) _timesAtOffset(int offset) {
+    final shift = Duration(hours: 24 * offset);
+    return (
+      civilTwilightBegin: astroData.civilTwilightBegin.add(shift),
+      sunrise: astroData.sunrise.add(shift),
+      solarNoon: astroData.solarNoon.add(shift),
+      sunset: astroData.sunset.add(shift),
+      civilTwilightEnd: astroData.civilTwilightEnd.add(shift),
+    );
+  }
+
+  /// Five arcs covering `[civilTwilightBegin, civilTwilightEnd]`:
+  /// navy→amber (dawn-rise), amber→blue (dawn-finish), blue (day),
+  /// blue→amber (dusk-start), amber→navy (dusk-finish).
+  List<Arc> _arcsForDay(
+      ({
+        DateTime civilTwilightBegin,
+        DateTime sunrise,
+        DateTime solarNoon,
+        DateTime sunset,
+        DateTime civilTwilightEnd,
+      }) t) {
+    final dawnMid = _midpoint(t.civilTwilightBegin, t.sunrise);
+    final duskMid = _midpoint(t.sunset, t.civilTwilightEnd);
+    return [
+      Arc(
+        startTime: t.civilTwilightBegin,
+        endTime: dawnMid,
+        startColor: nightNavy,
+        endColor: dawnDusk,
+      ),
+      Arc(
+        startTime: dawnMid,
+        endTime: t.sunrise,
+        startColor: dawnDusk,
+        endColor: dayBlue,
+      ),
+      Arc(
+        startTime: t.sunrise,
+        endTime: t.sunset,
+        startColor: dayBlue,
+        endColor: dayBlue,
+      ),
+      Arc(
+        startTime: t.sunset,
+        endTime: duskMid,
+        startColor: dayBlue,
+        endColor: dawnDusk,
+      ),
+      Arc(
+        startTime: duskMid,
+        endTime: t.civilTwilightEnd,
+        startColor: dawnDusk,
+        endColor: nightNavy,
+      ),
+    ];
+  }
+
+  static DateTime _midpoint(DateTime a, DateTime b) =>
+      DateTime.fromMillisecondsSinceEpoch(
+        (a.millisecondsSinceEpoch + b.millisecondsSinceEpoch) ~/ 2,
+      );
 }
