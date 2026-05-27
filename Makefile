@@ -24,7 +24,7 @@ else
   else
     ARCH     := x64
   endif
-  PYTHON     := python
+  PYTHON     := python3
 endif
 
 # Universal help commands utilizing the Python print_help utility
