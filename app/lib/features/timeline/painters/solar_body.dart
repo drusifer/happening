@@ -131,5 +131,6 @@ class SolarBody extends SkyBody {
   static DateTime _midpoint(DateTime a, DateTime b) =>
       DateTime.fromMillisecondsSinceEpoch(
         (a.millisecondsSinceEpoch + b.millisecondsSinceEpoch) ~/ 2,
+        isUtc: a.isUtc,
       );
 }

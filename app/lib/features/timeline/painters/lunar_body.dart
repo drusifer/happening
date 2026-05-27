@@ -54,28 +54,85 @@ class LunarBody extends SkyBody {
   }
 
   /// Pure: given one moon-arc and the local [astroData], returns the lunar
-  /// arcs clipped to the night portion `[civilTwilightEnd, nextCivilTwilightBegin]`
-  /// intersected with `[moonrise, moonset]`. Returns `[]` if the moon is up
-  /// only during daytime/twilight.
+  /// arcs covering the moon-up night portion. Three cases per side:
   ///
-  /// Exposed for unit testing scenarios independent of getLunarTimes.
+  /// * **Moon up at the dusk-finish midpoint** → lead-in is an amber→moonlit
+  ///   bridge over `[duskMid, civilTwilightEnd]`, replacing solar's
+  ///   amber→navy dusk-finish.
+  /// * **Moon rises after duskMid** → standard navy→moonlit fadeIn at moonrise.
+  /// * **Symmetric for moonset / dawn.**
+  ///
+  /// Returns `[]` if there is no meaningful night-and-moon-up overlap. Exposed
+  /// for unit testing scenarios independent of getLunarTimes.
   static List<Arc> nightArcsFor({
     required DateTime moonrise,
     required DateTime moonset,
     required AstroData astroData,
     required Color upColor,
   }) {
-    // Night = after dusk twilight ends, before dawn twilight begins. This
-    // leaves solar's dawn/dusk amber arcs visible (lunar would otherwise
-    // clip them away in the overlap region).
-    final nightStart = _laterOf(
-        moonrise, solarTimesNear(moonrise, astroData).civilTwilightEnd);
-    final nightEnd = _earlierOf(
-        moonset,
-        solarTimesNear(moonset.add(const Duration(hours: 12)), astroData)
-            .civilTwilightBegin);
-    if (!nightEnd.isAfter(nightStart)) return const [];
-    return _fadeArcs(nightStart, nightEnd, upColor);
+    const amber = SolarBody.dawnDusk;
+    const navy = SolarBody.nightNavy;
+
+    final sDusk = solarTimesNear(moonrise, astroData);
+    final sDawn = solarTimesNear(
+        moonset.add(const Duration(hours: 12)), astroData);
+    final duskMid = _midpoint(sDusk.sunset, sDusk.civilTwilightEnd);
+    final dawnMid = _midpoint(sDawn.civilTwilightBegin, sDawn.sunrise);
+
+    // ----- Lead-in: amber→up bridge during dusk-finish OR navy→up at moonrise.
+    final DateTime fadeInStart;
+    final DateTime fadeInEnd;
+    final Color fadeInStartColor;
+    if (!moonrise.isAfter(duskMid)) {
+      fadeInStart = duskMid;
+      fadeInEnd = sDusk.civilTwilightEnd;
+      fadeInStartColor = amber;
+    } else {
+      fadeInStart = moonrise;
+      fadeInEnd = moonrise.add(_fadeDuration);
+      fadeInStartColor = navy;
+    }
+
+    // ----- Lead-out: up→amber bridge during dawn-rise OR up→navy at moonset.
+    final DateTime fadeOutStart;
+    final DateTime fadeOutEnd;
+    final Color fadeOutEndColor;
+    if (!moonset.isBefore(dawnMid)) {
+      fadeOutStart = sDawn.civilTwilightBegin;
+      fadeOutEnd = dawnMid;
+      fadeOutEndColor = amber;
+    } else {
+      fadeOutEnd = moonset;
+      fadeOutStart = moonset.subtract(_fadeDuration);
+      fadeOutEndColor = navy;
+    }
+
+    if (!fadeOutStart.isAfter(fadeInEnd)) {
+      // Too short for the full lead-in+hold+lead-out shape.
+      // Fall back to a clamped navy→up→navy over the basic night portion.
+      final nightStart = _laterOf(moonrise, sDusk.civilTwilightEnd);
+      final nightEnd = _earlierOf(moonset, sDawn.civilTwilightBegin);
+      if (!nightEnd.isAfter(nightStart)) return const [];
+      return _shortNightFades(nightStart, nightEnd, upColor);
+    }
+
+    return [
+      Arc(
+          startTime: fadeInStart,
+          endTime: fadeInEnd,
+          startColor: fadeInStartColor,
+          endColor: upColor),
+      Arc(
+          startTime: fadeInEnd,
+          endTime: fadeOutStart,
+          startColor: upColor,
+          endColor: upColor),
+      Arc(
+          startTime: fadeOutStart,
+          endTime: fadeOutEnd,
+          startColor: upColor,
+          endColor: fadeOutEndColor),
+    ];
   }
 
   @override
@@ -140,36 +197,33 @@ class LunarBody extends SkyBody {
     }
   }
 
-  /// FadeIn → hold → fadeOut, clamped so the fades don't overrun the night.
-  static List<Arc> _fadeArcs(
+  /// Short-night fallback when the moon's night window is too brief for the
+  /// standard lead-in + hold + lead-out shape: split the night in half,
+  /// navy→up then up→navy.
+  static List<Arc> _shortNightFades(
       DateTime nightStart, DateTime nightEnd, Color up) {
     final navy = SolarBody.nightNavy;
-    final fadeMs = _fadeDuration.inMicroseconds;
-    final nightMs = nightEnd.difference(nightStart).inMicroseconds;
-    // Clamp each fade to at most half the night so they don't overlap.
-    final eachFadeMs = math.min(fadeMs, nightMs ~/ 2);
-    final fadeInEnd = nightStart.add(Duration(microseconds: eachFadeMs));
-    final fadeOutStart = nightEnd.subtract(Duration(microseconds: eachFadeMs));
+    final halfMs = nightEnd.difference(nightStart).inMicroseconds ~/ 2;
+    final mid = nightStart.add(Duration(microseconds: halfMs));
     return [
       Arc(
           startTime: nightStart,
-          endTime: fadeInEnd,
+          endTime: mid,
           startColor: navy,
           endColor: up),
-      if (fadeOutStart.isAfter(fadeInEnd))
-        Arc(
-            startTime: fadeInEnd,
-            endTime: fadeOutStart,
-            startColor: up,
-            endColor: up),
       Arc(
-          startTime: fadeOutStart,
+          startTime: mid,
           endTime: nightEnd,
           startColor: up,
           endColor: navy),
     ];
   }
 
+  static DateTime _midpoint(DateTime a, DateTime b) =>
+      DateTime.fromMillisecondsSinceEpoch(
+        (a.millisecondsSinceEpoch + b.millisecondsSinceEpoch) ~/ 2,
+        isUtc: a.isUtc,
+      );
   static DateTime _laterOf(DateTime a, DateTime b) => a.isAfter(b) ? a : b;
   static DateTime _earlierOf(DateTime a, DateTime b) => a.isBefore(b) ? a : b;
 }

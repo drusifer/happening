@@ -625,6 +625,8 @@ make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
  Fixed Windows startup squish. afterReadyToShow now locks collapsed size post-show. 352/352 green. @Drew test with make run-windows.
 
 ---
-[<small>2026-05-27 14:01:55</small>] [**make**]->[**all**] *build*:
- Build PASSED | make run-macos | /Users/drewgutstein/Projects/happening/build/build.out
+[<small>2026-05-27 18:04:11</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-windows | C:\Users\drusi\VSCode_Projects\happening\build\build.out
 Lost connection to device.
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
