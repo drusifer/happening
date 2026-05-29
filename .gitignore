@@ -1,6 +1,7 @@
 # Local Flutter SDK (downloaded by make setup, not committed)
 .flutter/
 .cache
+.antigravitycli/*
 
 node_modules
 
