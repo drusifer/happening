@@ -27,8 +27,9 @@ typedef AboutUrlLauncher = Future<bool> Function(Uri url);
 /// Result of a city name resolution attempt.
 typedef CityResult = ({double lat, double lng, String label});
 
-/// Callback type for resolving a city name to coordinates.
-typedef ResolveCityName = Future<CityResult?> Function(String query);
+/// Callback type for resolving a city name to a list of matching cities,
+/// best match first.
+typedef ResolveCityName = Future<List<CityResult>> Function(String query);
 
 /// Popup panel for app settings (Font size, Logout).
 class SettingsPanel extends StatefulWidget {
@@ -64,6 +65,15 @@ class _SettingsPanelState extends State<SettingsPanel> {
   List<CalendarMeta>? _availableCalendars;
   bool _isLoadingCalendars = true;
   double? _pendingFontSize;
+
+  /// The signed-in account's email — the primary calendar's id is the address.
+  String? get _accountName {
+    final cals = _availableCalendars;
+    if (cals == null || cals.isEmpty) return null;
+    final primary = cals.firstWhere((c) => c.isPrimary, orElse: () => cals.first);
+    final id = primary.id;
+    return id.contains('@') ? id : null;
+  }
 
   @override
   void initState() {
@@ -232,12 +242,30 @@ class _SettingsPanelState extends State<SettingsPanel> {
             labelBuilder: (v) => '${v}h',
           ),
           const Spacer(),
-          _MiniButton(
-            label: 'LOGOUT',
-            onTap: widget.onSignOut,
-            color: Colors.redAccent.withValues(alpha: 0.15),
-            textColor: Colors.redAccent.withValues(alpha: 0.8),
-            fontSize: baseSize * 0.55,
+          Row(
+            children: [
+              _MiniButton(
+                label: 'LOGOUT',
+                onTap: widget.onSignOut,
+                color: Colors.redAccent.withValues(alpha: 0.15),
+                textColor: Colors.redAccent.withValues(alpha: 0.8),
+                fontSize: baseSize * 0.55,
+              ),
+              if (_accountName != null) ...[
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _accountName!,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: theme.textTheme.bodySmall?.color
+                          ?.withValues(alpha: 0.6),
+                      fontSize: baseSize * 0.55,
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
         ],
       ),
@@ -561,10 +589,11 @@ class _PickerRow<T> extends StatelessWidget {
 
 // ── Default location callbacks ─────────────────────────────────────────────────
 
-Future<CityResult?> _defaultResolveCityName(String query) async {
-  final result = await city_search.searchCity(query);
-  if (result == null) return null;
-  return (lat: result.lat, lng: result.lng, label: result.label);
+Future<List<CityResult>> _defaultResolveCityName(String query) async {
+  final matches = await city_search.searchCities(query);
+  return matches
+      .map((m) => (lat: m.lat, lng: m.lng, label: m.label))
+      .toList();
 }
 
 // ── Astronomical location section ─────────────────────────────────────────────
@@ -588,7 +617,7 @@ class _AstroLocationSectionState extends State<_AstroLocationSection> {
   final _cityController = TextEditingController();
 
   String? _cityError;
-  CityResult? _cityPreview;
+  List<CityResult>? _cityResults;
 
   @override
   void dispose() {
@@ -614,26 +643,24 @@ class _AstroLocationSectionState extends State<_AstroLocationSection> {
     if (query.isEmpty) return;
 
     setState(() => _cityError = null);
-    final result = await widget.resolveCityName(query);
+    final results = await widget.resolveCityName(query);
     if (!mounted) return;
 
-    if (result == null) {
+    if (results.isEmpty) {
       setState(() {
         _cityError =
             "No results for '$query' — try a different or nearby city.";
-        _cityPreview = null;
+        _cityResults = null;
       });
     } else {
-      setState(() => _cityPreview = result);
+      setState(() => _cityResults = results);
     }
   }
 
-  void _confirmCityPreview() {
-    if (_cityPreview == null) return;
-    _saveLocation(_cityPreview!.lat, _cityPreview!.lng,
-        cityName: _cityPreview!.label);
+  void _selectCity(CityResult city) {
+    _saveLocation(city.lat, city.lng, cityName: city.label);
     setState(() {
-      _cityPreview = null;
+      _cityResults = null;
       _cityController.clear();
     });
   }
@@ -718,20 +745,41 @@ class _AstroLocationSectionState extends State<_AstroLocationSection> {
           style: TextStyle(color: Colors.orangeAccent, fontSize: fs * 0.55),
         ),
       ],
-      if (_cityPreview != null) ...[
+      if (_cityResults != null) ...[
         const SizedBox(height: 4),
-        Text(
-          '${_cityPreview!.label} → ${_formatCoord(_cityPreview!.lat, _cityPreview!.lng)}',
-          style: TextStyle(
-              fontSize: fs * 0.6, color: theme.textTheme.bodyMedium?.color),
-        ),
-        const SizedBox(height: 4),
-        _MiniButton(
-          label: 'Confirm',
-          onTap: _confirmCityPreview,
-          color: theme.colorScheme.primary.withValues(alpha: 0.15),
-          textColor: theme.colorScheme.primary,
-          fontSize: fs * 0.55,
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: 140),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: theme.dividerColor.withValues(alpha: 0.5),
+              ),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: ListView.builder(
+              shrinkWrap: true,
+              padding: EdgeInsets.zero,
+              itemCount: _cityResults!.length,
+              itemBuilder: (context, i) {
+                final city = _cityResults![i];
+                return InkWell(
+                  key: Key('city_result_$i'),
+                  onTap: () => _selectCity(city),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 5),
+                    child: Text(
+                      '${city.label} · ${_formatCoord(city.lat, city.lng)}',
+                      style: TextStyle(
+                        fontSize: fs * 0.6,
+                        color: theme.textTheme.bodyMedium?.color,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
         ),
       ],
     ];

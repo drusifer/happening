@@ -542,8 +542,9 @@ class _TimelineStripState extends State<TimelineStrip>
     final stripWidth = constraints.maxWidth;
     final now = _now;
 
-    // Left toolbar: left:8 + 3×(pad4+icon16+pad4) + 2×4px spacers = 88px right edge.
-    const double leftToolbarRight = 8.0 + 3 * 24.0 + 2 * 4.0;
+    // Left toolbar: left:8 + 3×(pad6+icon24+pad6) + 2×4px spacers = 124px right edge,
+    // plus 15px extra clearance.
+    const double leftToolbarRight = 8.0 + 3 * 36.0 + 2 * 4.0 + 15.0;
     // CountdownDisplay (untilNext mode) sits just left of the now line.
     // Its width is padding(12) + text — longest format "X h YY min" ≈ fontSize × 6.0.
     // Now line must clear: toolbar + 8px gap + countdown widget + 8px gap.

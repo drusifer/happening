@@ -12,37 +12,48 @@ import 'package:flutter/services.dart';
 
 List<String>? _cachedLines;
 
+typedef CityMatch = ({double lat, double lng, String label});
+
 /// Returns the best matching city for [query], or null if none found.
 ///
 /// Searches the bundled GeoNames dataset (cities15000) case-insensitively.
 /// Prefers prefix matches over substring matches.
-Future<({double lat, double lng, String label})?> searchCity(
-    String query) async {
+Future<CityMatch?> searchCity(String query) async {
+  final matches = await searchCities(query);
+  return matches.isEmpty ? null : matches.first;
+}
+
+/// Returns up to [limit] cities matching [query], best match first.
+///
+/// Searches the bundled GeoNames dataset case-insensitively. Prefix matches
+/// are ranked ahead of substring matches so the user can disambiguate between
+/// same-named cities (e.g. Los Angeles, CA vs Los Angeles, CL).
+Future<List<CityMatch>> searchCities(String query, {int limit = 25}) async {
   final q = query.toLowerCase().trim();
-  if (q.isEmpty) return null;
+  if (q.isEmpty) return const [];
 
   _cachedLines ??= (await rootBundle.loadString('assets/data/cities.csv'))
       .split('\n')
       .where((l) => l.isNotEmpty)
       .toList();
 
-  String? best;
+  final prefixMatches = <CityMatch>[];
+  final substringMatches = <CityMatch>[];
   for (final line in _cachedLines!) {
-    final name = line.split('|')[0].toLowerCase();
-    if (name.startsWith(q)) {
-      best = line;
-      break;
-    }
-    if (best == null && name.contains(q)) {
-      best = line;
-    }
+    final parts = line.split('|');
+    if (parts.length < 4) continue;
+    final name = parts[0].toLowerCase();
+    final isPrefix = name.startsWith(q);
+    if (!isPrefix && !name.contains(q)) continue;
+
+    final lat = double.tryParse(parts[2]);
+    final lng = double.tryParse(parts[3]);
+    if (lat == null || lng == null) continue;
+
+    final match = (lat: lat, lng: lng, label: '${parts[0]}, ${parts[1]}');
+    (isPrefix ? prefixMatches : substringMatches).add(match);
+    if (prefixMatches.length >= limit) break;
   }
 
-  if (best == null) return null;
-  final parts = best.split('|');
-  if (parts.length < 4) return null;
-  final lat = double.tryParse(parts[2]);
-  final lng = double.tryParse(parts[3]);
-  if (lat == null || lng == null) return null;
-  return (lat: lat, lng: lng, label: '${parts[0]}, ${parts[1]}');
+  return [...prefixMatches, ...substringMatches].take(limit).toList();
 }
