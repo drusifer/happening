@@ -85,9 +85,11 @@ void main() {
       expect(arcs, isNotEmpty);
       final boundaryColors = {SolarBody.nightNavy, SolarBody.dawnDusk};
       expect(boundaryColors.contains(arcs.first.startColor), isTrue,
-          reason: 'lead-in must start at navy or amber, got ${arcs.first.startColor}');
+          reason:
+              'lead-in must start at navy or amber, got ${arcs.first.startColor}');
       expect(boundaryColors.contains(arcs.last.endColor), isTrue,
-          reason: 'lead-out must end at navy or amber, got ${arcs.last.endColor}');
+          reason:
+              'lead-out must end at navy or amber, got ${arcs.last.endColor}');
     });
   });
 

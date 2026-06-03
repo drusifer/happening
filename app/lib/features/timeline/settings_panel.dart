@@ -14,6 +14,9 @@ import 'package:flutter/material.dart';
 import 'package:happening/core/app_metadata.dart';
 import 'package:happening/core/astro/astro_settings.dart';
 import 'package:happening/core/astro/city_search.dart' as city_search;
+import 'package:happening/core/display/display_info.dart';
+import 'package:happening/core/display/display_service.dart';
+import 'package:happening/core/display/persisted_display_choice.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/features/calendar/calendar_controller.dart';
 import 'package:happening/features/calendar/calendar_service.dart';
@@ -37,6 +40,8 @@ class SettingsPanel extends StatefulWidget {
     this.launchAboutUrl = _launchAboutUrl,
     this.platformOverride,
     this.resolveCityName = _defaultResolveCityName,
+    this.displayService,
+    this.displaySectionKey,
   });
 
   final SettingsService settingsService;
@@ -45,6 +50,11 @@ class SettingsPanel extends StatefulWidget {
   final AboutUrlLauncher launchAboutUrl;
   final TargetPlatform? platformOverride;
   final ResolveCityName resolveCityName;
+  final DisplayService? displayService;
+
+  /// Key attached to the Display section root so the on-strip fallback
+  /// indicator can deep-link via `Scrollable.ensureVisible`.
+  final Key? displaySectionKey;
 
   @override
   State<SettingsPanel> createState() => _SettingsPanelState();
@@ -158,6 +168,18 @@ class _SettingsPanelState extends State<SettingsPanel> {
                 child: _AstroLocationSection(
                   settingsService: widget.settingsService,
                   resolveCityName: widget.resolveCityName,
+                  baseSize: baseSize,
+                ),
+              ),
+            ],
+            if (widget.displayService != null) ...[
+              divider,
+              SizedBox(
+                width: 200 * scale,
+                child: _DisplaySection(
+                  key: widget.displaySectionKey,
+                  settingsService: widget.settingsService,
+                  displayService: widget.displayService!,
                   baseSize: baseSize,
                 ),
               ),
@@ -597,7 +619,8 @@ class _AstroLocationSectionState extends State<_AstroLocationSection> {
 
     if (result == null) {
       setState(() {
-        _cityError = "No results for '$query' — try a different or nearby city.";
+        _cityError =
+            "No results for '$query' — try a different or nearby city.";
         _cityPreview = null;
       });
     } else {
@@ -713,7 +736,6 @@ class _AstroLocationSectionState extends State<_AstroLocationSection> {
       ],
     ];
   }
-
 }
 
 String _formatCoord(double lat, double lng) {
@@ -724,7 +746,6 @@ String _formatCoord(double lat, double lng) {
 
 class _MiniButton extends StatelessWidget {
   const _MiniButton({
-    super.key,
     required this.label,
     required this.onTap,
     required this.color,
@@ -759,5 +780,156 @@ class _MiniButton extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Display picker section (F-30 D1 + D2): radio list of available displays
+/// plus an unavailable-fallback row when the user's persisted choice has
+/// disconnected.
+class _DisplaySection extends StatefulWidget {
+  const _DisplaySection({
+    super.key,
+    required this.settingsService,
+    required this.displayService,
+    required this.baseSize,
+  });
+
+  final SettingsService settingsService;
+  final DisplayService displayService;
+  final double baseSize;
+
+  @override
+  State<_DisplaySection> createState() => _DisplaySectionState();
+}
+
+class _DisplaySectionState extends State<_DisplaySection> {
+  Future<void> _chooseDisplay(DisplayInfo d) async {
+    final choice = PersistedDisplayChoice.fromDisplay(d);
+    await widget.displayService.setPersistedChoice(choice);
+    await widget.settingsService.update(
+      widget.settingsService.current.copyWith(chosenDisplay: choice),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ListenableBuilder(
+      listenable: widget.displayService,
+      builder: (context, _) {
+        final available = widget.displayService.availableDisplays;
+        final activeDisplay = widget.displayService.activeDisplay;
+        final inFallback = widget.displayService.isInFallback;
+        final persisted = widget.settingsService.current.chosenDisplay;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _SectionHeader(
+              theme: theme,
+              title: 'Display',
+              fontSize: widget.baseSize * 0.7,
+            ),
+            const SizedBox(height: 6),
+            for (final d in available)
+              _DisplayRadioRow(
+                label: d.labelFor(available),
+                selected: d == activeDisplay && !inFallback,
+                fontSize: widget.baseSize * 0.65,
+                onTap: () => unawaited(_chooseDisplay(d)),
+              ),
+            if (inFallback && persisted != null) ...[
+              const SizedBox(height: 8),
+              _FallbackRow(
+                persisted: persisted,
+                fontSize: widget.baseSize * 0.55,
+              ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _DisplayRadioRow extends StatelessWidget {
+  const _DisplayRadioRow({
+    required this.label,
+    required this.selected,
+    required this.fontSize,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final double fontSize;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 3),
+        child: Row(
+          children: [
+            Icon(
+              selected ? Icons.radio_button_checked : Icons.radio_button_off,
+              size: fontSize + 2,
+              color: selected
+                  ? theme.colorScheme.primary
+                  : theme.textTheme.bodySmall?.color?.withValues(alpha: 0.5),
+            ),
+            const SizedBox(width: 6),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: theme.textTheme.bodyMedium?.color
+                      ?.withValues(alpha: selected ? 1.0 : 0.7),
+                  fontSize: fontSize,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FallbackRow extends StatelessWidget {
+  const _FallbackRow({
+    required this.persisted,
+    required this.fontSize,
+  });
+
+  final PersistedDisplayChoice persisted;
+  final double fontSize;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final label = _persistedLabel(persisted);
+    return Text(
+      'Currently set: $label — unavailable. Showing on primary until it reconnects.',
+      style: TextStyle(
+        color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.65),
+        fontSize: fontSize,
+        fontStyle: FontStyle.italic,
+      ),
+    );
+  }
+
+  static String _persistedLabel(PersistedDisplayChoice c) {
+    final name = c.osName.trim();
+    final w = c.widthLogical.toInt();
+    final h = c.heightLogical.toInt();
+    return name.isNotEmpty ? '$name ($w×$h)' : 'Display ($w×$h)';
   }
 }

@@ -19,6 +19,7 @@ class MacOSWindowService extends WindowService {
   MacOSWindowService({
     required super.windowManager,
     required super.screenRetriever,
+    required super.displayService,
   }) : super(
           interactionStrategy:
               MacOsWindowInteractionStrategy(wm: windowManager),

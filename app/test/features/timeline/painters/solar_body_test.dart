@@ -53,9 +53,8 @@ void main() {
     });
 
     test('arcs tile civilTwilightBegin → civilTwilightEnd contiguously', () {
-      final arcs = body
-          .getArcs(now.subtract(const Duration(hours: 12)),
-              now.add(const Duration(hours: 12)))
+      final arcs = body.getArcs(now.subtract(const Duration(hours: 12)),
+          now.add(const Duration(hours: 12)))
         ..sort((a, b) => a.startTime.compareTo(b.startTime));
       expect(arcs.first.startTime, equals(times.civilTwilightBegin));
       expect(arcs.last.endTime, equals(times.civilTwilightEnd));
@@ -67,8 +66,7 @@ void main() {
     test('day arc is solid dayBlue', () {
       final arcs = body.getArcs(now.subtract(const Duration(hours: 12)),
           now.add(const Duration(hours: 12)));
-      final day =
-          arcs.firstWhere((a) => a.startTime == times.sunrise);
+      final day = arcs.firstWhere((a) => a.startTime == times.sunrise);
       expect(day.endTime, equals(times.sunset));
       expect(day.startColor, equals(SolarBody.dayBlue));
       expect(day.endColor, equals(SolarBody.dayBlue));

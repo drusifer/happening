@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:happening/core/display/display_info.dart';
+import 'package:happening/core/display/display_service.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/window/expansion_controller.dart'
     show ExpansionController;
@@ -32,9 +34,11 @@ class WindowService with WidgetsBindingObserver {
   WindowService({
     required WindowManager windowManager,
     required ScreenRetriever screenRetriever,
+    required DisplayService displayService,
     WindowInteractionStrategy? interactionStrategy,
   })  : _wm = windowManager,
         _sr = screenRetriever,
+        _displayService = displayService,
         _interactionStrategy = interactionStrategy ??
             WindowInteractionStrategy.create(wm: windowManager),
         _strategy = WindowResizeStrategy.create(
@@ -44,6 +48,7 @@ class WindowService with WidgetsBindingObserver {
 
   final WindowManager _wm;
   final ScreenRetriever _sr;
+  final DisplayService _displayService;
   final WindowInteractionStrategy _interactionStrategy;
   final WindowResizeStrategy _strategy;
 
@@ -55,6 +60,7 @@ class WindowService with WidgetsBindingObserver {
 
   double _dpr = 1.0;
   double _screenWidth = 0;
+  DisplayInfo? _activeDisplay;
 
   // ── Protected accessors for subclasses ────────────────────────────────────
 
@@ -70,6 +76,9 @@ class WindowService with WidgetsBindingObserver {
   @protected
   bool get isExpanded => _isExpanded;
 
+  @protected
+  DisplayInfo? get activeDisplay => _activeDisplay;
+
   // ── Public API ────────────────────────────────────────────────────────────
 
   WindowMode get windowMode => _windowMode;
@@ -80,9 +89,14 @@ class WindowService with WidgetsBindingObserver {
 
   Future<void> focus() => _wm.focus();
 
-  /// Re-registers any platform AppBar reservation.
-  /// No-op by default; overridden by WindowsWindowService.
-  Future<void> reassertAppBar() async {}
+  /// Re-registers any platform AppBar/strut reservation and/or repositions the window to its active display coordinates.
+  Future<void> reassertAppBar() async {
+    _log.info('WindowService.reassertAppBar: repositioning to active display');
+    if (_activeDisplay != null) {
+      await _strategy.moveToDisplay(_activeDisplay!);
+      await onDisplayChangedExtra();
+    }
+  }
 
   /// Call once, before [runApp], to set up the window.
   Future<void> initialize({
@@ -95,14 +109,13 @@ class WindowService with WidgetsBindingObserver {
 
     final double realDpr = _wm.getDevicePixelRatio();
     _dpr = realDpr;
-    final display = await _sr.getPrimaryDisplay();
-    final width = display.size.width;
+    final width = await _readActiveDisplayWidth();
     _screenWidth = width;
     final targetHeight = getCollapsedHeight();
     final size = Size(width, targetHeight);
 
     _log.info(
-        'WindowService.initialize: dpr=$_dpr displaySize=${display.size} '
+        'WindowService.initialize: dpr=$_dpr activeDisplay=$_activeDisplay '
         'size=$size collapsedHeight=$targetHeight expandedHeight=${getExpandedHeight()}');
 
     final windowOptions = WindowOptions(
@@ -115,22 +128,33 @@ class WindowService with WidgetsBindingObserver {
 
     _log.info('WindowService.initialize: calling waitUntilReadyToShow');
     final readyToShow = _wm.waitUntilReadyToShow(windowOptions, () async {
-      _log.info('WindowService.initialize: readyToShow callback — calling beforeShow');
-      await beforeShow(size, _dpr, _windowMode);
-      _log.info('WindowService.initialize: readyToShow callback — calling strategy.initialize');
+      _log.info(
+          'WindowService.initialize: readyToShow callback — calling strategy.initialize');
       await _strategy.initialize(size, _dpr);
-      _log.info('WindowService.initialize: readyToShow callback — calling setAsFrameless');
+      if (_activeDisplay != null) {
+        _log.info(
+            'WindowService.initialize: readyToShow callback — calling strategy.moveToDisplay ${_activeDisplay!.id}');
+        await _strategy.moveToDisplay(_activeDisplay!);
+      }
+      _log.info(
+          'WindowService.initialize: readyToShow callback — calling beforeShow');
+      await beforeShow(size, _dpr, _windowMode);
+      _log.info(
+          'WindowService.initialize: readyToShow callback — calling setAsFrameless');
       await _wm.setAsFrameless();
-      _log.info('WindowService.initialize: readyToShow callback — calling performShow');
+      _log.info(
+          'WindowService.initialize: readyToShow callback — calling performShow');
       await performShow();
-      _log.info('WindowService.initialize: readyToShow callback — calling interactionStrategy.initialize');
+      _log.info(
+          'WindowService.initialize: readyToShow callback — calling interactionStrategy.initialize');
       await _interactionStrategy.initialize(_windowMode);
       _log.info('WindowService.initialize: readyToShow callback — done');
     });
 
     _log.info('WindowService.initialize: awaiting readyToShow');
     await awaitReadyToShow(readyToShow);
-    _log.info('WindowService.initialize: readyToShow complete, calling afterReadyToShow');
+    _log.info(
+        'WindowService.initialize: readyToShow complete, calling afterReadyToShow');
 
     await afterReadyToShow(_windowMode);
     _log.info('WindowService.initialize: afterReadyToShow complete');
@@ -140,12 +164,18 @@ class WindowService with WidgetsBindingObserver {
     // that race with first_frame_cb showing the window.
     _log.info('WindowService.initialize: registering WidgetsBindingObserver');
     WidgetsBinding.instance.addObserver(this);
+    _displayService.addListener(_onDisplayServiceChanged);
   }
 
   void dispose() {
+    _displayService.removeListener(_onDisplayServiceChanged);
     WidgetsBinding.instance.removeObserver(this);
     _strategy.dispose();
     onDispose();
+  }
+
+  void _onDisplayServiceChanged() {
+    unawaited(_onDisplayChanged());
   }
 
   @override
@@ -196,7 +226,9 @@ class WindowService with WidgetsBindingObserver {
   /// Called inside the readyToShow callback before [performShow].
   /// Subclasses override for pre-show platform setup (e.g. Windows AppBar).
   @protected
-  Future<void> beforeShow(Size size, double dpr, WindowMode mode) async {}
+  Future<void> beforeShow(Size size, double dpr, WindowMode mode) async {
+    return;
+  }
 
   /// Shows and focuses the window. Subclasses override to change timing
   /// (e.g. macOS defers until after the first rendered frame).
@@ -215,21 +247,29 @@ class WindowService with WidgetsBindingObserver {
   /// Called after readyToShow completes (or is unawaited). Subclasses
   /// override for post-show platform setup (e.g. Linux strut reservation).
   @protected
-  Future<void> afterReadyToShow(WindowMode mode) async {}
+  Future<void> afterReadyToShow(WindowMode mode) async {
+    return;
+  }
 
   /// Called during [dispose] for platform-specific cleanup.
   @protected
-  void onDispose() {}
+  void onDispose() {
+    return;
+  }
 
   /// Called when [windowMode] changes. Subclasses override to toggle
   /// platform reservations (AppBar on Windows, strut on Linux).
   @protected
-  Future<void> onWindowModeChanged(WindowMode mode) async {}
+  Future<void> onWindowModeChanged(WindowMode mode) async {
+    return;
+  }
 
   /// Called when the display geometry changes, after common state is updated.
   /// Subclasses override to re-assert platform reservations.
   @protected
-  Future<void> onDisplayChangedExtra() async {}
+  Future<void> onDisplayChangedExtra() async {
+    return;
+  }
 
   // ── Internal ──────────────────────────────────────────────────────────────
 
@@ -249,11 +289,16 @@ class WindowService with WidgetsBindingObserver {
 
   Future<void> _onDisplayChangedInner() async {
     final newDpr = _wm.getDevicePixelRatio();
-    final display = await _sr.getPrimaryDisplay();
-    final newWidth = display.size.width;
+    final nextActive = _displayService.activeDisplay;
+    final newWidth = nextActive?.size.width ?? 0;
+    final activeChanged = _activeDisplay != nextActive;
+    final previousActiveId = _activeDisplay?.id;
+    final nextActiveId = nextActive?.id;
 
-    _log.info(
-        'WindowService._onDisplayChangedInner: dpr=$_dpr→$newDpr width=$_screenWidth→$newWidth isExpanded=$_isExpanded');
+    _log.info('WindowService._onDisplayChangedInner: dpr=$_dpr→$newDpr '
+        'width=$_screenWidth→$newWidth activeChanged=$activeChanged '
+        '(${previousActiveId ?? "—"}→${nextActiveId ?? "—"}) '
+        'isExpanded=$_isExpanded');
 
     if (newWidth <= 0) {
       _log.info(
@@ -261,14 +306,22 @@ class WindowService with WidgetsBindingObserver {
       return;
     }
 
-    if (newDpr == _dpr && newWidth == _screenWidth) {
+    if (newDpr == _dpr && newWidth == _screenWidth && !activeChanged) {
       _log.info('WindowService._onDisplayChangedInner: no change, skipping');
       return;
     }
 
-    _log.info('WindowService._onDisplayChangedInner: display CHANGED — applying resize');
+    _log.info(
+        'WindowService._onDisplayChangedInner: display CHANGED — applying resize');
     _dpr = newDpr;
     _screenWidth = newWidth;
+    _activeDisplay = nextActive;
+
+    if (activeChanged && nextActive != null) {
+      _log.info(
+          'WindowService._onDisplayChangedInner: moveToDisplay ${nextActive.id} @ ${nextActive.workAreaOrigin}');
+      await _strategy.moveToDisplay(nextActive);
+    }
 
     await onDisplayChangedExtra();
 
@@ -279,6 +332,19 @@ class WindowService with WidgetsBindingObserver {
     } else {
       await _doCollapse();
     }
+  }
+
+  Future<double> _readActiveDisplayWidth() async {
+    final active = _displayService.activeDisplay;
+    if (active != null) {
+      _activeDisplay = active;
+      return active.size.width;
+    }
+    _log.warning(
+        'WindowService.initialize: DisplayService.activeDisplay is null; '
+        'falling back to screen_retriever.getPrimaryDisplay()');
+    final display = await _sr.getPrimaryDisplay();
+    return display.size.width;
   }
 
   Future<void> _doExpand() async {

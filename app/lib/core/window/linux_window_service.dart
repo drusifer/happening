@@ -13,6 +13,7 @@ class LinuxWindowService extends WindowService {
   LinuxWindowService({
     required super.windowManager,
     required super.screenRetriever,
+    required super.displayService,
     LinuxDockWindowManager? linuxDockWindowManager,
   })  : _linuxDock = linuxDockWindowManager ?? LinuxDockWindowManager(),
         super(
@@ -54,7 +55,8 @@ class LinuxWindowService extends WindowService {
 
   Future<void> _reserveLinuxStrut() async {
     final height = (getCollapsedHeight() * dpr).round();
-    _log.fine('LinuxWindowService._reserveLinuxStrut: height=$height (dpr=$dpr)');
+    _log.fine(
+        'LinuxWindowService._reserveLinuxStrut: height=$height (dpr=$dpr)');
     await _linuxDock.dock(height: height);
   }
 }

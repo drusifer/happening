@@ -5,6 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:happening/core/app_metadata.dart';
 import 'package:happening/core/astro/astro_settings.dart';
+import 'package:happening/core/display/display_id.dart';
+import 'package:happening/core/display/display_info.dart';
+import 'package:happening/core/display/display_service.dart';
+import 'package:happening/core/display/persisted_display_choice.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/features/calendar/calendar_controller.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
@@ -340,5 +344,167 @@ void main() {
       expect(find.text('Confirm'), findsOneWidget);
     });
 
+    // ── F-30 Display section ────────────────────────────────────────────────
+
+    group('Display section (F-30)', () {
+      late _FakeSettingsService fakeSettings;
+
+      setUp(() => fakeSettings = _FakeSettingsService());
+
+      DisplayInfo display(String id,
+              {bool primary = false, double originX = 0}) =>
+          DisplayInfo(
+            id: DisplayId(id),
+            osName: 'M-$id',
+            size: const Size(1920, 1080),
+            workAreaOrigin: Offset(originX, 0),
+            workAreaSize: const Size(1920, 1080),
+            scaleFactor: 1.0,
+            isPrimary: primary,
+          );
+
+      Future<DisplayService> mkSvc(
+        List<DisplayInfo> displays, {
+        DisplayChoiceResolver? choiceResolver,
+      }) async {
+        final svc = DisplayService(
+          probe: _StubProbe(displays),
+          events: _StubEvents(),
+          choiceResolver: choiceResolver,
+          sleep: (_) async {},
+        );
+        await svc.initialize();
+        return svc;
+      }
+
+      testWidgets('renders Display section header when displayService set',
+          (tester) async {
+        _wideScreen(tester);
+        final svc = await mkSvc([display('a', primary: true)]);
+        await tester.pumpWidget(_wrap(SettingsPanel(
+          settingsService: fakeSettings,
+          calendarController: CalendarController(_FakeCalendarService()),
+          onSignOut: () {},
+          displayService: svc,
+        )));
+        expect(find.text('Display'), findsOneWidget);
+      });
+
+      testWidgets('does not render Display section when displayService null',
+          (tester) async {
+        await tester.pumpWidget(_wrap(SettingsPanel(
+          settingsService: fakeSettings,
+          calendarController: CalendarController(_FakeCalendarService()),
+          onSignOut: () {},
+        )));
+        expect(find.text('Display'), findsNothing);
+      });
+
+      testWidgets('lists all available displays with labelFor labels',
+          (tester) async {
+        _wideScreen(tester);
+        final a = display('a', primary: true);
+        final b = display('b', originX: 1920);
+        final svc = await mkSvc([a, b]);
+
+        await tester.pumpWidget(_wrap(SettingsPanel(
+          settingsService: fakeSettings,
+          calendarController: CalendarController(_FakeCalendarService()),
+          onSignOut: () {},
+          displayService: svc,
+        )));
+
+        expect(find.text(a.labelFor([a, b])), findsOneWidget);
+        expect(find.text(b.labelFor([a, b])), findsOneWidget);
+      });
+
+      testWidgets(
+          'tapping a non-active display persists chosenDisplay and swaps the resolver',
+          (tester) async {
+        _wideScreen(tester);
+        final a = display('a', primary: true);
+        final b = display('b', originX: 1920);
+        final svc = await mkSvc([a, b]);
+        expect(svc.activeDisplay, a);
+
+        await tester.pumpWidget(_wrap(SettingsPanel(
+          settingsService: fakeSettings,
+          calendarController: CalendarController(_FakeCalendarService()),
+          onSignOut: () {},
+          displayService: svc,
+        )));
+
+        await tester.tap(find.text(b.labelFor([a, b])));
+        await tester.pumpAndSettle();
+
+        // Persisted choice should have been written.
+        expect(fakeSettings.updates, isNotEmpty);
+        expect(fakeSettings.current.chosenDisplay,
+            PersistedDisplayChoice.fromDisplay(b));
+        // Active display now resolves to b.
+        expect(svc.activeDisplay, b);
+      });
+
+      testWidgets('fallback row absent when not in fallback', (tester) async {
+        _wideScreen(tester);
+        final svc = await mkSvc([display('a', primary: true)]);
+        await tester.pumpWidget(_wrap(SettingsPanel(
+          settingsService: fakeSettings,
+          calendarController: CalendarController(_FakeCalendarService()),
+          onSignOut: () {},
+          displayService: svc,
+        )));
+        expect(find.textContaining('Currently set:'), findsNothing);
+      });
+
+      testWidgets('fallback row visible with persisted label when isInFallback',
+          (tester) async {
+        _wideScreen(tester);
+        final a = display('a', primary: true);
+        const persisted = PersistedDisplayChoice(
+          osName: 'Dell U2723QE',
+          widthLogical: 3840,
+          heightLogical: 2160,
+          xOffsetLogical: 1920,
+          yOffsetLogical: 0,
+        );
+        await fakeSettings.update(
+          fakeSettings.current.copyWith(chosenDisplay: persisted),
+        );
+        final svc = await mkSvc(
+          [a],
+          choiceResolver: FingerprintChoiceResolver(persisted),
+        );
+        expect(svc.isInFallback, isTrue);
+
+        await tester.pumpWidget(_wrap(SettingsPanel(
+          settingsService: fakeSettings,
+          calendarController: CalendarController(_FakeCalendarService()),
+          onSignOut: () {},
+          displayService: svc,
+        )));
+
+        expect(
+          find.textContaining('Currently set: Dell U2723QE (3840×2160)'),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('unavailable'),
+          findsOneWidget,
+        );
+      });
+    });
   });
+}
+
+class _StubProbe implements DisplayProbe {
+  _StubProbe(this._displays);
+  final List<DisplayInfo> _displays;
+  @override
+  Future<List<DisplayInfo>> getAll() async => List.of(_displays);
+}
+
+class _StubEvents implements DisplayEvents {
+  @override
+  void Function() subscribe(void Function() onChange) => () {};
 }

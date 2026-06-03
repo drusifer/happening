@@ -1,23 +1,23 @@
 # Current Task
 
-## F-29 Astronomical Theme Sprint — 2026-05-18
-**Status**: PLANNED ✅ — Sprint board written; handed to Morpheus for review
-**Progress**: 0/12 tasks
+## F-30 Multi-Monitor Support Sprint — 2026-05-29
+**Status**: PLANNED ✅ — Sprint board written in `task.md`; handed to Morpheus for review
+**Progress**: 0/14 tasks (6 phases A-F)
 
 ### Delivered
-- [x] Sprint board written in `task.md` — 5 phases, 12 tasks (AST-A1 through AST-E2)
-- [x] F-28 Phase C preserved in task.md (Trin UAT + Morpheus review still pending)
+- [x] Sprint plan doc → `agents/mouse.docs/f30_sprint_plan_2026-05-29.md`
+- [x] Sprint board → `task.md` (active); F-29 board archived in
+      `agents/mouse.docs/f29_task_archive_2026-05-29.md`
+- [x] Dependency graph documented: A → {B, C, E}; B → D; {C, D, E} → F
+- [x] Risks logged: Wayland event coverage, Windows AppBar reseat, fingerprint false-match
+- [x] F-28 Phase C parallel-track preserved
 
-### Sprint phases
-- Phase A (A1, A2): Data models + AstroDataService
-- Phase B (B1, B2, B3): Painter layers + TimelinePainter wiring
-- Phase C (C1, C2): Location settings UI
-- Phase D (D1, D2): AppTheme.astronomical + MoonPhaseBadge + tree wiring
-- Phase E (E1, E2): Trin UAT + Morpheus review + Oracle docs
+### Awaiting
+- Morpheus review of plan vs. architecture (last step of `*plan sprint` loop)
+- Then F-30 implementation begins with `*impl F-30-A`
 
-### Next
-- [ ] Morpheus reviews sprint plan
-- [ ] Neo begins Phase A after Morpheus approves
+### Carried (parallel)
+- F-28 Phase C: Trin UAT + Morpheus review still pending
 
 ---
-*Last updated: 2026-05-18*
+*Last updated: 2026-05-29 17:24*

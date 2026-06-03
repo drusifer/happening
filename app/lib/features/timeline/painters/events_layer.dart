@@ -87,7 +87,8 @@ class EventsLayer implements TimelineLayer {
         baseColor.withValues(alpha: (rank == 0 ? 1.0 : 0.55) * surfaceOpacity);
 
     if (event.isTask) {
-      final taskEndX = event.endTime.isAfter(event.startTime) ? endX : adjustedX;
+      final taskEndX =
+          event.endTime.isAfter(event.startTime) ? endX : adjustedX;
       TimelinePaintUtils.paintTaskMarker(
         canvas,
         adjustedX,
@@ -97,8 +98,8 @@ class EventsLayer implements TimelineLayer {
         fontSize: fontSize,
       );
     } else {
-      final rect = RRect.fromLTRBR(
-          adjustedX, top, adjustedX + w, top + blockHeight, const Radius.circular(4));
+      final rect = RRect.fromLTRBR(adjustedX, top, adjustedX + w,
+          top + blockHeight, const Radius.circular(4));
       _paintEventBlock(canvas, event, rect, color, baseColor);
     }
 
@@ -159,8 +160,8 @@ class EventsLayer implements TimelineLayer {
     }
   }
 
-  void _paintEventLabel(
-      Canvas canvas, CalendarEvent event, double x, double w, double top, double blockHeight, Size size) {
+  void _paintEventLabel(Canvas canvas, CalendarEvent event, double x, double w,
+      double top, double blockHeight, Size size) {
     final hasDuration = event.endTime.isAfter(event.startTime);
     final titleThreshold = (fontSize / 15.0) * 36;
     if (hasDuration && w <= titleThreshold) return;

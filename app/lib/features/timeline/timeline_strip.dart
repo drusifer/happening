@@ -15,6 +15,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:happening/core/astro/astro_data_service.dart';
+import 'package:happening/core/display/display_service.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/time/clock_service.dart';
 import 'package:happening/core/window/expansion_controller.dart';
@@ -24,6 +25,7 @@ import 'package:happening/core/window/window_service_resize_executor.dart';
 import 'package:happening/features/calendar/calendar_controller.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/timeline/countdown_display.dart';
+import 'package:happening/features/timeline/display_fallback_indicator.dart';
 import 'package:happening/features/timeline/expansion_logic.dart';
 import 'package:happening/features/timeline/focus/timeline_focus_controller.dart';
 import 'package:happening/features/timeline/hover_detail_overlay.dart';
@@ -43,6 +45,7 @@ class TimelineStrip extends StatefulWidget {
     required this.settingsService,
     required this.onSignOut,
     required this.windowService,
+    this.displayService,
     this.calendarController,
     this.onSignIn,
     this.onCancelSignIn,
@@ -57,6 +60,7 @@ class TimelineStrip extends StatefulWidget {
   final SettingsService settingsService;
   final VoidCallback onSignOut;
   final WindowService windowService;
+  final DisplayService? displayService;
 
   /// When set, the strip renders a sign-in prompt instead of calendar content.
   final VoidCallback? onSignIn;
@@ -90,6 +94,7 @@ class _TimelineStripState extends State<TimelineStrip>
   bool _isHoveringStrip = false;
   PointerEvent? _lastPointerEvent;
   bool _isSettingsOpen = false;
+  final GlobalKey _displaySectionKey = GlobalKey(debugLabel: 'DisplaySection');
   ExpansionState? _lastSentExpansionState;
   late Stream<DateTime> _paintTicks;
   late Stream<DateTime> _countdownTicks;
@@ -554,10 +559,9 @@ class _TimelineStripState extends State<TimelineStrip>
           milliseconds:
               (settings.timeWindowHours * 3600000 * actualFraction).toInt())),
       windowEnd: now.add(Duration(
-          milliseconds: (settings.timeWindowHours *
-                  3600000 *
-                  (1.0 - actualFraction))
-              .toInt())),
+          milliseconds:
+              (settings.timeWindowHours * 3600000 * (1.0 - actualFraction))
+                  .toInt())),
     );
     _layout = layout;
 
@@ -825,6 +829,14 @@ class _TimelineStripState extends State<TimelineStrip>
             stripBackgroundColor: stripBg,
           ),
           const SizedBox(width: 4),
+          if (widget.displayService != null) ...[
+            DisplayFallbackIndicator(
+              displayService: widget.displayService!,
+              stripHeight: _collapsedHeight,
+              onTap: _openSettingsToDisplaySection,
+            ),
+            const SizedBox(width: 4),
+          ],
           _IconButton(
             icon: Icons.settings,
             onTap: _toggleSettings,
@@ -833,6 +845,22 @@ class _TimelineStripState extends State<TimelineStrip>
         ],
       ),
     );
+  }
+
+  void _openSettingsToDisplaySection() {
+    if (!_isSettingsOpen) {
+      _toggleSettings();
+    }
+    // Allow the panel a frame to mount, then ensure the Display section is
+    // visible. The widget tree wires the scroll target via a GlobalKey held
+    // inside SettingsPanel.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final ctx = _displaySectionKey.currentContext;
+      if (ctx != null) {
+        unawaited(Scrollable.ensureVisible(ctx,
+            duration: const Duration(milliseconds: 250)));
+      }
+    });
   }
 
   Widget _buildAstroTooltip(BuildContext context, TimelineLayout layout) {
@@ -868,6 +896,8 @@ class _TimelineStripState extends State<TimelineStrip>
           calendarController: widget.calendarController!,
           onSignOut: widget.onSignOut,
           platformOverride: _targetPlatform,
+          displayService: widget.displayService,
+          displaySectionKey: _displaySectionKey,
         ),
       ),
     ];

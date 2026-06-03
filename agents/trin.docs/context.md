@@ -1,47 +1,15 @@
-# Trin Context
+# Trin Context — 2026-06-03
 
-## Session 2026-05-10 — Logger + EC redundancy
+## Current State
+- F-30 Polish, app.dart displayService Fix, and Headless Integration tests UAT PASS (422 passing, 1 pre-existing failing golden, 0 lint issues).
+- Written new headless integration test file [app_integration_test.dart](file:///home/drusifer/Projects/happening/app/test/features/timeline/app_integration_test.dart) covering parameter-forwarding in both authenticated and unauthenticated views of `HappeningApp`.
+- Fixed critical bug where `displayService` was missing in `TimelineStrip` for authenticated view in `app.dart`.
+- Telemetry coupling issues resolved: `onWeakMatch` is successfully hoisted and `DisplayService.setPersistedChoice` handles wrapping the choice.
+- Duplicate callback execution fixed by caching choice resolver results during service refresh.
+- Integration tests compile and run cleanly under headless environment. All style/linter metrics resolved.
 
-### AppLogger deletion
-- `AppLogger` facade deleted entirely. Per-class `Logger('ClassName')` pattern
-  is now the only approach used project-wide.
-- `Logger.root` configured once in `main.dart::_setupLogging(Directory)`:
-  level (FINE in debug, INFO in release), console via `debugPrint` (still needs
-  replacement with `dart:developer`), file append for INFO+.
-- `app/lib/core/util/logger.dart` no longer exists.
-
-### EC redundancy suppression
-- Added `_lastConfirmed: ExpansionState?` field.
-- `send()` returns early (no execute, no log) if
-  `!_processing && _pending == null && intent == _lastConfirmed`.
-- `_lastConfirmed` is set at the end of `_execute()` before emitting to stream.
-- Fixes three log-observed problems:
-  1. Collapse on first mouse event when already at collapsed height.
-  2. Re-expand when mouse hovers and window already at 340px.
-  3. Double-collapse cascade: EC done → stream emit → strip rebuild → re-sends
-     collapsed → second full collapse.
-- The old "GTK always-executes" guarantee is intentionally removed; the first
-  send after a fresh start (or after a future `_lastConfirmed` reset) still
-  executes normally.
-
-### flutter_test stream timing lesson
-- `flutter_test` zone defers broadcast-stream listener callbacks as microtasks
-  rather than delivering them synchronously inside `add()`.
-- Tests that call `await controller.refresh()` and then immediately check
-  stream emissions need one extra `await Future<void>.delayed(Duration.zero)`
-  to flush the delivery microtask.
-
-## Transparent Timestrip Phase C UAT — 2026-04-24
-- (unchanged from prior context — see earlier entries for full detail)
-
-## Linux Wayland Simplification Phase D Gate — 2026-04-25
-- Automated checks all pass; host-side `make analyze` clean; Codex sandbox
-  analyze blocked by inotify watcher cap.
-- X11/XWayland selected as Linux backend; native Wayland not claimed.
-- Linux transparent support not claimed; remains hidden until validated.
-
-## QA Decisions
-- Every bug fix MUST have an empirical reproduction test.
-- Broadcast stream tests that check emissions after an awaited async call need
-  `await Future<void>.delayed(Duration.zero)` to flush the delivery microtask
-  in the flutter_test zone.
+## QA Decisions & Findings
+- Headless UX testing is fully supported using Flutter's widget tests (`testWidgets`) and mock display components, ensuring no physical display server dependencies (X11/Wayland).
+- Authenticated state in `app.dart` must pass all injected services to children widgets (like `TimelineStrip`).
+- Every virtual/mock hook in `WindowService` and custom fake subclasses must use `return;` or annotations to satisfy the linter rules and avoid `no-empty-block` and `discarded_futures`.
+- Cached resolution in `DisplayService` ensures callbacks only fire once on display changes.

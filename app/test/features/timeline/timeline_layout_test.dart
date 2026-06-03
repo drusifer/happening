@@ -304,11 +304,14 @@ void main() {
         final rawStartX = layout.xForTime(start, now);
         final step = layout.overlapStepPx;
         // Only rank-0 visible: before rank-1's left edge
-        expect(layout.eventAtX(rawStartX + step - 5, [a, b, c], now), equals(a));
+        expect(
+            layout.eventAtX(rawStartX + step - 5, [a, b, c], now), equals(a));
         // Rank-0 + rank-1 visible: between rank-1 and rank-2 left edges → rank-1 wins
-        expect(layout.eventAtX(rawStartX + step + 5, [a, b, c], now), equals(b));
+        expect(
+            layout.eventAtX(rawStartX + step + 5, [a, b, c], now), equals(b));
         // All three visible: past rank-2's left edge → rank-2 wins
-        expect(layout.eventAtX(rawStartX + step * 2 + 5, [a, b, c], now), equals(c));
+        expect(layout.eventAtX(rawStartX + step * 2 + 5, [a, b, c], now),
+            equals(c));
       });
     });
 

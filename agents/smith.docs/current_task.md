@@ -1,20 +1,18 @@
 # Current Task
 
-**Status:** F-29 Gate 2 APPROVED — handed off to Mouse for sprint planning
-**Updated:** 2026-05-18
+**Status:** F-30 Gate 1 + Gate 2 both APPROVED — Cypher to apply Note B (AC-F30-3-1 Wayland exemption) in-turn, then Mouse plans sprint
+**Updated:** 2026-05-29
 
 ## Progress
-- [x] Gate 1 review: approved with 4 notes → `f29_gate1_review_2026-05-18.md`
-- [x] Gate 2 review: approved with 3 notes → `f29_gate2_review_2026-05-18.md`
-- [x] Handed to Mouse for sprint planning
+- [x] F-30 Gate 1 review: APPROVED with 1 must-fix + 4 non-blocking notes → `f30_gate1_review_2026-05-29.md`
+- [x] F-30 Gate 2 review: APPROVED with 3 non-blocking notes → `f30_gate2_review_2026-05-29.md`
+- [ ] Cypher to update AC-F30-3-1 to exempt Wayland from 2s budget (Note B)
+- [ ] Sprint proceeds to Mouse
 
-## Notes Filed (Gate 2)
-5. Location permission denial UX — show helpful message, not silent no-op (Phase C)
-6. City search no-match — error message + guidance (Phase C)
-7. MoonPhaseBadge — Tooltip widget for full phase name on hover (Phase D)
-
-## Next Smith action
-Sprint gate: review sprint plan from Mouse if issues arise; otherwise await Phase E UAT from Trin.
+## Smith availability during F-30 implementation
+- `*user test` rounds on hot-plug cycle (Phase F UAT)
+- Legibility check on `DisplayFallbackIndicator` at minimum strip height
+- Validate Settings deep-link tap auto-scrolls Display section into view
 
 ---
-*Last updated: 2026-05-18*
+*Last updated: 2026-05-29*

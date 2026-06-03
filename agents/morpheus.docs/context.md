@@ -1,41 +1,14 @@
-# Morpheus Context
+# Morpheus Context — 2026-06-03
 
-## F-29 Astronomical Timeline Theme — 2026-05-18
-- Arch doc: `agents/morpheus.docs/ASTRO_THEME_ARCH_2026-05-18.md`
-- Key decisions:
-  - Add `AppTheme.astronomical` to existing enum in `settings_service.dart`
-  - Embed `AstroSettings` (lat/lng/cityName) in `AppSettings` — persisted in settings.json
-  - `AstroDataService` as `ChangeNotifier` — offline calc via Dart astro library (Neo picks package)
-  - Layer swap pattern in `TimelinePainter.paint()` — conditional on `isAstroTheme && astroData != null`
-  - `MoonPhaseBadge` as Flutter widget (not painter layer) — needs gesture/tap support
-  - `geolocator` package for OS location — only called on explicit user tap
-  - City search as primary manual fallback (Smith Note 2)
-  - Gradient starts at `civilTwilightBegin`; sunrise/sunset icons at actual solar event times (Smith Note 1)
-  - Up/down arrow on moon icons for rise/set distinction (Smith Note 3)
-  - Moon badge 8px left of settings gear (Smith Note 4)
-- 5 sprint phases: A (data model/service), B (painter layers), C (location UI), D (badge + theme toggle), E (QA + docs)
-- Platform: geolocator needs NSLocationWhenInUseUsageDescription on macOS; GeoClue2 on Linux
-- Awaiting Smith Gate 2 approval → Mouse planning
+## Current State
+- F-30 Polish & app.dart displayService Fix APPROVED.
+- Fixed structural bug in `app.dart` where `displayService` was omitted in the authenticated `TimelineStrip` instantiation.
+- Coupling of telemetry resolved: `onWeakMatch` is successfully hoisted and `DisplayService.setPersistedChoice` handles wrapping the choice.
+- Caching logic added to DisplayService to resolve display once per refresh, preventing duplicate telemetry events.
+- All empty method style warnings in WindowService resolved. Integration tests compile and pass.
 
-## Send-to-Back Sprint — 2026-05-13
-- Architecture: BaseWindowInteractionStrategy → MacOs + Reserved (Linux+Windows).
-- sendToBack: setAlwaysOnTop(false)+blur()+lower(). restoreToFront: setAlwaysOnTop(true) only.
-- TimelineFocusController: _isSentToBack + 10s restore timer.
-- Arch doc: agents/morpheus.docs/SEND_TO_BACK_ARCH_2026-05-13.md
-
-## Linux Reserved Space (F-28) — 2026-05-18
-- Phases A+B+hotfixes DONE. Phase C (Trin UAT + Morpheus review) PENDING.
-- Arch doc: agents/morpheus.docs/LINUX_RESERVED_ARCH_2026-05-16.md
-
-## Linux Click-Through Research — 2026-04-26
-- DROPPED. Click-through replaced by Send-to-Back.
-
-## Astro Marker Layer Review — 2026-05-22
-- Reviewed: `astro_objects.dart`, `solar_marker_layer.dart`, `lunar_marker_layer.dart`, `sky_lights.dart`
-- **Issue 1 (LSP):** `MoonTransit.arrowUp = true` is vestigial — drawIcon overridden to skip arrow. Fix: make `arrowUp` nullable (`bool?`) and guard in `Moon.drawIcon`. Remove `MoonTransit.drawIcon` override.
-- **Issue 2 (DRY):** `_drawIfVisible()` + date-iteration loop duplicated in both marker layers. Fix: extract `AstroMarkerLayer` abstract base with `objectsForDate(DateTime) → List<AstroObject>`.
-- Design note: `AstronomicalBackgroundLayer` still sources solar times via `AstroData` while marker layers compute independently. Architectural inconsistency; defensible as caching trade-off.
-- Full review: `agents/morpheus.docs/astro_review_2026-05-22.md`
-
----
-*Last updated: 2026-05-22*
+## Key Decisions & Architecture
+- All branches of structural composition (such as authenticated/unauthenticated state branches in `app.dart`) must consistently wire dependencies to child widgets.
+- Hoisting callbacks into ChangeNotifier services is preferred over constructing resolvers inside the UI widgets.
+- Caching results of resolver resolution inside display refresh prevent duplicate side-effects.
+- Virtual hook methods in WindowService use `return;` inside blocks to comply with linter rules.

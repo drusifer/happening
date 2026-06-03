@@ -74,8 +74,8 @@ class LunarBody extends SkyBody {
     const navy = SolarBody.nightNavy;
 
     final sDusk = solarTimesNear(moonrise, astroData);
-    final sDawn = solarTimesNear(
-        moonset.add(const Duration(hours: 12)), astroData);
+    final sDawn =
+        solarTimesNear(moonset.add(const Duration(hours: 12)), astroData);
     final duskMid = _midpoint(sDusk.sunset, sDusk.civilTwilightEnd);
     final dawnMid = _midpoint(sDawn.civilTwilightBegin, sDawn.sunrise);
 
@@ -139,15 +139,17 @@ class LunarBody extends SkyBody {
   List<AstroObject> getGlyphs(DateTime windowStart, DateTime windowEnd) {
     final glyphs = <AstroObject>[];
     for (final ma in _moonArcsInWindow(windowStart, windowEnd)) {
-      glyphs.add(MoonRise(
-          time: ma.moonrise, phase: ma.phase, fraction: ma.fraction));
+      glyphs.add(
+          MoonRise(time: ma.moonrise, phase: ma.phase, fraction: ma.fraction));
       final transit = DateTime.fromMillisecondsSinceEpoch(
         (ma.moonrise.millisecondsSinceEpoch +
                 ma.moonset.millisecondsSinceEpoch) ~/
             2,
       );
-      glyphs.add(MoonTransit(time: transit, phase: ma.phase, fraction: ma.fraction));
-      glyphs.add(MoonSet(time: ma.moonset, phase: ma.phase, fraction: ma.fraction));
+      glyphs.add(
+          MoonTransit(time: transit, phase: ma.phase, fraction: ma.fraction));
+      glyphs.add(
+          MoonSet(time: ma.moonset, phase: ma.phase, fraction: ma.fraction));
     }
     return glyphs;
   }
@@ -206,16 +208,8 @@ class LunarBody extends SkyBody {
     final halfMs = nightEnd.difference(nightStart).inMicroseconds ~/ 2;
     final mid = nightStart.add(Duration(microseconds: halfMs));
     return [
-      Arc(
-          startTime: nightStart,
-          endTime: mid,
-          startColor: navy,
-          endColor: up),
-      Arc(
-          startTime: mid,
-          endTime: nightEnd,
-          startColor: up,
-          endColor: navy),
+      Arc(startTime: nightStart, endTime: mid, startColor: navy, endColor: up),
+      Arc(startTime: mid, endTime: nightEnd, startColor: up, endColor: navy),
     ];
   }
 
@@ -245,7 +239,8 @@ class _MoonArc {
 
 @immutable
 class _RawRise {
-  const _RawRise({required this.t, required this.phase, required this.fraction});
+  const _RawRise(
+      {required this.t, required this.phase, required this.fraction});
 
   final DateTime t;
   final MoonPhase phase;

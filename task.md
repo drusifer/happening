@@ -1,238 +1,179 @@
-# Task Board — Astronomical Timeline Theme Sprint (F-29)
-**Updated**: 2026-05-18 | **Owner**: @Neo | **QA**: @Trin | **Arch**: @Morpheus | **UX**: @Smith
+# Task Board — Multi-Monitor Support Sprint (F-30)
+**Updated**: 2026-05-29 | **Owner**: @Neo | **QA**: @Trin | **Arch**: @Morpheus | **UX**: @Smith
 
 ---
 
 ## Sprint Goal
-Add an opt-in "Astronomical" theme that overlays sunrise, sunset, moonrise, and moonset
-markers on the timeline at their exact times, with a day/night gradient background.
-All astronomical data calculated offline from user's location via a Dart astronomy library.
-Location sourced via `geolocator` OS API (with city-search + manual lat/lng fallback).
+Ship F-30 Multi-Monitor Support: user picks which display the strip lives on, persisted
+across reboots, with graceful hot-plug fallback + auto-return and a visible on-strip
+indicator when the chosen display is unavailable. Single strip on a single user-chosen
+display.
 
 ## Source Artifacts
-- Product stories: `agents/cypher.docs/f29_astronomical_theme_stories.md`
-- UX Gate 1: `agents/smith.docs/f29_gate1_review_2026-05-18.md`
-- Architecture: `agents/morpheus.docs/ASTRO_THEME_ARCH_2026-05-18.md`
-- UX Gate 2: `agents/smith.docs/f29_gate2_review_2026-05-18.md`
+- Product stories: `agents/cypher.docs/f30_multi_monitor_stories.md`
+- UX Gate 1: `agents/smith.docs/f30_gate1_review_2026-05-29.md`
+- Architecture: `agents/morpheus.docs/F30_MULTIMONITOR_ARCH_2026-05-29.md`
+- UX Gate 2: `agents/smith.docs/f30_gate2_review_2026-05-29.md`
+- Sprint plan: `agents/mouse.docs/f30_sprint_plan_2026-05-29.md`
+- Previous board (F-29 archive): `agents/mouse.docs/f29_task_archive_2026-05-29.md`
+
+## Out of Scope
+Multi-strip (one per display), cursor-follow, span across displays, new C++ native code
+(Linux strut already monitor-aware; Windows AppBar reuses existing reassert path).
 
 ---
 
-## Phase A — Data Models + Service
-**Gate**: `make test` green; `AstroDataService` calculates and caches solar + lunar data correctly
+## Phase Board
 
-### AST-A1: Dependencies + Data model
-- **Goal**: Add `geolocator: any` and Dart astronomy library (Neo selects best pub.dev package
-  for sunrise/sunset/moonrise/moonset/phase) to `pubspec.yaml`. Create `app/lib/core/astro/`:
-  - `AstroSettings` — value object: `latitude: double?`, `longitude: double?`, `cityName: String?`
-  - `AstroData` — value object: `civilTwilightBegin`, `sunrise`, `solarNoon`, `sunset`,
-    `civilTwilightEnd` (all `DateTime`); `moonrise: DateTime?`, `moonset: DateTime?`;
-    `phase: MoonPhase`, `illuminationFraction: double`
-  - `MoonPhase` — 8-value enum: `newMoon`, `waxingCrescent`, `firstQuarter`, `waxingGibbous`,
-    `full`, `waningGibbous`, `lastQuarter`, `waningCrescent`
-  **Before coding**: Neo evaluates available pub.dev astronomy packages and posts
-  the chosen package name + rationale to CHAT.md for Morpheus review.
-  Write unit tests for `AstroData` equality and `MoonPhase`.
-- **Files**:
-  - `app/pubspec.yaml` ✎
-  - `app/lib/core/astro/astro_settings.dart` ✦
-  - `app/test/core/astro/astro_settings_test.dart` ✦
-- **Risk**: Low
-- **Tests**: `make test` green
+| Phase | Status | Tasks | Owner |
+|-------|--------|-------|-------|
+| A — DisplayService Foundation | ✅ DONE (2026-05-29) | F30-A1, F30-A2 (probe → C) | Neo + Trin + Morpheus |
+| B — Persistence + Fingerprint | ✅ DONE (2026-05-29) | F30-B1, F30-B2 | Neo + Trin + Morpheus |
+| C — WindowService Wiring | ☐ TODO | F30-C1, F30-C2, F30-C3 | Neo + Trin (C3) |
+| D — Settings UI | ☐ TODO | F30-D1, F30-D2 | Neo |
+| E — FallbackIndicator | ☐ TODO | F30-E1, F30-E2 | Neo |
+| F — UAT + Docs | ☐ TODO | F30-F1, F30-F2, F30-F3 | Trin + Smith + Oracle |
 
-### AST-A2: `AstroDataService`
-- **Goal**: Create `AstroDataService extends ChangeNotifier`.
-  Listens to `SettingsService`; calculates solar + lunar data via Dart astro library for
-  (today, lat, lng); caches in memory for (date, lat, lng); midnight timer invalidates cache.
-  Exposes `AstroData? current` (null if no location or theme != astronomical). No network calls.
-  Write unit tests: correct solar times for known lat/lng; correct moonPhase for known dates;
-  cache hit; null when no location set.
-- **Files**:
-  - `app/lib/core/astro/astro_data_service.dart` ✦
-  - `app/test/core/astro/astro_data_service_test.dart` ✦
-- **Risk**: Medium — Dart astro library API varies by package
-- **Tests**: `make test` green
+Dependency graph: A → {B, C, E}; B → D; {C, D, E} → F. C/D/E can run in parallel after A+B.
 
 ---
 
-## Phase B — Painter Layers
-**Gate**: `make test` green; visual smoke: gradient + icons visible at correct timeline positions
+## Phase A — DisplayService Foundation
+**Gate**: `make test` green; new tests pass; no UI yet
 
-### AST-B1: `AstronomicalBackgroundLayer`
-- **Goal**: New `TimelineLayer` replacing `BackgroundLayer` when astronomical theme active.
-  Horizontal linear gradient with stops at civil twilight times:
-  - Before `civilTwilightBegin` → dark navy `Color(0xFF0A0E1A)`
-  - `civilTwilightBegin` → `sunrise` → warm orange/pink `Color(0xFFFF8C42)`
-  - `sunrise` → `sunset` → sky blue `Color(0xFF87CEEB)`
-  - `sunset` → `civilTwilightEnd` → warm orange/pink
-  - After `civilTwilightEnd` → dark navy
-  Uses `TimelineLayout.xForTime()` for pixel mapping; clips to visible window.
-  Write tests: gradient stop positions for known inputs.
-- **Files**:
-  - `app/lib/features/timeline/painters/astronomical_background_layer.dart` ✦
-  - `app/test/features/timeline/painters/astronomical_background_layer_test.dart` ✦
-- **Risk**: Low
-- **Tests**: `make test` green
+### F30-A1: DisplayInfo + label fallback chain  ✅ DONE 2026-05-29
+- **Goal**: Create `app/lib/core/display/` with `DisplayInfo` value object and
+  `labelFor(List<DisplayInfo> all) → String` implementing Smith Note 2's garbage-name chain
+  (non-empty + non-generic + unique → OS name; else `"Display N — WxH"`; primary always
+  carries ` — primary`).
+- **Files**: `app/lib/core/display/display_info.dart`, `app/lib/core/display/display_id.dart`
+- **Tests**: all-good names; generic name fallback; duplicate names fallback; null/empty;
+  stable index across enumeration-order swap
 
-### AST-B2: `SolarMarkerLayer`
-- **Goal**: New `TimelineLayer` for solar event icons.
-  - Sunrise icon (☀️ or custom SVG) at `layout.xForTime(astroData.sunrise)`
-  - Sunset icon at `layout.xForTime(astroData.sunset)`
-  - Solar noon small tick + label at `layout.xForTime(astroData.solarNoon)`
-  All clipped to `[0, stripWidth]`; renders BELOW event blocks.
-  Write tests: icon x positions match expected for given solar times; clips correctly.
-- **Files**:
-  - `app/lib/features/timeline/painters/solar_marker_layer.dart` ✦
-  - `app/test/features/timeline/painters/solar_marker_layer_test.dart` ✦
-- **Risk**: Low
-- **Tests**: `make test` green
-
-### AST-B3: `LunarMarkerLayer` + `TimelinePainter` wiring
-- **Goal**: New `TimelineLayer` for moon event icons.
-  - Moonrise: 8-phase moon icon + upward arrow at `layout.xForTime(astroData.moonrise)` if in window
-  - Moonset: same phase icon (dimmer) + downward arrow at `layout.xForTime(astroData.moonset)` if in window
-  - Clips to `[0, stripWidth]`; no overflow artifact
-  Wire `TimelinePainter`:
-  - Add params: `astroData: AstroData?`, `isAstroTheme: bool`
-  - When `isAstroTheme && astroData != null`: replace `BackgroundLayer` → `AstronomicalBackgroundLayer`;
-    insert `SolarMarkerLayer` + `LunarMarkerLayer` after background, before `PastOverlayLayer`
-  - When not astronomical: existing layer order unchanged
-  Update `shouldRepaint` for new params.
-- **Files**:
-  - `app/lib/features/timeline/painters/lunar_marker_layer.dart` ✦
-  - `app/test/features/timeline/painters/lunar_marker_layer_test.dart` ✦
-  - `app/lib/features/timeline/timeline_painter.dart` ✎
-  - `app/test/features/timeline/timeline_painter_test.dart` ✎
-- **Risk**: Medium — `TimelinePainter` has many existing tests; param additions must not regress
-- **Tests**: `make test` green
+### F30-A2: DisplayService + state machine  ✅ DONE 2026-05-29 (probe → C2)
+- **Goal**: `DisplayService` as `ChangeNotifier`. State machine `CHOSEN_AVAILABLE ↔ IN_FALLBACK`
+  (with transient `AUTO_RETURNING`). 250ms debounced subscription to `screen_retriever`
+  displayAdded / Removed / metricsChanged.
+- **Files**: `app/lib/core/display/display_service.dart`
+- **Tests**: init paths; disconnect → fallback; reconnect → auto-return; burst coalescence;
+  user choose-display
+- **Probe (F30-A2-probe)**: log `screen_retriever` event coverage on each platform. If
+  Wayland fires no events → flag for polling fallback in Phase C.
 
 ---
 
-## Phase C — Location Settings UI
-**Gate**: "Use Current Location" works on all platforms; city search resolves or errors correctly; prompt shown when no location
+## Phase B — Persistence + Fingerprint
+**Gate**: `make test` green; persistence survives simulated app restart
 
-### AST-C1: geolocator — "Use Current Location" button
-- **Goal**: Add "Location" section to `settings_panel.dart` (visible when Astronomical theme enabled).
-  "Use Current Location" button calls `geolocator.getCurrentPosition()`.
-  Permission UX (Smith Note 5):
-  - `granted` → save lat/lng to `AstroSettings`; show "Using device location" label
-  - `denied` → inline: "Location access denied. Grant permission in System Settings, or enter your location below."
-  - `deniedForever` → same message
-  Platform entitlements:
-  - macOS: add `NSLocationWhenInUseUsageDescription` to `macos/Runner/Info.plist`
-  - Windows: no extra config
-  - Linux: GeoClue2 — graceful fallback message if unavailable
-- **Files**:
-  - `app/lib/features/timeline/settings_panel.dart` ✎
-  - `app/macos/Runner/Info.plist` ✎
-  - `app/test/features/timeline/settings_panel_test.dart` ✎
-- **Risk**: Medium — permission flows vary per platform
-- **Tests**: `make test` green; manual smoke on all platforms
+### F30-B1: PersistedDisplayChoice in AppSettings  ✅ DONE 2026-05-29
+- **Goal**: Add `chosenDisplay: PersistedDisplayChoice?` to `AppSettings`. JSON
+  roundtrip via existing settings.json pipeline.
+- **Tests**: roundtrip; null roundtrip; backward-compat (missing field loads null)
 
-### AST-C2: City search + lat/lng override + location preview
-- **Goal**: City search text field (primary manual fallback, Smith Note 2):
-  - Resolves city name to lat/lng via OS geocode or bundled lookup
-  - No match → "No results for '{query}' — try a larger nearby city, or use Advanced coordinates." (Smith Note 6)
-  - Match → preview "New York, NY → 40.71°N 74.00°W"; user confirms to save
-  Advanced section (collapsed): raw lat/lng decimal fields; validates range; inline error if invalid.
-  Location preview label always shown (city name or coordinate string).
-  No-location prompt: when astronomical + no location → "Set location to see sunrise & moon times" in strip (AC-F29-1-6).
-- **Files**:
-  - `app/lib/features/timeline/settings_panel.dart` ✎
-  - `app/test/features/timeline/settings_panel_test.dart` ✎
-- **Risk**: Low (UI only)
-- **Tests**: `make test` green
+### F30-B2: Fingerprint match algorithm  ✅ DONE 2026-05-29 (incl. Morpheus Note 1 refactor)
+- **Goal**: `PersistedDisplayChoice.matchIn(displays)` implements 3-tier match: exact
+  (name+size+offset) → strong (name+size) → weak (name only, logs warning) → null.
+- **Tests**: exact; position-changed strong; weak with log; no match
 
 ---
 
-## Phase D — Badge + Theme Toggle
-**Gate**: `make test` green; Astronomical theme activates/deactivates correctly; moon badge visible
+## Phase C — WindowService Wiring + moveToDisplay
+**Gate**: `make test` green; manual: Settings change → strip moves; Windows AppBar verified
 
-### AST-D1: `AppTheme.astronomical` + settings persistence
-- **Goal**: Add `astronomical` to `AppTheme` enum in `settings_service.dart`.
-  Add `AstroSettings astroSettings` field to `AppSettings` (default: empty).
-  Update `toJson`/`fromJson`/`copyWith`. Existing `fromString` fallback is already safe.
-  Add Theme selector to settings panel: "Default" / "Astronomical".
-  Switching to Astronomical: if location saved → apply immediately; else → expand location section.
-  Switching to Default: removes all astro layers immediately, no restart.
-- **Files**:
-  - `app/lib/core/settings/settings_service.dart` ✎
-  - `app/lib/features/timeline/settings_panel.dart` ✎
-  - `app/test/core/settings/settings_service_test.dart` ✎
-- **Risk**: Low (additive; safe fallbacks)
-- **Tests**: `make test` green
+### F30-C1: Strategy.moveToDisplay per platform  ☐ TODO
+- **Goal**: Add `moveToDisplay(DisplayInfo)` to `WindowResizeStrategy`. Implement Linux,
+  Windows, macOS.
+- **Files**: 3 resize_strategy files
+- **Linux**: setBounds (strut C++ auto-follows).
+- **Windows**: setBounds + reassertAppBar via existing path.
+- **macOS**: setBounds.
 
-### AST-D2: `MoonPhaseBadge` + tree wiring
-- **Goal**: Create `MoonPhaseBadge` widget — always visible when astronomical + location set.
-  Shows: phase icon + phase name + illumination %. Tooltip on hover: full phase name + "X% illuminated" (Smith Note 7).
-  Position: right side of strip, 8px left of settings gear; does not reduce gear tap target (Smith Note 4).
-  Wire `AstroDataService` into widget tree from `main.dart`.
-  Wire `TimelineStrip`: consume `AstroDataService.current` → pass to `TimelinePainter`; add `MoonPhaseBadge`.
-- **Files**:
-  - `app/lib/features/timeline/moon_phase_badge.dart` ✦
-  - `app/lib/features/timeline/timeline_strip.dart` ✎
-  - `app/lib/main.dart` ✎
-  - `app/test/features/timeline/moon_phase_badge_test.dart` ✦
-  - `app/test/features/timeline/timeline_strip_test.dart` ✎
-- **Risk**: Medium — widget tree wiring; existing strip tests must still pass
-- **Tests**: `make test` green
+### F30-C2: WindowService consults DisplayService  ☐ TODO
+- **Goal**: Replace `_sr.getPrimaryDisplay()` at `window_service.dart:98, 252` with
+  `_displayService.activeDisplay`. Subscribe to DisplayService and call
+  `strategy.moveToDisplay()` when activeDisplay changes. Use existing
+  `_displayChangeInProgress` race guard.
+- **Tests**: fake DisplayService + strategy assert moveToDisplay called correctly.
+
+### F30-C3: Manual Windows AppBar verification  ☐ TODO (BLOCKING)
+- **Goal**: Plug in Display 2 on Windows, pick it in Settings, maximize a window on it →
+  must stop at strip's bottom edge.
+- **Fallback**: if AppBar fails to reseat, switch to ABM_REMOVE + ABM_NEW cycle per arch doc.
+- **Owners**: Neo implements; Trin verifies.
 
 ---
 
-## Phase E — QA + Review
-**Gate**: All US-F29 AC verified; Morpheus approved; docs updated
+## Phase D — Settings UI: Display Section
+**Gate**: `make test` green; manual: open Settings → see displays → pick → strip moves
 
-### AST-E1: Trin UAT
-- **Owner**: @Trin
-- **Goal**: Full test suite (`make test`). Manual AC checklist:
-  - US-F29-1: device location, city search, lat/lng, persist, no-location prompt
-  - US-F29-2: gradient stops at civil twilight; icons at actual sunrise/sunset; solar noon tick; z-order
-  - US-F29-3: moonrise/moonset icons + directional arrows; badge always visible; phase + illumination %
-  - US-F29-4: theme toggle on/off; persisted; instant apply; location check on activation
-  Platform smoke: macOS, Windows, Linux. `make analyze` clean.
-- **Risk**: Low if all prior phases clean
+### F30-D1: Display section in SettingsPanel  ☐ TODO
+- **Goal**: Radio list of `DisplayService.availableDisplays` after Location section.
+  Labels via `DisplayInfo.labelFor()`. Radio change → `DisplayService.chooseDisplay(id)`.
+- **Tests**: list renders; selection writes through.
 
-### AST-E2: Morpheus code review + Oracle doc pass
-- **Owner**: @Morpheus (review) + @Oracle (docs)
-- **Goal**: Morpheus: review `AstroDataService` (midnight timer, cache, ChangeNotifier lifecycle),
-  painter layer isolation, `TimelinePainter` param additions.
-  Oracle: update `docs/ARCH.md` (new astro subsystem), mark F-29 shipped in PRD.
-- **Risk**: Low
+### F30-D2: "Currently set: X — unavailable" row  ☐ TODO
+- **Goal**: Read-only row at bottom of Display section, visible only when
+  `isInFallback == true`. Text per Smith Note 3.
+- **Tests**: absent when not in fallback; present + text correct when in fallback.
 
 ---
 
-## Sprint Acceptance Criteria (Definition of Done)
-1. "Astronomical" theme visible in settings, persisted across restarts
-2. Gradient: civil twilight begin → sunrise → day → sunset → civil twilight end (correct colors)
-3. Sunrise/sunset icons at actual solar event times (not twilight boundaries)
-4. Moonrise/moonset icons with 8-phase symbol + directional arrow; clip cleanly at window edge
-5. Moon phase badge always visible; positioned left of settings gear; tooltip on hover
-6. Location: geolocator button + permission UX; city search with error handling; lat/lng advanced override
-7. Switching theme off removes all astro elements immediately; no regression on default theme
-8. Zero network calls for astronomical data; fully offline after location saved
-9. `make test` green at or above pre-sprint baseline; `make analyze` clean
+## Phase E — DisplayFallbackIndicator Widget
+**Gate**: `make test` green; manual: simulate disconnect → indicator appears; reconnect → fade+slide
+
+### F30-E1: Indicator widget + deep-link tap  ☐ TODO
+- **Goal**: `display_fallback_indicator.dart`. `desktop_access_disabled` icon at
+  `size = min(14, stripHeight - 8)` (Smith Note A). LEFT of settings gear, ≥8px gap.
+  Tooltip "Chosen display unavailable — showing on primary". Tap → opens SettingsPanel and
+  auto-scrolls Display section into viewport (Smith Note C).
+- **Tests**: invisible when not in fallback; visible + correct size when in fallback; tap
+  fires open+scroll callback.
+
+### F30-E2: Auto-return fade + slide animation  ☐ TODO
+- **Goal**: On `IN_FALLBACK → AUTO_RETURNING`, indicator fades out 600ms with horizontal
+  slide-out toward gear. No animation on entering IN_FALLBACK (only on exit).
+- **Tests**: controller fires on correct transition; opacity reaches 0 within 600ms.
 
 ---
 
-## Status Legend
-✦ New file | ✎ Modified | 🗑 Deleted
+## Phase F — Multi-Platform UAT + Docs + Release Gate
+**Gate**: Smith approves UAT; Oracle records docs; Morpheus code review passes
+
+### F30-F1: Multi-platform manual UAT  ☐ TODO (Trin)
+- **Matrix**:
+  - Linux X11: pick → strip moves; maximize on chosen → strut OK; unplug → ≤2s fallback;
+    replug → auto-return
+  - Linux Wayland: same but ≤7s on disconnect (polling fallback per AC-F30-3-1)
+  - Windows: same as X11 + AppBar maximize on Display 2
+  - macOS: pick → strip moves respecting menu bar; unplug/replug cycle
+
+### F30-F2: Smith UX pass  ☐ TODO
+- Indicator legibility at minimum strip height
+- Deep-link tap auto-scrolls Display section
+- Fade+slide animation reads as "your display came back"
+
+### F30-F3: Oracle docs + PRD update  ☐ TODO
+- PRD F-30 row → SHIPPED
+- USER_GUIDE.md: Display picker walkthrough + screenshot
+- PRD Platform Quirks: Wayland polling fallback exemption recorded
 
 ---
 
-# Previous Sprint — Linux Reserved Space Sprint (F-28)
-**Updated**: 2026-05-16 | **Owner**: @Neo | **QA**: @Trin | **Arch**: @Morpheus
-**Status**: Phases A+B+hotfixes DONE (276/276 green) — Phase C PENDING
+## Risks & Watch-list
+
+| Risk | Trigger | Action |
+|------|---------|--------|
+| `screen_retriever` events missing on Wayland | F30-A2-probe finds no events | 1.5s polling fallback; ≤7s AC covers it |
+| Windows AppBar fails on secondary monitor | F30-C3 manual check fails | ABM_REMOVE + ABM_NEW cycle (no C++) |
+| Composite fingerprint false-match | UAT edge case | Document; weak-match warning; user re-picks |
+| F-28 Phase C overdue when F-30 ships | Sprint timing | F-28 Phase C parallel with F-30 Phase A |
 
 ---
 
-## Phase C — QA + Review (PENDING)
+## Parallel Work
+- **F-28 Phase C**: Trin UAT + Morpheus review still pending; can run in parallel with F-30
+  Phase A while Trin awaits F30-C3.
 
-### LRS-C1: Trin UAT
-- Run full test suite (`make test`).
-- Manual AC checklist: AC-L1-1 through AC-L3-2.
-- X11/XWayland smoke: maximize a terminal over strip; confirm strip not covered.
-- Wayland smoke: confirm app starts without crash, log shows `isDockable=false`.
+---
 
-### LRS-C2: Morpheus code review
-- Review `linux_dock_window_manager_plugin.cc` for memory safety (atom reuse, no XFree leaks).
-- Review `WindowService` wiring for serialisation (no concurrent dock/undock race).
-- Approve or return to Neo.
+*Sprint plan by Mouse — 2026-05-29. Morpheus to review plan vs. architecture.*
