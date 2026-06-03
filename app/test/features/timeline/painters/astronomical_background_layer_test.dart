@@ -64,8 +64,7 @@ void main() {
 
     test('isDaytime is false during civil twilight', () {
       expect(
-          isDaytime(
-              now.subtract(const Duration(hours: 3, minutes: 15)), astro),
+          isDaytime(now.subtract(const Duration(hours: 3, minutes: 15)), astro),
           isFalse);
     });
 

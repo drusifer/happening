@@ -13,6 +13,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:happening/core/astro/astro_settings.dart';
+import 'package:happening/core/display/persisted_display_choice.dart';
 
 const double kMinFontSizePx = 11.0;
 const double kMaxFontSizePx = 22.0;
@@ -67,6 +68,7 @@ class AppSettings {
     this.windowMode = WindowMode.reserved,
     this.idleTimelineOpacity = 1.0,
     this.astroSettings = const AstroSettings(),
+    this.chosenDisplay,
   });
 
   final double fontSizePx;
@@ -76,6 +78,7 @@ class AppSettings {
   final WindowMode windowMode;
   final double idleTimelineOpacity;
   final AstroSettings astroSettings;
+  final PersistedDisplayChoice? chosenDisplay;
 
   /// Effective mode after platform reliability rules are applied.
   WindowMode get effectiveWindowMode => WindowMode.reserved;
@@ -88,6 +91,8 @@ class AppSettings {
     WindowMode? windowMode,
     double? idleTimelineOpacity,
     AstroSettings? astroSettings,
+    PersistedDisplayChoice? chosenDisplay,
+    bool clearChosenDisplay = false,
   }) {
     return AppSettings(
       fontSizePx: fontSizePx ?? this.fontSizePx,
@@ -97,6 +102,8 @@ class AppSettings {
       windowMode: windowMode ?? this.windowMode,
       idleTimelineOpacity: idleTimelineOpacity ?? this.idleTimelineOpacity,
       astroSettings: astroSettings ?? this.astroSettings,
+      chosenDisplay:
+          clearChosenDisplay ? null : (chosenDisplay ?? this.chosenDisplay),
     );
   }
 
@@ -108,6 +115,7 @@ class AppSettings {
         'windowMode': windowMode.name,
         'idleTimelineOpacity': idleTimelineOpacity,
         'astroSettings': astroSettings.toJson(),
+        if (chosenDisplay != null) 'chosenDisplay': chosenDisplay!.toJson(),
       };
 
   factory AppSettings.fromJson(Map<String, dynamic> json) => AppSettings(
@@ -131,6 +139,10 @@ class AppSettings {
             ? AstroSettings.fromJson(
                 json['astroSettings'] as Map<String, dynamic>)
             : const AstroSettings(),
+        chosenDisplay: json['chosenDisplay'] is Map<String, dynamic>
+            ? PersistedDisplayChoice.fromJson(
+                json['chosenDisplay'] as Map<String, dynamic>)
+            : null,
       );
 }
 

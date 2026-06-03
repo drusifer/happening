@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:happening/core/display/persisted_display_choice.dart';
 import 'package:happening/core/settings/settings_service.dart';
 
 void main() {
@@ -207,6 +208,59 @@ void main() {
 
     test('AppTheme.fromString defaults to dark on unknown value', () {
       expect(AppTheme.fromString('neon'), AppTheme.dark);
+    });
+
+    // ── chosenDisplay (F-30) ──────────────────────────────────────────────
+
+    test('chosenDisplay defaults to null', () {
+      expect(const AppSettings().chosenDisplay, isNull);
+    });
+
+    test('chosenDisplay roundtrips through JSON', () async {
+      const choice = PersistedDisplayChoice(
+        osName: 'Dell U2723QE',
+        widthLogical: 3840,
+        heightLogical: 2160,
+        xOffsetLogical: 1920,
+        yOffsetLogical: 0,
+      );
+      const settings = AppSettings(chosenDisplay: choice);
+      await svc.update(settings);
+
+      final svc2 = SettingsService(directory: tmpDir);
+      addTearDown(svc2.dispose);
+      await svc2.load();
+      expect(svc2.current.chosenDisplay, choice);
+    });
+
+    test('chosenDisplay omitted from JSON when null', () async {
+      await svc.update(const AppSettings());
+      final raw = File('${tmpDir.path}/settings.json').readAsStringSync();
+      final json = jsonDecode(raw) as Map<String, dynamic>;
+      expect(json.containsKey('chosenDisplay'), isFalse);
+    });
+
+    test('settings.json without chosenDisplay loads to null (backward compat)',
+        () async {
+      File('${tmpDir.path}/settings.json').writeAsStringSync(jsonEncode({
+        'fontSizePx': 15.0,
+        'theme': 'dark',
+      }));
+      await svc.load();
+      expect(svc.current.chosenDisplay, isNull);
+    });
+
+    test('copyWith clearChosenDisplay clears the chosen display', () {
+      const choice = PersistedDisplayChoice(
+        osName: 'X',
+        widthLogical: 1920,
+        heightLogical: 1080,
+        xOffsetLogical: 0,
+        yOffsetLogical: 0,
+      );
+      const settings = AppSettings(chosenDisplay: choice);
+      final cleared = settings.copyWith(clearChosenDisplay: true);
+      expect(cleared.chosenDisplay, isNull);
     });
   });
 }

@@ -116,8 +116,7 @@ double nightnessAt(DateTime t, AstroData astroData) {
   if (t.isBefore(s.sunrise)) {
     final span = s.sunrise.difference(s.civilTwilightBegin).inMicroseconds;
     if (span <= 0) return 0.0;
-    return 1.0 -
-        t.difference(s.civilTwilightBegin).inMicroseconds / span;
+    return 1.0 - t.difference(s.civilTwilightBegin).inMicroseconds / span;
   }
   if (t.isBefore(s.sunset)) return 0.0;
   if (t.isBefore(s.civilTwilightEnd)) {

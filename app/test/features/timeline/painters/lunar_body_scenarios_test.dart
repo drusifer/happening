@@ -36,11 +36,9 @@ void main() {
   // Convenience boundary times.
   final duskMid = day0.add(const Duration(hours: 20, minutes: 15));
   final nextCivilBegin = civilBegin.add(const Duration(hours: 24));
-  final nextDawnMid =
-      day0.add(const Duration(hours: 24 + 5, minutes: 45));
+  final nextDawnMid = day0.add(const Duration(hours: 24 + 5, minutes: 45));
 
-  List<Arc> arcsFor(DateTime rise, DateTime set) =>
-      LunarBody.nightArcsFor(
+  List<Arc> arcsFor(DateTime rise, DateTime set) => LunarBody.nightArcsFor(
         moonrise: rise,
         moonset: set,
         astroData: astro,
@@ -97,7 +95,8 @@ void main() {
   });
 
   group('Moon up at dusk → amber→up bridge replaces dusk-finish', () {
-    test('rose in afternoon, sets at night: lead-in is amber→up at [duskMid, civilEnd]',
+    test(
+        'rose in afternoon, sets at night: lead-in is amber→up at [duskMid, civilEnd]',
         () {
       final rise = day0.add(const Duration(hours: 16));
       final set = day0.add(const Duration(hours: 26));
@@ -131,7 +130,8 @@ void main() {
   });
 
   group('Moon up at dawn → up→amber bridge replaces dawn-rise', () {
-    test('rises at night, sets after sunrise: lead-out is up→amber at [civilBegin, dawnMid]',
+    test(
+        'rises at night, sets after sunrise: lead-out is up→amber at [civilBegin, dawnMid]',
         () {
       // Rise 22:00 (night), set next-day 09:00 (daytime → moon was up through dawn).
       final rise = day0.add(const Duration(hours: 22));

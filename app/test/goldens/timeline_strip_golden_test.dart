@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:happening/core/display/display_info.dart';
+import 'package:happening/core/display/display_service.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/time/clock_service.dart';
 import 'package:happening/core/window/window_service.dart';
@@ -19,11 +21,25 @@ class _FakeWindowManager extends Mock implements WindowManager {}
 
 class _FakeScreenRetriever extends Mock implements ScreenRetriever {}
 
+class _StubDisplayProbe implements DisplayProbe {
+  @override
+  Future<List<DisplayInfo>> getAll() async => const [];
+}
+
+class _StubDisplayEvents implements DisplayEvents {
+  @override
+  void Function() subscribe(void Function() onChange) => () {};
+}
+
 class _FakeWindowService extends WindowService {
   _FakeWindowService()
       : super(
           windowManager: _FakeWindowManager(),
           screenRetriever: _FakeScreenRetriever(),
+          displayService: DisplayService(
+            probe: _StubDisplayProbe(),
+            events: _StubDisplayEvents(),
+          ),
         );
 
   @override

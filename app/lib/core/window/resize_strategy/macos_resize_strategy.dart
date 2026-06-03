@@ -25,6 +25,9 @@ class MacOsResizeStrategy extends WindowResizeStrategy {
   final ScreenRetriever _sr;
 
   @override
+  WindowManager get wm => _wm;
+
+  @override
   Future<void> initialize(Size initialSize, double dpr) async {
     await _wm.setResizable(false);
     await _wm.setPosition(Offset.zero);

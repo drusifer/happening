@@ -107,8 +107,7 @@ class AstronomicalBackgroundLayer implements TimelineLayer {
 
     canvas.drawRect(
       Rect.fromLTWH(0, 0, w, size.height),
-      Paint()
-        ..shader = _buildShader(arcs, w, size.height),
+      Paint()..shader = _buildShader(arcs, w, size.height),
     );
 
     _paintStars(canvas, size);

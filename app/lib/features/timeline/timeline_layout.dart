@@ -79,7 +79,7 @@ class TimelineLayout {
 
   /// Returns the effective left-edge X for [event], shifted right by
   /// [rank * overlapStepPx] for stacked exact-overlap groups so hit-testing
-  /// matches the painter's [adjustedX].
+  /// matches the painter's adjustedX.
   double effectiveStartX(CalendarEvent event, DateTime now,
       [Map<String, ({int rank, int groupSize})>? overlapRanks]) {
     final startX = xForTime(event.startTime, now);

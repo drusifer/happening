@@ -15,6 +15,7 @@ import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:logging/logging.dart';
 
+import 'core/display/display_service.dart';
 import 'core/settings/settings_service.dart';
 import 'core/time/clock_service.dart';
 import 'core/window/window_service.dart';
@@ -44,6 +45,7 @@ class HappeningApp extends StatefulWidget {
     super.key,
     required this.settingsService,
     required this.windowService,
+    required this.displayService,
     @visibleForTesting this.authServiceOverride,
     @visibleForTesting this.calendarControllerOverride,
     @visibleForTesting this.clockServiceOverride,
@@ -52,6 +54,7 @@ class HappeningApp extends StatefulWidget {
 
   final SettingsService settingsService;
   final WindowService windowService;
+  final DisplayService displayService;
 
   /// Injected auth service, used only in tests.
   final AuthService? authServiceOverride;
@@ -250,6 +253,7 @@ class _HappeningAppState extends State<HappeningApp> {
                   clockService: _clock,
                   settingsService: widget.settingsService,
                   windowService: widget.windowService,
+                  displayService: widget.displayService,
                   onSignOut: _signOut,
                   onSignIn: _isSigningIn ? null : _signIn,
                   onCancelSignIn: _isSigningIn ? _cancelSignIn : null,
@@ -272,6 +276,7 @@ class _HappeningAppState extends State<HappeningApp> {
                       calendarController: _calendar!,
                       settingsService: widget.settingsService,
                       windowService: widget.windowService,
+                      displayService: widget.displayService,
                       onSignOut: _signOut,
                       enableAnimations: widget.enableAnimations,
                     );

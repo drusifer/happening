@@ -13,6 +13,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:happening/app.dart';
+import 'package:happening/core/display/display_service.dart';
+import 'package:happening/core/display/screen_retriever_adapter.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/window/linux_window_service.dart';
 import 'package:happening/core/window/macos_window_service.dart';
@@ -38,22 +40,40 @@ void main() async {
   await settingsSvc.load();
   _log.fine('Settings loaded.');
 
-  // 3. Initialize window management.
+  // 3. Initialize DisplayService (resolves which display the strip lives on).
+  final displayService = DisplayService(
+    probe: ScreenRetrieverDisplayProbe(screenRetriever),
+    events: ScreenRetrieverDisplayEvents(screenRetriever),
+    initialChoice: settingsSvc.current.chosenDisplay,
+    onWeakMatch: (choice, display) {
+      _log.warning(
+          'DisplayService: weak fingerprint match — persisted=${choice.osName} '
+          'matched ${display.id} (${display.osName}). User can re-pick in Settings.');
+    },
+  );
+  await displayService.initialize();
+  _log.fine(
+      'DisplayService initialized: active=${displayService.activeDisplay}');
+
+  // 4. Initialize window management.
   final WindowService windowService;
   if (Platform.isMacOS) {
     windowService = MacOSWindowService(
       windowManager: windowManager,
       screenRetriever: screenRetriever,
+      displayService: displayService,
     );
   } else if (Platform.isWindows) {
     windowService = WindowsWindowService(
       windowManager: windowManager,
       screenRetriever: screenRetriever,
+      displayService: displayService,
     );
   } else {
     windowService = LinuxWindowService(
       windowManager: windowManager,
       screenRetriever: screenRetriever,
+      displayService: displayService,
     );
   }
   _log.info('WindowService.initialize() start');
@@ -63,10 +83,11 @@ void main() async {
   );
   _log.info('WindowService.initialize() done — calling runApp()');
 
-  // 4. Launch app with pre-loaded settings and window service.
+  // 5. Launch app with pre-loaded settings and window service.
   runApp(HappeningApp(
     settingsService: settingsSvc,
     windowService: windowService,
+    displayService: displayService,
   ));
   _log.info('runApp() returned');
 }

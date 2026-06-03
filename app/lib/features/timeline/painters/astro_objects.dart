@@ -172,8 +172,7 @@ abstract class Moon extends AstroObject {
     if (fraction < 0.02) {
       // New moon: dim disc only, no shadow.
       canvas.saveLayer(discRect.inflate(1), Paint());
-      canvas.drawCircle(
-          Offset(x, cy), r, Paint()..color = color.withAlpha(40));
+      canvas.drawCircle(Offset(x, cy), r, Paint()..color = color.withAlpha(40));
       canvas.restore();
       return;
     }
@@ -196,8 +195,7 @@ abstract class Moon extends AstroObject {
 
     // Glyph: full disc with dark region erased via BlendMode.clear.
     canvas.saveLayer(discRect.inflate(2), Paint());
-    canvas.drawCircle(
-        Offset(x, cy), r, Paint()..color = color.withAlpha(220));
+    canvas.drawCircle(Offset(x, cy), r, Paint()..color = color.withAlpha(220));
     if (darkPath != null) {
       canvas.drawPath(darkPath, Paint()..blendMode = BlendMode.clear);
     }
@@ -221,27 +219,30 @@ abstract class Moon extends AstroObject {
     final termRect = Rect.fromCenter(
         center: Offset(x, cy), width: 2 * rxTerm, height: 2 * r);
 
-    final path = Path()..moveTo(x, cy - r); // top anchor (shared by disc & terminator)
+    final path = Path()
+      ..moveTo(x, cy - r); // top anchor (shared by disc & terminator)
 
     if (waxing) {
       // Dark side is LEFT — trace left arc of disc, then close via terminator.
-      path.arcTo(discRect, -math.pi / 2, -math.pi, false); // CCW: top→left→bottom
+      path.arcTo(
+          discRect, -math.pi / 2, -math.pi, false); // CCW: top→left→bottom
       if (rxTerm >= 0.5) {
         // crescent: close via right arc of terminator (CCW through right apex).
         // gibbous: close via left arc of terminator (CW through left apex).
-        path.arcTo(termRect, math.pi / 2,
-            fraction < 0.5 ? -math.pi : math.pi, false);
+        path.arcTo(
+            termRect, math.pi / 2, fraction < 0.5 ? -math.pi : math.pi, false);
       } else {
         path.lineTo(x, cy - r); // degenerate terminator → straight half-disc
       }
     } else {
       // Dark side is RIGHT — trace right arc of disc, then close via terminator.
-      path.arcTo(discRect, -math.pi / 2, math.pi, false); // CW: top→right→bottom
+      path.arcTo(
+          discRect, -math.pi / 2, math.pi, false); // CW: top→right→bottom
       if (rxTerm >= 0.5) {
         // crescent: close via left arc of terminator (CW through left apex).
         // gibbous: close via right arc of terminator (CCW through right apex).
-        path.arcTo(termRect, math.pi / 2,
-            fraction < 0.5 ? math.pi : -math.pi, false);
+        path.arcTo(
+            termRect, math.pi / 2, fraction < 0.5 ? math.pi : -math.pi, false);
       } else {
         path.lineTo(x, cy - r);
       }

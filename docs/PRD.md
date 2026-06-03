@@ -103,6 +103,7 @@ A **narrow, persistent, horizontal bar** anchored to the top of the screen (all 
 | F-27 | **Send to Back** | A cross-platform control that temporarily lowers the strip behind all other windows for 10 seconds, then auto-restores always-on-top. Available on all platforms. Re-pressing while sent back resets the 10-second timer. |
 | F-28 | **Linux Screen Space Reservation** | Reserve the strip's height at the top of the primary Linux display via `_NET_WM_STRUT_PARTIAL` so maximized windows cannot cover it. Mirrors Windows AppBar behavior. Graceful no-op on Wayland. |
 | F-29 | **Astronomical Timeline Theme** | Opt-in theme that overlays sunrise, sunset, moonrise, and moonset markers on the timeline at their exact times for the user's location. Day/night gradient background reflects civil twilight cycle. Moon phase shown with 8-phase icon set. All astronomical data calculated offline via Dart astronomy library (no external API). Location via `geolocator` package with manual lat/lng fallback. |
+| F-30 | **Multi-Monitor Support** | User can choose which display the strip lives on (single strip, single chosen display). Per-monitor DPI respected. Survives monitor hot-plug: falls back to primary on disconnect, auto-returns when reconnected. F-28 strut reservation generalized to chosen Linux display. One-strip-per-monitor and cursor-follow are explicitly out of scope. See `agents/cypher.docs/f30_multi_monitor_stories.md`. |
 
 ### V3 (Nice to Have)
 

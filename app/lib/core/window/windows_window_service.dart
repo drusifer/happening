@@ -59,6 +59,7 @@ class WindowsWindowService extends WindowService with WindowListener {
   WindowsWindowService({
     required super.windowManager,
     required super.screenRetriever,
+    required super.displayService,
     bool enableWindowsAppBar = true,
   })  : _enableWindowsAppBar = enableWindowsAppBar,
         super(
@@ -78,14 +79,16 @@ class WindowsWindowService extends WindowService with WindowListener {
 
   @override
   Future<void> beforeShow(Size size, double dpr, WindowMode mode) async {
-    _log.info('beforeShow: size=$size dpr=$dpr mode=$mode appBarEnabled=$_enableWindowsAppBar');
+    _log.info(
+        'beforeShow: size=$size dpr=$dpr mode=$mode appBarEnabled=$_enableWindowsAppBar');
     if (_enableWindowsAppBar && mode == WindowMode.reserved) {
       // Register listener BEFORE performShow runs so the first onWindowFocus
       // (emitted by wm.focus() inside performShow) is observed.
       wm.addListener(this);
       await _registerAppBar();
     }
-    _log.info('beforeShow: done appBarData=${_appBarData != null ? "registered" : "null"}');
+    _log.info(
+        'beforeShow: done appBarData=${_appBarData != null ? "registered" : "null"}');
   }
 
   @override
@@ -97,7 +100,8 @@ class WindowsWindowService extends WindowService with WindowListener {
 
   @override
   Future<void> onWindowModeChanged(WindowMode mode) async {
-    _log.info('onWindowModeChanged: mode=$mode appBarData=${_appBarData != null}');
+    _log.info(
+        'onWindowModeChanged: mode=$mode appBarData=${_appBarData != null}');
     if (!_enableWindowsAppBar) return;
     if (mode == WindowMode.reserved) {
       if (_appBarData == null) {
@@ -120,13 +124,15 @@ class WindowsWindowService extends WindowService with WindowListener {
   // earliest reliable signal that Win32 has actually shown the window.
   @override
   Future<void> afterReadyToShow(WindowMode mode) async {
-    _log.info('afterReadyToShow: mode=$mode appBarEnabled=$_enableWindowsAppBar');
+    _log.info(
+        'afterReadyToShow: mode=$mode appBarEnabled=$_enableWindowsAppBar');
     if (!_enableWindowsAppBar || mode != WindowMode.reserved) return;
     // Safety net: if onWindowFocus never fires (focus denied by Windows), run
     // the post-show fix-up anyway after 2s so the strip doesn't stay broken.
     _safetyNet = Timer(const Duration(seconds: 2), () {
       if (_firstShowHandled) return;
-      _log.warning('afterReadyToShow: safety-net firing — no onWindowFocus seen');
+      _log.warning(
+          'afterReadyToShow: safety-net firing — no onWindowFocus seen');
       unawaited(_handleFirstShow());
     });
   }
@@ -159,18 +165,22 @@ class WindowsWindowService extends WindowService with WindowListener {
     final rcTop = _appBarData!.ref.rcTop / dpr;
     _log.info('_handleFirstShow: setPosition(0, $rcTop)');
     await wm.setPosition(Offset(0, rcTop));
-    _log.info('_handleFirstShow: performResize(collapsed) — forces size via setSize');
+    _log.info(
+        '_handleFirstShow: performResize(collapsed) — forces size via setSize');
     await performResize(ExpansionState.collapsed);
     _log.info('_handleFirstShow: done');
   }
 
   @override
   Future<void> onDisplayChangedExtra() async {
-    _log.info('onDisplayChangedExtra: windowMode=$windowMode appBarData=${_appBarData != null}');
+    _log.info(
+        'onDisplayChangedExtra: windowMode=$windowMode appBarData=${_appBarData != null}');
     if (windowMode == WindowMode.reserved && _appBarData != null) {
       await _reserveCollapsedSpace();
-      final pos = Offset(0, _appBarData!.ref.rcTop / dpr);
-      _log.info('onDisplayChangedExtra: setPosition $pos (rcTop=${_appBarData!.ref.rcTop} dpr=$dpr)');
+      final double xOffset = activeDisplay?.workAreaOrigin.dx ?? 0;
+      final pos = Offset(xOffset, _appBarData!.ref.rcTop / dpr);
+      _log.info(
+          'onDisplayChangedExtra: setPosition $pos (rcTop=${_appBarData!.ref.rcTop} dpr=$dpr)');
       await wm.setPosition(pos);
     }
     _log.info('onDisplayChangedExtra: done');
@@ -183,16 +193,22 @@ class WindowsWindowService extends WindowService with WindowListener {
   /// this when the strip is observed overlapping other window title bars.
   @override
   Future<void> reassertAppBar() async {
-    if (windowMode != WindowMode.reserved || _appBarData == null) return;
+    if (windowMode != WindowMode.reserved || _appBarData == null) {
+      await super.reassertAppBar();
+      return;
+    }
     _log.info('reassertAppBar: start');
     await performResize(ExpansionState.collapsed);
-    _log.info('reassertAppBar: collapsed, running ABM_REMOVE → ABM_NEW → ABM_SETPOS cycle');
+    _log.info(
+        'reassertAppBar: collapsed, running ABM_REMOVE → ABM_NEW → ABM_SETPOS cycle');
     _shAppBarMessage(_abmRemove, _appBarData!);
     _shAppBarMessage(_abmNew, _appBarData!);
     await _reserveCollapsedSpace();
     final double rcTop = _appBarData!.ref.rcTop / dpr;
-    _log.info('reassertAppBar: rcTop=$rcTop (raw=${_appBarData!.ref.rcTop} dpr=$dpr), repositioning');
-    await wm.setPosition(Offset(0, rcTop));
+    _log.info(
+        'reassertAppBar: rcTop=$rcTop (raw=${_appBarData!.ref.rcTop} dpr=$dpr), repositioning');
+    final double xOffset = activeDisplay?.workAreaOrigin.dx ?? 0;
+    await wm.setPosition(Offset(xOffset, rcTop));
     await performResize(ExpansionState.collapsed);
     _log.info('reassertAppBar: done');
   }
@@ -206,13 +222,15 @@ class WindowsWindowService extends WindowService with WindowListener {
     final classNamePtr = _flutterWindowClass.toNativeUtf16();
     final hwnd = FindWindow(PCWSTR(classNamePtr), null);
     calloc.free(classNamePtr);
-    _log.info('_registerAppBar: FindWindow hwnd=0x${hwnd.value.address.toRadixString(16)}');
+    _log.info(
+        '_registerAppBar: FindWindow hwnd=0x${hwnd.value.address.toRadixString(16)}');
 
     _appBarData = calloc<_AppBarData>();
     _appBarData!.ref.cbSize = sizeOf<_AppBarData>();
     _appBarData!.ref.hWnd = hwnd.value.address;
     _appBarData!.ref.uCallbackMessage = _uCallbackMessage;
-    _log.info('_registerAppBar: calling ABM_NEW cbSize=${_appBarData!.ref.cbSize} hWnd=0x${_appBarData!.ref.hWnd.toRadixString(16)}');
+    _log.info(
+        '_registerAppBar: calling ABM_NEW cbSize=${_appBarData!.ref.cbSize} hWnd=0x${_appBarData!.ref.hWnd.toRadixString(16)}');
     _shAppBarMessage(_abmNew, _appBarData!);
     _log.info('_registerAppBar: ABM_NEW done, calling _reserveCollapsedSpace');
 
@@ -221,7 +239,8 @@ class WindowsWindowService extends WindowService with WindowListener {
   }
 
   Future<void> _reserveCollapsedSpace() async {
-    _log.info('_reserveCollapsedSpace: entry appBarBusy=$_appBarBusy isExpanded=$isExpanded screenWidth=$screenWidth dpr=$dpr collapsedHeight=${getCollapsedHeight()}');
+    _log.info(
+        '_reserveCollapsedSpace: entry appBarBusy=$_appBarBusy isExpanded=$isExpanded screenWidth=$screenWidth dpr=$dpr collapsedHeight=${getCollapsedHeight()}');
     if (_appBarBusy) {
       _log.info('_reserveCollapsedSpace: SKIPPED (appBarBusy)');
       return;
@@ -235,11 +254,14 @@ class WindowsWindowService extends WindowService with WindowListener {
       final targetHeight = (getCollapsedHeight() * dpr).round();
       _appBarData!.ref.rcBottom = targetHeight;
 
-      _log.info('_reserveCollapsedSpace: before ABM_QUERYPOS rect=[${_appBarData!.ref.rcLeft},${_appBarData!.ref.rcTop},${_appBarData!.ref.rcRight},${_appBarData!.ref.rcBottom}] targetHeightPx=$targetHeight');
+      _log.info(
+          '_reserveCollapsedSpace: before ABM_QUERYPOS rect=[${_appBarData!.ref.rcLeft},${_appBarData!.ref.rcTop},${_appBarData!.ref.rcRight},${_appBarData!.ref.rcBottom}] targetHeightPx=$targetHeight');
       _shAppBarMessage(_abmQuerypos, _appBarData!);
-      _log.info('_reserveCollapsedSpace: after  ABM_QUERYPOS rect=[${_appBarData!.ref.rcLeft},${_appBarData!.ref.rcTop},${_appBarData!.ref.rcRight},${_appBarData!.ref.rcBottom}]');
+      _log.info(
+          '_reserveCollapsedSpace: after  ABM_QUERYPOS rect=[${_appBarData!.ref.rcLeft},${_appBarData!.ref.rcTop},${_appBarData!.ref.rcRight},${_appBarData!.ref.rcBottom}]');
       _shAppBarMessage(_abmSetpos, _appBarData!);
-      _log.info('_reserveCollapsedSpace: after  ABM_SETPOS  rect=[${_appBarData!.ref.rcLeft},${_appBarData!.ref.rcTop},${_appBarData!.ref.rcRight},${_appBarData!.ref.rcBottom}]');
+      _log.info(
+          '_reserveCollapsedSpace: after  ABM_SETPOS  rect=[${_appBarData!.ref.rcLeft},${_appBarData!.ref.rcTop},${_appBarData!.ref.rcRight},${_appBarData!.ref.rcBottom}]');
 
       if (!isExpanded) {
         final bounds = Rect.fromLTWH(
@@ -248,13 +270,15 @@ class WindowsWindowService extends WindowService with WindowListener {
           screenWidth,
           getCollapsedHeight(),
         );
-        _log.info('_reserveCollapsedSpace: setBounds $bounds (rcTop=${_appBarData!.ref.rcTop} dpr=$dpr)');
+        _log.info(
+            '_reserveCollapsedSpace: setBounds $bounds (rcTop=${_appBarData!.ref.rcTop} dpr=$dpr)');
         await wm.setMinimumSize(Size.zero);
         await wm.setMaximumSize(Size.infinite);
         await wm.setBounds(bounds);
         _log.info('_reserveCollapsedSpace: setBounds done');
       } else {
-        _log.info('_reserveCollapsedSpace: skipping setBounds (isExpanded=true)');
+        _log.info(
+            '_reserveCollapsedSpace: skipping setBounds (isExpanded=true)');
       }
     } finally {
       _appBarBusy = false;

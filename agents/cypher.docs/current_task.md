@@ -1,25 +1,35 @@
-# Current Task — 2026-05-18
+# Current Task — 2026-05-29 17:13
 
-**Status:** F-29 Astronomical Timeline Theme — stories written, awaiting gates
+**Status:** F-30 stories READY — Smith Gate 1 APPROVED, AC updated, handing off to Morpheus arch
 
-## What was done
-- Probed sunrise-sunset.org API → confirmed solar-only (no lunar data)
-- Wrote 4 user stories with full AC → `agents/cypher.docs/f29_astronomical_theme_stories.md`
-  - US-F29-1: Location setup (OS geolocation + manual lat/lng fallback)
-  - US-F29-2: Solar events on timeline (sunrise/sunset + civil twilight gradient)
-  - US-F29-3: Lunar events on timeline (moonrise/moonset + moon phase badge)
-  - US-F29-4: Theme selection (opt-in, persisted, scaffolds F-16)
-- Added F-28 and F-29 entries to `docs/PRD.md` V2 table
-- Identified 3 open questions (OQ-1 moon source, OQ-2 twilight depth, OQ-3 offscreen moon)
+## What was done (2026-05-29)
+- Wrote 4 stories, added F-30 to PRD V2 table
+- Drew answered OQ-1..4 → baked into AC
+- Smith Gate 1 review (APPROVED w/ 1 must-fix + 4 non-blocking notes)
+- Updated AC per Smith Notes:
+  - **Note 1 (MUST-FIX)**: AC-F30-3-2 rewritten — fallback indicator MUST appear on strip
+    itself; Settings cannot be the only surface
+  - Note 2: AC-F30-1-2 rewritten — explicit OS-name fallback chain (non-empty, non-generic,
+    unique → OS name; else "Display N — {res}"; primary always gets " — primary" suffix)
+  - Note 3: AC-F30-1 rewritten — picker shows only connected; persisted-but-unavailable
+    choice shown as read-only "Currently set: X — unavailable" row
+  - Note 5: AC-F30-2 rewritten — "sharpness" replaced with concrete DPI scale factor test
+    (1.0x / 1.25x / 1.5x / 2.0x via Flutter MediaQueryData.devicePixelRatio)
+  - Note 4 (auto-return visibility cue): forwarded to Morpheus for design phase (non-blocking)
+- Status: DRAFT → READY → SMITH-APPROVED
 
-## Pending gates before sprint can start
-1. Drew answers OQ-1, OQ-2, OQ-3 (see stories doc)
-2. Smith HCI review of F-29 stories
-3. Morpheus architecture (geolocator package, moon data source, gradient rendering approach)
+## Next action (in flight)
+- Hand off to `@Morpheus *lead arch F-30` (sprint planning loop step 2)
+- Morpheus arch scope: per-display work-area/DPI lookup, strut x-range generalization,
+  hot-plug state machine (auto-fallback + auto-return), Windows AppBar move-with-selection
+  mechanism, fallback indicator concrete design (per Smith Note 1), auto-return visibility cue
+  (per Smith Note 4)
+- After Morpheus: Smith Gate 2 review → Mouse sprint plan → Morpheus reviews sprint plan
 
-## Previous — F-28 Linux Reserved Space Sprint
-**Status:** Phases A+B+hotfixes DONE 2026-05-18; Phase C (Trin UAT + Morpheus review) PENDING
-- PM actions F-28: PRD entry added today ✓; settings label outcome-language check (non-blocking)
+## Other pending PM work (carried forward)
+- F-29 (per memory shipped 2026-05-24 — Cypher state needs reconciliation on next F-29 touch)
+- F-28 Phase C (Trin UAT + Morpheus review still pending)
+- Stale cypher.docs cleanup (low priority)
 
 ---
-*Last updated: 2026-05-18*
+*Last updated: 2026-05-29 17:13*
