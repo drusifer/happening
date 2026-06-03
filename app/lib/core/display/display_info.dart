@@ -31,6 +31,21 @@ final RegExp _connectorNameRegex = RegExp(
   caseSensitive: false,
 );
 
+/// Windows GDI device paths like `\\.\DISPLAY1` (optionally with a `\Monitor0`
+/// adapter suffix). These are OS device slots, not friendly monitor names.
+final RegExp _gdiDeviceNameRegex = RegExp(
+  r'^\\\\[.?]\\DISPLAY',
+  caseSensitive: false,
+);
+
+/// Whether the OS-reported name is a meaningful, human-readable monitor name
+/// rather than an empty/generic/connector/device-path placeholder.
+bool _isUsableOsName(String trimmed) =>
+    trimmed.isNotEmpty &&
+    !_genericDisplayNames.contains(trimmed) &&
+    !_connectorNameRegex.hasMatch(trimmed) &&
+    !_gdiDeviceNameRegex.hasMatch(trimmed);
+
 @immutable
 class DisplayInfo {
   const DisplayInfo({
@@ -65,9 +80,7 @@ class DisplayInfo {
     final primarySuffix = isPrimary ? ' — primary' : '';
 
     final trimmed = osName?.trim() ?? '';
-    final hasUsableOsName = trimmed.isNotEmpty &&
-        !_genericDisplayNames.contains(trimmed) &&
-        !_connectorNameRegex.hasMatch(trimmed);
+    final hasUsableOsName = _isUsableOsName(trimmed);
 
     if (hasUsableOsName) {
       final duplicates =
@@ -85,9 +98,7 @@ class DisplayInfo {
 
     final fallbackDisplays = sorted.where((d) {
       final dTrimmed = d.osName?.trim() ?? '';
-      final dHasUsable = dTrimmed.isNotEmpty &&
-          !_genericDisplayNames.contains(dTrimmed) &&
-          !_connectorNameRegex.hasMatch(dTrimmed);
+      final dHasUsable = _isUsableOsName(dTrimmed);
       if (!dHasUsable) return true;
       final dDuplicates =
           all.where((x) => (x.osName?.trim() ?? '') == dTrimmed).length;

@@ -857,7 +857,8 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
  *swe fix: double the size of the buttons on the time strip (refresh, sendtoback, settings, quit)
 
 ---
-[<small>2026-06-03 14:24:01</small>] [**make**]->[**all**] *build*:
- Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
-00:07 +429: All tests passed!
-make[1]: Leaving directory '/home/drusifer/Projects/happening'
+[<small>2026-06-03 17:21:13</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-windows | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+Lost connection to device.
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+

@@ -89,6 +89,21 @@ void main() {
       }
     });
 
+    test('Windows GDI device paths fall back to numeric label', () {
+      for (final gdi in const [
+        r'\\.\DISPLAY1',
+        r'\\.\DISPLAY2',
+        r'\\.\DISPLAY1\Monitor0',
+      ]) {
+        final a = _d(id: 'a', name: gdi, primary: true);
+        expect(
+          a.labelFor([a]),
+          'Display 1 — 1920×1080 — primary',
+          reason: 'Expected GDI device path $gdi to fall back',
+        );
+      }
+    });
+
     test('duplicate OS names fall back to numeric label for both', () {
       final a = _d(id: 'a', name: 'Dell U2723QE', primary: true);
       final b = _d(id: 'b', name: 'Dell U2723QE', originX: 3840);

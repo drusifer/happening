@@ -301,13 +301,13 @@ void main() {
       final svc = _FakeSettingsService();
       await svc.update(const AppSettings(theme: AppTheme.astronomical));
 
-      Future<CityResult?> alwaysNull(String q) async => null;
+      Future<List<CityResult>> alwaysEmpty(String q) async => const [];
 
       await tester.pumpWidget(_wrap(SettingsPanel(
         settingsService: svc,
         calendarController: CalendarController(_FakeCalendarService()),
         onSignOut: () {},
-        resolveCityName: alwaysNull,
+        resolveCityName: alwaysEmpty,
       )));
       await tester.pump();
 
@@ -319,29 +319,40 @@ void main() {
       expect(find.textContaining("No results for 'Xyzzy'"), findsOneWidget);
     });
 
-    testWidgets('city search match shows preview and confirm', (tester) async {
+    testWidgets('city search shows all matches in a pickable list',
+        (tester) async {
       _wideScreen(tester);
       final svc = _FakeSettingsService();
       await svc.update(const AppSettings(theme: AppTheme.astronomical));
 
-      Future<CityResult?> resolveNewYork(String q) async =>
-          (lat: 40.71, lng: -74.0, label: 'New York, NY');
+      Future<List<CityResult>> resolveLosAngeles(String q) async => const [
+            (lat: 34.05, lng: -118.24, label: 'Los Angeles, CA'),
+            (lat: -37.46, lng: -72.35, label: 'Los Angeles, CL'),
+          ];
 
       await tester.pumpWidget(_wrap(SettingsPanel(
         settingsService: svc,
         calendarController: CalendarController(_FakeCalendarService()),
         onSignOut: () {},
-        resolveCityName: resolveNewYork,
+        resolveCityName: resolveLosAngeles,
       )));
       await tester.pump();
 
       await tester.enterText(
-          find.byKey(const Key('city_search_field')), 'New York');
+          find.byKey(const Key('city_search_field')), 'Los Angeles');
       await tester.tap(find.byKey(const Key('city_search_button')));
       await tester.pump();
 
-      expect(find.textContaining('New York, NY'), findsOneWidget);
-      expect(find.text('Confirm'), findsOneWidget);
+      // Both same-named cities are offered so the user can disambiguate.
+      expect(find.textContaining('Los Angeles, CA'), findsOneWidget);
+      expect(find.textContaining('Los Angeles, CL'), findsOneWidget);
+
+      // Picking the US entry saves its coordinates.
+      await tester.tap(find.byKey(const Key('city_result_0')));
+      await tester.pump();
+
+      expect(svc.current.astroSettings.cityName, 'Los Angeles, CA');
+      expect(svc.current.astroSettings.latitude, 34.05);
     });
 
     // ── F-30 Display section ────────────────────────────────────────────────
