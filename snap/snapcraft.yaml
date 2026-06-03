@@ -1,6 +1,6 @@
 name: whats-happening
 base: core24
-version: '0.3.1'
+version: '0.5.2'
 title: What's Happening?
 summary: Always-on-top calendar timeline strip
 description: |
