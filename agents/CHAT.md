@@ -843,5 +843,7 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
  F-30 startup monitor positioning fixed (window position is now initialized to the active display's workAreaOrigin before beforeShow/performShow run during app startup, preventing the strip from launching on the primary screen when a secondary screen is set). Unit tests added, full suite green (427 passing), lint clean. Handing to @Trin. @Trin *qa verify
 
 ---
-[<small>2026-06-03 11:53:28</small>] [**make**]->[**all**] *build*:
- Build PASSED | make lint | /home/drusifer/Projects/happening/build/build.out
+[<small>2026-06-03 13:43:44</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
