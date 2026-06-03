@@ -89,12 +89,25 @@ class WindowService with WidgetsBindingObserver {
 
   Future<void> focus() => _wm.focus();
 
-  /// Re-registers any platform AppBar/strut reservation and/or repositions the window to its active display coordinates.
+  /// Force-refreshes window position, size, and platform reservation by
+  /// re-reading display state from [DisplayService] — bypasses the no-change
+  /// guard in [_onDisplayChangedInner].
   Future<void> reassertAppBar() async {
-    _log.info('WindowService.reassertAppBar: repositioning to active display');
-    if (_activeDisplay != null) {
-      await _strategy.moveToDisplay(_activeDisplay!);
-      await onDisplayChangedExtra();
+    _log.info('WindowService.reassertAppBar: force-refreshing display state');
+    final newDpr = _wm.getDevicePixelRatio();
+    final nextActive = _displayService.activeDisplay;
+    if (nextActive == null) return;
+
+    _dpr = newDpr;
+    _screenWidth = nextActive.size.width;
+    _activeDisplay = nextActive;
+
+    await _strategy.moveToDisplay(nextActive);
+    await reRegisterReservation();
+    if (_isExpanded) {
+      await _doExpand();
+    } else {
+      await _doCollapse();
     }
   }
 
@@ -145,6 +158,9 @@ class WindowService with WidgetsBindingObserver {
       _log.info(
           'WindowService.initialize: readyToShow callback — calling performShow');
       await performShow();
+      _log.info(
+          'WindowService.initialize: readyToShow callback — calling afterWindowShown');
+      await afterWindowShown(_windowMode);
       _log.info(
           'WindowService.initialize: readyToShow callback — calling interactionStrategy.initialize');
       await _interactionStrategy.initialize(_windowMode);
@@ -244,6 +260,13 @@ class WindowService with WidgetsBindingObserver {
   @protected
   Future<void> awaitReadyToShow(Future<void> f) => f;
 
+  /// Called inside the readyToShow callback immediately after [performShow].
+  /// Override for setup that requires the window to be visible (e.g. strut).
+  @protected
+  Future<void> afterWindowShown(WindowMode mode) async {
+    return;
+  }
+
   /// Called after readyToShow completes (or is unawaited). Subclasses
   /// override for post-show platform setup (e.g. Linux strut reservation).
   @protected
@@ -268,6 +291,13 @@ class WindowService with WidgetsBindingObserver {
   /// Subclasses override to re-assert platform reservations.
   @protected
   Future<void> onDisplayChangedExtra() async {
+    return;
+  }
+
+  /// Called by [reassertAppBar] to fully cycle the platform reservation
+  /// (remove then re-add). Subclasses override; base is a no-op.
+  @protected
+  Future<void> reRegisterReservation() async {
     return;
   }
 
