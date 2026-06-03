@@ -141,6 +141,7 @@ class _HappeningAppState extends State<HappeningApp> {
           _fatalErrorMessage = 'Secure storage is unavailable.\n'
               'On Linux, ensure the GNOME keyring or Secret Service is running.\n\n'
               'Error: $e';
+          _log.severe(_fatalErrorMessage);
           _authState = _AuthState.fatalError;
         });
       }

@@ -86,6 +86,7 @@ These are only needed if you are building from source. End users do not need the
 - `libgtk-3-dev`
 - `lld` (LLVM linker)
 - `libsecret-1-dev` *(required for secure credential storage)*
+- `libsecret-tools` *(required for unlocking the keyring)*
 
 #### Windows
 - Flutter SDK (>= 3.19.0)
