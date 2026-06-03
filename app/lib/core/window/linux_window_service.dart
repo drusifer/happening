@@ -26,7 +26,7 @@ class LinuxWindowService extends WindowService {
   // ── Overrides ─────────────────────────────────────────────────────────────
 
   @override
-  Future<void> afterReadyToShow(WindowMode mode) async {
+  Future<void> afterWindowShown(WindowMode mode) async {
     if (mode == WindowMode.reserved) {
       await _reserveLinuxStrut();
     }
@@ -49,6 +49,13 @@ class LinuxWindowService extends WindowService {
     if (windowMode == WindowMode.reserved) {
       await _reserveLinuxStrut();
     }
+  }
+
+  @override
+  Future<void> reRegisterReservation() async {
+    if (windowMode != WindowMode.reserved) return;
+    await _linuxDock.undock();
+    await _reserveLinuxStrut();
   }
 
   // ── Internals ─────────────────────────────────────────────────────────────

@@ -22,7 +22,10 @@ import 'package:mockito/mockito.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
-class _FakeWindowManager extends Mock implements WindowManager {}
+class _FakeWindowManager extends Mock implements WindowManager {
+  @override
+  double getDevicePixelRatio() => 1.0;
+}
 
 class _FakeScreenRetriever extends Mock implements ScreenRetriever {}
 

@@ -995,12 +995,18 @@ class _IconButton extends StatelessWidget {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Container(
-        padding: const EdgeInsets.all(4),
+        padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
           color: active
               ? theme.colorScheme.primary.withValues(alpha: 0.25)
               : stripBackgroundColor.withValues(alpha: 0.92),
           shape: BoxShape.circle,
+          border: Border.all(
+            color: active
+                ? theme.colorScheme.primary
+                : (isDark ? Colors.white70 : Colors.black54),
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.35),
@@ -1014,7 +1020,7 @@ class _IconButton extends StatelessWidget {
           color: active
               ? theme.colorScheme.primary
               : (isDark ? Colors.white70 : Colors.black54),
-          size: 16,
+          size: 24,
         ),
       ),
     );

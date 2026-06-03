@@ -553,8 +553,8 @@ void main() {
         await svc.reassertAppBar();
 
         verify(mockWM.setPosition(const Offset(0, 0)))
-            .called(2); // 1st in initialize readyToShow, 2nd in reassertAppBar
-        expect(fakeLinuxDock.calls, contains('dock'));
+            .called(3); // strategy.initialize + readyToShow moveToDisplay + reassertAppBar
+        expect(fakeLinuxDock.calls, containsAllInOrder(['undock', 'dock']));
       });
     });
   });
