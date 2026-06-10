@@ -103,7 +103,7 @@ class EventsLayer implements TimelineLayer {
       _paintEventBlock(canvas, event, rect, color, baseColor);
     }
 
-    _paintEventLabel(canvas, event, adjustedX, w, top, blockHeight, size);
+    _paintEventLabel(canvas, event, baseColor, adjustedX, w, top, blockHeight, size);
   }
 
   void _paintEventBlock(
@@ -160,8 +160,8 @@ class EventsLayer implements TimelineLayer {
     }
   }
 
-  void _paintEventLabel(Canvas canvas, CalendarEvent event, double x, double w,
-      double top, double blockHeight, Size size) {
+  void _paintEventLabel(Canvas canvas, CalendarEvent event, Color baseColor,
+      double x, double w, double top, double blockHeight, Size size) {
     final hasDuration = event.endTime.isAfter(event.startTime);
     final titleThreshold = (fontSize / 15.0) * 36;
     if (hasDuration && w <= titleThreshold) return;
@@ -187,6 +187,7 @@ class EventsLayer implements TimelineLayer {
         height: blockHeight,
         fontSize: fontSize,
         backgroundColor: backgroundColor,
+        eventColor: baseColor,
         isTask: event.isTask,
       ),
     );

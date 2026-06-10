@@ -862,3 +862,13 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
 
 make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
 
+
+---
+[<small>2026-06-09 18:43:24</small>] [**User**]->[**neo**] *swe fix*:
+ use contrasting colors for text in event boxes and hover cards. If the event color is light use a dark text and if dark use a light text. ok?
+
+---
+[<small>2026-06-09 21:34:37</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:06 +430: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
