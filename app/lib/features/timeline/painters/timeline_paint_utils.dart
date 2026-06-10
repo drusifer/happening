@@ -28,6 +28,7 @@ class EventLabelConfig {
     required this.height,
     required this.fontSize,
     required this.backgroundColor,
+    required this.eventColor,
     this.isTask = false,
   });
 
@@ -37,6 +38,7 @@ class EventLabelConfig {
   final double height;
   final double fontSize;
   final Color backgroundColor;
+  final Color eventColor;
   final bool isTask;
 }
 
@@ -75,19 +77,22 @@ class TimelinePaintUtils {
 
   static void paintEventLabel(
       Canvas canvas, String title, EventLabelConfig cfg) {
-    const shadow = Shadow(
+    final isLight = cfg.eventColor.computeLuminance() > 0.4;
+    final textColor =
+        isLight ? const Color(0xDD000000) : const Color(0xFFFFFFFF);
+    final shadow = Shadow(
       blurRadius: 3.0,
-      color: Color(0xAA000000),
-      offset: Offset(0.5, 0.5),
+      color: isLight ? const Color(0x33FFFFFF) : const Color(0xAA000000),
+      offset: const Offset(0.5, 0.5),
     );
 
     final span = TextSpan(
       text: title,
       style: TextStyle(
-        color: Colors.white,
+        color: textColor,
         fontSize: cfg.fontSize,
         fontWeight: FontWeight.w500,
-        shadows: const [shadow],
+        shadows: [shadow],
       ),
     );
     final painter = TextPainter(

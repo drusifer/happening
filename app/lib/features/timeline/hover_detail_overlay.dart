@@ -40,10 +40,6 @@ class HoverDetailOverlay extends StatelessWidget {
     );
   }
 
-  static const _kShadows = [
-    Shadow(color: Colors.black54, offset: Offset(0, 1), blurRadius: 2),
-  ];
-
   @override
   Widget build(BuildContext context) {
     final cleanDescription =
@@ -56,6 +52,19 @@ class HoverDetailOverlay extends StatelessWidget {
     final labelSize = fontSize * 0.67;
     final titleSize = fontSize * 0.93;
     final bodySize = fontSize * 0.80;
+
+    final isLight = event.color.computeLuminance() > 0.4;
+    final kShadows = [
+      Shadow(
+        color: isLight ? const Color(0x22FFFFFF) : Colors.black54,
+        offset: const Offset(0, 1),
+        blurRadius: 2,
+      ),
+    ];
+    final textPrimary = isLight ? const Color(0xDD000000) : Colors.white;
+    final textSecondary =
+        isLight ? const Color(0x99000000) : Colors.white70;
+    final textMuted = isLight ? const Color(0x77000000) : Colors.white60;
 
     return Material(
       color: Colors.transparent,
@@ -86,11 +95,11 @@ class HoverDetailOverlay extends StatelessWidget {
                         ? 'TASK:\n ${event.calendarName.toUpperCase()}'
                         : event.calendarName.toUpperCase(),
                     style: TextStyle(
-                      color: Colors.white60,
+                      color: textMuted,
                       fontSize: labelSize,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.5,
-                      shadows: _kShadows,
+                      shadows: kShadows,
                     ),
                   ),
                 ),
@@ -100,6 +109,7 @@ class HoverDetailOverlay extends StatelessWidget {
                     url: event.videoCallUrl!,
                     fontSize: labelSize,
                     highlight: true,
+                    isLight: isLight,
                   ),
                   const SizedBox(width: 6),
                 ],
@@ -108,6 +118,7 @@ class HoverDetailOverlay extends StatelessWidget {
                     label: 'OPEN',
                     url: event.calendarEventUrl!,
                     fontSize: labelSize,
+                    isLight: isLight,
                   ),
               ],
             ),
@@ -115,19 +126,19 @@ class HoverDetailOverlay extends StatelessWidget {
             Text(
               event.title,
               style: TextStyle(
-                color: Colors.white,
+                color: textPrimary,
                 fontSize: titleSize,
                 fontWeight: FontWeight.w600,
-                shadows: _kShadows,
+                shadows: kShadows,
               ),
             ),
             const SizedBox(height: 2),
             Text(
               '${_fmt(context, event.startTime)} – ${_fmt(context, event.endTime)}',
               style: TextStyle(
-                color: Colors.white70,
+                color: textSecondary,
                 fontSize: bodySize,
-                shadows: _kShadows,
+                shadows: kShadows,
               ),
             ),
             if (!event.isTask &&
@@ -137,10 +148,10 @@ class HoverDetailOverlay extends StatelessWidget {
               Text(
                 truncatedDescription,
                 style: TextStyle(
-                  color: Colors.white,
+                  color: textPrimary,
                   fontSize: bodySize,
                   height: 1.3,
-                  shadows: _kShadows,
+                  shadows: kShadows,
                 ),
                 maxLines: 4,
                 overflow: TextOverflow.ellipsis,
@@ -159,26 +170,39 @@ class _LinkButton extends StatelessWidget {
     required this.url,
     required this.fontSize,
     this.highlight = false,
+    this.isLight = false,
   });
 
   final String label;
   final String url;
   final double fontSize;
   final bool highlight;
+  final bool isLight;
 
   @override
   Widget build(BuildContext context) {
+    final bgColor = isLight
+        ? (highlight
+            ? const Color(0x33000000)
+            : const Color(0x1A000000))
+        : (highlight ? Colors.white24 : Colors.white12);
+    final borderColor = isLight
+        ? (highlight
+            ? const Color(0x99000000)
+            : const Color(0x4D000000))
+        : (highlight ? Colors.white60 : Colors.white30);
+    final textColor =
+        isLight ? const Color(0xDD000000) : Colors.white;
+
     return GestureDetector(
       onTap: () =>
           launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         decoration: BoxDecoration(
-          color: highlight ? Colors.white24 : Colors.white12,
+          color: bgColor,
           borderRadius: BorderRadius.circular(4),
-          border: Border.all(
-            color: highlight ? Colors.white60 : Colors.white30,
-          ),
+          border: Border.all(color: borderColor),
           boxShadow: const [
             BoxShadow(
                 color: Colors.black26, blurRadius: 2, offset: Offset(0, 1)),
@@ -187,14 +211,10 @@ class _LinkButton extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            color: Colors.white,
+            color: textColor,
             fontSize: fontSize,
             fontWeight: FontWeight.bold,
             letterSpacing: 0.5,
-            shadows: const [
-              Shadow(
-                  color: Colors.black38, offset: Offset(0, 1), blurRadius: 1),
-            ],
           ),
         ),
       ),
