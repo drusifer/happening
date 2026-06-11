@@ -1,8 +1,12 @@
 # Oracle Context
 
 ## Project: Happening
-**Date**: 2026-05-26
-**Status**: Post-v0.5.1. Astronomical theme fully implemented and documented. Send-to-Back shipped and documented. GeoNames offline city search integrated. Tooling fixed for Windows compatibility.
+**Date**: 2026-06-11
+**Status**: Post-v0.5.1. F-31 Hide/Show feature fully implemented, tested, and documented. Astronomical theme fully implemented and documented. Send-to-Back shipped and documented. GeoNames offline city search integrated. Tooling fixed for Windows compatibility.
+
+## Recent Changes Documented (2026-06-11)
+- User Guide: Updated `USER_GUIDE.md` to document the F-31 Timestrip Hide/Show feature, explaining the mini widget state, arrow_left/right controls, countdown-tap restoration, and strut/AppBar release. Referenced the new golden image of the mini widget. Embedded 8 new screenshots from `docs/Screen Shots/` (TimeStrip, Meeting Detail, Settings panel, light/dark themes, astronomical theme/settings) across their corresponding sections.
+- Goldens: Added a new golden test case `F-31: timeline strip hidden mini widget (golden)` to `timeline_strip_golden_test.dart` and generated its golden image (`app/test/goldens/goldens/timeline_strip_mini_widget.png`). Modified `_FakeClock` in tests to return broadcast streams, solving a `StreamBuilder` state transition error when rebuilding the strip in the hidden state.
 
 ## Recent Changes Documented (2026-05-26)
 - Build System & Versioning: Created a single-source-of-truth version file (`app/assets/version.txt`) registered in `pubspec.yaml`, and implemented `sync_version.py` to auto-propagate versions. Created `Makefile.windows` and streamlined `Makefile` variables (universally exposed before `MKF_ACTIVE` block). Rewrote the `mkf.py` redirection engine using Python's standard `threading` instead of POSIX `select.select()`, achieving complete native Windows compatibility. Refactored the `fetch-cities` target into a pure Python tool (`fetch_cities.py`) that handles GeoNames zip downloads/extracts/formatting cross-platform. Introduced a platform-independent help-rendering parser (`print_help.py`) and wired it up via lazy Make variables (`HELP_COMMAND` and `HELP_PROJECT_TARGETS`) to enable `make help` to function identically across all Unix/Windows shell environments.

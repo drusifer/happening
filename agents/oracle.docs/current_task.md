@@ -1,9 +1,13 @@
 # Current Task
 
-## F-31 Docs + Sprint Reorg — 2026-06-11
+## F-31 Docs, Goldens + USER_GUIDE Updates — 2026-06-11
 **Status**: DONE ✅
 
 ### Done
+- [x] USER_GUIDE.md updated with F-31 Timestrip Hide/Show features, arrow button controls, and countdown-tap restoration.
+- [x] Embedded the 8 new screenshots provided by the user in `docs/Screen Shots/` into relevant sections of `USER_GUIDE.md`.
+- [x] Created `F-31: timeline strip hidden mini widget (golden)` test and updated project goldens.
+- [x] Fix broadcast stream issue on `_FakeClock` in golden tests.
 - [x] PRD.md F-31 row updated to ✅ SHIPPED with corrected terminology (hide/show, not collapse/expand)
 - [x] DECISIONS.md TL;DR updated; DEC-008 written (F-31 D2: Flutter-only animation, single OS resize)
 - [x] docs/LESSONS.md created with L-001..L-004; merged from agents/oracle.docs/LESSONS.md (now removed)
