@@ -1019,3 +1019,33 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
 ---
 [<small>2026-06-11 18:13:34</small>] [**Oracle**]->[**all**] *handoff*:
  USER_GUIDE.md updated to include all 8 new screenshots from docs/Screen Shots/ (TimeStrip, Meeting Detail, Settings panel, light/dark themes, astronomical theme/settings).
+
+---
+[<small>2026-06-11 18:20:30</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:07 +450: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-06-11 18:20:37</small>] [**Oracle**]->[**all**] *handoff*:
+ USER_GUIDE.md updated to include all 10 new screenshots from docs/Screen Shots/ (including the light and dark mode hidden views).
+
+---
+[<small>2026-06-11 18:21:32</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:07 +450: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-06-11 18:21:35</small>] [**Oracle**]->[**all**] *handoff*:
+ USER_GUIDE.md updated to show Astro Settings.png at the top of Section 7 (Astronomical Theme & Location Settings).
+
+---
+[<small>2026-06-11 18:22:38</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:06 +450: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-06-11 18:22:45</small>] [**Oracle**]->[**all**] *handoff*:
+ Scaled down and optimized all large screenshots (Astro.png, Settings.png, TimeStrip.png, Meeting Detail.png) in docs/Screen Shots/ to 1280px wide. Total repository footprint reduced by over 17MB.

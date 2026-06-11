@@ -5,7 +5,8 @@
 
 ### Done
 - [x] USER_GUIDE.md updated with F-31 Timestrip Hide/Show features, arrow button controls, and countdown-tap restoration.
-- [x] Embedded the 8 new screenshots provided by the user in `docs/Screen Shots/` into relevant sections of `USER_GUIDE.md`.
+- [x] Embedded the 10 new screenshots provided by the user in `docs/Screen Shots/` (including light/dark hidden views) into relevant sections of `USER_GUIDE.md`.
+- [x] Scaled down and optimized all large screenshots in `docs/Screen Shots/` to a maximum width of 1280px (saving over 17MB).
 - [x] Created `F-31: timeline strip hidden mini widget (golden)` test and updated project goldens.
 - [x] Fix broadcast stream issue on `_FakeClock` in golden tests.
 - [x] PRD.md F-31 row updated to ✅ SHIPPED with corrected terminology (hide/show, not collapse/expand)

@@ -87,12 +87,16 @@ If "What's Happening?" is blocking a window title bar, browser tab, or menu that
 For times when you need maximum screen space but still want to keep an eye on your schedule:
 - **Hide the Strip**: Tap the **Hide** (`←` left arrow) button on the far left of the strip.
 - **Mini Widget State**: The strip collapses into a tiny **Mini Widget** anchored at the top-left of your screen.
+  - **Dark Theme Hidden View**:
+    ![Hidden View Dark](docs/Screen%20Shots/Hidden%20View.png)
+  - **Light Theme Hidden View**:
+    ![Hidden View Light](docs/Screen%20Shots/Hidden%20View%20Light.png)
 - **Strut & Reservation Release**: On Linux and Windows, hiding the strip automatically releases the reserved screen space (Linux struts and Windows AppBars), allowing maximized applications to occupy the full screen.
 - **Continuous Countdown**: The mini widget continues to display the live countdown to your next transition (amber during meetings, red/flashing when imminent), keeping you aware of the time remaining.
 - **Restore the Strip**: Tap the **Show** (`→` right arrow) button in the mini widget, or tap the **Countdown Area** itself, to instantly restore the strip to its full size (and re-acquire reserved screen space).
 - **Default Visibility**: The app always launches fully visible.
 
-![Timestrip Mini Widget (Hidden State)](app/test/goldens/goldens/timeline_strip_mini_widget.png)
+![Timestrip Mini Widget Golden Spec](app/test/goldens/goldens/timeline_strip_mini_widget.png)
 
 ---
 
@@ -128,7 +132,7 @@ Click the **Gear** icon to open the Settings Panel:
 
 For an organic, visual connection to your day, select the **Astronomical** theme under settings. This overlays sunrise, sunset, moonrise, and moonset events directly onto the timeline scale, complete with dynamically rendered skies and accurate moon phase visualizations.
 
-![Astronomical Theme Strip](docs/Screen%20Shots/Astro.png)
+![Astronomical Settings](docs/Screen%20Shots/Astro%20Settings.png)
 
 ### Dynamic Sky Backgrounds
 The timeline strip renders a beautiful day/night gradient representing the natural progression of light based on your local coordinates:
