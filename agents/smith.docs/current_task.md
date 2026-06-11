@@ -1,18 +1,16 @@
 # Current Task
 
-**Status:** F-30 Gate 1 + Gate 2 both APPROVED — Cypher to apply Note B (AC-F30-3-1 Wayland exemption) in-turn, then Mouse plans sprint
-**Updated:** 2026-05-29
+**Status:** F-31 Gate 1 + Gate 2 APPROVED — Mouse to plan sprint
+**Updated:** 2026-06-11
 
 ## Progress
-- [x] F-30 Gate 1 review: APPROVED with 1 must-fix + 4 non-blocking notes → `f30_gate1_review_2026-05-29.md`
-- [x] F-30 Gate 2 review: APPROVED with 3 non-blocking notes → `f30_gate2_review_2026-05-29.md`
-- [ ] Cypher to update AC-F30-3-1 to exempt Wayland from 2s budget (Note B)
-- [ ] Sprint proceeds to Mouse
+- [x] F-30 Gate 1 + Gate 2: APPROVED 2026-05-29
+- [x] F-31 Gate 1 review: APPROVED → `f31_gate1_review_2026-06-11.md`
+- [x] F-31 Gate 2 review: APPROVED → `f31_gate2_review_2026-06-11.md`
 
-## Smith availability during F-30 implementation
-- `*user test` rounds on hot-plug cycle (Phase F UAT)
-- Legibility check on `DisplayFallbackIndicator` at minimum strip height
-- Validate Settings deep-link tap auto-scrolls Display section into view
+## Smith availability during F-31 implementation
+- `*user test` after Phase with mini widget visible (verify countdown live-updates, → button restore)
+- Verify hide button touch target ≥ 24×24px at minimum strip height
 
 ---
-*Last updated: 2026-05-29*
+*Last updated: 2026-06-11*

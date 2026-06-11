@@ -1,5 +1,11 @@
 # Mouse Context
 
+## F-31 Timestrip Hide/Show Sprint — 2026-06-11
+- Full planning loop complete: Cypher → Smith G1 → Morpheus arch → Smith G2 → Mouse plan → Morpheus review (pending)
+- Sprint board in `task.md`; F-30 board archived in `agents/mouse.docs/f30_task_archive_2026-06-11.md`
+- 3 phases (A–C), 7 tasks; strictly sequential; F-28 Phase C runs parallel with Phase A
+- Key risks: Windows snap animation, mini width formula, wm.setSize access in strip state
+
 ## Transparent Timestrip Sprint — 2026-04-24
 - Sprint planning loop reached Mouse after:
   - Cypher stories

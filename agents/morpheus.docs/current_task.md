@@ -1,21 +1,17 @@
-# Current Task — 2026-06-03
+# Current Task — 2026-06-11
 
-**Status:** F-30 Polish & app.dart displayService Fix APPROVED — loop `*impl F-30-polish` COMPLETE.
+**Status:** F-31 Code Review COMPLETE — APPROVED
 
-## F-30 Polish & app.dart displayService Fix Review
-- Verdict: APPROVED.
+## What was done (2026-06-11)
+- Reviewed all F-31 implementation files (WindowService hooks, Linux/Windows overrides, timeline_strip.dart, tests)
+- Review doc: `agents/morpheus.docs/f31_code_review_2026-06-11.md`
+- APPROVED: platform hooks symmetric, state machine correct, tests comprehensive
+- 6 non-blocking follow-up items (A=countdown duplication, B=CurvedAnimation, C=redundant GD, D-F=trivial)
+- Recommend F-32 cleanup task for items A and C
 
-### Outcome
-- Passed `displayService: widget.displayService` to `TimelineStrip` in `app.dart` (authenticated state).
-- Swapped settings panel inline creation of `FingerprintChoiceResolver` for `setPersistedChoice`.
-- Hoisted `onWeakMatch` to DisplayService constructor.
-- Cached choice resolution to prevent duplicate callbacks.
-- Cleared empty-block linter warnings in `WindowService` by adding explicit returns.
-- Fixed integration test mock compile error.
-- All tests green (except pre-existing golden).
+## Next
+- Drew to review and decide on F-32 cleanup scope
+- Sprint C (docs) may still be pending — Oracle doc pass
 
-## F-30 Status After This Session
-- Phases A, B, C2, D, E, and Polish: SHIPPED
-- Phase C3 (Windows AppBar hardware verify): BLOCKED on Drew's hardware
-- Phase F1/F2 (multi-platform UAT, Smith real-app pass): BLOCKED on hardware
-- Phase F3 (docs): READY whenever Drew triggers
+---
+*Last updated: 2026-06-11*

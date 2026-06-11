@@ -1,35 +1,28 @@
-# Current Task — 2026-05-29 17:13
+# Current Task — 2026-06-09
 
-**Status:** F-30 stories READY — Smith Gate 1 APPROVED, AC updated, handing off to Morpheus arch
+**Status:** F-31 stories READY — OQs resolved, sending to Smith Gate 1
 
-## What was done (2026-05-29)
-- Wrote 4 stories, added F-30 to PRD V2 table
-- Drew answered OQ-1..4 → baked into AC
-- Smith Gate 1 review (APPROVED w/ 1 must-fix + 4 non-blocking notes)
-- Updated AC per Smith Notes:
-  - **Note 1 (MUST-FIX)**: AC-F30-3-2 rewritten — fallback indicator MUST appear on strip
-    itself; Settings cannot be the only surface
-  - Note 2: AC-F30-1-2 rewritten — explicit OS-name fallback chain (non-empty, non-generic,
-    unique → OS name; else "Display N — {res}"; primary always gets " — primary" suffix)
-  - Note 3: AC-F30-1 rewritten — picker shows only connected; persisted-but-unavailable
-    choice shown as read-only "Currently set: X — unavailable" row
-  - Note 5: AC-F30-2 rewritten — "sharpness" replaced with concrete DPI scale factor test
-    (1.0x / 1.25x / 1.5x / 2.0x via Flutter MediaQueryData.devicePixelRatio)
-  - Note 4 (auto-return visibility cue): forwarded to Morpheus for design phase (non-blocking)
-- Status: DRAFT → READY → SMITH-APPROVED
+## What was done (2026-06-09)
+- Read requirement doc (`agents/nreq_timestrip_hide.md`) + codebase (timeline_strip.dart, linux_window_service.dart, countdown_display.dart)
+- Identified F-31 as the next feature number (F-30 shipped 2026-06-03)
+- Noted F-15 (Snooze/Focus) in V3 backlog is superseded by F-31
+- Wrote 5 user stories with full acceptance criteria: `agents/cypher.docs/f31_timestrip_hide_stories.md`
+- Added F-31 to PRD V2 table in `docs/PRD.md`
+- Raised 3 OQs for Drew:
+  - OQ-F31-1: Collapsed anchor position (top-left vs other)
+  - OQ-F31-2: Windows AppBar release on collapse (yes/no)
+  - OQ-F31-3: Persist hide state across restarts (yes/no)
 
-## Next action (in flight)
-- Hand off to `@Morpheus *lead arch F-30` (sprint planning loop step 2)
-- Morpheus arch scope: per-display work-area/DPI lookup, strut x-range generalization,
-  hot-plug state machine (auto-fallback + auto-return), Windows AppBar move-with-selection
-  mechanism, fallback indicator concrete design (per Smith Note 1), auto-return visibility cue
-  (per Smith Note 4)
-- After Morpheus: Smith Gate 2 review → Mouse sprint plan → Morpheus reviews sprint plan
+## Next action (blocked on Drew OQ answers)
+- Drew answers OQ-F31-1..3 → Cypher bakes answers into AC
+- Send to `@Smith *user review agents/cypher.docs/f31_timestrip_hide_stories.md`
+- Smith must approve → proceed to Morpheus arch
 
 ## Other pending PM work (carried forward)
-- F-29 (per memory shipped 2026-05-24 — Cypher state needs reconciliation on next F-29 touch)
+- F-15 (V3 backlog): Remove/update once F-31 ships — F-31 is the concrete implementation of F-15
 - F-28 Phase C (Trin UAT + Morpheus review still pending)
+- F-29 Oracle doc pass (AST-E2) still pending
 - Stale cypher.docs cleanup (low priority)
 
 ---
-*Last updated: 2026-05-29 17:13*
+*Last updated: 2026-06-09*

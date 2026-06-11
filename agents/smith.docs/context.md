@@ -1,6 +1,7 @@
 # Smith Context
 
 ## Recent Decisions
+- 2026-06-11: F-31 Timestrip Hide/Show Gate 1 APPROVED with 1 must-add AC (Note B: 24×24px target) + 2 non-blocking notes. Review: `agents/smith.docs/f31_gate1_review_2026-06-11.md`
 - 2026-04-24: Approved transparent timestrip sprint stories with UX constraints.
 - 2026-04-24: Approved transparent timestrip architecture with implementation notes.
 - 2026-05-13: Send-to-Back Gate 1 + Gate 2 both approved.
@@ -10,6 +11,16 @@
 - 2026-05-29: F-30 Multi-Monitor Support Gate 2 APPROVED with 3 non-blocking notes. Review: `agents/smith.docs/f30_gate2_review_2026-05-29.md`
 
 ## Key Findings
+
+### F-31 Timestrip Hide/Show (2026-06-11)
+- Gate 1 APPROVED. Review: `agents/smith.docs/f31_gate1_review_2026-06-11.md`
+- Gate 2 APPROVED. Review: `agents/smith.docs/f31_gate2_review_2026-06-11.md`
+- Note A: pointer cursor on mini widget (for Neo)
+- Note B (applied at Gate 1): AC-F31-1-5 — hide button touch target ≥ 24×24px
+- Note C: z-order resolved by Morpheus (D4 — STB save/restore)
+- Note D (for Neo): `_buildCountdownPositioned` returns Positioned — extract content helper for mini widget
+- Note E (for Neo): Test hide-end snap on Windows — may produce double-animation
+- Note F (for Neo): Validate mini width formula vs "23 h 59 min" during Phase B
 
 ### F-30 Multi-Monitor (2026-05-29)
 - Gate 1 + Gate 2 both APPROVED. Reviews: `f30_gate1_review_2026-05-29.md`, `f30_gate2_review_2026-05-29.md`

@@ -1,23 +1,20 @@
-# Next Steps — 2026-05-29 17:13
+# Next Steps — 2026-06-09
 
-## In flight: F-30 sprint planning loop (*bloop plan)
-1. ✓ Cypher stories written + Drew OQs answered + Smith Gate 1 approved + AC updated
-2. **Now:** `@Morpheus *lead arch F-30` (Gate 2 next)
-3. After Morpheus: Smith Gate 2 (UX impact of arch decisions)
-4. After Smith: Mouse sprint plan (phase breakdown, task IDs)
-5. After Mouse: Morpheus reviews sprint plan vs. architecture
+## F-31 sprint planning loop (*bloop plan)
 
-## F-28 Phase C (still pending — parallel)
-6. `@Trin *qa test F-28` — UAT against US-L1/L2/L3 AC
-7. `@Morpheus *lead review F-28 implementation`
-8. Close F-28 sprint, update PRD status
+1. ✓ Cypher stories written (5 stories, 3 OQs raised)
+2. **NOW: Drew answers OQ-F31-1..3** (see current_task.md)
+3. Cypher bakes OQ answers into AC (especially US-F31-5 conditional on OQ-F31-2)
+4. `@Smith *user review agents/cypher.docs/f31_timestrip_hide_stories.md` — Gate 1
+5. Smith must `*user approve` → proceed to Morpheus
+6. `@Morpheus *lead arch F-31` — architecture decisions
+7. `@Smith *user feedback <arch>` — Gate 2
+8. `@Mouse *sm plan sprint F-31` — phase breakdown
+9. `@Morpheus *lead review sprint plan` — final review
 
-## F-29 reconciliation (low priority)
-9. Read code to confirm F-29 ship state (memory says shipped 2026-05-24)
-10. If shipped: update Cypher state to mark F-29 closed
-
-## PM backlog (low priority)
-- Delete stale cypher.docs sprint stories
+## Other parallel work
+- F-28 Phase C: `@Trin *qa test F-28` → `@Morpheus *lead review F-28`
+- F-29 Oracle doc pass (AST-E2) — low priority
 
 ---
-*Last updated: 2026-05-29 17:13*
+*Last updated: 2026-06-09*

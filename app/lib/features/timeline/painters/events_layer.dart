@@ -103,7 +103,8 @@ class EventsLayer implements TimelineLayer {
       _paintEventBlock(canvas, event, rect, color, baseColor);
     }
 
-    _paintEventLabel(canvas, event, baseColor, adjustedX, w, top, blockHeight, size);
+    _paintEventLabel(
+        canvas, event, baseColor, adjustedX, w, top, blockHeight, size);
   }
 
   void _paintEventBlock(

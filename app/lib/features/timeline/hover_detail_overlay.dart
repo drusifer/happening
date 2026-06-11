@@ -62,8 +62,7 @@ class HoverDetailOverlay extends StatelessWidget {
       ),
     ];
     final textPrimary = isLight ? const Color(0xDD000000) : Colors.white;
-    final textSecondary =
-        isLight ? const Color(0x99000000) : Colors.white70;
+    final textSecondary = isLight ? const Color(0x99000000) : Colors.white70;
     final textMuted = isLight ? const Color(0x77000000) : Colors.white60;
 
     return Material(
@@ -182,17 +181,12 @@ class _LinkButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bgColor = isLight
-        ? (highlight
-            ? const Color(0x33000000)
-            : const Color(0x1A000000))
+        ? (highlight ? const Color(0x33000000) : const Color(0x1A000000))
         : (highlight ? Colors.white24 : Colors.white12);
     final borderColor = isLight
-        ? (highlight
-            ? const Color(0x99000000)
-            : const Color(0x4D000000))
+        ? (highlight ? const Color(0x99000000) : const Color(0x4D000000))
         : (highlight ? Colors.white60 : Colors.white30);
-    final textColor =
-        isLight ? const Color(0xDD000000) : Colors.white;
+    final textColor = isLight ? const Color(0xDD000000) : Colors.white;
 
     return GestureDetector(
       onTap: () =>

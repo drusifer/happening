@@ -872,3 +872,129 @@ make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
  Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
 00:06 +430: All tests passed!
 make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-06-09 21:41:58</small>] [**User**]->[**cypher**] *pm *nreq*:
+ New req: timestrip hide button — slides panel left leaving only countdown+expand button; releases strut when hidden, re-acquires on restore. See agents/nreq_timestrip_hide.md. wdyt?
+
+---
+[<small>2026-06-09 21:43:50</small>] [**Cypher**]->[**all**] *pm entry*:
+ Cypher active. Reading req doc + codebase. Drafting F-31 stories for timestrip hide feature.
+
+---
+[<small>2026-06-09 21:45:53</small>] [**Cypher**]->[**User**] *pm handoff*:
+ F-31 stories drafted (5 stories, AC complete). 3 OQs need Drew before Smith gate. See agents/cypher.docs/f31_timestrip_hide_stories.md. @Drew please answer OQ-F31-1..3.
+
+---
+[<small>2026-06-09 21:51:26</small>] [**Cypher**]->[**smith**] *pm handoff*:
+ OQs resolved. Stories updated: hide/show terminology, rectangular arrows, top-left anchor, release both strut+AppBar, always start visible. @Smith *user review agents/cypher.docs/f31_timestrip_hide_stories.md
+
+---
+[<small>2026-06-11 11:47:07</small>] [**make**]->[**all**] *build*:
+ Build FAILED exit=2 | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Failed to update packages.
+make[1]: *** [Makefile:65: app/.dart_tool/package_config.json] Error 69
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-06-11 11:54:05</small>] [**Mouse**]->[**Smith**] *bloop plan*:
+ Bloop *plan F-31: picking up at Smith Gate 1 (Cypher stories+OQs complete). Chain: Smith → Morpheus → Smith Gate 2 → Mouse → Morpheus review. @Smith *user review agents/cypher.docs/f31_timestrip_hide_stories.md
+
+---
+[<small>2026-06-11 11:55:30</small>] [**Smith**]->[**all**] *user review*:
+ Smith active. Reviewing F-31 Timestrip Hide/Show stories for Gate 1 — evaluating 5 stories against Nielsen's heuristics.
+
+---
+[<small>2026-06-11 11:59:24</small>] [**Smith**]->[**Morpheus**] *user approve*:
+ F-31 Gate 1 APPROVED. Note B applied (24×24px target in AC-F31-1-5). See agents/smith.docs/f31_gate1_review_2026-06-11.md. @Morpheus *lead arch sprint F-31
+
+---
+[<small>2026-06-11 12:02:09</small>] [**Morpheus**]->[**all**] *lead arch*:
+ Morpheus active. Reading F-31 stories + Smith Gate 1 review + codebase (WindowService, ExpansionController, LinuxWindowService, WindowsWindowService, timeline_strip). Architecting hide/show feature.
+
+---
+[<small>2026-06-11 12:04:05</small>] [**Morpheus**]->[**Smith**] *lead handoff*:
+ F-31 arch done. No new class; Flutter anim + onHideStrip/onShowStrip hooks; z-order save/restore. See agents/morpheus.docs/F31_HIDE_SHOW_ARCH_2026-06-11.md @Smith *user feedback F-31 arch
+
+---
+[<small>2026-06-11 12:04:53</small>] [**Smith**]->[**all**] *user feedback*:
+ Smith active for Gate 2. Reviewing F-31 architecture for UX impact — checking animation approach, z-order handling, and mini widget design.
+
+---
+[<small>2026-06-11 12:06:38</small>] [**Smith**]->[**Mouse**] *user approve*:
+ F-31 Gate 2 APPROVED. Notes D/E/F for Neo (mini widget layout, Windows snap, formula validation). See agents/smith.docs/f31_gate2_review_2026-06-11.md. @Mouse *sm plan sprint F-31
+
+---
+[<small>2026-06-11 12:07:07</small>] [**Mouse**]->[**all**] *sm plan*:
+ Mouse active. Planning F-31 sprint board. Archiving F-30 board → agents/mouse.docs/, writing F-31 phases A/B/C to task.md.
+
+---
+[<small>2026-06-11 12:09:21</small>] [**Mouse**]->[**Morpheus**] *sm handoff*:
+ F-31 sprint board complete. 3 phases (A–C), 7 tasks, sequential. Board in task.md, plan in agents/mouse.docs/f31_sprint_plan_2026-06-11.md. @Morpheus *lead review sprint plan
+
+---
+[<small>2026-06-11 12:10:07</small>] [**Morpheus**]->[**all**] *lead review*:
+ Morpheus active. Reviewing F-31 sprint plan vs. architecture. Checking phase coverage and one access-modifier issue in my arch doc.
+
+---
+[<small>2026-06-11 12:11:45</small>] [**Morpheus**]->[**Neo**] *lead approve*:
+ Sprint plan APPROVED. Correction applied: arch doc updated with prepareToHide/completeShow/resizeToMiniStrip/resizeToFullStrip public wrappers (protected hooks not callable from strip state). task.md F31-A1 updated. @Neo *swe impl F31-A
+
+---
+[<small>2026-06-11 12:15:26</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:06 +439: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-06-11 12:15:33</small>] [**Neo**]->[**all**] *swe impl*:
+ Phase A DONE — 439/439 green. WindowService hooks (getMiniWidth, prepareToHide, completeShow, resizeToMiniStrip, resizeToFullStrip) + Linux/Windows overrides + 12 new tests all pass. @Neo continuing to Phase B.
+
+---
+[<small>2026-06-11 12:37:41</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+
+---
+[<small>2026-06-11 12:39:03</small>] [**Neo**]->[**trin**] *swe impl handoff*:
+ Phase A+B DONE — 447/447 green. WindowService hooks, Linux/Windows overrides, strip state machine (_hideStrip/_showStrip), mini widget, _HideButton, 20 new tests. @Trin *qa uat F-31
+
+---
+[<small>2026-06-11 14:27:22</small>] [**make**]->[**all**] *build*:
+ Build FAILED exit=2 | make lint | /home/drusifer/Projects/happening/build/build.out
+
+1 issue found. (ran in 5.0s)
+make[1]: *** [Makefile:190: lint-style] Error 1
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-06-11 14:35:11</small>] [**Trin**]->[**all**] *context-low*:
+ Context is low. Prep for context clear. Trin UAT 95% done — one lint fix applied (curly_braces at timeline_strip.dart:266), not yet verified. Resume: make lint → make test → handoff to Morpheus.
+
+---
+[<small>2026-06-11 14:36:57</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:07 +449: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-06-11 14:37:33</small>] [**Trin**]->[**morpheus**] *qa handoff*:
+ UAT DONE — 449/449 green, lint clean. curly_braces fix at timeline_strip.dart:266 verified. AC matrix complete (F31-1-3 animation curve linear not ease-in-out — note for Morpheus). @Morpheus *lead review F-31
+
+---
+[<small>2026-06-11 14:40:53</small>] [**Morpheus**]->[**all**] *lead approve*:
+ F-31 APPROVED — 449/449. Non-blocking: A=countdown duplication, C=redundant GD, B=CurvedAnimation gap. Full review in morpheus.docs/f31_code_review_2026-06-11.md. Recommend F-32 cleanup for A+C.
+
+---
+[<small>2026-06-11 14:49:52</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make lint | /home/drusifer/Projects/happening/build/build.out
+cd app && dart format --output=none --set-exit-if-changed lib/ test/
+Formatted 99 files (0 changed) in 0.18 seconds.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-06-11 14:50:09</small>] [**Neo**]->[**all**] *swe fix done*:
+ Button fix done: _HideButton→_IconButton (arrow_left/right) — circular, bordered, same look as toolbar. Toolbar left:8→40 to clear 36px footprint. Golden updated. 449/449 green, lint clean.
+
+---
+[<small>2026-06-11 17:18:23</small>] [**Oracle**]->[**Smith**] *handoff*:
+ F31-C3 DONE + Sprint docs reorg complete. PRD F-31→SHIPPED, DEC-008 written, LESSONS.md created+merged. All sprint docs moved to docs/sprints/F-31/…F-27/etc. task.md updated. @Smith *user test F-31 UX pass — F31-C2 still pending

@@ -1,17 +1,24 @@
 # Next Steps
 
 ## Immediate Next Action
-After Cypher updates F-30 AC for Notes 1, 2, 3, 5: hand off to Morpheus arch.
-Smith will then own F-30 Gate 2 (post-arch UX review).
+F-31 Gate 1 + Gate 2 both approved. Waiting on Neo Phase B implementation.
+On re-entry: run `*user test F-31` after Neo signals Phase B complete.
+Key items to test:
+- Hide button touch target ≥ 24×24px at minimum strip height
+- Pointer cursor on mini widget hover
+- Countdown visible and live while hidden
+- Hide/show cycle repeatable ≥ 5 times
+- Send-to-back restore after show
 
 ## Waiting On
-- Cypher to rewrite AC-F30-3-2 (fallback indicator), AC-F30-1-2 (OS-name fallback chain),
-  AC-F30-1 (disconnected display in picker), AC-F30-2-2 (DPI testability).
+- Mouse sprint plan, then Neo implementation (Phase A + B)
 
 ## Planned Work
 - [x] F-30 Gate 1 review (2026-05-29)
-- [ ] F-30 Gate 2 review (after Morpheus arch)
-- [ ] F-30 UAT after Neo implementation phases land
+- [x] F-30 Gate 2 review (2026-05-29)
+- [x] F-31 Gate 1 review (2026-06-11) → APPROVED
+- [ ] F-31 Gate 2 review (after Morpheus arch)
+- [ ] F-31 UAT after Neo implementation phases land
 
 ## Historical (parking)
 - [x] Transparent Timestrip Gate 1 + 2 (2026-04-24, feature DROPPED)
@@ -21,4 +28,4 @@ Smith will then own F-30 Gate 2 (post-arch UX review).
 - [x] F-29 Astro Theme Gate 1 + 2 (2026-05-18) — per memory shipped 2026-05-24
 
 ---
-*Last updated: 2026-05-29*
+*Last updated: 2026-06-11*
