@@ -5,7 +5,7 @@
 **Status**: Post-v0.5.1. F-31 Hide/Show feature fully implemented, tested, and documented. Astronomical theme fully implemented and documented. Send-to-Back shipped and documented. GeoNames offline city search integrated. Tooling fixed for Windows compatibility.
 
 ## Recent Changes Documented (2026-06-11)
-- User Guide: Updated `USER_GUIDE.md` to document the F-31 Timestrip Hide/Show feature, explaining the mini widget state, arrow_left/right controls, countdown-tap restoration, and strut/AppBar release. Referenced the new golden image of the mini widget. Embedded 8 new screenshots from `docs/Screen Shots/` (TimeStrip, Meeting Detail, Settings panel, light/dark themes, astronomical theme/settings) across their corresponding sections.
+- User Guide: Updated `USER_GUIDE.md` to document the F-31 Timestrip Hide/Show feature, explaining the mini widget state, arrow_left/right controls, countdown-tap restoration, and strut/AppBar release. Referenced the new golden image of the mini widget. Embedded 10 new screenshots from `docs/Screen Shots/` (TimeStrip, Meeting Detail, Settings panel, light/dark themes, astronomical theme/settings, and light/dark hidden views) across their corresponding sections. Scaled down and optimized all large screenshots in `docs/Screen Shots/` to a maximum width of 1280px, saving over 17MB in file size.
 - Goldens: Added a new golden test case `F-31: timeline strip hidden mini widget (golden)` to `timeline_strip_golden_test.dart` and generated its golden image (`app/test/goldens/goldens/timeline_strip_mini_widget.png`). Modified `_FakeClock` in tests to return broadcast streams, solving a `StreamBuilder` state transition error when rebuilding the strip in the hidden state.
 
 ## Recent Changes Documented (2026-05-26)
