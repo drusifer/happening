@@ -46,6 +46,18 @@ class _FakeWindowService extends WindowService {
   Future<void> performResize(ExpansionState intent) async {
     WidgetsBinding.instance.handleMetricsChanged();
   }
+
+  @override
+  Future<void> resizeToMiniStrip(double fontSizePx) async {}
+
+  @override
+  Future<void> resizeToFullStrip() async {}
+
+  @override
+  Future<void> prepareToHide() async {}
+
+  @override
+  Future<void> completeShow() async {}
 }
 
 class _FakeClock extends ClockService {
@@ -54,9 +66,9 @@ class _FakeClock extends ClockService {
   @override
   DateTime get now => fixedTime;
   @override
-  Stream<DateTime> get tick1s => Stream.value(fixedTime);
+  Stream<DateTime> get tick1s => Stream.value(fixedTime).asBroadcastStream();
   @override
-  Stream<DateTime> get tick10s => Stream.value(fixedTime);
+  Stream<DateTime> get tick10s => Stream.value(fixedTime).asBroadcastStream();
 }
 
 class _FakeSettings extends SettingsService {
@@ -127,6 +139,49 @@ void main() {
       );
 
       await gesture.removePointer();
+      await tester.binding.setSurfaceSize(null);
+    });
+
+    testWidgets('F-31: timeline strip hidden mini widget (golden)',
+        (tester) async {
+      final events = [
+        CalendarEvent(
+          id: 'e1',
+          title: 'Next Transition',
+          startTime: now.add(const Duration(minutes: 38)),
+          endTime: now.add(const Duration(hours: 1, minutes: 38)),
+          color: Colors.blue,
+          calendarEventUrl: null,
+          videoCallUrl: null,
+        ),
+      ];
+
+      await tester.binding.setSurfaceSize(const Size(250, 100));
+
+      await tester.pumpWidget(MaterialApp(
+        theme: ThemeData(brightness: Brightness.dark),
+        home: Scaffold(
+          body: TimelineStrip(
+            events: events,
+            clockService: clock,
+            calendarController: calendar,
+            settingsService: settings,
+            windowService: _FakeWindowService(),
+            onSignOut: () {},
+            enableAnimations: false, // crucial for golden tests
+          ),
+        ),
+      ));
+
+      // Click the arrow_left (hide) button to hide the strip and show the mini widget
+      await tester.tap(find.byIcon(Icons.arrow_left));
+      await tester.pumpAndSettle();
+
+      await expectLater(
+        find.byType(TimelineStrip),
+        matchesGoldenFile('goldens/timeline_strip_mini_widget.png'),
+      );
+
       await tester.binding.setSurfaceSize(null);
     });
   });

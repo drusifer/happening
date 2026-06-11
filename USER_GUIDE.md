@@ -14,9 +14,9 @@ Welcome to "What's Happening?"! This guide will help you understand how to use t
 
 ## 2. GUI Overview
 
-
 ![Happening UI](preview.gif)
 
+![What's Happening? Timeline Strip](docs/Screen%20Shots/TimeStrip.png)
 
 ---
 
@@ -67,6 +67,8 @@ The strip is always visible at the top of your primary display. It stays above o
 2. **Stability (The Latch)**: Once a card is open, the hit-zone expands to the full width of the card. This "latches" the card open, allowing you to move your mouse horizontally to click the **JOIN** or **OPEN** buttons without accidentally switching to an adjacent event.
 3. **Dismiss**: Move your mouse outside the card area to collapse the window.
 
+![Meeting Detail Card](docs/Screen%20Shots/Meeting%20Detail.png)
+
 ![Hover Card Alignment](app/test/goldens/goldens/hover_card_alignment.png)
 
 ### Action Buttons
@@ -81,12 +83,24 @@ If "What's Happening?" is blocking a window title bar, browser tab, or menu that
 - **Non-Intrusive Focus**: When the strip auto-restores to the front, it does so quietly without stealing keyboard focus from whatever application you are currently typing in.
 - **Continuous Lowering**: If you need more time to interact with underlying windows, simply tap the Send-to-Back button again before the 10 seconds expire to reset and extend the timer for another 10 seconds.
 
+### Timestrip Hide/Show
+For times when you need maximum screen space but still want to keep an eye on your schedule:
+- **Hide the Strip**: Tap the **Hide** (`←` left arrow) button on the far left of the strip.
+- **Mini Widget State**: The strip collapses into a tiny **Mini Widget** anchored at the top-left of your screen.
+- **Strut & Reservation Release**: On Linux and Windows, hiding the strip automatically releases the reserved screen space (Linux struts and Windows AppBars), allowing maximized applications to occupy the full screen.
+- **Continuous Countdown**: The mini widget continues to display the live countdown to your next transition (amber during meetings, red/flashing when imminent), keeping you aware of the time remaining.
+- **Restore the Strip**: Tap the **Show** (`→` right arrow) button in the mini widget, or tap the **Countdown Area** itself, to instantly restore the strip to its full size (and re-acquire reserved screen space).
+- **Default Visibility**: The app always launches fully visible.
+
+![Timestrip Mini Widget (Hidden State)](app/test/goldens/goldens/timeline_strip_mini_widget.png)
+
 ---
 
 ## 6. Strip Controls & Settings
 
 ### Always-Visible Strip Buttons
-Four icon buttons are always visible on the strip (once signed in):
+Five icon buttons are always visible on the strip (once signed in):
+- **Hide** (`←` left arrow, far left) — collapses the timeline strip to a mini widget.
 - **Refresh** — re-fetches your calendar events. On Windows, also reasserts the reserved space at the top of the screen.
 - **Send to Back** (`⧉` flip icon) — temporarily lowers the strip behind all other windows for 10 seconds, then auto-restores it to the top. Press again to reset the timer. Useful when the strip is covering something you need to see.
 - **Settings** (gear icon) — opens the settings panel.
@@ -95,7 +109,13 @@ Four icon buttons are always visible on the strip (once signed in):
 ### Settings Panel
 Click the **Gear** icon to open the Settings Panel:
 
+![Settings Panel](docs/Screen%20Shots/Settings.png)
+
 - **Theme**: Switch between **Dark**, **Light**, **System**, and **Astronomical** themes.
+  - **Light Theme**:
+    ![Light Theme](docs/Screen%20Shots/light%20theme.png)
+  - **Dark Theme**:
+    ![Dark Theme](docs/Screen%20Shots/Dark%20Theme.png)
 - **Time Window**: Control how many hours of your day are visible (8h, 12h, or 24h).
 - **Multi-Calendar**: Toggle visibility for all your synced Google Calendars.
 - **Font Size**: Adjust the UI scale. The strip height adapts automatically.
@@ -107,6 +127,8 @@ Click the **Gear** icon to open the Settings Panel:
 ## 7. Astronomical Theme & Location Settings
 
 For an organic, visual connection to your day, select the **Astronomical** theme under settings. This overlays sunrise, sunset, moonrise, and moonset events directly onto the timeline scale, complete with dynamically rendered skies and accurate moon phase visualizations.
+
+![Astronomical Theme Strip](docs/Screen%20Shots/Astro.png)
 
 ### Dynamic Sky Backgrounds
 The timeline strip renders a beautiful day/night gradient representing the natural progression of light based on your local coordinates:
@@ -122,6 +144,8 @@ Celestial bodies and boundaries are marked at their precise daily times along th
 - **Moonrise & Moonset**: A moon icon representing your **actual local moon phase** (New Moon, Waxing/Waning Crescent, First/Last Quarter, Waxing/Waning Gibbous, or Full Moon) rises with an upward arrow and sets with a downward arrow at their exact daily times.
 - **Tonight's Moon Phase Badge**: A static moon phase badge is always displayed at the far right of the strip (near the settings gear) showing tonight's phase name and illumination percentage (e.g., `Waxing Gibbous 72%`), regardless of whether moonrise/set are inside the currently scrolled timeline window.
 
+![Celestial Markers and Sky Transition](docs/Screen%20Shots/Astro2.png)
+
 ### Offline & Zero Network Dependencies
 All solar, twilight, and lunar data calculations are performed locally and offline on your computer. There are absolutely no external network requests or API dependencies for the Astronomical theme!
 
@@ -131,6 +155,8 @@ To compute precise times, the app needs your latitude and longitude. When you se
 2. Click the **Search** icon (or press Enter). The app queries a built-in, local database of **33,742 cities** completely offline.
 3. Once your city is found, its coordinates and name will be previewed.
 4. Click **Confirm** to save the location. The coordinates are stored securely in your app settings, and astronomical markers will instantly project onto your timeline strip!
+
+![Astronomical Location Settings](docs/Screen%20Shots/Astro%20Settings.png)
 
 ---
 

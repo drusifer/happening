@@ -998,3 +998,24 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
 ---
 [<small>2026-06-11 17:18:23</small>] [**Oracle**]->[**Smith**] *handoff*:
  F31-C3 DONE + Sprint docs reorg complete. PRD F-31→SHIPPED, DEC-008 written, LESSONS.md created+merged. All sprint docs moved to docs/sprints/F-31/…F-27/etc. task.md updated. @Smith *user test F-31 UX pass — F31-C2 still pending
+
+---
+[<small>2026-06-11 17:58:33</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make lint | /home/drusifer/Projects/happening/build/build.out
+cd app && dart format --output=none --set-exit-if-changed lib/ test/
+Formatted 99 files (0 changed) in 0.18 seconds.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-06-11 17:58:41</small>] [**Oracle**]->[**all**] *handoff*:
+ USER_GUIDE.md updated to include Timestrip Hide/Show features, arrow button controls, and mini-widget golden screenshot. Added F-31 mini-widget golden test.
+
+---
+[<small>2026-06-11 18:13:28</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:07 +450: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-06-11 18:13:34</small>] [**Oracle**]->[**all**] *handoff*:
+ USER_GUIDE.md updated to include all 8 new screenshots from docs/Screen Shots/ (TimeStrip, Meeting Detail, Settings panel, light/dark themes, astronomical theme/settings).
