@@ -70,7 +70,8 @@ class _SettingsPanelState extends State<SettingsPanel> {
   String? get _accountName {
     final cals = _availableCalendars;
     if (cals == null || cals.isEmpty) return null;
-    final primary = cals.firstWhere((c) => c.isPrimary, orElse: () => cals.first);
+    final primary =
+        cals.firstWhere((c) => c.isPrimary, orElse: () => cals.first);
     final id = primary.id;
     return id.contains('@') ? id : null;
   }
@@ -591,9 +592,7 @@ class _PickerRow<T> extends StatelessWidget {
 
 Future<List<CityResult>> _defaultResolveCityName(String query) async {
   final matches = await city_search.searchCities(query);
-  return matches
-      .map((m) => (lat: m.lat, lng: m.lng, label: m.label))
-      .toList();
+  return matches.map((m) => (lat: m.lat, lng: m.lng, label: m.label)).toList();
 }
 
 // ── Astronomical location section ─────────────────────────────────────────────
@@ -766,8 +765,8 @@ class _AstroLocationSectionState extends State<_AstroLocationSection> {
                   key: Key('city_result_$i'),
                   onTap: () => _selectCity(city),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 5),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
                     child: Text(
                       '${city.label} · ${_formatCoord(city.lat, city.lng)}',
                       style: TextStyle(

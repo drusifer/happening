@@ -1,69 +1,71 @@
-# Lessons Learned — Happening Project
+# Lessons Learned: What's Happening?
+
+This document records hard-won insights, gotchas, and reusable patterns discovered during development.
 
 ---
 
-## [2026-05-18] GTK3 Silently Ignores `gtk_window_resize` on Non-Resizable Windows
+## L-001: GTK3 silently ignores `gtk_window_resize` on non-resizable windows
+**Sprint**: F-28 Linux Reserved Space  
+**Date**: 2026-05-18
 
-> **Tags:** #Linux #GTK #Resize #WindowManager #ClickThrough
+On GTK 3, if `setResizable(false)` has been called, `gtk_window_resize()` is a silent no-op.
+The window size is pinned to the Flutter widget's preferred size instead. This caused the
+collapsed strip to leave a transparent ~280px band below it that blocked clicks on underlying
+windows.
 
-### Context
-After adding `GDK_WINDOW_TYPE_HINT_DOCK` to the Linux runner, expand/collapse left a
-transparent ~280px band below the strip that blocked clicks on underlying windows.
-Expanded timeline cards were also not clickable.
-
-### Finding
-`MacOsResizeStrategy` (the macOS/Linux fallback in `WindowResizeStrategy.create`) calls
-`setResizable(false)` → `gtk_window_set_resizable(window, FALSE)` during `initialize()`.
-
-**On GTK 3, when a window is non-resizable, `gtk_window_resize()` is silently ignored.**
-The window size is instead determined by the Flutter widget's preferred size. This means:
-
-- **Expand worked** because `setMinimumSize(340)` + `setMaximumSize(340)` set
-  `WM_NORMAL_HINTS` min=max=340, which the WM enforces as a size constraint regardless
-  of the `resizable` flag.
-- **Collapse failed** because `gtk_window_resize(60)` was a no-op. The Flutter widget
-  rendered at 60px but the X11 window stayed at 340px. The 280px transparent band
-  absorbed all clicks in that area.
-
-### Rule
-**On Linux, always call `setResizable(true)` before using `setSize()` / `gtk_window_resize()`.** The window is frameless and DOCK-typed so the user cannot manually resize it — `resizable=true` only affects programmatic resize. Use `LinuxResizeStrategy` (created DEC-007) which handles this correctly. Do not re-apply `MacOsResizeStrategy` to Linux.
-
-### References
-- **Files:** `app/lib/core/window/resize_strategy/linux_resize_strategy.dart`,
-  `app/lib/core/window/resize_strategy/window_resize_strategy.dart`
-- **Decision:** DEC-007
+**Fix**: `LinuxResizeStrategy` calls `setResizable(true)` in `initialize()`. The window
+remains effectively non-resizable to the user because it is frameless (no resize handles) and
+has `_NET_WM_WINDOW_TYPE_DOCK`. See DEC-007.
 
 ---
 
-## [2026-05-16] `window_manager.dock()` Is Left/Right Only and Stubbed on Linux
+## L-002: `window_manager.dock()` only works for left/right edges on Linux
+**Sprint**: F-28 Linux Reserved Space  
+**Date**: 2026-05-16
 
-> **Tags:** #Linux #WindowManager #Dock #AppBar #Reserved #Morpheus #Oracle
-
-### Context
-Evaluating whether `window_manager.dock()` could be used to reserve screen space
-for the strip at the top of the screen on Linux, avoiding a custom plugin.
-
-### Finding
-`window_manager.dock()` only supports `ABE_LEFT` / `ABE_RIGHT` on Windows (via
-`SHAppBarMessage`). `ABE_TOP` is not implemented. On Linux, `isDockable()`, `dock()`,
-and `undock()` are stubs that return hardcoded values and do nothing.
-
-Additionally, the dock API does **not** embed the app into the existing system panel
-(taskbar/clock/launcher area). It creates a separate independent panel that claims
-screen real estate alongside the system panel. Embedding in GNOME Shell or KDE Plasma
-requires platform-specific extension APIs (GNOME Shell extensions, Plasma widgets)
-entirely outside Flutter's reach.
-
-The app already bypasses `window_manager.dock()` on Windows for the same reason —
-`window_service.dart` calls `SHAppBarMessage` directly via FFI.
-
-### Rule
-**Do not use `window_manager.dock()` for screen-space reservation.** It is left/right
-only on Windows and a no-op on Linux. Use the `linux_dock_window_manager` plugin
-(sets `_NET_WM_STRUT_PARTIAL`) on Linux and the existing FFI AppBar path on Windows.
+`window_manager`'s `dock()` API only supports docking to left and right edges; it cannot
+reserve space at the top of the screen. `_NET_WM_STRUT_PARTIAL` must be set directly via
+a custom Flutter plugin (`linux_dock_window_manager`). See DEC-006.
 
 ---
 
+## L-003: Never use the `Opacity` widget on Linux for painting layers
+**Sprint**: F-29 Astronomical Theme  
+**Date**: 2026-05-24
+
+The `Opacity` widget triggers a keyboard input regression on Linux (GTK): wrapping a
+`TimelinePainter` in `Opacity` causes keyboard events to stop reaching the strip after the
+first paint.
+
+**Fix**: Use `canvas.saveLayer` with `BlendMode.dstIn` inside the `CustomPainter` instead
+of `Opacity` in the widget tree. See feedback memory `feedback_opacity_gtk_regression.md`.
+
+---
+
+## L-004: Z-order save/restore pattern for hide/show features
+**Sprint**: F-31 Timestrip Hide/Show  
+**Date**: 2026-06-11
+
+When implementing a hide/show cycle that coexists with a send-to-back (z-order lowering)
+feature, the mini/hidden widget must guarantee always-on-top regardless of the pre-hide
+z-order state.
+
+**Pattern** (implemented in `_TimelineStripState._hideStrip` / `_showStrip`):
+
+1. **Before hiding**: capture `_preHideSentToBack = _focusController.isSentToBack`.
+   If `true`, call `restoreToFront()` so the mini widget starts at always-on-top.
+2. **Hide**: proceed with animation and window resize.
+3. **Before showing**: full strip is about to be visible — no z-order action needed yet.
+4. **After show animation completes**: if `_preHideSentToBack` was `true`, re-apply
+   `sendToBack()` and clear the flag.
+
+This restores the user's interaction mode (H4 — Consistency) while ensuring the mini widget
+is never accidentally hidden behind other windows.
+
+**Files**: `app/lib/features/timeline/timeline_strip.dart` (`_hideStrip`, `_showStrip`),
+`app/lib/core/window/window_service.dart` (`prepareToHide`, `completeShow` hooks).
+
+---
 ## [2026-02-27] Flutter Snap Hijacks LLVM PATH — Cannot Be Fixed With PATH Override
 
 > **Tags:** #Build #Linux #Flutter #LLVM #Neo

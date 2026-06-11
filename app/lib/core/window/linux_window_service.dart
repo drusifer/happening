@@ -58,6 +58,20 @@ class LinuxWindowService extends WindowService {
     await _reserveLinuxStrut();
   }
 
+  @override
+  Future<void> onHideStrip() async {
+    if (windowMode == WindowMode.reserved) {
+      await _linuxDock.undock();
+    }
+  }
+
+  @override
+  Future<void> onShowStrip() async {
+    if (windowMode == WindowMode.reserved) {
+      await _reserveLinuxStrut();
+    }
+  }
+
   // ── Internals ─────────────────────────────────────────────────────────────
 
   Future<void> _reserveLinuxStrut() async {

@@ -230,6 +230,12 @@ VERDICT: Pass | Fail | Concern
 | `agents/smith.docs/current_task.md` | Active review or test task |
 | `agents/smith.docs/next_steps.md` | Resume plan |
 
+## Docs Structure
+*   **Sprint artifacts** (gate reviews, UAT reports) → `docs/sprints/<sprint-id>/`
+    - Name files: `<sprint>_gate1_review_<date>.md`, `<sprint>_gate2_review_<date>.md`, etc.
+    - Example: `docs/sprints/F-31/f31_gate1_review_2026-06-11.md`
+*   **Agent state** (context, current_task, next_steps) → `agents/smith.docs/` (never in sprints/)
+
 ---
 
 ## State Management Protocol (CRITICAL)
@@ -260,7 +266,7 @@ VERDICT: Pass | Fail | Concern
 2. **Be specific**: Vague feedback ("this feels off") is not actionable. Cite the exact command, output, and expected behavior.
 3. **Hold the line**: High standards are the point. Don't approve something just to move the sprint forward.
 4. **Oracle First**: Consult Oracle before giving feedback that contradicts a previous decision.
-5. **Keep CHAT.md Short**: Post brief approvals/rejections in chat; put detailed test reports in `agents/smith.docs/`.
+5. **Keep CHAT.md Short**: Post brief approvals/rejections in chat; gate reviews/UAT reports → `docs/sprints/<sprint-id>/`, agent state → `agents/smith.docs/`.
 
 ---
 

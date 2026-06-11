@@ -172,6 +172,20 @@ class WindowsWindowService extends WindowService with WindowListener {
   }
 
   @override
+  Future<void> onHideStrip() async {
+    if (!_enableWindowsAppBar) return;
+    _disposeAppBar();
+  }
+
+  @override
+  Future<void> onShowStrip() async {
+    if (!_enableWindowsAppBar) return;
+    if (windowMode == WindowMode.reserved) {
+      await _registerAppBar();
+    }
+  }
+
+  @override
   Future<void> onDisplayChangedExtra() async {
     _log.info(
         'onDisplayChangedExtra: windowMode=$windowMode appBarData=${_appBarData != null}');

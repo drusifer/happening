@@ -1,5 +1,24 @@
 # Current Task
 
+## F-31 Docs + Sprint Reorg — 2026-06-11
+**Status**: DONE ✅
+
+### Done
+- [x] PRD.md F-31 row updated to ✅ SHIPPED with corrected terminology (hide/show, not collapse/expand)
+- [x] DECISIONS.md TL;DR updated; DEC-008 written (F-31 D2: Flutter-only animation, single OS resize)
+- [x] docs/LESSONS.md created with L-001..L-004; merged from agents/oracle.docs/LESSONS.md (now removed)
+- [x] Sprint docs reorg: all sprint-specific .md files moved from agent folders to docs/sprints/
+  - docs/sprints/F-31/ (8 files)
+  - docs/sprints/F-30/ (16 files)
+  - docs/sprints/F-29/ (8 files)
+  - docs/sprints/F-28/ (6 files)
+  - docs/sprints/F-27-send-to-back/ (5 files)
+  - docs/sprints/linux-wayland-simplification/ (20 files)
+  - docs/sprints/linux-click-through-cancelled/ (5 files)
+  - docs/sprints/transparent-timestrip-cancelled/ (16 files)
+  - docs/sprints/calendar-threading/ (6 files)
+- [x] task.md updated: F-31 source artifact paths corrected; Phase A+B marked DONE; Phase C status updated
+
 ## Groom Documentation for v0.5.1 — 2026-05-26
 **Status**: DONE ✅
 

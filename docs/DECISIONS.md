@@ -3,7 +3,7 @@
 This document records the architectural and technical decisions made during the development of "What's Happening?".
 
 ## TL;DR
-Linux keeps the GTK header bar disabled and uses Dart-side window sizing/constraint strategies for a thin strip. Linux shell-reservation is implemented via a `linux_dock_window_manager` Flutter plugin that sets `_NET_WM_STRUT_PARTIAL` — NOT via C++ runner code or `window_manager.dock()` (left/right only). DEC-006 supersedes DEC-005's non-reserving stance. Linux must use `LinuxResizeStrategy` (sets `resizable=true`) — GTK3 silently ignores `gtk_window_resize` on non-resizable windows (DEC-007).
+Linux keeps the GTK header bar disabled and uses Dart-side window sizing/constraint strategies for a thin strip. Linux shell-reservation is implemented via a `linux_dock_window_manager` Flutter plugin that sets `_NET_WM_STRUT_PARTIAL` — NOT via C++ runner code or `window_manager.dock()` (left/right only). DEC-006 supersedes DEC-005's non-reserving stance. Linux must use `LinuxResizeStrategy` (sets `resizable=true`) — GTK3 silently ignores `gtk_window_resize` on non-resizable windows (DEC-007). F-31 hide/show animation is Flutter-only (width tween); OS window resizes once per transition to avoid platform channel flooding (DEC-008).
 
 ## DEC-001: Linux Window Height Constraint (Wayland/GTK)
 **Date**: 2026-02-26
@@ -231,3 +231,38 @@ but with `initialize()` calling `setResizable(true)` instead of `setResizable(fa
   (prevents resize chrome from appearing on frameless macOS windows).
 - The Linux-specific strategy file is the canonical place for any future Linux-only
   resize quirks.
+
+## DEC-008: F-31 Hide/Show — Flutter-Only Animation, Single OS Resize Per Transition
+**Date**: 2026-06-11
+**Status**: Decided
+**Authors**: Morpheus (Arch), Neo (SWE)
+
+### Context
+F-31 requires a smooth hide/show animation when the user collapses the timestrip to a mini
+widget. The naive implementation would call `windowManager.setSize()` on every animation
+frame (60fps × 300ms = 18 calls), flooding the platform channel and causing jank on Linux
+(where GTK window resize is synchronous and expensive).
+
+### Decision
+The animation is Flutter-only: an `AnimationController` drives a visual width contraction
+inside the still-full-size OS window. The OS window resizes exactly once per transition:
+
+- **Hide**: Flutter `_hideAnim.reverse()` runs (full → mini visual contraction). At
+  animation end, `wm.setSize(miniSize)` snaps the OS window to the mini footprint.
+- **Show**: `wm.setSize(fullSize)` fires first (instant OS expand), then
+  `_hideAnim.forward()` runs the mini → full reveal.
+
+The window background is transparent, so the extra OS window area during the hide animation
+is invisible to the user. The perceived animation is smooth because only Flutter paint calls
+happen at 60fps — no IPC on each frame.
+
+### Consequences
+- Platform channel receives exactly 1 `setSize` call per hide or show (not 18).
+- During the hide animation the OS window is still full-width; transparent background makes
+  the unused area invisible.
+- On Windows, the OS window snap at hide-end may produce a brief native animation frame
+  that conflicts with the Flutter animation. Mitigated by moving `setSize` before the
+  animation in a future fix if observed during UAT.
+- `AnimationController` uses no `CurvedAnimation` wrapper (linear curve). A future sprint
+  can add `CurvedAnimation(parent: _hideAnim, curve: Curves.easeInOut)` for polish without
+  changing this architecture.

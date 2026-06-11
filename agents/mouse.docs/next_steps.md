@@ -1,18 +1,16 @@
-# Next Steps — Send-to-Back Sprint
+# Next Steps — F-31 Sprint
 
-- [x] Phase board written in `task.md` — 8 phases (A–H), 15 tasks.
+- [x] Sprint board written in task.md — 3 phases (A–C), 7 tasks.
 - [ ] Morpheus review and approve phase plan → `@Morpheus *lead review sprint plan`.
-- [ ] Neo: Phase A (STB-A1 doc cleanup, STB-A2 WindowMode rename).
+- [ ] Neo: Phase A (F31-A1 WindowService base hooks, F31-A2 Linux+Windows overrides).
 - [ ] Trin: verify Phase A → Morpheus approve.
-- [ ] Neo: Phase B (STB-B1 strategy hierarchy, STB-B2 WindowService purge).
-- [ ] Trin: verify Phase B → Morpheus approve.
-- [ ] Neo: Phase C (STB-C1 TFC redesign + HoverFocusController delete).
-- [ ] Trin: Phase D green gate (STB-D1 — hard stop before Phase E).
-- [ ] Neo: Phase E (STB-E1 sendToBack in strategy+service).
-- [ ] Neo: Phase F (STB-F1 TFC wire, STB-F2 button wire).
-- [ ] Trin: Phase G tests (STB-G1).
-- [ ] Trin + Oracle: Phase H close (STB-H1 QA, STB-H2 docs).
+- [ ] Neo: Phase B (F31-B1 state machine + methods, F31-B2 hide button + mini widget).
+- [ ] Trin: verify Phase B.
+- [ ] Trin: Phase C1 multi-platform UAT.
+- [ ] Smith: Phase C2 UX gate.
+- [ ] Oracle: Phase C3 docs.
 
 ## Key Risks to Watch
-- STB-E1: `wm.lower()` Linux availability — Neo must verify before closing task.
-- STB-D1: Hard green gate — Phase E does NOT start until all tests pass.
+- Windows snap double-animation (Smith Note E) — Neo must verify on Windows before closing F31-B2
+- Mini width formula vs "23 h 59 min" countdown text — flag during Phase B if clipped
+- F-28 Phase C still pending — flag at next standup if Trin doesn't pick it up during Phase A

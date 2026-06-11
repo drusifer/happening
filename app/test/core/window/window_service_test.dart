@@ -463,6 +463,46 @@ void main() {
       });
     });
 
+    group('F-31 hide/show API', () {
+      test('getMiniWidth formula: fontSizePx * 6 + 60', () {
+        expect(service.getMiniWidth(12), closeTo(12 * 6.0 + 60, 0.001));
+        expect(service.getMiniWidth(14), closeTo(14 * 6.0 + 60, 0.001));
+        expect(service.getMiniWidth(16), closeTo(16 * 6.0 + 60, 0.001));
+      });
+
+      test('resizeToMiniStrip calls wm.setSize with mini dimensions', () async {
+        await service.initialize(initialFontSizePx: kDefaultFontSizePx);
+        clearInteractions(mockWM);
+
+        await service.resizeToMiniStrip(kDefaultFontSizePx);
+
+        verify(mockWM.setSize(argThat(predicate<Size>(
+          (s) =>
+              s.width == service.getMiniWidth(kDefaultFontSizePx) &&
+              s.height == service.getCollapsedHeight(),
+          'mini size',
+        )))).called(1);
+      });
+
+      test('resizeToFullStrip calls wm.setSize with screen width', () async {
+        await service.initialize(initialFontSizePx: kDefaultFontSizePx);
+        clearInteractions(mockWM);
+
+        await service.resizeToFullStrip();
+
+        verify(mockWM.setSize(argThat(predicate<Size>(
+          (s) => s.width == 1920 && s.height == service.getCollapsedHeight(),
+          'full size',
+        )))).called(1);
+      });
+
+      test('prepareToHide/completeShow are no-ops on base WindowService',
+          () async {
+        await expectLater(service.prepareToHide(), completes);
+        await expectLater(service.completeShow(), completes);
+      });
+    });
+
     group('Linux strut (F-28)', () {
       LinuxWindowService linuxService() => LinuxWindowService(
             windowManager: mockWM,
@@ -552,9 +592,93 @@ void main() {
 
         await svc.reassertAppBar();
 
-        verify(mockWM.setPosition(const Offset(0, 0)))
-            .called(3); // strategy.initialize + readyToShow moveToDisplay + reassertAppBar
+        verify(mockWM.setPosition(const Offset(0, 0))).called(
+            3); // strategy.initialize + readyToShow moveToDisplay + reassertAppBar
         expect(fakeLinuxDock.calls, containsAllInOrder(['undock', 'dock']));
+      });
+    });
+
+    group('F-31 Linux hide/show hooks', () {
+      LinuxWindowService linuxService() => LinuxWindowService(
+            windowManager: mockWM,
+            screenRetriever: mockSR,
+            displayService: displayService,
+            linuxDockWindowManager: fakeLinuxDock,
+          );
+
+      test('onHideStrip calls undock when mode is reserved', () async {
+        final svc = linuxService();
+        await svc.initialize(
+          initialFontSizePx: kDefaultFontSizePx,
+          initialWindowMode: WindowMode.reserved,
+        );
+        fakeLinuxDock.calls.clear();
+
+        await svc.prepareToHide();
+
+        expect(fakeLinuxDock.calls, contains('undock'));
+        expect(fakeLinuxDock.calls, isNot(contains('dock')));
+      });
+
+      test('onShowStrip calls dock when mode is reserved', () async {
+        final svc = linuxService();
+        await svc.initialize(
+          initialFontSizePx: kDefaultFontSizePx,
+          initialWindowMode: WindowMode.reserved,
+        );
+        fakeLinuxDock.calls.clear();
+
+        await svc.completeShow();
+
+        expect(fakeLinuxDock.calls, contains('dock'));
+      });
+
+      test('onHideStrip is no-op when mode is overlay', () async {
+        final svc = linuxService();
+        await svc.initialize(
+          initialFontSizePx: kDefaultFontSizePx,
+          initialWindowMode: WindowMode.overlay,
+        );
+        fakeLinuxDock.calls.clear();
+
+        await svc.prepareToHide();
+
+        expect(fakeLinuxDock.calls, isEmpty);
+      });
+
+      test('onShowStrip is no-op when mode is overlay', () async {
+        final svc = linuxService();
+        await svc.initialize(
+          initialFontSizePx: kDefaultFontSizePx,
+          initialWindowMode: WindowMode.overlay,
+        );
+        fakeLinuxDock.calls.clear();
+
+        await svc.completeShow();
+
+        expect(fakeLinuxDock.calls, isEmpty);
+      });
+
+      test('rapid hide/show toggle leaves strut consistent (AC-F31-4-4)',
+          () async {
+        final svc = linuxService();
+        await svc.initialize(
+          initialFontSizePx: kDefaultFontSizePx,
+          initialWindowMode: WindowMode.reserved,
+        );
+        fakeLinuxDock.calls.clear();
+
+        // Simulate 3 rapid hide/show cycles
+        for (var i = 0; i < 3; i++) {
+          await svc.prepareToHide();
+          await svc.completeShow();
+        }
+
+        // Must alternate undock/dock with no dangling state
+        expect(
+          fakeLinuxDock.calls,
+          equals(['undock', 'dock', 'undock', 'dock', 'undock', 'dock']),
+        );
       });
     });
   });

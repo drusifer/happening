@@ -36,7 +36,8 @@
       "Bash(dart run *)",
       "Bash(dart format *)",
       "Bash(ls /mnt/c/Users/drusi/VSCode_Projects/happening/build/ 2>&1)",
-      "Read(//mnt/c/Users/drusi/VSCode_Projects/happening/**)"
+      "Read(//mnt/c/Users/drusi/VSCode_Projects/happening/**)",
+      "Bash(grep -n \"^---$\" /home/drusifer/Projects/happening/agents/CHAT.md)"
     ]
   },
   "enabledMcpjsonServers": [

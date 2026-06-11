@@ -301,6 +301,40 @@ class WindowService with WidgetsBindingObserver {
     return;
   }
 
+  /// Called before the hide animation starts. Subclasses override to release
+  /// platform reservations (strut on Linux, AppBar on Windows).
+  @protected
+  Future<void> onHideStrip() async {
+    return;
+  }
+
+  /// Called after the show animation completes. Subclasses override to
+  /// re-acquire platform reservations.
+  @protected
+  Future<void> onShowStrip() async {
+    return;
+  }
+
+  // ── Public hide/show API (called by _TimelineStripState) ─────────────────
+
+  /// Returns the mini strip width in logical pixels for the given font size.
+  double getMiniWidth(double fontSizePx) =>
+      fontSizePx * 6.0 + 12.0 + 8.0 + 24.0 + 16.0;
+
+  /// Releases platform reservation before the hide animation.
+  Future<void> prepareToHide() => onHideStrip();
+
+  /// Re-acquires platform reservation after the show animation completes.
+  Future<void> completeShow() => onShowStrip();
+
+  /// Resizes the OS window to the mini strip footprint (called at hide-animation end).
+  Future<void> resizeToMiniStrip(double fontSizePx) =>
+      _wm.setSize(Size(getMiniWidth(fontSizePx), getCollapsedHeight()));
+
+  /// Resizes the OS window to full strip width (called at show-animation start).
+  Future<void> resizeToFullStrip() =>
+      _wm.setSize(Size(_screenWidth, getCollapsedHeight()));
+
   // ── Internal ──────────────────────────────────────────────────────────────
 
   Future<void> _onDisplayChanged() async {
