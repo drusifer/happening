@@ -319,7 +319,7 @@ class WindowService with WidgetsBindingObserver {
 
   /// Returns the mini strip width in logical pixels for the given font size.
   double getMiniWidth(double fontSizePx) =>
-      fontSizePx * 6.0 + 12.0 + 8.0 + 24.0 + 16.0;
+      fontSizePx * 9.0 + 12.0 + 8.0 + 24.0 + 16.0 + 10.0;
 
   /// Releases platform reservation before the hide animation.
   Future<void> prepareToHide() => onHideStrip();
@@ -328,12 +328,36 @@ class WindowService with WidgetsBindingObserver {
   Future<void> completeShow() => onShowStrip();
 
   /// Resizes the OS window to the mini strip footprint (called at hide-animation end).
-  Future<void> resizeToMiniStrip(double fontSizePx) =>
-      _wm.setSize(Size(getMiniWidth(fontSizePx), getCollapsedHeight()));
+  Future<void> resizeToMiniStrip(double fontSizePx) async {
+    final active = _activeDisplay;
+    final miniSize = Size(getMiniWidth(fontSizePx), getCollapsedHeight());
+    await _wm.setMinimumSize(Size.zero);
+    await _wm.setMaximumSize(Size.infinite);
+    if (active != null) {
+      await _wm.setPosition(active.workAreaOrigin);
+    } else {
+      await _wm.setPosition(Offset.zero);
+    }
+    await _wm.setSize(miniSize);
+    await _wm.setMinimumSize(miniSize);
+    await _wm.setMaximumSize(miniSize);
+  }
 
   /// Resizes the OS window to full strip width (called at show-animation start).
-  Future<void> resizeToFullStrip() =>
-      _wm.setSize(Size(_screenWidth, getCollapsedHeight()));
+  Future<void> resizeToFullStrip() async {
+    final active = _activeDisplay;
+    final fullSize = Size(_screenWidth, getCollapsedHeight());
+    await _wm.setMinimumSize(Size.zero);
+    await _wm.setMaximumSize(Size.infinite);
+    if (active != null) {
+      await _wm.setPosition(active.workAreaOrigin);
+    } else {
+      await _wm.setPosition(Offset.zero);
+    }
+    await _wm.setSize(fullSize);
+    await _wm.setMinimumSize(fullSize);
+    await _wm.setMaximumSize(fullSize);
+  }
 
   // ── Internal ──────────────────────────────────────────────────────────────
 

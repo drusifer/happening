@@ -464,13 +464,15 @@ void main() {
     });
 
     group('F-31 hide/show API', () {
-      test('getMiniWidth formula: fontSizePx * 6 + 60', () {
-        expect(service.getMiniWidth(12), closeTo(12 * 6.0 + 60, 0.001));
-        expect(service.getMiniWidth(14), closeTo(14 * 6.0 + 60, 0.001));
-        expect(service.getMiniWidth(16), closeTo(16 * 6.0 + 60, 0.001));
+      test('getMiniWidth formula: fontSizePx * 9 + 70', () {
+        expect(service.getMiniWidth(12), closeTo(12 * 9.0 + 70, 0.001));
+        expect(service.getMiniWidth(14), closeTo(14 * 9.0 + 70, 0.001));
+        expect(service.getMiniWidth(16), closeTo(16 * 9.0 + 70, 0.001));
       });
 
-      test('resizeToMiniStrip calls wm.setSize with mini dimensions', () async {
+      test(
+          'resizeToMiniStrip calls wm.setSize with mini dimensions and positions window',
+          () async {
         await service.initialize(initialFontSizePx: kDefaultFontSizePx);
         clearInteractions(mockWM);
 
@@ -482,9 +484,12 @@ void main() {
               s.height == service.getCollapsedHeight(),
           'mini size',
         )))).called(1);
+        verify(mockWM.setPosition(Offset.zero)).called(1);
       });
 
-      test('resizeToFullStrip calls wm.setSize with screen width', () async {
+      test(
+          'resizeToFullStrip calls wm.setSize with screen width and positions window',
+          () async {
         await service.initialize(initialFontSizePx: kDefaultFontSizePx);
         clearInteractions(mockWM);
 
@@ -494,6 +499,7 @@ void main() {
           (s) => s.width == 1920 && s.height == service.getCollapsedHeight(),
           'full size',
         )))).called(1);
+        verify(mockWM.setPosition(Offset.zero)).called(1);
       });
 
       test('prepareToHide/completeShow are no-ops on base WindowService',

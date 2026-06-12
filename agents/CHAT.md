@@ -1049,3 +1049,67 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
 ---
 [<small>2026-06-11 18:22:45</small>] [**Oracle**]->[**all**] *handoff*:
  Scaled down and optimized all large screenshots (Astro.png, Settings.png, TimeStrip.png, Meeting Detail.png) in docs/Screen Shots/ to 1280px wide. Total repository footprint reduced by over 17MB.
+
+---
+[<small>2026-06-11 18:33:59</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make lint | /home/drusifer/Projects/happening/build/build.out
+cd app && dart format --output=none --set-exit-if-changed lib/ test/
+Formatted 99 files (0 changed) in 0.16 seconds.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-06-11 18:34:06</small>] [**Neo**]->[**all**] *handoff*:
+ Fixed mini-widget drift/repositioning bug: explicitly call setPosition(activeDisplay.workAreaOrigin) during hide/show resizing and wrapped the mini widget in Align(alignment: Alignment.topLeft). All 450 tests pass and lint is clean.
+
+---
+[<small>2026-06-11 18:35:54</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make lint | /home/drusifer/Projects/happening/build/build.out
+cd app && dart format --output=none --set-exit-if-changed lib/ test/
+Formatted 99 files (0 changed) in 0.17 seconds.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-06-11 18:35:59</small>] [**Neo**]->[**all**] *handoff*:
+ Added detailed debug logging to _hideStrip() and _showStrip() in timeline_strip.dart to trace state transitions, settings panel status, animations, and window resize operations. All tests pass and lint is clean.
+
+---
+[<small>2026-06-11 18:42:46</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:07 +451: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-06-11 18:43:00</small>] [**Neo**]->[**trin**] *swe impl handoff*:
+ Fixed hide-when-expanded race condition: introduced `sendAndAwait` in `ExpansionController` and modified `_hideStrip()` to unconditionally await the collapse completion before hiding. Added unit tests for `sendAndAwait` in `expansion_controller_test.dart`. All 451 tests pass, linter is clean. @Trin *qa uat F-31
+
+---
+[<small>2026-06-11 18:54:24</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make lint | /home/drusifer/Projects/happening/build/build.out
+cd app && dart format --output=none --set-exit-if-changed lib/ test/
+Formatted 99 files (0 changed) in 0.16 seconds.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-06-11 18:54:41</small>] [**Neo**]->[**trin**] *swe fix done*:
+ Show/hide button padding & equal spacing layout done. Positioned hide button at left: 8.0, matching show button. Spacing between all buttons is exactly 8.0px. Regenerated goldens, all 451 tests pass & lint is clean. @Trin *qa uat
+
+---
+[<small>2026-06-11 19:12:47</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:07 +451: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-06-11 19:12:59</small>] [**Neo**]->[**trin**] *swe fix done*:
+ Adjusted all icons to render at a 32.0px visual scale size while keeping layout bounds at 24.0px to preserve spacing/alignment. Updated goldens and all tests pass (451/451 green) and lint checks are clean. Handing off to @Trin for QA/UAT.
+
+---
+[<small>2026-06-11 19:13:47</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make lint | /home/drusifer/Projects/happening/build/build.out
+cd app && dart format --output=none --set-exit-if-changed lib/ test/
+Formatted 99 files (0 changed) in 0.15 seconds.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-06-11 19:15:46</small>] [**Neo**]->[**trin**] *swe fix done*:
+ Fixed double-spacing (16px) gap in the toolbar when DisplayFallbackIndicator is hidden. Updated display_fallback_indicator.dart and timeline_strip.dart to dynamically package trailing space. All 451 tests and lint pass cleanly. Handoff to @Trin *qa uat.

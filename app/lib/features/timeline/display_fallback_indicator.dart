@@ -125,23 +125,29 @@ class _DisplayFallbackIndicatorState extends State<DisplayFallbackIndicator>
         final size = _iconSize();
         final color = widget.color ?? Colors.amberAccent.shade100;
 
-        return Tooltip(
-          message: 'Chosen display unavailable — showing on primary.',
-          child: GestureDetector(
-            onTap: widget.onTap,
-            child: Transform.translate(
-              offset: Offset(dx, 0),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                child: Icon(
-                  Icons.desktop_access_disabled,
-                  size: size,
-                  color: color.withValues(alpha: opacity),
-                  semanticLabel: 'Chosen display unavailable',
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Tooltip(
+              message: 'Chosen display unavailable — showing on primary.',
+              child: GestureDetector(
+                onTap: widget.onTap,
+                child: Transform.translate(
+                  offset: Offset(dx, 0),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: Icon(
+                      Icons.desktop_access_disabled,
+                      size: size,
+                      color: color.withValues(alpha: opacity),
+                      semanticLabel: 'Chosen display unavailable',
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
+            const SizedBox(width: 8.0),
+          ],
         );
       },
     );
