@@ -1,8 +1,9 @@
 # Neo Current Task — 2026-06-11
 
-## Status: F-31 positioning, race conditions, logging, padding/spacing, and 32px icon scale fix COMPLETE — 451/451 green
+## Status: F-31 positioning, race conditions, logging, padding/spacing, 32px icon scale, and snap launch path fix COMPLETE — 451/451 green
 
 ## DONE in this session
+- [x] Fix snap launch error ("Not running in AOT mode but could not resolve the kernel binary") by correcting `--aot-shared-library-name` in the snap launcher to point to `$SNAP/lib/libapp.so`.
 - [x] Add left padding/margin of 8.0px to the hide button (`arrow_left`) in the full strip view.
 - [x] Ensure equal spacing of 8px between all buttons (including hide, refresh, flip-to-back, fallback indicator, settings) in the full strip view.
 - [x] Set all strip icons to a visual scale size of 32px (retaining 24px layout size).

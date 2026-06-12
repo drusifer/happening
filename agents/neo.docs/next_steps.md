@@ -12,11 +12,13 @@
   - Expanded Hide: verify that clicking "hide" while the strip is hovered/expanded or when settings are open immediately collapses and hides correctly without leaving a shifted/large window or drift.
   - Padding & Spacing: verify that show/hide buttons both have 8px left margin/padding, and that all buttons are spaced exactly 8px apart in the full strip view, with no double spacing when the fallback indicator is hidden.
   - Icon Scale: verify that all buttons/icons render at 32px size (using layout/bounds of 24px).
+  - Snap Package: verify that the snap builds and launches correctly without failing on AOT binary resolution.
 
 ### Ready for Smith UX pass
 - F31-C2: Verify touch targets, animation, anchor position, STB restore, and button alignment/spacing.
 
 ### Files changed in latest commits:
+- `snap/snapcraft.yaml` (corrected `--aot-shared-library-name` in launcher script)
 - `app/lib/core/window/expansion_controller.dart` (added sendAndAwait)
 - `app/lib/features/timeline/timeline_strip.dart` (left padding for hide button, equal spacing for toolbar buttons)
 - `app/test/core/window/expansion_controller_test.dart` (added unit tests for sendAndAwait)
