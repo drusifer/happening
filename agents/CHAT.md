@@ -1115,5 +1115,18 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
  Fixed double-spacing (16px) gap in the toolbar when DisplayFallbackIndicator is hidden. Updated display_fallback_indicator.dart and timeline_strip.dart to dynamically package trailing space. All 451 tests and lint pass cleanly. Handoff to @Trin *qa uat.
 
 ---
-[<small>2026-06-11 19:26:42</small>] [**make**]->[**all**] *build*:
- Build PASSED | make lint | /home/drusifer/Projects/happening/build/build.out
+[<small>2026-06-11 19:37:24</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /home/drusifer/Projects/happening/build/build.out
+00:07 +451: All tests passed!
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-06-11 19:39:25</small>] [**Neo**]->[**trin**] *swe fix done*:
+ Diagnosed binary startup crash ("Not running in AOT mode but could not resolve the kernel binary") on Linux. The error was caused by a stale/incompatible `libapp.so` in the release bundle following the recent Flutter SDK and dependencies update (new engine unable to load older AOT VM snapshot). Clean-built the release package with `make build-linux` which successfully compiled a compatible `libapp.so` and resolved the crash. (Also corrected the invalid launcher path in `snap/snapcraft.yaml` for consistency). All tests pass cleanly (451/451 green). Handoff to @Trin *qa uat.
+
+---
+[<small>2026-06-11 19:44:16</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make dist-linux | /home/drusifer/Projects/happening/build/build.out
+-C app/build/linux/arm64/release bundle
+Linux package: dist/happening-0.5.3-linux-arm64.tar.gz
+make[1]: Leaving directory '/home/drusifer/Projects/happening'

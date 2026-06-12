@@ -98,7 +98,7 @@ parts:
 
       # 3. Execute from the bin directory with explicit AOT paths
       cd "$SNAP/bin"
-      exec "./happening" --icu-data-path="./data/icudtl.dat" --aot-shared-library-name="./data/lib/libapp.so" "$@"
+      exec "./happening" --icu-data-path="./data/icudtl.dat" --aot-shared-library-name="$SNAP/lib/libapp.so" "$@"
       EOF
       
       chmod +x "${SNAPCRAFT_PART_INSTALL}/bin/launcher"
