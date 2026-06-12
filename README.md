@@ -16,7 +16,7 @@ What's Happening? is a persistent, always-on-top horizontal timeline strip that 
 
 ---
 
-## Project Status: v0.5.1
+## Project Status: v0.5.3
 - [x] **Sprint 1**: Foundation & Shell (Always-on-top window, mock timeline)
 - [x] **Sprint 2**: Google Calendar Integration (OAuth flow, real event fetching, polling)
 - [x] **Sprint 3**: Refactor & Polish (Hover details, settings, platform optimization)
@@ -29,6 +29,8 @@ What's Happening? is a persistent, always-on-top horizontal timeline strip that 
 - [x] **Linux Reserved Space (F-28)**: Robust window struts/docks for X11/XWayland without complex plugins
 - [x] **Astronomical Theme (F-29)**: Local day/night gradient background with sunrise, sunset, moon rise/set times and real-time moon phase display
 - [x] **v0.5.1**: Bundled GeoNames offline city coordinate search (33,742 cities), system-locale 12/24h time formatting, and event z-ordering fixes
+- [x] **v0.5.2**: Display selection setting (docking to chosen monitor), larger button hit targets, GeoNames offline city search coordinate multi-match autocomplete, and dependency upgrades
+- [x] **v0.5.3**: Show/Hide mode (F-31) collapsing timeline to a mini countdown widget, dynamic docking AppBar/strut reservation release when hidden, and visual button spacing & 32px icon scale refinements
 
 ---
 
