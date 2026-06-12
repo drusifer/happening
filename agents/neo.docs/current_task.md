@@ -1,8 +1,19 @@
 # Neo Current Task — 2026-06-11
 
-## Status: F-31 button style fix COMPLETE — 449/449 green
+## Status: F-31 positioning, race conditions, logging, padding/spacing, and 32px icon scale fix COMPLETE — 451/451 green
 
 ## DONE in this session
+- [x] Add left padding/margin of 8.0px to the hide button (`arrow_left`) in the full strip view.
+- [x] Ensure equal spacing of 8px between all buttons (including hide, refresh, flip-to-back, fallback indicator, settings) in the full strip view.
+- [x] Set all strip icons to a visual scale size of 32px (retaining 24px layout size).
+- [x] Fix double-spacing (16px) gap in toolbar when `DisplayFallbackIndicator` is hidden.
+- [x] Regenerate golden test images to match the new layout positions and 32px icon sizes.
+- [x] Fix hide-when-expanded race condition: Introduced `sendAndAwait` in `ExpansionController` and updated `_hideStrip()` in `timeline_strip.dart` to unconditionally await the collapse completion.
+- [x] Fix mini-widget positioning: updated `resizeToMiniStrip` and `resizeToFullStrip` in `window_service.dart` to explicitly position the window at `_activeDisplay.workAreaOrigin`.
+- [x] Wrap mini widget in `Align(alignment: Alignment.topLeft)` to defend against OS minimum width restrictions forcing the layout to center or shift right.
+- [x] Add detailed debug logging to `_hideStrip()` and `_showStrip()` methods in `timeline_strip.dart` to track state transitions and window resize steps.
+- [x] Updated unit tests in `window_service_test.dart` to verify `setPosition(Offset.zero)` is invoked.
+- [x] Added unit tests in `expansion_controller_test.dart` to verify `sendAndAwait` future resolution behavior.
 
 ### Phase A — WindowService hooks
 - ✅ **F31-A1**: Added to `window_service.dart`:
@@ -29,7 +40,7 @@
 - ✅ Golden regenerated (hover_card_alignment.png updated to include hide button)
 
 ## Test Status
-- `make test` → **447/447 passing**
+- `make test` → **451/451 passing**
 
 ## Key implementation note
 The `_HideButton` has NO horizontal padding (just `BoxConstraints(minWidth: 24, minHeight: 24)`)

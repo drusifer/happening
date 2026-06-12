@@ -463,38 +463,56 @@ class _TimelineStripState extends State<TimelineStrip>
   }
 
   Future<void> _hideStrip() async {
+    _log.info(
+        'TimelineStrip: hiding strip (preHideSentToBack=$_preHideSentToBack, settingsOpen=$_isSettingsOpen, hoveredEvent=$_hoveredEvent)');
     _preHideSentToBack = _focusController.isSentToBack;
     if (_preHideSentToBack) {
+      _log.fine(
+          'TimelineStrip: strip was sent-to-back, restoring to front first');
       await _focusController.restoreToFront();
     }
+
+    // Collapse before hiding to reset OS min/max window constraints!
+    _log.fine('TimelineStrip: ensuring strip is collapsed before hiding');
+    setState(() {
+      _hoveredEvent = null;
+      _isSettingsOpen = false;
+    });
+    _lastSentExpansionState = ExpansionState.collapsed;
+    await _expansionController.sendAndAwait(ExpansionState.collapsed);
+
+    _log.fine('TimelineStrip: calling windowService.prepareToHide');
     await _windowService.prepareToHide();
-    if (_isSettingsOpen) {
-      setState(() {
-        _isSettingsOpen = false;
-      });
-      _expansionController.send(ExpansionState.collapsed);
-    }
     setState(() {
       _isHidden = true;
     });
+    _log.fine('TimelineStrip: reversing hide animation');
     await _hideAnim.reverse();
-    await _windowService
-        .resizeToMiniStrip(widget.settingsService.current.fontSizePx);
+    final double fontSize = widget.settingsService.current.fontSizePx;
+    _log.info('TimelineStrip: resizing to mini strip (fontSize=$fontSize)');
+    await _windowService.resizeToMiniStrip(fontSize);
+    _log.info('TimelineStrip: hide complete');
   }
 
   Future<void> _showStrip() async {
+    _log.info('TimelineStrip: restoring strip');
+    _log.fine('TimelineStrip: resizing window to full strip');
     await _windowService.resizeToFullStrip();
     setState(() {
       _isHidden = false;
       _isHoveringStrip = false;
     });
     _expansionController.send(ExpansionState.collapsed);
+    _log.fine('TimelineStrip: playing show animation');
     await _hideAnim.forward();
+    _log.fine('TimelineStrip: calling windowService.completeShow');
     await _windowService.completeShow();
     if (_preHideSentToBack) {
+      _log.info('TimelineStrip: restoring sent-to-back state');
       await _focusController.sendToBack();
       _preHideSentToBack = false;
     }
+    _log.info('TimelineStrip: show complete');
   }
 
   void _toggleSettings() {
@@ -702,7 +720,7 @@ class _TimelineStripState extends State<TimelineStrip>
             // even when the settings backdrop covers the strip.
             if (!isAuthPrompt)
               Positioned(
-                left: 0,
+                left: 8.0,
                 top: 0,
                 height: _collapsedHeight,
                 child: Center(
@@ -710,7 +728,6 @@ class _TimelineStripState extends State<TimelineStrip>
                     icon: Icons.arrow_left,
                     onTap: () => unawaited(_hideStrip()),
                     stripBackgroundColor: stripBg,
-                    iconSize: 48,
                   ),
                 ),
               ),
@@ -726,76 +743,96 @@ class _TimelineStripState extends State<TimelineStrip>
     final stripBg = theme.brightness == Brightness.dark
         ? const Color(0xFF1A1A2E)
         : Colors.white;
+    final double miniWidth = _windowService.getMiniWidth(settings.fontSizePx);
 
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () => unawaited(_showStrip()),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _IconButton(
-              icon: Icons.arrow_right,
-              onTap: () => unawaited(_showStrip()),
-              stripBackgroundColor: stripBg,
-              iconSize: 48,
+    return Align(
+      alignment: Alignment.topLeft,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+          onTap: () => unawaited(_showStrip()),
+          child: Container(
+            width: miniWidth,
+            height: _collapsedHeight,
+            color: stripBg,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: _IconButton(
+                    icon: Icons.arrow_right,
+                    onTap: () => unawaited(_showStrip()),
+                    stripBackgroundColor: stripBg,
+                  ),
+                ),
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 12.0),
+                    child: StreamBuilder<DateTime>(
+                      stream: _countdownTicks,
+                      initialData: _now,
+                      builder: (context, timeSnapshot) {
+                        final tickNow = timeSnapshot.data!;
+                        final tickActive =
+                            _layout?.activeEvent(widget.events, tickNow);
+                        final tickNextOverlap = tickActive != null
+                            ? (widget.events
+                                    .where((e) =>
+                                        e.startTime.isAfter(tickNow) &&
+                                        e.startTime
+                                            .isBefore(tickActive.endTime))
+                                    .toList()
+                                  ..sort((a, b) =>
+                                      a.startTime.compareTo(b.startTime)))
+                                .firstOrNull
+                            : null;
+                        final tickNextToStart = tickActive == null
+                            ? (widget.events
+                                    .where((e) => e.startTime.isAfter(tickNow))
+                                    .toList()
+                                  ..sort((a, b) =>
+                                      a.startTime.compareTo(b.startTime)))
+                                .firstOrNull
+                            : null;
+                        final tickTarget = tickActive != null
+                            ? (tickNextOverlap?.startTime ?? tickActive.endTime)
+                            : tickNextToStart?.startTime;
+                        final tickMode = tickActive != null
+                            ? CountdownMode.untilEnd
+                            : CountdownMode.untilNext;
+                        final tickBaseColor = tickMode == CountdownMode.untilEnd
+                            ? (theme.brightness == Brightness.dark
+                                ? Colors.amber
+                                : Colors.orange[800]!)
+                            : theme.textTheme.bodyMedium?.color ?? Colors.white;
+                        final countdown = tickTarget != null
+                            ? (_layout?.countdownTo(tickTarget, tickNow) ??
+                                Duration.zero)
+                            : Duration.zero;
+                        _updateAnimationTimer(countdown);
+                        return ValueListenableBuilder<double>(
+                          valueListenable: _flashNotifier,
+                          builder: (context, flashValue, _) {
+                            final countdownColor = _resolveCountdownColor(
+                                countdown, tickBaseColor, flashValue);
+                            return _buildCountdownContent(
+                                countdown,
+                                tickMode,
+                                countdownColor,
+                                flashValue,
+                                settings.fontSizePx * 1.5,
+                                stripBg,
+                                Alignment.centerRight);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 6),
-            StreamBuilder<DateTime>(
-              stream: _countdownTicks,
-              initialData: _now,
-              builder: (context, timeSnapshot) {
-                final tickNow = timeSnapshot.data!;
-                final tickActive = _layout?.activeEvent(widget.events, tickNow);
-                final tickNextOverlap = tickActive != null
-                    ? (widget.events
-                            .where((e) =>
-                                e.startTime.isAfter(tickNow) &&
-                                e.startTime.isBefore(tickActive.endTime))
-                            .toList()
-                          ..sort((a, b) => a.startTime.compareTo(b.startTime)))
-                        .firstOrNull
-                    : null;
-                final tickNextToStart = tickActive == null
-                    ? (widget.events
-                            .where((e) => e.startTime.isAfter(tickNow))
-                            .toList()
-                          ..sort((a, b) => a.startTime.compareTo(b.startTime)))
-                        .firstOrNull
-                    : null;
-                final tickTarget = tickActive != null
-                    ? (tickNextOverlap?.startTime ?? tickActive.endTime)
-                    : tickNextToStart?.startTime;
-                final tickMode = tickActive != null
-                    ? CountdownMode.untilEnd
-                    : CountdownMode.untilNext;
-                final tickBaseColor = tickMode == CountdownMode.untilEnd
-                    ? (theme.brightness == Brightness.dark
-                        ? Colors.amber
-                        : Colors.orange[800]!)
-                    : theme.textTheme.bodyMedium?.color ?? Colors.white;
-                final countdown = tickTarget != null
-                    ? (_layout?.countdownTo(tickTarget, tickNow) ??
-                        Duration.zero)
-                    : Duration.zero;
-                _updateAnimationTimer(countdown);
-                return ValueListenableBuilder<double>(
-                  valueListenable: _flashNotifier,
-                  builder: (context, flashValue, _) {
-                    final countdownColor = _resolveCountdownColor(
-                        countdown, tickBaseColor, flashValue);
-                    return _buildCountdownContent(
-                        countdown,
-                        tickMode,
-                        countdownColor,
-                        flashValue,
-                        settings.fontSizePx * 1.5,
-                        stripBg);
-                  },
-                );
-              },
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -910,8 +947,10 @@ class _TimelineStripState extends State<TimelineStrip>
             builder: (context, flashValue, _) {
               final countdownColor =
                   _resolveCountdownColor(countdown, tickBaseColor, flashValue);
-              return _buildCountdownContent(countdown, tickMode, countdownColor,
-                  flashValue, settings.fontSizePx, stripBg);
+              return Center(
+                child: _buildCountdownContent(countdown, tickMode,
+                    countdownColor, flashValue, settings.fontSizePx, stripBg),
+              );
             },
           );
         },
@@ -920,7 +959,8 @@ class _TimelineStripState extends State<TimelineStrip>
   }
 
   Widget _buildCountdownContent(Duration countdown, CountdownMode mode,
-      Color color, double flashValue, double fontSize, Color stripBg) {
+      Color color, double flashValue, double fontSize, Color stripBg,
+      [Alignment alignment = Alignment.center]) {
     double scale = 1.0;
     Offset shake = Offset.zero;
     if (countdown.inSeconds > 0 && widget.enableAnimations) {
@@ -933,18 +973,17 @@ class _TimelineStripState extends State<TimelineStrip>
         shake = Offset(math.sin(flashValue * 8 * math.pi) * 2.0, 0);
       }
     }
-    return Center(
-      child: Transform.translate(
-        offset: shake,
-        child: Transform.scale(
-          scale: scale,
-          child: CountdownDisplay(
-            remaining: countdown,
-            mode: mode,
-            color: color,
-            fontSize: fontSize,
-            backgroundColor: stripBg,
-          ),
+    return Transform.translate(
+      offset: shake,
+      child: Transform.scale(
+        scale: scale,
+        alignment: alignment,
+        child: CountdownDisplay(
+          remaining: countdown,
+          mode: mode,
+          color: color,
+          fontSize: fontSize,
+          backgroundColor: stripBg,
         ),
       ),
     );
@@ -955,7 +994,7 @@ class _TimelineStripState extends State<TimelineStrip>
         ? const Color(0xFF1A1A2E)
         : Colors.white;
     return Positioned(
-      left: 40,
+      left: 54,
       top: 0,
       height: _collapsedHeight,
       child: Row(
@@ -970,7 +1009,7 @@ class _TimelineStripState extends State<TimelineStrip>
             },
             stripBackgroundColor: stripBg,
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 8),
           _IconButton(
             icon: Icons.flip_to_back,
             active: _focusController.isSentToBack,
@@ -983,15 +1022,13 @@ class _TimelineStripState extends State<TimelineStrip>
             },
             stripBackgroundColor: stripBg,
           ),
-          const SizedBox(width: 4),
-          if (widget.displayService != null) ...[
+          const SizedBox(width: 8),
+          if (widget.displayService != null)
             DisplayFallbackIndicator(
               displayService: widget.displayService!,
               stripHeight: _collapsedHeight,
               onTap: _openSettingsToDisplaySection,
             ),
-            const SizedBox(width: 4),
-          ],
           _IconButton(
             icon: Icons.settings,
             onTap: _toggleSettings,
@@ -1136,13 +1173,11 @@ class _IconButton extends StatelessWidget {
     required this.onTap,
     required this.stripBackgroundColor,
     this.active = false,
-    this.iconSize = 24.0,
   });
   final IconData icon;
   final VoidCallback onTap;
   final Color stripBackgroundColor;
   final bool active;
-  final double iconSize;
 
   @override
   Widget build(BuildContext context) {
@@ -1176,7 +1211,7 @@ class _IconButton extends StatelessWidget {
           ],
         ),
         child: Transform.scale(
-          scale: iconSize / 24.0,
+          scale: 32.0 / 24.0,
           child: Icon(icon, color: iconColor, size: 24),
         ),
       ),

@@ -19,6 +19,13 @@ import 'package:logging/logging.dart';
 ///           at the target size when resize() completes.
 /// Breaking Changes: call start() after construction.
 
+class _QueuedIntent {
+  final ExpansionState intent;
+  final Completer<void> completer;
+
+  _QueuedIntent(this.intent, this.completer);
+}
+
 class ExpansionController {
   ExpansionController({required ResizeExecutor executor})
       : _executor = executor;
@@ -34,7 +41,7 @@ class ExpansionController {
   /// stream emits nothing until the first resize completes.
   Stream<PhysicalWindowState> get stateStream => _stateController.stream;
 
-  ExpansionState? _queued; // next intent waiting to execute
+  _QueuedIntent? _queued; // next intent waiting to execute
   ExpansionState? _displayed; // last confirmed state
 
   bool _disposed = false;
@@ -50,10 +57,23 @@ class ExpansionController {
   /// Dropped if [intent] matches the current displayed state or is already
   /// queued. Otherwise wakes the background loop.
   void send(ExpansionState intent) {
-    if (intent == _displayed || intent == _queued) return;
-    _log.fine('send intent=${intent.name}');
-    _queued = intent;
+    unawaited(sendAndAwait(intent));
+  }
+
+  /// Queues an expansion intent and returns a future that completes when
+  /// the resize execution finishes.
+  Future<void> sendAndAwait(ExpansionState intent) {
+    if (intent == _displayed) {
+      return Future.value();
+    }
+    if (_queued != null && _queued!.intent == intent) {
+      return _queued!.completer.future;
+    }
+    _log.fine('sendAndAwait intent=${intent.name}');
+    final completer = Completer<void>();
+    _queued = _QueuedIntent(intent, completer);
     if (!_signal.isCompleted) _signal.complete();
+    return completer.future;
   }
 
   Future<void> _loop() async {
@@ -68,8 +88,9 @@ class ExpansionController {
   }
 
   Future<void> _execute() async {
-    final intent = _queued!;
+    final queuedItem = _queued!;
     _queued = null;
+    final intent = queuedItem.intent;
     _displayed =
         intent; // update eagerly so sends during the await dedup correctly
 
@@ -78,8 +99,18 @@ class ExpansionController {
         : _executor.collapsedHeight;
 
     _log.fine('execute START intent=${intent.name} target=$targetHeight');
-    await _executor.resize(intent);
-    _log.fine('execute DONE intent=${intent.name} target=$targetHeight');
+    try {
+      await _executor.resize(intent);
+      _log.fine('execute DONE intent=${intent.name} target=$targetHeight');
+      if (!queuedItem.completer.isCompleted) {
+        queuedItem.completer.complete();
+      }
+    } catch (e, st) {
+      _log.severe('execute FAILED intent=${intent.name}', e, st);
+      if (!queuedItem.completer.isCompleted) {
+        queuedItem.completer.completeError(e, st);
+      }
+    }
 
     if (!_stateController.isClosed) {
       _stateController.add(PhysicalWindowState(

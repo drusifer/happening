@@ -170,5 +170,21 @@ void main() {
       expect(other, states);
       await otherSub.cancel();
     });
+
+    test('sendAndAwait: resolves only after resize completes', () async {
+      executor.resizeGate = Completer<void>();
+      final future = controller.sendAndAwait(ExpansionState.expanded);
+
+      var completed = false;
+      unawaited(future.then((_) => completed = true));
+
+      await pump();
+      expect(completed, isFalse,
+          reason: 'should not resolve while resize is in progress');
+
+      executor.resizeGate!.complete();
+      await future; // should resolve now
+      expect(completed, isTrue);
+    });
   });
 }
