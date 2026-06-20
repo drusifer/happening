@@ -1,59 +1,27 @@
 import 'dart:async';
-import 'dart:ffi' hide Size;
 
-import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/window/interaction_strategy/reserved_window_interaction_strategy.dart';
+import 'package:happening/core/window/strip_state.dart';
 import 'package:happening/core/window/window_service.dart';
-import 'package:happening/features/timeline/expansion_logic.dart';
+import 'package:happening/core/window/windows_app_bar.dart';
 import 'package:logging/logging.dart';
-import 'package:win32/win32.dart';
-import 'package:window_manager/window_manager.dart';
-
-// ── Constants ────────────────────────────────────────────────────────────────
-
-const int _uCallbackMessage = 0x0400 + 100; // WM_USER + 100
-const int _abmNew = 0;
-const int _abmRemove = 1;
-const int _abmQuerypos = 2;
-const int _abmSetpos = 3;
-const int _abeTop = 1;
-
-// Flutter Windows runner class name — used to find the HWND.
-const String _flutterWindowClass = 'FLUTTER_RUNNER_WIN32_WINDOW';
-
-// ── APPBARDATA FFI struct ────────────────────────────────────────────────────
-
-final class _AppBarData extends Struct {
-  @Uint32()
-  external int cbSize;
-  @IntPtr()
-  external int hWnd;
-  @Uint32()
-  external int uCallbackMessage;
-  @Uint32()
-  external int uEdge;
-  @Int32()
-  external int rcLeft;
-  @Int32()
-  external int rcTop;
-  @Int32()
-  external int rcRight;
-  @Int32()
-  external int rcBottom;
-  @IntPtr()
-  external int lParam;
-}
-
-// ── SHAppBarMessage via shell32.dll ──────────────────────────────────────────
-
-typedef _SHNative = IntPtr Function(
-    Uint32 dwMessage, Pointer<_AppBarData> pData);
-typedef _SHDart = int Function(int dwMessage, Pointer<_AppBarData> pData);
 
 /// Windows-specific WindowService with AppBar (work-area reservation) support.
-class WindowsWindowService extends WindowService with WindowListener {
+///
+/// Init model (docs/WINDOW_STATE_REFACTOR_PLAN.md): geometry + reservation are
+/// applied ONCE post-show via [applyState] (from [afterWindowShown], inside the
+/// readyToShow callback's await chain — so it runs after performShow regardless
+/// of whether waitUntilReadyToShow awaits its outer callback). Because
+/// initialize() runs before runApp(), the first frame does not exist yet, so
+/// [presentInitialFrame] is deferred to the first frame and composites it with
+/// a 1px size-settle. No onWindowFocus handler, no safety-net Timer, no
+/// _handleFirstShow re-resize dance.
+///
+/// All Win32 FFI (AppBar reservation, RedrawWindow) lives behind the
+/// [WindowsAppBar] seam so this orchestration is unit-testable with a fake.
+class WindowsWindowService extends WindowService {
   static final _log = Logger('WindowsWindowService');
 
   WindowsWindowService({
@@ -61,249 +29,174 @@ class WindowsWindowService extends WindowService with WindowListener {
     required super.screenRetriever,
     required super.displayService,
     bool enableWindowsAppBar = true,
+    WindowsAppBar? appBar,
   })  : _enableWindowsAppBar = enableWindowsAppBar,
+        _appBar = appBar ?? Win32AppBar(),
         super(
           interactionStrategy:
               ReservedWindowInteractionStrategy(wm: windowManager),
         );
 
   final bool _enableWindowsAppBar;
+  final WindowsAppBar _appBar;
 
-  Pointer<_AppBarData>? _appBarData;
-  late final _SHDart _shAppBarMessage;
-  bool _appBarBusy = false;
-  bool _firstShowHandled = false;
-  Timer? _safetyNet;
+  int get _bandWidthPx => (screenWidth * dpr).round();
+
+  // CEIL, not round: the window is sized in logical px and window_manager rounds
+  // it to physical independently. If the band rounded DOWN while the window
+  // rounded UP (possible at fractional DPI), the window would be 1px taller than
+  // its band and Windows would relocate it below its own strut (see L-006).
+  // Ceil guarantees band >= window physical height for any rounding.
+  int get _bandHeightPx => (getCollapsedHeight() * dpr).ceil();
 
   // ── Overrides ─────────────────────────────────────────────────────────────
 
   @override
-  Future<void> beforeShow(Size size, double dpr, WindowMode mode) async {
-    _log.info(
-        'beforeShow: size=$size dpr=$dpr mode=$mode appBarEnabled=$_enableWindowsAppBar');
-    if (_enableWindowsAppBar && mode == WindowMode.reserved) {
-      // Register listener BEFORE performShow runs so the first onWindowFocus
-      // (emitted by wm.focus() inside performShow) is observed.
-      wm.addListener(this);
-      await _registerAppBar();
-    }
-    _log.info(
-        'beforeShow: done appBarData=${_appBarData != null ? "registered" : "null"}');
-  }
+  void onDispose() => _appBar.dispose();
 
+  // On Windows, size/position set before ShowWindow are ignored. This hook runs
+  // INSIDE the readyToShow callback's await chain, right after performShow, so
+  // it is guaranteed post-show. Apply the final geometry + reservation once,
+  // then force a single present so the first frame composites without a
+  // mouse-over.
   @override
-  void onDispose() {
-    _safetyNet?.cancel();
-    wm.removeListener(this);
-    _disposeAppBar();
-  }
-
-  @override
-  Future<void> onWindowModeChanged(WindowMode mode) async {
-    _log.info(
-        'onWindowModeChanged: mode=$mode appBarData=${_appBarData != null}');
-    if (!_enableWindowsAppBar) return;
-    if (mode == WindowMode.reserved) {
-      if (_appBarData == null) {
-        await _registerAppBar();
-      } else {
-        await reassertAppBar();
-      }
-    } else {
-      _disposeAppBar();
-    }
-    _log.info('onWindowModeChanged: done');
-  }
-
-  // On Windows, size/position set before ShowWindow are ignored during window
-  // creation. The post-show fix-up is driven by the first onWindowFocus event
-  // (emitted by performShow's wm.focus() call) instead of inline here, because
-  // window_manager's waitUntilReadyToShow does not actually await its async
-  // callback — so anything we do inline races with the still-pending
-  // beforeShow chain (setAsFrameless, performShow). The focus event is the
-  // earliest reliable signal that Win32 has actually shown the window.
-  @override
-  Future<void> afterReadyToShow(WindowMode mode) async {
-    _log.info(
-        'afterReadyToShow: mode=$mode appBarEnabled=$_enableWindowsAppBar');
-    if (!_enableWindowsAppBar || mode != WindowMode.reserved) return;
-    // Safety net: if onWindowFocus never fires (focus denied by Windows), run
-    // the post-show fix-up anyway after 2s so the strip doesn't stay broken.
-    _safetyNet = Timer(const Duration(seconds: 2), () {
-      if (_firstShowHandled) return;
-      _log.warning(
-          'afterReadyToShow: safety-net firing — no onWindowFocus seen');
-      unawaited(_handleFirstShow());
+  Future<void> afterWindowShown(WindowMode mode) async {
+    _log.fine('afterWindowShown: applyState(collapsedShown); '
+        'present deferred to first frame');
+    await applyState(StripState.collapsedShown);
+    // initialize() runs BEFORE runApp(), so Flutter has not produced its first
+    // frame yet — the log shows the first paint lands ~150ms after this. A
+    // present now composites nothing (RedrawWindow cannot conjure a frame that
+    // does not exist). Defer it to just after the first frame — the same
+    // post-first-frame pattern macOS uses for its Metal layer.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(presentInitialFrame());
     });
   }
 
+  /// Reserves the work-area band and returns the origin the window should be
+  /// placed at — `applyState` applies geometry AFTER this, so positioning
+  /// happens after ABM_SETPOS (which can move the AppBar window). shown+reserved
+  /// registers (if needed) + reserves the top band; hidden or overlay releases
+  /// it (and returns null → caller falls back to the work-area origin).
   @override
-  void onWindowFocus() {
-    _log.info('onWindowFocus fired (firstHandled=$_firstShowHandled)');
-    if (_firstShowHandled) return;
-    unawaited(_handleFirstShow());
+  Future<Offset?> applyReservation(StripState state) async {
+    if (!_enableWindowsAppBar) return null;
+    if (state == StripState.hidden || windowMode != WindowMode.reserved) {
+      _appBar.dispose();
+      return null;
+    }
+    if (!_appBar.isRegistered) _appBar.register();
+    final rcTop =
+        _appBar.reserveTopBand(widthPx: _bandWidthPx, heightPx: _bandHeightPx);
+    final double xOffset = activeDisplay?.workAreaOrigin.dx ?? 0;
+    final origin = Offset(xOffset, rcTop / dpr);
+    _log.fine('applyReservation: $state reserved → origin=$origin (rcTop=$rcTop)');
+    return origin;
   }
 
-  // Post-show fix-up. Uses the same setMin→setMax→setSize pattern that hover
-  // uses (via WindowsResizeStrategy.collapse), because that pattern is known
-  // to work and setBounds alone does not. setMin/setMax only constrain future
-  // resizes — they do NOT actively resize the window — so if setBounds flakes
-  // on size or position (which it does on first show), min/max just freeze
-  // the broken state. setSize via performResize is what forcibly snaps the
-  // window to the target size; setPosition then snaps it to (0, rcTop).
-  Future<void> _handleFirstShow() async {
-    if (_firstShowHandled) return;
-    _firstShowHandled = true;
-    _safetyNet?.cancel();
-    _safetyNet = null;
-    if (_appBarData == null) {
-      _log.info('_handleFirstShow: appBarData=null, skipping');
-      return;
-    }
-    _log.info('_handleFirstShow: refreshing AppBar reservation');
-    await _reserveCollapsedSpace();
-    final rcTop = _appBarData!.ref.rcTop / dpr;
-    _log.info('_handleFirstShow: setPosition(0, $rcTop)');
-    await wm.setPosition(Offset(0, rcTop));
-    _log.info(
-        '_handleFirstShow: performResize(collapsed) — forces size via setSize');
-    await performResize(ExpansionState.collapsed);
-    _log.info('_handleFirstShow: done');
+  @override
+  Future<void> presentInitialFrame() async {
+    // RDW_INVALIDATE alone does NOT make the Flutter (ANGLE/D3D) engine present
+    // a frame — only a metrics change does (which is exactly why a mouse-over
+    // or manual resize "fixes" the sliver). Force one with a 1px size settle.
+    //
+    // CRITICAL: nudge DOWN, not up. Growing past the reserved band height makes
+    // Windows relocate the AppBar window into the work area (below its own
+    // strut) — GEO trace 2026-06-19 19:55 showed +1px stranded it at y=73.
+    // Shrinking stays inside the band, so the window keeps its position.
+    final h = getCollapsedHeight();
+    final origin = Offset(activeDisplay?.workAreaOrigin.dx ?? 0, 0);
+    _log.fine('presentInitialFrame: 1px shrink-settle ${h - 1}→$h, pin=$origin');
+    await strategy.applySize(Size(screenWidth, h - 1), position: origin);
+    await strategy.applySize(Size(screenWidth, h), position: origin);
+    _appBar.presentFrame();
+    // Belt-and-suspenders: pin the strip back to the reserved top in case the
+    // resize still nudged it.
+    await wm.setPosition(origin);
+    await logGeometry('presentInitialFrame:after');
+    probeGeometryLater('presentInitialFrame');
   }
 
   @override
   Future<void> onHideStrip() async {
     if (!_enableWindowsAppBar) return;
-    _disposeAppBar();
+    _appBar.dispose();
   }
 
   @override
   Future<void> onShowStrip() async {
     if (!_enableWindowsAppBar) return;
-    if (windowMode == WindowMode.reserved) {
-      await _registerAppBar();
+    if (windowMode != WindowMode.reserved) return;
+    if (!_appBar.isRegistered) _appBar.register();
+    final rcTop =
+        _appBar.reserveTopBand(widthPx: _bandWidthPx, heightPx: _bandHeightPx);
+    // Reposition after reserving — ABM_SETPOS can move the window, and the show
+    // path positioned (resizeToFullStrip) BEFORE this reservation.
+    final double xOffset = activeDisplay?.workAreaOrigin.dx ?? 0;
+    await wm.setPosition(Offset(xOffset, rcTop / dpr));
+    await logGeometry('onShowStrip:end');
+    probeGeometryLater('onShowStrip');
+  }
+
+  // Show = EXACTLY what init does (afterWindowShown), the one path that keeps the
+  // strip in its strut: reserve→size via applyState, then force the present. The
+  // legacy show path (resizeToFullStrip → onShowStrip) sized BEFORE reserving and
+  // never presented, so the re-registered AppBar window drifted below the strut
+  // (GEO build-still-below-strut.out 2026-06-20: onShowStrip +500ms = (0,73)).
+  @override
+  Future<void> showStrip() async {
+    _log.fine('showStrip: applyState(collapsedShown) + presentInitialFrame '
+        '(converged onto the init path)');
+    await applyState(StripState.collapsedShown);
+    await presentInitialFrame();
+  }
+
+  @override
+  Future<void> onWindowModeChanged(WindowMode mode) async {
+    _log.fine(
+        'onWindowModeChanged: mode=$mode registered=${_appBar.isRegistered}');
+    if (!_enableWindowsAppBar) return;
+    if (mode == WindowMode.reserved) {
+      if (!_appBar.isRegistered) {
+        _appBar.register();
+        _appBar.reserveTopBand(widthPx: _bandWidthPx, heightPx: _bandHeightPx);
+      } else {
+        await reassertAppBar();
+      }
+    } else {
+      _appBar.dispose();
     }
   }
 
   @override
   Future<void> onDisplayChangedExtra() async {
-    _log.info(
-        'onDisplayChangedExtra: windowMode=$windowMode appBarData=${_appBarData != null}');
-    if (windowMode == WindowMode.reserved && _appBarData != null) {
-      await _reserveCollapsedSpace();
+    _log.fine(
+        'onDisplayChangedExtra: windowMode=$windowMode registered=${_appBar.isRegistered}');
+    if (windowMode == WindowMode.reserved && _appBar.isRegistered) {
+      final rcTop = _appBar.reserveTopBand(
+          widthPx: _bandWidthPx, heightPx: _bandHeightPx);
       final double xOffset = activeDisplay?.workAreaOrigin.dx ?? 0;
-      final pos = Offset(xOffset, _appBarData!.ref.rcTop / dpr);
-      _log.info(
-          'onDisplayChangedExtra: setPosition $pos (rcTop=${_appBarData!.ref.rcTop} dpr=$dpr)');
+      final pos = Offset(xOffset, rcTop / dpr);
+      _log.fine('onDisplayChangedExtra: setPosition $pos (rcTop=$rcTop)');
       await wm.setPosition(pos);
     }
-    _log.info('onDisplayChangedExtra: done');
   }
 
-  /// Re-registers the AppBar with Windows, restoring the work area reservation.
-  ///
-  /// Triggers a full ABM_REMOVE → ABM_NEW → ABM_SETPOS cycle, which forces
-  /// Windows to re-broadcast the updated work area to all running apps. Call
-  /// this when the strip is observed overlapping other window title bars.
+  /// Re-broadcasts the work-area reservation (e.g. when the strip overlaps
+  /// other windows) through the SAME flow as everything else: drop the AppBar
+  /// (ABM_REMOVE forces Windows to re-announce the work area), then re-apply the
+  /// collapsed state via [applyState] — which re-registers (ABM_NEW), reserves,
+  /// and positions in the correct reserve-then-position order. No bespoke
+  /// performResize/setPosition sequence that can drift from init/hide/show.
   @override
   Future<void> reassertAppBar() async {
-    if (windowMode != WindowMode.reserved || _appBarData == null) {
+    if (windowMode != WindowMode.reserved || !_appBar.isRegistered) {
       await super.reassertAppBar();
       return;
     }
-    _log.info('reassertAppBar: start');
-    await performResize(ExpansionState.collapsed);
-    _log.info(
-        'reassertAppBar: collapsed, running ABM_REMOVE → ABM_NEW → ABM_SETPOS cycle');
-    _shAppBarMessage(_abmRemove, _appBarData!);
-    _shAppBarMessage(_abmNew, _appBarData!);
-    await _reserveCollapsedSpace();
-    final double rcTop = _appBarData!.ref.rcTop / dpr;
-    _log.info(
-        'reassertAppBar: rcTop=$rcTop (raw=${_appBarData!.ref.rcTop} dpr=$dpr), repositioning');
-    final double xOffset = activeDisplay?.workAreaOrigin.dx ?? 0;
-    await wm.setPosition(Offset(xOffset, rcTop));
-    await performResize(ExpansionState.collapsed);
-    _log.info('reassertAppBar: done');
-  }
-
-  // ── AppBar internals ──────────────────────────────────────────────────────
-
-  Future<void> _registerAppBar() async {
-    _log.info('_registerAppBar: loading SHAppBarMessage from shell32.dll');
-    _shAppBarMessage = DynamicLibrary.open('shell32.dll')
-        .lookupFunction<_SHNative, _SHDart>('SHAppBarMessage');
-    final classNamePtr = _flutterWindowClass.toNativeUtf16();
-    final hwnd = FindWindow(PCWSTR(classNamePtr), null);
-    calloc.free(classNamePtr);
-    _log.info(
-        '_registerAppBar: FindWindow hwnd=0x${hwnd.value.address.toRadixString(16)}');
-
-    _appBarData = calloc<_AppBarData>();
-    _appBarData!.ref.cbSize = sizeOf<_AppBarData>();
-    _appBarData!.ref.hWnd = hwnd.value.address;
-    _appBarData!.ref.uCallbackMessage = _uCallbackMessage;
-    _log.info(
-        '_registerAppBar: calling ABM_NEW cbSize=${_appBarData!.ref.cbSize} hWnd=0x${_appBarData!.ref.hWnd.toRadixString(16)}');
-    _shAppBarMessage(_abmNew, _appBarData!);
-    _log.info('_registerAppBar: ABM_NEW done, calling _reserveCollapsedSpace');
-
-    await _reserveCollapsedSpace();
-    _log.info('_registerAppBar: done');
-  }
-
-  Future<void> _reserveCollapsedSpace() async {
-    _log.info(
-        '_reserveCollapsedSpace: entry appBarBusy=$_appBarBusy isExpanded=$isExpanded screenWidth=$screenWidth dpr=$dpr collapsedHeight=${getCollapsedHeight()}');
-    if (_appBarBusy) {
-      _log.info('_reserveCollapsedSpace: SKIPPED (appBarBusy)');
-      return;
-    }
-    _appBarBusy = true;
-    try {
-      _appBarData!.ref.uEdge = _abeTop;
-      _appBarData!.ref.rcLeft = 0;
-      _appBarData!.ref.rcTop = 0;
-      _appBarData!.ref.rcRight = (screenWidth * dpr).round();
-      final targetHeight = (getCollapsedHeight() * dpr).round();
-      _appBarData!.ref.rcBottom = targetHeight;
-
-      _log.info(
-          '_reserveCollapsedSpace: before ABM_QUERYPOS rect=[${_appBarData!.ref.rcLeft},${_appBarData!.ref.rcTop},${_appBarData!.ref.rcRight},${_appBarData!.ref.rcBottom}] targetHeightPx=$targetHeight');
-      _shAppBarMessage(_abmQuerypos, _appBarData!);
-      _log.info(
-          '_reserveCollapsedSpace: after  ABM_QUERYPOS rect=[${_appBarData!.ref.rcLeft},${_appBarData!.ref.rcTop},${_appBarData!.ref.rcRight},${_appBarData!.ref.rcBottom}]');
-      _shAppBarMessage(_abmSetpos, _appBarData!);
-      _log.info(
-          '_reserveCollapsedSpace: after  ABM_SETPOS  rect=[${_appBarData!.ref.rcLeft},${_appBarData!.ref.rcTop},${_appBarData!.ref.rcRight},${_appBarData!.ref.rcBottom}]');
-
-      if (!isExpanded) {
-        final bounds = Rect.fromLTWH(
-          0,
-          _appBarData!.ref.rcTop / dpr,
-          screenWidth,
-          getCollapsedHeight(),
-        );
-        _log.info(
-            '_reserveCollapsedSpace: setBounds $bounds (rcTop=${_appBarData!.ref.rcTop} dpr=$dpr)');
-        await wm.setMinimumSize(Size.zero);
-        await wm.setMaximumSize(Size.infinite);
-        await wm.setBounds(bounds);
-        _log.info('_reserveCollapsedSpace: setBounds done');
-      } else {
-        _log.info(
-            '_reserveCollapsedSpace: skipping setBounds (isExpanded=true)');
-      }
-    } finally {
-      _appBarBusy = false;
-    }
-  }
-
-  void _disposeAppBar() {
-    if (_appBarData != null) {
-      _shAppBarMessage(_abmRemove, _appBarData!);
-      calloc.free(_appBarData!);
-      _appBarData = null;
-    }
+    _log.fine('reassertAppBar: dispose + applyState(collapsedShown)');
+    _appBar.dispose(); // ABM_REMOVE → re-broadcast work area
+    await applyState(StripState.collapsedShown);
   }
 }

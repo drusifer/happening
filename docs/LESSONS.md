@@ -62,8 +62,121 @@ z-order state.
 This restores the user's interaction mode (H4 — Consistency) while ensuring the mini widget
 is never accidentally hidden behind other windows.
 
+---
+
+## L-005: On Windows, `setMaximumSize(Size.infinite)` floors the window to the OS-min size
+**Sprint**: F-31 Timestrip Hide/Show
+**Date**: 2026-06-16
+
+Bracketing a Windows resize with `wm.setMaximumSize(Size.infinite)` (intending "no max")
+leaves a **broken max-track size**: `window_manager` casts `double.infinity` to a native
+`LONG`, producing garbage. Win32 then clamps the window down to its OS-minimum tracking
+size (~`136×39`) on the *next* `setBounds`/`setSize`, **regardless of the requested size** —
+even when the request (e.g. `268×72.5`) is well above the floor.
+
+**Symptom**: the hide/show mini strip looked correct momentarily (mini widget painted inside
+the still-wide window), then truncated to `136×39` once `resizeToMiniStrip` ran. The
+full-width (`3840`) strip happened to survive the same broken bracket; only the narrow mini
+request exposed it. Misleading red herrings along the way: suspected DPR mismatch (ruled out —
+`wmDpr == appDpr == 1.0`) and a delayed post-`setBounds` reset (ruled out — floored on the
+*immediate* read).
+
+**Fix**: pin `min == max == target` before sizing — the exact idiom
+`WindowResizeStrategy.collapse/expand` already use (`setMinimumSize(target)` /
+`setMaximumSize(target)` / size). With a sane max-track, `setBounds` reaches the target
+exactly. `_resizeViaBounds` uses `setBounds` (not `setSize`) only because it also repositions
+the window to the work-area origin in the same call. Corollary: the older
+"`setSize` is clamped on Windows, use `setBounds`" comments were wrong — `setSize` works fine
+*with the correct min/max bracket*.
+
+**Two instances of this bug existed:**
+1. `_resizeViaBounds` (hide/show mini strip) — truncated the narrow 268px window.
+2. `_reserveCollapsedSpace` (full-mode AppBar reservation) — the long-standing "full mode
+   shows up truncated on Windows" bug. The AppBar's `ABM_SETPOS` *usually* force-sizes the
+   window to the full 3840 rect, masking the garbage max-track — but whenever that force
+   doesn't fully take (focus loss, multi-monitor, show-after-hide), Win32 truncated it. The
+   "force a refresh" workaround made it worse: re-running `_reserveCollapsedSpace` re-applied
+   `setMaximumSize(Size.infinite)`, re-corrupting the max-track every time.
+
+**Rule of thumb**: on Windows, *never* leave a window with `setMaximumSize(Size.infinite)`.
+Always pin `min == max == target` around a resize. To later grow/shrink, the next resize
+sets its own bracket first (see `WindowResizeStrategy.expand/collapse`).
+
+**Normalization (the real fix)**: the bug existed in multiple copies because six code paths
+each re-implemented the min/max-and-resize dance. These were unified into a single primitive,
+`WindowResizeStrategy.applySize(size, {position})`, which owns the bracket
+(`setMinimumSize(Size.zero)` → `setMaximumSize(size)` → geometry → `setMinimumSize(size)`).
+The geometry call (`applyGeometry`) uses `setPosition` + `setSize` on **all** platforms.
+`expand`, `collapse`, `resizeToMiniStrip`, `resizeToFullStrip`, and the Windows AppBar
+reservation (`_reserveCollapsedSpace`) all route through `applySize`, so the bracket is correct
+in exactly one place. Regression guard: `window_resize_strategy_test.dart` asserts `applySize`
+caps max at the target and never calls `setMaximumSize(Size.infinite)`.
+
+**Do NOT use `setBounds` for the geometry** (an earlier version of this refactor did, as a
+Windows override). On Windows `setBounds` flakes on first show — it lands the window at ~1px,
+and `setMinimumSize` cannot force-grow it back — so the initial layout came up 1px tall. The
+only reason `setBounds` ever seemed necessary was that the broken `setMax(∞)` bracket floored
+`setSize` to 136; once the bracket caps max at the target, plain `setSize` reaches even narrow
+widths reliably, which is what `_handleFirstShow` already documented ("setSize via performResize
+forcibly snaps the window; setBounds flakes on first show").
+
+Footgun avoided: pinning `min == max` with the *target* set as the FIRST `setMinimumSize`
+(i.e. `setMinimumSize(full)` before resizing) intermittently produced a 1px-tall window in
+the AppBar path. `applySize` deliberately lowers the floor to `Size.zero` first, then pins it
+up after the geometry call.
+
 **Files**: `app/lib/features/timeline/timeline_strip.dart` (`_hideStrip`, `_showStrip`),
 `app/lib/core/window/window_service.dart` (`prepareToHide`, `completeShow` hooks).
+
+---
+
+## L-006: Make regression tests by modeling the OS *reaction* in a fake — not by asserting calls
+**Sprint**: Window State-Machine Refactor
+**Date**: 2026-06-19
+
+When a bug comes from how an external system (the OS, a native API) **reacts** to our calls,
+a mock that only records the call is worthless — it will pass while the real app fails. We hit
+this repeatedly on Windows: the unit tests asserted we *called* `setPosition(0,0)` /
+`setSize(...)`, stayed green, and the strip still landed below the strut. The mock had no model
+of the actual Win32 behavior: **a top AppBar window resized taller than its reserved band gets
+relocated by Windows into the work area (below its own strut).**
+
+The init "present" nudge grew the window 1px past the band (`73.5 > 73`), so Windows moved it to
+`y=73`. `applyState` had positioned it correctly at `(0,0)` first; the nudge stranded it. The
+`GEO[...]` trace from a real run showed `pos=(0,0)` after `applyState` then `pos=(0,73)` after
+the present — that trace is what revealed the true OS rule to encode.
+
+**How to make the regression test actually bite:**
+1. **Model the OS reaction in a stateful fake.** `FakeWin32Desktop` tracks `position`/`size`/
+   reserved band and applies the rule: `if (position.dy <= band && size.height.round() > band)
+   position = Offset(position.dx, band)`. Wire it to the `WindowManager` mock's
+   `setSize`/`setPosition`/`getPosition` and to the AppBar fake's `reserveTopBand`/`dispose`.
+2. **Assert the resulting modeled state**, e.g. `expect(desktop.position, Offset.zero)` — not
+   "was `setPosition` called".
+3. **Ground the model in an observed real run** (the `GEO[...]` trace), so the fake matches
+   reality, not a guess.
+4. **Prove the test fails on the bug**: temporarily reintroduce the regression (grow-past-band)
+   and confirm the test goes red (it reported `Actual: Offset(0.0, 55.0)`), then restore the fix.
+   *A regression test you have never seen fail is not yet trustworthy.*
+
+**The fix the test now guards**: the present nudge shrinks (`h-1 → h`) so it never exceeds the
+band, and pins the origin afterward (`presentInitialFrame` in `windows_window_service.dart`).
+
+**Corollary**: genuinely OS-only effects with no observable proxy (e.g. whether a frame actually
+*composited*) still require a real run / integration test — be explicit in the test about what is
+and isn't covered. See feedback memory `feedback_model_os_behavior_in_fakes.md`.
+
+**DPI rounding (same lesson, extended)**: once the fake modeled the relocation, making it
+**DPI-aware** exposed a second bug. The reserved band was `(h*dpr).round()` physical px, but the
+window is sized in *logical* px and window_manager rounds it to physical independently — at
+fractional DPI the window can round UP while the band rounds DOWN, so the window is 1px taller
+than its band → relocation again. Fix: reserve the band with `(h*dpr).ceil()` so band ≥ window
+physical height for any rounding. The fake models window physical as `ceil(size*dpr)` (worst case)
+and a `dpr=1.1` test catches a `round()`-band (proven: fails with `Offset(0, 57.3)` = `63/1.1`,
+passes with `ceil`).
+
+**Files**: `app/test/core/window/windows_window_service_test.dart` (`FakeWin32Desktop`,
+"init + present leaves the strip IN the strut").
 
 ---
 ## [2026-02-27] Flutter Snap Hijacks LLVM PATH — Cannot Be Fixed With PATH Override

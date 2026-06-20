@@ -29,54 +29,84 @@ void main() {
     when(mockWM.setResizable(any)).thenAnswer((_) => Future.value());
     when(mockWM.setPosition(any, animate: anyNamed('animate')))
         .thenAnswer((_) => Future.value());
+    when(mockWM.setBounds(any,
+            position: anyNamed('position'),
+            size: anyNamed('size'),
+            animate: anyNamed('animate')))
+        .thenAnswer((_) => Future.value());
     when(mockWM.getSize()).thenAnswer((_) async => Size.zero);
   });
 
-  group('WindowsResizeStrategy', () {
-    late WindowsResizeStrategy strategy;
+  // applySize is the single resize primitive every path routes through. The
+  // bracket (min == max == size, NEVER setMaximumSize(Size.infinite)) lives in
+  // the base; only the geometry call (setSize vs setBounds) is per-platform.
+  group('applySize — shared min/max bracket (via MacOsResizeStrategy)', () {
+    late MacOsResizeStrategy strategy;
+    setUp(() => strategy = MacOsResizeStrategy(wm: mockWM, sr: mockSR));
 
-    setUp(() {
-      strategy = WindowsResizeStrategy(wm: mockWM, sr: mockSR);
-    });
-
-    test('initialize calls setResizable(false)', () async {
-      await strategy.initialize(const Size(1920, 55), 1.0);
-      verify(mockWM.setResizable(false)).called(1);
-    });
-
-    test('expand: setMax→setSize→setMin', () async {
+    test('pins floor→cap→size→floor, capping max at the target (not infinite)',
+        () async {
       final order = <String>[];
-      when(mockWM.setMaximumSize(any))
-          .thenAnswer((_) async => order.add('setMax'));
+      final minArgs = <Size>[];
+      final maxArgs = <Size>[];
+      when(mockWM.setMinimumSize(any)).thenAnswer((inv) async {
+        order.add('min');
+        minArgs.add(inv.positionalArguments[0] as Size);
+      });
+      when(mockWM.setMaximumSize(any)).thenAnswer((inv) async {
+        order.add('max');
+        maxArgs.add(inv.positionalArguments[0] as Size);
+      });
       when(mockWM.setSize(any, animate: anyNamed('animate')))
-          .thenAnswer((_) async => order.add('setSize'));
+          .thenAnswer((_) async => order.add('size'));
+
+      await strategy.applySize(const Size(1920, 55));
+
+      expect(order, ['min', 'max', 'size', 'min']);
+      // floor first drops to zero (allow shrink), then pins up to the target.
+      expect(minArgs, [Size.zero, const Size(1920, 55)]);
+      // max is capped exactly to the target — never Size.infinite (L-005).
+      expect(maxArgs, [const Size(1920, 55)]);
+    });
+
+    test('L-005 guard: never widens max to Size.infinite', () async {
+      await strategy.applySize(const Size(268, 72), position: Offset.zero);
+      verifyNever(mockWM.setMaximumSize(Size.infinite));
+    });
+
+    test('default geometry repositions via setPosition + setSize', () async {
+      await strategy.applySize(const Size(268, 72),
+          position: const Offset(10, 20));
+      verify(mockWM.setPosition(const Offset(10, 20))).called(1);
+      verify(mockWM.setSize(const Size(268, 72), animate: anyNamed('animate')))
+          .called(1);
+      verifyNever(mockWM.setBounds(any,
+          position: anyNamed('position'),
+          size: anyNamed('size'),
+          animate: anyNamed('animate')));
+    });
+
+    test('expand and collapse both delegate to applySize', () async {
+      final order = <String>[];
       when(mockWM.setMinimumSize(any))
-          .thenAnswer((_) async => order.add('setMin'));
+          .thenAnswer((_) async => order.add('min'));
+      when(mockWM.setMaximumSize(any))
+          .thenAnswer((_) async => order.add('max'));
+      when(mockWM.setSize(any, animate: anyNamed('animate')))
+          .thenAnswer((_) async => order.add('size'));
 
       await strategy.expand(const Size(1920, 250));
-      expect(order, ['setMax', 'setSize', 'setMin']);
-    });
+      expect(order, ['min', 'max', 'size', 'min']);
 
-    test('collapse: setMin→setMax→setSize', () async {
-      final order = <String>[];
-      when(mockWM.setMinimumSize(any))
-          .thenAnswer((_) async => order.add('setMin'));
-      when(mockWM.setMaximumSize(any))
-          .thenAnswer((_) async => order.add('setMax'));
-      when(mockWM.setSize(any, animate: anyNamed('animate')))
-          .thenAnswer((_) async => order.add('setSize'));
-
+      order.clear();
       await strategy.collapse(const Size(1920, 55));
-      expect(order, ['setMin', 'setMax', 'setSize']);
+      expect(order, ['min', 'max', 'size', 'min']);
     });
   });
 
-  group('MacOsResizeStrategy', () {
-    late MacOsResizeStrategy strategy;
-
-    setUp(() {
-      strategy = MacOsResizeStrategy(wm: mockWM, sr: mockSR);
-    });
+  group('WindowsResizeStrategy — setBounds geometry', () {
+    late WindowsResizeStrategy strategy;
+    setUp(() => strategy = WindowsResizeStrategy(wm: mockWM, sr: mockSR));
 
     test('initialize: setResizable(false) + setPosition(zero)', () async {
       await strategy.initialize(const Size(1920, 55), 1.0);
@@ -84,30 +114,44 @@ void main() {
       verify(mockWM.setPosition(Offset.zero)).called(1);
     });
 
-    test('expand: setMax→setSize→setMin', () async {
-      final order = <String>[];
-      when(mockWM.setMaximumSize(any))
-          .thenAnswer((_) async => order.add('setMax'));
-      when(mockWM.setSize(any, animate: anyNamed('animate')))
-          .thenAnswer((_) async => order.add('setSize'));
-      when(mockWM.setMinimumSize(any))
-          .thenAnswer((_) async => order.add('setMin'));
-
-      await strategy.expand(const Size(1920, 250));
-      expect(order, ['setMax', 'setSize', 'setMin']);
+    test('repositions via setPosition + setSize, never setBounds (first-show '
+        'setBounds flakes to ~1px — L-005)', () async {
+      await strategy.applySize(const Size(268, 72),
+          position: const Offset(10, 20));
+      verify(mockWM.setPosition(const Offset(10, 20))).called(1);
+      verify(mockWM.setSize(const Size(268, 72), animate: anyNamed('animate')))
+          .called(1);
+      verifyNever(mockWM.setBounds(any,
+          position: anyNamed('position'),
+          size: anyNamed('size'),
+          animate: anyNamed('animate')));
     });
 
-    test('collapse: setMin→setMax→setSize', () async {
-      final order = <String>[];
-      when(mockWM.setMinimumSize(any))
-          .thenAnswer((_) async => order.add('setMin'));
-      when(mockWM.setMaximumSize(any))
-          .thenAnswer((_) async => order.add('setMax'));
-      when(mockWM.setSize(any, animate: anyNamed('animate')))
-          .thenAnswer((_) async => order.add('setSize'));
+    test('in-place resize (no position) uses setSize', () async {
+      await strategy.applySize(const Size(1920, 55));
+      verify(mockWM.setSize(const Size(1920, 55), animate: anyNamed('animate')))
+          .called(1);
+      verifyNever(mockWM.setBounds(any,
+          position: anyNamed('position'),
+          size: anyNamed('size'),
+          animate: anyNamed('animate')));
+    });
 
-      await strategy.collapse(const Size(1920, 55));
-      expect(order, ['setMin', 'setMax', 'setSize']);
+    test('L-005 guard: caps max at target, never Size.infinite', () async {
+      await strategy.applySize(const Size(268, 72), position: Offset.zero);
+      verify(mockWM.setMaximumSize(const Size(268, 72))).called(1);
+      verifyNever(mockWM.setMaximumSize(Size.infinite));
+    });
+  });
+
+  group('MacOsResizeStrategy', () {
+    late MacOsResizeStrategy strategy;
+    setUp(() => strategy = MacOsResizeStrategy(wm: mockWM, sr: mockSR));
+
+    test('initialize: setResizable(false) + setPosition(zero)', () async {
+      await strategy.initialize(const Size(1920, 55), 1.0);
+      verify(mockWM.setResizable(false)).called(1);
+      verify(mockWM.setPosition(Offset.zero)).called(1);
     });
   });
 }

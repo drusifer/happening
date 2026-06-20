@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -9,7 +8,7 @@ import 'window_resize_strategy.dart';
 // TLDR:
 // Overview: Handles X11/Wayland GTK3 frameless window expansion and collapse transitions.
 // Problem:  GTK3 silently ignores gtk_window_resize calls on non-resizable windows.
-// Solution: Enforces setResizable(true) on initialization, then coordinates strict order of operations.
+// Solution: Inherits the shared resizable=true init and resize order from the base.
 // Breaking Changes: No.
 //
 // ---------------------------------------------------------------------------
@@ -28,23 +27,8 @@ class LinuxResizeStrategy extends WindowResizeStrategy {
   @override
   WindowManager get wm => _wm;
 
+  // GTK3 silently ignores gtk_window_resize on non-resizable windows (L-001),
+  // so Linux must stay resizable; the frameless DOCK window has no handles.
   @override
-  Future<void> initialize(Size initialSize, double dpr) async {
-    await _wm.setResizable(true);
-    await _wm.setPosition(Offset.zero);
-  }
-
-  @override
-  Future<void> expand(Size targetSize) async {
-    await _wm.setMaximumSize(targetSize);
-    await _wm.setSize(targetSize);
-    await _wm.setMinimumSize(targetSize);
-  }
-
-  @override
-  Future<void> collapse(Size targetSize) async {
-    await _wm.setMinimumSize(targetSize);
-    await _wm.setMaximumSize(targetSize);
-    await _wm.setSize(targetSize);
-  }
+  bool get resizable => true;
 }
