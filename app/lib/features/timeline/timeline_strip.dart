@@ -36,6 +36,11 @@ import 'package:happening/features/timeline/timeline_layout.dart';
 import 'package:happening/features/timeline/timeline_painter.dart';
 import 'package:logging/logging.dart';
 
+/// Minimum strip width needed to host the astro tooltip: its left position
+/// clamps to `[4, stripWidth - 184]`, so anything narrower (188 = 184 + 4) has
+/// no valid placement and the tooltip is suppressed instead.
+const double _kMinAstroTooltipStripWidth = 188.0;
+
 /// Root timeline widget. Driven by [clockService] stream.
 class TimelineStrip extends StatefulWidget {
   const TimelineStrip({
@@ -252,7 +257,7 @@ class _TimelineStripState extends State<TimelineStrip>
         _layout = null;
       });
     }
-    _expansionController.send(ExpansionState.collapsed);
+    await _expansionController.sendAndAwait(ExpansionState.collapsed);
 
     _log.fine('TimelineStrip.resetFreshCollapsed DONE '
         'hovered=${_hoveredEvent != null} hovering=$_isHoveringStrip '
@@ -285,11 +290,10 @@ class _TimelineStripState extends State<TimelineStrip>
   DateTime _now = DateTime.now();
   Set<String> _collidingIds = const {};
 
-  // WindowService owns the authoritative physical sizing.
-  double get _collapsedHeight {
-    return _windowService.getCollapsedHeight() -
-        3; // Ensure WindowService is up to date with settings.
-  }
+  // WindowService owns the authoritative collapsed height; the strip content
+  // height IS that value — no separate formula. (Previously this subtracted a
+  // magic 3px, leaving the painter 3px shorter than the OS window.)
+  double get _collapsedHeight => _windowService.getCollapsedHeight();
 
   void _updateHeights() {
     _log.fine(
@@ -496,17 +500,21 @@ class _TimelineStripState extends State<TimelineStrip>
 
   Future<void> _showStrip() async {
     _log.info('TimelineStrip: restoring strip');
-    _log.fine('TimelineStrip: resizing window to full strip');
-    await _windowService.resizeToFullStrip();
+    // Rebuild the full-strip content first so the present composites the right
+    // frame.
     setState(() {
       _isHidden = false;
       _isHoveringStrip = false;
     });
     _expansionController.send(ExpansionState.collapsed);
+    // Restore via the SAME sequence init uses (reserve→size→present) — the one
+    // path that keeps the strip in its strut. Replaces the divergent
+    // resizeToFullStrip + completeShow/onShowStrip (sized before reserving, no
+    // present → the strip drifted below the strut: build-still-below-strut.out).
+    _log.fine('TimelineStrip: restoring window via windowService.showStrip()');
+    await _windowService.showStrip();
     _log.fine('TimelineStrip: playing show animation');
     await _hideAnim.forward();
-    _log.fine('TimelineStrip: calling windowService.completeShow');
-    await _windowService.completeShow();
     if (_preHideSentToBack) {
       _log.info('TimelineStrip: restoring sent-to-back state');
       await _focusController.sendToBack();
@@ -701,7 +709,11 @@ class _TimelineStripState extends State<TimelineStrip>
                   ),
                 ),
               ),
-            if (_astroHit != null) _buildAstroTooltip(context, layout),
+            // Only host the astro tooltip when the strip is wide enough to
+            // place it; skips a transient narrow frame during a hide/show
+            // resize (where layout.stripWidth can momentarily be the mini width).
+            if (_astroHit != null && stripWidth >= _kMinAstroTooltipStripWidth)
+              _buildAstroTooltip(context, layout),
             if (!isAuthPrompt &&
                 isExpanded &&
                 !_isSettingsOpen &&
@@ -1003,9 +1015,14 @@ class _TimelineStripState extends State<TimelineStrip>
           _IconButton(
             icon: Icons.refresh,
             onTap: () {
-              unawaited(_resetToFreshCollapsedState());
+              // Refresh = reload calendars + reset the view to fresh-collapsed.
+              // It deliberately does NOT touch the strut/AppBar anymore: the old
+              // reassertAppBar here was a band-aid for non-deterministic strut
+              // behavior, and tearing the AppBar down (ABM_REMOVE→NEW) is exactly
+              // what stranded the strip below the strut. See
+              // docs/WINDOW_ENTRYPOINT_CONVERGENCE_PLAN.md.
               unawaited(widget.calendarController!.refresh());
-              unawaited(_windowService.reassertAppBar());
+              unawaited(_resetToFreshCollapsedState());
             },
             stripBackgroundColor: stripBg,
           ),
@@ -1059,7 +1076,9 @@ class _TimelineStripState extends State<TimelineStrip>
     final hit = _astroHit!;
     final stripWidth = layout.stripWidth;
     return Positioned(
-      left: (hit.glyphX - 90).clamp(4.0, stripWidth - 184.0),
+      // math.max guards against a narrow strip (e.g. the mini/hidden window)
+      // making the upper limit < lower limit, which makes clamp() throw.
+      left: (hit.glyphX - 90).clamp(4.0, math.max(4.0, stripWidth - 184.0)),
       top: math.max(2.0, hit.glyphCy - kAstroIconRadius - 38),
       child: _AstroTooltip(
         hit: hit,
@@ -1167,7 +1186,7 @@ class _AstroTooltip extends StatelessWidget {
   }
 }
 
-class _IconButton extends StatelessWidget {
+class _IconButton extends StatefulWidget {
   const _IconButton({
     required this.icon,
     required this.onTap,
@@ -1180,39 +1199,57 @@ class _IconButton extends StatelessWidget {
   final bool active;
 
   @override
+  State<_IconButton> createState() => _IconButtonState();
+}
+
+class _IconButtonState extends State<_IconButton> {
+  bool _pressed = false;
+
+  void _setPressed(bool value) {
+    if (_pressed != value) setState(() => _pressed = value);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final iconColor = active
+    final iconColor = widget.active
         ? theme.colorScheme.primary
         : (isDark ? Colors.white70 : Colors.black54);
     return GestureDetector(
-      onTap: onTap,
+      onTap: widget.onTap,
+      onTapDown: (_) => _setPressed(true),
+      onTapUp: (_) => _setPressed(false),
+      onTapCancel: () => _setPressed(false),
       behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: const EdgeInsets.all(6),
-        decoration: BoxDecoration(
-          color: active
-              ? theme.colorScheme.primary.withValues(alpha: 0.25)
-              : stripBackgroundColor.withValues(alpha: 0.92),
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: active
-                ? theme.colorScheme.primary
-                : (isDark ? Colors.white70 : Colors.black54),
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.35),
-              blurRadius: 3,
-              offset: const Offset(1, 1),
+      // Base button click feedback: press in (scale down) + sink the shadow.
+      child: AnimatedScale(
+        scale: _pressed ? 0.86 : 1.0,
+        duration: const Duration(milliseconds: 80),
+        curve: Curves.easeOut,
+        child: Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: widget.active
+                ? theme.colorScheme.primary.withValues(alpha: 0.25)
+                : widget.stripBackgroundColor
+                    .withValues(alpha: _pressed ? 1.0 : 0.92),
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: widget.active
+                  ? theme.colorScheme.primary
+                  : (isDark ? Colors.white70 : Colors.black54),
+              width: 1,
             ),
-          ],
-        ),
-        child: Transform.scale(
-          scale: 32.0 / 24.0,
-          child: Icon(icon, color: iconColor, size: 24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: _pressed ? 0.15 : 0.35),
+                blurRadius: _pressed ? 1 : 3,
+                offset: const Offset(1, 1),
+              ),
+            ],
+          ),
+          child: Icon(widget.icon, color: iconColor, size: 24),
         ),
       ),
     );

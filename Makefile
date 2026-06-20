@@ -108,9 +108,15 @@ run-click-test-x11:
 build-click-test:
 	cd $(CLICK_TEST_DIR) && $(FLUTTER) build linux --release
 
-.PHONY: test update-goldens test-watch
+.PHONY: test update-goldens test-watch win-test
 test: $(PUB_STAMP)
 	cd $(APP_DIR) && $(FLUTTER) test --coverage $(FILE) $(ARGS)
+
+# Windows-friendly check: analyze (no bash `ulimit`, which breaks Windows make)
+# then run tests. Scope with FILE=test/core/window/ and pass extra flags via ARGS.
+win-test: $(PUB_STAMP)
+	cd $(APP_DIR) && $(FLUTTER) analyze lib test integration_test
+	cd $(APP_DIR) && $(FLUTTER) test $(FILE) $(ARGS)
 
 update-goldens: $(PUB_STAMP)
 	cd $(APP_DIR) && $(FLUTTER) test --update-goldens test/goldens/
@@ -182,7 +188,11 @@ format: $(PUB_STAMP)
 	cd $(APP_DIR) && $(DART) format lib/ test/
 
 analyze: $(PUB_STAMP)
+ifeq ($(OS),Windows_NT)
+	cd $(APP_DIR) && $(FLUTTER) analyze lib test integration_test
+else
 	cd $(APP_DIR) && ulimit -n 31706 && $(FLUTTER) analyze lib test integration_test
+endif
 
 lint: lint-style lint-metrics lint-format
 
@@ -384,7 +394,7 @@ else
 
 MKF_TARGETS := setup install-hooks run run-linux run-macos run-windows run-windows-test run-windows-simple \
 	run-click-test run-click-test-x11 build-click-test \
-	test update-goldens test-watch integration-test integration-test-linux integration-test-macos integration-test-windows \
+	test win-test update-goldens test-watch integration-test integration-test-linux integration-test-macos integration-test-windows \
 	build-linux build-macos build-windows dist dist-linux dist-macos dist-windows dist-windows-msix dist-proxy-linux \
 	format analyze lint lint-style lint-metrics lint-format proxy proxy-setup export-proxy-image clean tldr via_index \
 	fetch-cities sync-version set-version

@@ -27,9 +27,62 @@ abstract class WindowResizeStrategy {
 
   WindowManager get wm;
 
-  Future<void> initialize(Size initialSize, double dpr);
-  Future<void> expand(Size targetSize);
-  Future<void> collapse(Size targetSize);
+  /// Whether the OS window is left user-resizable. These windows are frameless
+  /// (no resize handles), so this never lets the user drag-resize. Defaults to
+  /// false; Linux overrides to true because GTK3 silently ignores
+  /// `gtk_window_resize` on non-resizable windows (see LESSONS L-001).
+  @protected
+  bool get resizable => false;
+
+  /// Common init: apply the resizable hint and park the window at the origin.
+  /// `WindowService` re-issues collapse/expand and moveToDisplay afterwards.
+  Future<void> initialize(Size initialSize, double dpr) async {
+    await wm.setResizable(resizable);
+    await wm.setPosition(Offset.zero);
+  }
+
+  /// The single, platform-safe way to resize the OS window. Pins
+  /// `min == max == [size]` so the result is well-defined on every platform.
+  ///
+  /// CRITICAL (Windows, see LESSONS L-005): never widen the cap with
+  /// `setMaximumSize(Size.infinite)` — window_manager casts it to a garbage
+  /// native max-track that makes Win32 truncate the window to its OS-minimum
+  /// tracking size (~136×39), regardless of the requested bounds. So: lower the
+  /// floor to zero (to permit shrinking), raise the cap only to the target, set
+  /// the geometry, then pin the floor up to the target.
+  ///
+  /// [position] (work-area origin) repositions the window in the same step;
+  /// pass null to resize in place (expand/collapse).
+  ///
+  /// This is the ONE resize implementation — `expand`, `collapse`, the hide/show
+  /// mini/full resize, and the Windows AppBar reservation all route through it,
+  /// so the min/max bracket only has to be correct here.
+  Future<void> applySize(Size size, {Offset? position}) async {
+    await wm.setMinimumSize(Size.zero);
+    await wm.setMaximumSize(size);
+    await applyGeometry(size, position);
+    await wm.setMinimumSize(size);
+  }
+
+  /// Applies window geometry (size, optionally position) using `setPosition` +
+  /// `setSize`. Callers go through [applySize], which brackets this with the
+  /// min/max constraints so `setSize` reliably reaches the target.
+  ///
+  /// Deliberately `setSize`, not `setBounds`: on Windows `setBounds` flakes on
+  /// first show (lands ~1px and cannot be force-grown back), while `setSize`
+  /// within the [applySize] max-cap snaps cleanly. This is an override point in
+  /// case a future platform genuinely needs different geometry.
+  @protected
+  Future<void> applyGeometry(Size size, Offset? position) async {
+    if (position != null) await wm.setPosition(position);
+    await wm.setSize(size);
+  }
+
+  /// Expand the window to [targetSize] in place (no reposition).
+  Future<void> expand(Size targetSize) => applySize(targetSize);
+
+  /// Collapse the window to [targetSize] in place (no reposition).
+  Future<void> collapse(Size targetSize) => applySize(targetSize);
 
   /// Repositions the strip onto the chosen [display]. The window is moved to
   /// the top-left of the display's work area; sizing remains the caller's

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
 import 'package:happening/core/display/display_info.dart';
@@ -8,6 +9,7 @@ import 'package:happening/core/window/expansion_controller.dart'
     show ExpansionController;
 import 'package:happening/core/window/interaction_strategy/window_interaction_strategy.dart';
 import 'package:happening/core/window/resize_strategy/window_resize_strategy.dart';
+import 'package:happening/core/window/strip_state.dart';
 import 'package:happening/core/window/window_service_resize_executor.dart'
     show WindowServiceResizeExecutor;
 import 'package:happening/features/timeline/expansion_logic.dart';
@@ -52,6 +54,12 @@ class WindowService with WidgetsBindingObserver {
   final WindowInteractionStrategy _interactionStrategy;
   final WindowResizeStrategy _strategy;
 
+  /// The platform resize strategy. Exposed to platform subclasses so they can
+  /// route their own resizes (e.g. the Windows AppBar reservation) through the
+  /// single [WindowResizeStrategy.applySize] implementation.
+  @protected
+  WindowResizeStrategy get strategy => _strategy;
+
   double _fontSizePx = kDefaultFontSizePx;
   WindowMode _windowMode = WindowMode.reserved;
 
@@ -93,7 +101,7 @@ class WindowService with WidgetsBindingObserver {
   /// re-reading display state from [DisplayService] — bypasses the no-change
   /// guard in [_onDisplayChangedInner].
   Future<void> reassertAppBar() async {
-    _log.info('WindowService.reassertAppBar: force-refreshing display state');
+    _log.fine('WindowService.reassertAppBar: force-refreshing display state');
     final newDpr = _wm.getDevicePixelRatio();
     final nextActive = _displayService.activeDisplay;
     if (nextActive == null) return;
@@ -127,7 +135,7 @@ class WindowService with WidgetsBindingObserver {
     final targetHeight = getCollapsedHeight();
     final size = Size(width, targetHeight);
 
-    _log.info(
+    _log.fine(
         'WindowService.initialize: dpr=$_dpr activeDisplay=$_activeDisplay '
         'size=$size collapsedHeight=$targetHeight expandedHeight=${getExpandedHeight()}');
 
@@ -139,46 +147,46 @@ class WindowService with WidgetsBindingObserver {
       titleBarStyle: TitleBarStyle.hidden,
     );
 
-    _log.info('WindowService.initialize: calling waitUntilReadyToShow');
+    _log.fine('WindowService.initialize: calling waitUntilReadyToShow');
     final readyToShow = _wm.waitUntilReadyToShow(windowOptions, () async {
-      _log.info(
+      _log.fine(
           'WindowService.initialize: readyToShow callback — calling strategy.initialize');
       await _strategy.initialize(size, _dpr);
       if (_activeDisplay != null) {
-        _log.info(
+        _log.fine(
             'WindowService.initialize: readyToShow callback — calling strategy.moveToDisplay ${_activeDisplay!.id}');
         await _strategy.moveToDisplay(_activeDisplay!);
       }
-      _log.info(
+      _log.fine(
           'WindowService.initialize: readyToShow callback — calling beforeShow');
       await beforeShow(size, _dpr, _windowMode);
-      _log.info(
+      _log.fine(
           'WindowService.initialize: readyToShow callback — calling setAsFrameless');
       await _wm.setAsFrameless();
-      _log.info(
+      _log.fine(
           'WindowService.initialize: readyToShow callback — calling performShow');
       await performShow();
-      _log.info(
+      _log.fine(
           'WindowService.initialize: readyToShow callback — calling afterWindowShown');
       await afterWindowShown(_windowMode);
-      _log.info(
+      _log.fine(
           'WindowService.initialize: readyToShow callback — calling interactionStrategy.initialize');
       await _interactionStrategy.initialize(_windowMode);
-      _log.info('WindowService.initialize: readyToShow callback — done');
+      _log.fine('WindowService.initialize: readyToShow callback — done');
     });
 
-    _log.info('WindowService.initialize: awaiting readyToShow');
+    _log.fine('WindowService.initialize: awaiting readyToShow');
     await awaitReadyToShow(readyToShow);
-    _log.info(
+    _log.fine(
         'WindowService.initialize: readyToShow complete, calling afterReadyToShow');
 
     await afterReadyToShow(_windowMode);
-    _log.info('WindowService.initialize: afterReadyToShow complete');
+    _log.fine('WindowService.initialize: afterReadyToShow complete');
 
     // Register lifecycle observer AFTER initial setup so spurious resumed
     // events emitted during GTK window creation do not queue extra collapses
     // that race with first_frame_cb showing the window.
-    _log.info('WindowService.initialize: registering WidgetsBindingObserver');
+    _log.fine('WindowService.initialize: registering WidgetsBindingObserver');
     WidgetsBinding.instance.addObserver(this);
     _displayService.addListener(_onDisplayServiceChanged);
   }
@@ -237,6 +245,77 @@ class WindowService with WidgetsBindingObserver {
     }
   }
 
+  /// The single applier: maps a [StripState] to geometry + platform
+  /// reservation, idempotently. Geometry is a pure function of state
+  /// ([_sizeFor]); positioning rides the same [WindowResizeStrategy.applySize]
+  /// seam every other resize uses. [applyReservation] is the platform hook
+  /// (AppBar on Windows, strut on Linux, no-op on macOS).
+  ///
+  /// Serialised by the caller (`StripController`'s `AsyncGate`); do not call
+  /// from multiple unsynchronised paths.
+  Future<void> applyState(StripState state) async {
+    final size = _sizeFor(state);
+    // Keep the legacy expansion flag in sync while callers migrate onto
+    // StripState; reservation logic still reads isExpanded.
+    _isExpanded = state.isExpanded;
+    // Reserve FIRST, then place the window. On Windows ABM_SETPOS can move the
+    // AppBar window and reports the reserved band top, so geometry must be
+    // applied AFTER reservation, at the origin it returns — otherwise the strip
+    // lands below its own strut.
+    final reservedOrigin = await applyReservation(state);
+    final origin =
+        reservedOrigin ?? _activeDisplay?.workAreaOrigin ?? Offset.zero;
+    _log.fine('applyState: $state → size=$size origin=$origin '
+        '(reserved=$reservedOrigin)');
+    await _strategy.applySize(size, position: origin);
+    await logGeometry('applyState:$state');
+    probeGeometryLater('applyState:$state');
+  }
+
+  /// Logs the window's actual position + size. Diagnostic instrumentation;
+  /// failures are swallowed so it is safe under test mocks.
+  @protected
+  Future<void> logGeometry(String label) async {
+    try {
+      final pos = await _wm.getPosition();
+      final size = await _wm.getSize();
+      _log.fine('GEO[$label]: pos=$pos size=$size '
+          'workAreaOrigin=${_activeDisplay?.workAreaOrigin} dpr=$_dpr');
+    } catch (e) {
+      _log.warning('GEO[$label]: failed: $e');
+    }
+  }
+
+  /// Samples the window geometry AFTER a delay, to catch an async OS relocation
+  /// that the synchronous [logGeometry] (taken right after we set position)
+  /// cannot see — e.g. Windows drifting the AppBar window a beat after we
+  /// return. Diagnostic only. Disabled under `flutter test` so it leaves no
+  /// pending timers.
+  @protected
+  void probeGeometryLater(String label) {
+    if (Platform.environment.containsKey('FLUTTER_TEST')) return;
+    for (final ms in const [150, 500, 1200]) {
+      Future.delayed(
+        Duration(milliseconds: ms),
+        () => unawaited(logGeometry('$label +${ms}ms')),
+      );
+    }
+  }
+
+  /// Geometry for [state] in logical pixels. Width is the full screen for the
+  /// shown states and the mini-pill footprint when hidden; height tracks the
+  /// collapsed/expanded font-derived heights.
+  Size _sizeFor(StripState state) {
+    switch (state) {
+      case StripState.collapsedShown:
+        return Size(_screenWidth, getCollapsedHeight());
+      case StripState.expandedShown:
+        return Size(_screenWidth, getExpandedHeight());
+      case StripState.hidden:
+        return Size(getMiniWidth(_fontSizePx), getCollapsedHeight());
+    }
+  }
+
   // ── Virtual hooks ─────────────────────────────────────────────────────────
 
   /// Called inside the readyToShow callback before [performShow].
@@ -287,6 +366,26 @@ class WindowService with WidgetsBindingObserver {
     return;
   }
 
+  /// Platform reservation hook invoked by [applyState] BEFORE geometry is
+  /// applied. Shown states reserve/reassert work area (Windows AppBar, Linux
+  /// strut); [StripState.hidden] releases it. Returns the origin the window
+  /// should be placed at (e.g. the reserved band top), or null to use the
+  /// work-area origin. Base is a no-op returning null (macOS).
+  ///
+  /// Named (not `_`-prefixed) so subclasses in other library files can
+  /// override it — Dart private members are library-scoped.
+  @protected
+  Future<Offset?> applyReservation(StripState state) async => null;
+
+  /// Forces a single OS-level present of the current window contents, with no
+  /// geometry change. The last init step, to composite the first frame on
+  /// platforms whose compositor does not present a frameless/reserved window
+  /// until a window message pumps (Windows). Base is a no-op.
+  @protected
+  Future<void> presentInitialFrame() async {
+    return;
+  }
+
   /// Called when the display geometry changes, after common state is updated.
   /// Subclasses override to re-assert platform reservations.
   @protected
@@ -327,43 +426,44 @@ class WindowService with WidgetsBindingObserver {
   /// Re-acquires platform reservation after the show animation completes.
   Future<void> completeShow() => onShowStrip();
 
+  /// Restores the strip from hidden to the full-width collapsed strip.
+  ///
+  /// Default (Linux/macOS): the legacy two-step — resize to full, then re-acquire
+  /// the platform reservation ([onShowStrip]). Windows overrides this to reuse
+  /// the *init* sequence ([applyState] reserve→size, then [presentInitialFrame]),
+  /// the one path proven to keep the strip inside its own strut. Converging show
+  /// onto init removes the divergent resize-then-reserve path that stranded the
+  /// re-registered AppBar window below the strut.
+  Future<void> showStrip() async {
+    await resizeToFullStrip();
+    await completeShow();
+  }
+
   /// Resizes the OS window to the mini strip footprint (called at hide-animation end).
   Future<void> resizeToMiniStrip(double fontSizePx) async {
-    final active = _activeDisplay;
     final miniSize = Size(getMiniWidth(fontSizePx), getCollapsedHeight());
-    await _wm.setMinimumSize(Size.zero);
-    await _wm.setMaximumSize(Size.infinite);
-    if (active != null) {
-      await _wm.setPosition(active.workAreaOrigin);
-    } else {
-      await _wm.setPosition(Offset.zero);
-    }
-    await _wm.setSize(miniSize);
-    await _wm.setMinimumSize(miniSize);
-    await _wm.setMaximumSize(miniSize);
+    final origin = _activeDisplay?.workAreaOrigin ?? Offset.zero;
+    _log.fine('resizeToMiniStrip: target=$miniSize origin=$origin');
+    await _strategy.applySize(miniSize, position: origin);
+    await logGeometry('resizeToMiniStrip');
+    probeGeometryLater('resizeToMiniStrip');
   }
 
   /// Resizes the OS window to full strip width (called at show-animation start).
   Future<void> resizeToFullStrip() async {
-    final active = _activeDisplay;
     final fullSize = Size(_screenWidth, getCollapsedHeight());
-    await _wm.setMinimumSize(Size.zero);
-    await _wm.setMaximumSize(Size.infinite);
-    if (active != null) {
-      await _wm.setPosition(active.workAreaOrigin);
-    } else {
-      await _wm.setPosition(Offset.zero);
-    }
-    await _wm.setSize(fullSize);
-    await _wm.setMinimumSize(fullSize);
-    await _wm.setMaximumSize(fullSize);
+    final origin = _activeDisplay?.workAreaOrigin ?? Offset.zero;
+    _log.fine('resizeToFullStrip: target=$fullSize origin=$origin');
+    await _strategy.applySize(fullSize, position: origin);
+    await logGeometry('resizeToFullStrip');
+    probeGeometryLater('resizeToFullStrip');
   }
 
   // ── Internal ──────────────────────────────────────────────────────────────
 
   Future<void> _onDisplayChanged() async {
     if (_displayChangeInProgress) {
-      _log.info(
+      _log.fine(
           'WindowService._onDisplayChanged: already in progress, skipping');
       return;
     }
@@ -383,37 +483,37 @@ class WindowService with WidgetsBindingObserver {
     final previousActiveId = _activeDisplay?.id;
     final nextActiveId = nextActive?.id;
 
-    _log.info('WindowService._onDisplayChangedInner: dpr=$_dpr→$newDpr '
+    _log.fine('WindowService._onDisplayChangedInner: dpr=$_dpr→$newDpr '
         'width=$_screenWidth→$newWidth activeChanged=$activeChanged '
         '(${previousActiveId ?? "—"}→${nextActiveId ?? "—"}) '
         'isExpanded=$_isExpanded');
 
     if (newWidth <= 0) {
-      _log.info(
+      _log.fine(
           'WindowService._onDisplayChangedInner: invalid width ($newWidth), skipping');
       return;
     }
 
     if (newDpr == _dpr && newWidth == _screenWidth && !activeChanged) {
-      _log.info('WindowService._onDisplayChangedInner: no change, skipping');
+      _log.fine('WindowService._onDisplayChangedInner: no change, skipping');
       return;
     }
 
-    _log.info(
+    _log.fine(
         'WindowService._onDisplayChangedInner: display CHANGED — applying resize');
     _dpr = newDpr;
     _screenWidth = newWidth;
     _activeDisplay = nextActive;
 
     if (activeChanged && nextActive != null) {
-      _log.info(
+      _log.fine(
           'WindowService._onDisplayChangedInner: moveToDisplay ${nextActive.id} @ ${nextActive.workAreaOrigin}');
       await _strategy.moveToDisplay(nextActive);
     }
 
     await onDisplayChangedExtra();
 
-    _log.info(
+    _log.fine(
         'WindowService._onDisplayChangedInner: triggering resize isExpanded=$_isExpanded');
     if (_isExpanded) {
       await _doExpand();

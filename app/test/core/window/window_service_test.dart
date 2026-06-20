@@ -10,6 +10,7 @@ import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/window/interaction_strategy/window_interaction_strategy.dart';
 import 'package:happening/core/window/linux_dock_window_manager.dart';
 import 'package:happening/core/window/linux_window_service.dart';
+import 'package:happening/core/window/strip_state.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:happening/features/timeline/expansion_logic.dart';
 import 'package:mockito/annotations.dart';
@@ -160,6 +161,7 @@ void main() {
       when(mockWM.setSize(any, animate: anyNamed('animate')))
           .thenAnswer((_) => Future.value());
       when(mockWM.getSize()).thenAnswer((_) async => Size.zero);
+      when(mockWM.getPosition()).thenAnswer((_) async => Offset.zero);
       when(mockWM.setPosition(any, animate: anyNamed('animate')))
           .thenAnswer((_) => Future.value());
       when(mockWM.setAlwaysOnTop(any)).thenAnswer((_) => Future.value());
@@ -470,42 +472,121 @@ void main() {
         expect(service.getMiniWidth(16), closeTo(16 * 9.0 + 70, 0.001));
       });
 
-      test(
-          'resizeToMiniStrip calls wm.setSize with mini dimensions and positions window',
-          () async {
+      // These assert the platform-independent contract: the window is pinned to
+      // the target size via WindowResizeStrategy.applySize (min == max == size).
+      // The geometry mechanism (setSize vs setBounds) is platform-specific and
+      // covered in window_resize_strategy_test.dart.
+      test('resizeToMiniStrip pins the window to mini dimensions', () async {
         await service.initialize(initialFontSizePx: kDefaultFontSizePx);
         clearInteractions(mockWM);
 
         await service.resizeToMiniStrip(kDefaultFontSizePx);
 
-        verify(mockWM.setSize(argThat(predicate<Size>(
-          (s) =>
-              s.width == service.getMiniWidth(kDefaultFontSizePx) &&
-              s.height == service.getCollapsedHeight(),
-          'mini size',
-        )))).called(1);
-        verify(mockWM.setPosition(Offset.zero)).called(1);
+        final miniSize = Size(service.getMiniWidth(kDefaultFontSizePx),
+            service.getCollapsedHeight());
+        verify(mockWM.setMaximumSize(miniSize)).called(1);
+        verify(mockWM.setMinimumSize(miniSize)).called(1);
+        verifyNever(mockWM.setMaximumSize(Size.infinite));
       });
 
-      test(
-          'resizeToFullStrip calls wm.setSize with screen width and positions window',
+      test('resizeToFullStrip pins the window to full-width dimensions',
           () async {
         await service.initialize(initialFontSizePx: kDefaultFontSizePx);
         clearInteractions(mockWM);
 
         await service.resizeToFullStrip();
 
-        verify(mockWM.setSize(argThat(predicate<Size>(
-          (s) => s.width == 1920 && s.height == service.getCollapsedHeight(),
-          'full size',
-        )))).called(1);
-        verify(mockWM.setPosition(Offset.zero)).called(1);
+        final fullSize = Size(1920, service.getCollapsedHeight());
+        verify(mockWM.setMaximumSize(fullSize)).called(1);
+        verify(mockWM.setMinimumSize(fullSize)).called(1);
+        verifyNever(mockWM.setMaximumSize(Size.infinite));
       });
 
       test('prepareToHide/completeShow are no-ops on base WindowService',
           () async {
         await expectLater(service.prepareToHide(), completes);
         await expectLater(service.completeShow(), completes);
+      });
+    });
+
+    group('applyState (state machine)', () {
+      // applyState routes geometry through WindowResizeStrategy.applySize, so
+      // the platform-independent contract is: min == max == size, and the cap
+      // is NEVER widened to infinity (L-005).
+      void verifyPinnedTo(Size size) {
+        verify(mockWM.setMinimumSize(Size.zero)).called(1);
+        verify(mockWM.setMaximumSize(size)).called(1);
+        verify(mockWM.setSize(size)).called(1);
+        verify(mockWM.setMinimumSize(size)).called(1);
+        verifyNever(mockWM.setMaximumSize(Size.infinite));
+      }
+
+      test('collapsedShown pins full-width × collapsed height', () async {
+        await service.initialize(initialFontSizePx: kDefaultFontSizePx);
+        clearInteractions(mockWM);
+
+        await service.applyState(StripState.collapsedShown);
+
+        verifyPinnedTo(Size(1920, service.getCollapsedHeight()));
+      });
+
+      test('expandedShown pins full-width × expanded height', () async {
+        await service.initialize(initialFontSizePx: kDefaultFontSizePx);
+        clearInteractions(mockWM);
+
+        await service.applyState(StripState.expandedShown);
+
+        verifyPinnedTo(Size(1920, service.getExpandedHeight()));
+      });
+
+      test('hidden pins mini-width × collapsed height', () async {
+        await service.initialize(initialFontSizePx: kDefaultFontSizePx);
+        clearInteractions(mockWM);
+
+        await service.applyState(StripState.hidden);
+
+        verifyPinnedTo(Size(service.getMiniWidth(kDefaultFontSizePx),
+            service.getCollapsedHeight()));
+      });
+
+      test('positions at the active display work-area origin', () async {
+        const customDisplay = DisplayInfo(
+          id: DisplayId('secondary'),
+          osName: 'Dell U2723QE',
+          size: Size(1920, 1080),
+          workAreaOrigin: Offset(1920, 0),
+          workAreaSize: Size(1920, 1080),
+          scaleFactor: 1.0,
+          isPrimary: false,
+        );
+        probe.setDisplays([customDisplay]);
+        await displayService.setChoiceResolver(
+            const DisplayIdChoiceResolver(DisplayId('secondary')));
+        await service.initialize(initialFontSizePx: kDefaultFontSizePx);
+        clearInteractions(mockWM);
+
+        await service.applyState(StripState.collapsedShown);
+
+        verify(mockWM.setPosition(const Offset(1920, 0))).called(1);
+      });
+
+      test('is idempotent — re-applying the same state pins the same size',
+          () async {
+        await service.initialize(initialFontSizePx: kDefaultFontSizePx);
+        clearInteractions(mockWM);
+
+        await service.applyState(StripState.collapsedShown);
+        await service.applyState(StripState.collapsedShown);
+
+        final size = Size(1920, service.getCollapsedHeight());
+        verify(mockWM.setSize(size)).called(2);
+        verifyNever(mockWM.setMaximumSize(Size.infinite));
+      });
+
+      test('applyReservation is a no-op on base WindowService', () async {
+        await service.initialize(initialFontSizePx: kDefaultFontSizePx);
+        // No AppBar/strut machinery on the base service — just completes.
+        await expectLater(service.applyState(StripState.hidden), completes);
       });
     });
 

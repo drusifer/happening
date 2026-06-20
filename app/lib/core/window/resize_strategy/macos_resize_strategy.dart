@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -9,7 +8,8 @@ import 'window_resize_strategy.dart';
 // TLDR:
 // Overview: Handles macOS frameless window expansion and collapse transitions.
 // Problem:  Accidental user resizes and window displacement must be prevented on macOS.
-// Solution: Enforces setResizable(false) on initialization, then coordinates strict order of size adjustments.
+// Solution: Inherits the base defaults (resizable=false, since macOS honors
+//           setSize regardless) and the shared resize order.
 // Breaking Changes: No.
 //
 // ---------------------------------------------------------------------------
@@ -18,6 +18,7 @@ class MacOsResizeStrategy extends WindowResizeStrategy {
     required WindowManager wm,
     required ScreenRetriever sr,
   })  : _wm = wm,
+        // ignore: unused_field
         _sr = sr;
 
   final WindowManager _wm;
@@ -26,24 +27,4 @@ class MacOsResizeStrategy extends WindowResizeStrategy {
 
   @override
   WindowManager get wm => _wm;
-
-  @override
-  Future<void> initialize(Size initialSize, double dpr) async {
-    await _wm.setResizable(false);
-    await _wm.setPosition(Offset.zero);
-  }
-
-  @override
-  Future<void> expand(Size targetSize) async {
-    await _wm.setMaximumSize(targetSize);
-    await _wm.setSize(targetSize);
-    await _wm.setMinimumSize(targetSize);
-  }
-
-  @override
-  Future<void> collapse(Size targetSize) async {
-    await _wm.setMinimumSize(targetSize);
-    await _wm.setMaximumSize(targetSize);
-    await _wm.setSize(targetSize);
-  }
 }
