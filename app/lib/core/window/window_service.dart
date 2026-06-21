@@ -112,11 +112,7 @@ class WindowService with WidgetsBindingObserver {
 
     await _strategy.moveToDisplay(nextActive);
     await reRegisterReservation();
-    if (_isExpanded) {
-      await _doExpand();
-    } else {
-      await _doCollapse();
-    }
+    await _reapplyCurrentState();
   }
 
   /// Call once, before [runApp], to set up the window.
@@ -219,13 +215,8 @@ class WindowService with WidgetsBindingObserver {
     _fontSizePx = fontSizePx;
     _log.fine(
         'WindowService.updateHeights: fontSizePx=$fontSizePx isExpanded=$_isExpanded');
-    if (_isExpanded) {
-      await _doExpand();
-      _log.fine('WindowService.updateHeights: _doExpand complete');
-    } else {
-      await _doCollapse();
-      _log.fine('WindowService.updateHeights: _doCollapse complete');
-    }
+    await _reapplyCurrentState();
+    _log.fine('WindowService.updateHeights: reapply complete');
   }
 
   /// Returns collapsed height in logical pixels (for window_manager APIs).
@@ -529,11 +520,7 @@ class WindowService with WidgetsBindingObserver {
 
     _log.fine(
         'WindowService._onDisplayChangedInner: triggering resize isExpanded=$_isExpanded');
-    if (_isExpanded) {
-      await _doExpand();
-    } else {
-      await _doCollapse();
-    }
+    await _reapplyCurrentState();
   }
 
   Future<double> _readActiveDisplayWidth() async {
@@ -549,20 +536,12 @@ class WindowService with WidgetsBindingObserver {
     return display.size.width;
   }
 
-  Future<void> _doExpand() async {
-    _isExpanded = true;
-    final size = Size(_screenWidth, getExpandedHeight());
-    _log.fine(
-        'WindowService._doExpand() target=w${size.width}×h${size.height}');
-    await _strategy.expand(size);
-  }
-
-  Future<void> _doCollapse() async {
-    _isExpanded = false;
-    final size = Size(_screenWidth, getCollapsedHeight());
-    _log.fine(
-        'WindowService._doCollapse() target=w${size.width}×h${size.height}');
-    await _strategy.collapse(size);
-    _log.fine('WindowService._doCollapse() complete');
-  }
+  /// Re-applies the current logical state's geometry through the single applier
+  /// (reserve → size at the reserved origin). Used by the paths that change the
+  /// computed geometry without changing the logical state — font-size change,
+  /// display change, reassert. Mirror of `StripController.reapply()`; replaces
+  /// the old `_doExpand`/`_doCollapse` (which resized in place without
+  /// re-pinning to the reserved origin).
+  Future<void> _reapplyCurrentState() => applyState(
+      _isExpanded ? StripState.expandedShown : StripState.collapsedShown);
 }

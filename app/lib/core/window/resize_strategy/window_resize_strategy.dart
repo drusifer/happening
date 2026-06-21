@@ -54,9 +54,10 @@ abstract class WindowResizeStrategy {
   /// [position] (work-area origin) repositions the window in the same step;
   /// pass null to resize in place (expand/collapse).
   ///
-  /// This is the ONE resize implementation — `expand`, `collapse`, the hide/show
-  /// mini/full resize, and the Windows AppBar reservation all route through it,
-  /// so the min/max bracket only has to be correct here.
+  /// This is the ONE resize implementation — every transition (init, show, hide,
+  /// expand/collapse via `WindowService.applyState`) and the Windows AppBar
+  /// reservation route through it, so the min/max bracket only has to be correct
+  /// here.
   Future<void> applySize(Size size, {Offset? position}) async {
     await wm.setMinimumSize(Size.zero);
     await wm.setMaximumSize(size);
@@ -77,12 +78,6 @@ abstract class WindowResizeStrategy {
     if (position != null) await wm.setPosition(position);
     await wm.setSize(size);
   }
-
-  /// Expand the window to [targetSize] in place (no reposition).
-  Future<void> expand(Size targetSize) => applySize(targetSize);
-
-  /// Collapse the window to [targetSize] in place (no reposition).
-  Future<void> collapse(Size targetSize) => applySize(targetSize);
 
   /// Repositions the strip onto the chosen [display]. The window is moved to
   /// the top-left of the display's work area; sizing remains the caller's

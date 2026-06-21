@@ -679,8 +679,10 @@ void main() {
 
         await svc.reassertAppBar();
 
-        verify(mockWM.setPosition(const Offset(0, 0))).called(
-            3); // strategy.initialize + readyToShow moveToDisplay + reassertAppBar
+        // strategy.initialize + readyToShow moveToDisplay + reassertAppBar's own
+        // moveToDisplay + the applyState re-pin (reassert now reapplies current
+        // state through the single applier, which positions at the origin).
+        verify(mockWM.setPosition(const Offset(0, 0))).called(4);
         expect(fakeLinuxDock.calls, containsAllInOrder(['undock', 'dock']));
       });
     });
