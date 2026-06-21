@@ -765,7 +765,9 @@ class _TimelineStripState extends State<TimelineStrip>
           child: Container(
             width: miniWidth,
             height: _collapsedHeight,
-            color: stripBg,
+            // Background honours the idle transparency slider (same setting the
+            // full strip fades by); the countdown text + icon stay fully opaque.
+            color: stripBg.withValues(alpha: settings.idleTimelineOpacity),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

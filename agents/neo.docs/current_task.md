@@ -24,10 +24,17 @@
 - 93 window + 190 timeline tests green, analyze clean. VALIDATED (build-hide-show-expand-collapse-good.md:
   all 95 GEO samples = (0,0), no drift) + COMMITTED cb8c1e5.
 
-## CONVERGENCE STATUS: init/show/hide/expand/collapse ALL route through applyState now. refresh=calendars-only.
-Remaining (plan step 4-5, lower priority): display-change + font-change + reassert via applyState/reapply;
-then delete dead _doExpand/_doCollapse/performResize-internals/resizeToMini-Full once all callers migrate
-(some still used by Linux base path + display/font). NOT committed yet (hide + expand/collapse await gate).
+## DISPLAY/FONT/REASSERT converged (513d928): reassertAppBar + updateHeights + _onDisplayChangedInner
+now call _reapplyCurrentState() = applyState(current). Deleted _doExpand/_doCollapse +
+WindowResizeStrategy.expand/collapse (dead). Test: reassert Linux setPosition 3->4; strategy test ->
+applySize. 93 window + 190 timeline green. Net -20 lines (deletion payoff started).
+
+## CONVERGENCE COMPLETE (Windows-first): EVERY transition (init/show/hide/expand/collapse/display/font/
+reassert) routes through applyState now. refresh=calendars-only. Commits: e4100fc, cb8c1e5, 513d928.
+## DEFERRED (per plan, separate gating): Linux/macOS convergence (still use resizeToMini/Full +
+onShow/HideStrip base path); fold ExpansionController into StripController (§4.1); wire StripController
+(showStrip/hideStrip/performResize call applyState directly today, mirroring init — works + validated).
+## MANUAL SANITY (when convenient): font-size change (settings), multi-monitor display change, reassert.
 
 ## CONVERGENCE FIX (Drew directive: "make show do what init does. Don't do something new. Use a path we know works.")
 - Side-by-side trace (build-still-below-strut.out): init reserves FIRST -> sizes at reserved origin
