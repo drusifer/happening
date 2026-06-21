@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(make chat MSG=\"Built WindowsAppBar seam \\(FFI behind interface\\) + 8 unit tests. +83 green. Added GEO[] geometry logging in applyState/resize/show paths. @Drew run make run-windows; do init + mouse-over + hide-show; I'll scrape build.out.\" PERSONA=\"Neo\" CMD=\"swe impl\" TO=\"Drew\")",
+      "PowerShell(Set-Location C:\\\\Users\\\\drusi\\\\VSCode_Projects\\\\happening; Select-String -Path build/build.out -Pattern \"GEO\\\\[|applyState:|reserveTopBand|presentFrame|afterWindowShown|resizeToFull|resizeToMini|onShowStrip|reassert|setPosition\" | Select-Object -Last 70 | ForEach-Object { $_.Line })",
+      "PowerShell(make chat MSG=\"Diagnosed: geometry correct; sliver = present fired before 1st Flutter frame. Fix: defer present post-first-frame + 1px settle. +84 green. @Drew re-run make run-windows; does launch composite without mouse-over?\" PERSONA=\"Neo\" CMD=\"swe fix\" TO=\"Drew\")",
+      "PowerShell(make chat MSG=\"Windows gate PASSED \\(Drew: full cycle works\\). Removed debug logging; encoded the verified 17:26 trace as a test oracle \\(resize->reserve, present deferred\\). +85 green. Step 3 \\(unify runtime paths through applyState\\) remains. Commit milestone?\" PERSONA=\"Neo\" CMD=\"swe done\" TO=\"Drew\")",
+      "PowerShell(make chat MSG=\"Init position bug: applyState reserved AFTER positioning, so ABM_SETPOS's window-move went uncorrected \\(your order hunch was right\\). Fixed: reserve->position. +86 green, GEO logging back. @Drew re-run make run-windows; strip in the strut at launch?\" PERSONA=\"Neo\" CMD=\"swe fix\" TO=\"Drew\")",
+      "PowerShell(Set-Location C:\\\\Users\\\\drusi\\\\VSCode_Projects\\\\happening; Select-String -Path build/build.out -Pattern \"GEO\\\\[|onDisplayChangedExtra|_onDisplayChangedInner|reserveTopBand|setPosition|reassert|applyState|reassemble|didChange|moveToDisplay\" | Select-Object -Last 45 | ForEach-Object { $_.Line })",
+      "PowerShell(make chat MSG=\"Reload bug = refresh button fired 3 concurrent window ops -> race \\(below/above toggle\\). Fixed: serialized them; reassertAppBar now uses unified dispose+applyState \\(reserve->position\\). Traces->DBG. +87/+190 green. @Drew re-test refresh.\" PERSONA=\"Neo\" CMD=\"swe fix\" TO=\"Drew\")",
+      "PowerShell(make chat MSG=\"Convergence step 1 done: refresh button reverted to calendars-only \\(dropped the strut reassert band-aid that caused the drift\\) + added button press feedback. +190 green. @Drew test refresh - should NOT strand the strip now. Next: converge hide/show.\" PERSONA=\"Neo\" CMD=\"swe impl\" TO=\"Drew\")",
+      "PowerShell(make chat MSG=\"Context is low. Prep for context clear. State saved in neo.docs/. Convergence step 1 done \\(refresh=calendars-only + button feedback, +190 green\\). Resume: docs/WINDOW_ENTRYPOINT_CONVERGENCE_PLAN.md + next_steps.md. Next: Drew tests refresh, then step 2 \\(hide/show\\).\" PERSONA=\"Neo\" CMD=\"context-low\" TO=\"all\")",
+      "Read(//c/Users/drusi/.claude/**)",
+      "PowerShell(make win-test FILE=test/core/window/windows_window_service_test.dart 2>&1)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
+  }
+}

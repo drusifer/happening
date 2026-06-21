@@ -1,56 +1,296 @@
-# Neo Current Task — 2026-06-11
+# Neo Current Task — 2026-06-20
 
-## Status: F-31 positioning, race conditions, logging, padding/spacing, 32px icon scale, and snap launch path fix COMPLETE — 451/451 green
+## STATUS (2026-06-20 PM): SHOW convergence COMMITTED (e4100fc) + VALIDATED. HIDE convergence DONE (unit-verified, awaiting Drew manual gate). NEXT phase: expand/collapse.
 
-## DONE in this session
-- [x] Fix snap launch error ("Not running in AOT mode but could not resolve the kernel binary") by correcting `--aot-shared-library-name` in the snap launcher to point to `$SNAP/lib/libapp.so`.
-- [x] Add left padding/margin of 8.0px to the hide button (`arrow_left`) in the full strip view.
-- [x] Ensure equal spacing of 8px between all buttons (including hide, refresh, flip-to-back, fallback indicator, settings) in the full strip view.
-- [x] Set all strip icons to a visual scale size of 32px (retaining 24px layout size).
-- [x] Fix double-spacing (16px) gap in toolbar when `DisplayFallbackIndicator` is hidden.
-- [x] Regenerate golden test images to match the new layout positions and 32px icon sizes.
-- [x] Fix hide-when-expanded race condition: Introduced `sendAndAwait` in `ExpansionController` and updated `_hideStrip()` in `timeline_strip.dart` to unconditionally await the collapse completion.
-- [x] Fix mini-widget positioning: updated `resizeToMiniStrip` and `resizeToFullStrip` in `window_service.dart` to explicitly position the window at `_activeDisplay.workAreaOrigin`.
-- [x] Wrap mini widget in `Align(alignment: Alignment.topLeft)` to defend against OS minimum width restrictions forcing the layout to center or shift right.
-- [x] Add detailed debug logging to `_hideStrip()` and `_showStrip()` methods in `timeline_strip.dart` to track state transitions and window resize steps.
-- [x] Updated unit tests in `window_service_test.dart` to verify `setPosition(Offset.zero)` is invoked.
-- [x] Added unit tests in `expansion_controller_test.dart` to verify `sendAndAwait` future resolution behavior.
+## SHOW convergence VALIDATED (build-no-strut-issues.md): every hide->show holds (0,0) thru +150/+500/+1200ms, NO drift. Re-pin (§4.3) DROPPED. Rule(b) DISPROVEN. Committed e4100fc (22 files, +2488/-483).
 
-### Phase A — WindowService hooks
-- ✅ **F31-A1**: Added to `window_service.dart`:
-  - Protected hooks: `onHideStrip()`, `onShowStrip()` (no-ops in base)
-  - Public API: `getMiniWidth()`, `prepareToHide()`, `completeShow()`, `resizeToMiniStrip()`, `resizeToFullStrip()`
-- ✅ **F31-A2**: Platform overrides:
-  - `LinuxWindowService.onHideStrip()` → `undock()` (only if reserved mode)
-  - `LinuxWindowService.onShowStrip()` → `_reserveLinuxStrut()` (only if reserved)
-  - `WindowsWindowService.onHideStrip()` → `_disposeAppBar()` (only if enabled)
-  - `WindowsWindowService.onShowStrip()` → `_registerAppBar()` (only if enabled + reserved)
-- ✅ 12 new tests in `window_service_test.dart` (getMiniWidth formula, delegation, Linux hide/show, overlay no-op, idempotent cycle)
+## HIDE convergence (this phase, *bloop impl): mirror of show.
+- window_service.dart: base `hideStrip()` = prepareToHide()+resizeToMiniStrip(_fontSizePx) (Linux/macOS).
+- windows_window_service.dart: `hideStrip()` override = applyState(hidden) (release strut + size mini, 1 call).
+- timeline_strip _hideStrip: removed prepareToHide; now setState(isHidden) -> _hideAnim.reverse() (fade)
+  -> _windowService.hideStrip(). NOTE: dispose(strut release) MOVED from before-fade to after-fade
+  (inside applyState(hidden)). Behavior change worth manual-gating.
+- Tests: +2 (hideStrip releases+sizes mini; hide->show round-trip). 93 window tests green, analyze clean.
 
-### Phase B — Strip UI
-- ✅ **F31-B1**: Added to `_TimelineStripState`:
-  - `SingleTickerProviderStateMixin`
-  - State: `_isHidden = false`, `_preHideSentToBack = false`, `_hideAnim` (300ms, value=1.0)
-  - `_hideStrip()` / `_showStrip()` with STB save/restore, settings close on hide, EC reset
-- ✅ **F31-B2**: UI:
-  - `_HideButton` widget (← arrow, 24×24 min target, no horizontal padding to avoid toolbar overlap)
-  - `_buildMiniWidget()` with live countdown StreamBuilder + show button (→)
-  - Mini widget branch in `_buildLayout` (`_isHidden || _hideAnim.value < 1.0`)
-  - Hide button Positioned at `left: 0` AFTER toolbar in Stack (correct z-order)
-- ✅ 8 new widget tests in `timeline_strip_hide_test.dart`
-- ✅ Golden regenerated (hover_card_alignment.png updated to include hide button)
+## EXPAND/COLLAPSE convergence DONE (Drew: "converge on the solution we know works" + "don't change plan").
+- performResize(intent) now = `applyState(intent==expanded ? expandedShown : collapsedShown)`. Replaces
+  _doExpand/_doCollapse for the ExpansionController-driven path (hover/click expand).
+- KEY: base strategy.expand/collapse already == applySize but WITHOUT position (resize in place, no
+  re-pin). applyState reserves THEN applySize AT reserved origin (0,0) -> re-pins every transition =
+  the stranding fix. Reservation stays COLLAPSED band during expand (applyReservation uses _bandHeightPx
+  = collapsed); expanded card overlays downward, same as today + re-pinned.
+- _doExpand/_doCollapse STILL used by reassertAppBar (line ~116), updateHeights/font (~222),
+  _onDisplayChangedInner (~530) — those are separate convergence items (display/font), NOT touched.
+- 93 window + 190 timeline tests green, analyze clean. VALIDATED (build-hide-show-expand-collapse-good.md:
+  all 95 GEO samples = (0,0), no drift) + COMMITTED cb8c1e5.
 
-## Test Status
-- `make test` → **451/451 passing**
+## CONVERGENCE STATUS: init/show/hide/expand/collapse ALL route through applyState now. refresh=calendars-only.
+Remaining (plan step 4-5, lower priority): display-change + font-change + reassert via applyState/reapply;
+then delete dead _doExpand/_doCollapse/performResize-internals/resizeToMini-Full once all callers migrate
+(some still used by Linux base path + display/font). NOT committed yet (hide + expand/collapse await gate).
 
-## Key implementation note
-The `_HideButton` has NO horizontal padding (just `BoxConstraints(minWidth: 24, minHeight: 24)`)
-so it covers exactly x=0..24. The toolbar starts at `left: 8` with `_IconButton(padding: all(6))`
-making the first icon center at x=26. No overlap between hide button (0..24) and refresh (center 26).
-The `_HideButton` Positioned is placed AFTER `_buildLeftToolbar` in the Stack so it has higher
-z-order and receives taps over the toolbar area if ever needed.
+## CONVERGENCE FIX (Drew directive: "make show do what init does. Don't do something new. Use a path we know works.")
+- Side-by-side trace (build-still-below-strut.out): init reserves FIRST -> sizes at reserved origin
+  -> presentInitialFrame (shrink-settle+pin) => stays (0,0). OLD show path = resizeToFullStrip (sizes
+  BEFORE reserving) -> onShowStrip (reserve+setPosition), NO present => drifts to (0,73) at +500ms.
+  Also "redraws twice" = the two separate resize/reposition ops.
+- FIX = make show identical to init:
+  - window_service.dart: new `showStrip()` base = legacy `resizeToFullStrip()+completeShow()`
+    (Linux/macOS strut lives in onShowStrip - untouched, safe).
+  - windows_window_service.dart: `showStrip()` OVERRIDE = `applyState(collapsedShown)` +
+    `presentInitialFrame()` (= afterWindowShown/init sequence).
+  - timeline_strip.dart `_showStrip`: setState(isHidden=false) FIRST (so present has right frame),
+    then single `await _windowService.showStrip()`, then `_hideAnim.forward()`. Dropped the
+    resizeToFullStrip + completeShow calls.
+- DROPPED the onWindowMoved re-pin (it was a NEW mechanism; Drew said don't). Plan §4.3 DEMOTED to
+  contingent (§2b): only add if manual gate STILL shows drift after pure convergence.
+- TEST: reverted the speculative rule-(b)/settle/onMove harness machinery. New group 'show converged
+  onto init path' asserts reserve-before-size + present (init order) + stays within band. 91 window
+  tests green, `flutter analyze lib` clean. (L-006: async OS relocation is real-run only = manual gate.)
+- Files: app/lib/core/window/window_service.dart, windows_window_service.dart,
+  app/lib/features/timeline/timeline_strip.dart, app/test/core/window/windows_window_service_test.dart,
+  docs/WINDOW_ENTRYPOINT_CONVERGENCE_PLAN.md (§2b, §6).
 
-## NOT YET STARTED (next)
-- ☐ F31-C1: Trin multi-platform UAT matrix
-- ☐ F31-C2: Smith UX pass
-- ☐ F31-C3: Oracle docs
+## PRIOR (2026-06-20 AM): repro harness landed then reverted (see above). Manual gate: init OK, hide OK, SHOW below strut.
+
+## MANUAL GATE 2026-06-20 (build-show-below-strut.out)
+- init worked (correct this time); hide worked; SHOW expanded BELOW strut; refresh did NOT restore
+  (expected — Step 1 made refresh calendars-only, no window op).
+- GEO trace: onShowStrip set pos=(0,0); onShowStrip/resizeToFullStrip +500ms = pos=(0,73). The OLD
+  bespoke show path (_showStrip -> resizeToFullStrip + completeShow/onShowStrip) re-registers ABM_NEW
+  at (0,0) after hide's ABM_REMOVE, OS async-relocates to (0,73) ~150-500ms later, nothing re-pins.
+  = the exact REMOVE->NEW relocation root cause (plan §2). Show path is NOT wired through applyState
+  yet (Step 2 not done).
+
+## REPRO DONE (Drew directive: "before changing anything - update the test harness to repro")
+- test/core/window/windows_window_service_test.dart:
+  - FakeWin32Desktop now models RULE (b) (plan §7b): releaseBand() arms _strutReleased; registerAppBar()
+    (called from FakeWindowsAppBar.register) sets _pendingRelocation if REMOVE->NEW while at band origin;
+    settle() performs the async move to (0, band/dpr) + fires onMove (the WindowListener seam). onMove
+    left null = current unfixed code -> nothing re-pins.
+  - New group 'hide->show relocation (REGRESSION)': init+present -> hide -> show -> settle(); asserts
+    desktop.position==Offset.zero. FAILS as designed: Actual Offset(0,55). 14 prior tests green.
+- mkf.py tail-printer crashes on cp1252 when '->' arrow (→) is in the FAILURE summary tail (exit 2),
+  but the test run itself completes + writes build.out. Pre-existing latent tooling bug. Scrape build.out.
+
+## OLD STATUS (2026-06-19): Sliver FIXED + confirmed. init position below strut fixed via reserve-then-position. GEO logging re-added.
+
+## Init POSITION bug (below strut) — root cause + fix
+- applyState was: applySize(position) THEN applyReservation(reserve). ABM_SETPOS (the reserve) can
+  MOVE the AppBar window, and nothing repositioned it after → strip lands below its own strut.
+- The old working _handleFirstShow did reserve→setPosition (position AFTER reserve). I'd inverted it.
+- The "17:26 trace" I'd encoded as oracle was actually the BUGGY init (the "worked perfectly" was
+  post-reload, which re-positions). Drew's order instinct was right.
+- FIX: applyState now reserves FIRST, then positions. applyReservation returns Offset? (the reserved
+  band origin); applyState applySize at that origin. Windows applyReservation returns
+  Offset(workAreaOrigin.dx, rcTop/dpr). Base returns null → caller uses workAreaOrigin.
+- onShowStrip (hide→show path, not yet wired through applyState) also repositions AFTER reserve now.
+- Regression test: 'positions the window at the reserved band origin' (rcTopToReturn=100 → setPosition(0,100)).
+- Oracle test flipped to register→reserve→resize. +86 window tests green.
+
+## GEO[] logging is PERMANENT — Drew directive "DO NOT TAKE OUT DEBUG LOGGING" (2026-06-19).
+(logGeometry in applyState + Windows presentInitialFrame:after/onShowStrip:end. Keep it.)
+
+## RELOAD (refresh button) bug — FIXED 2026-06-19
+- "Reload" = the refresh toolbar button (Icons.refresh), NOT Flutter hot reload.
+- It fired THREE unawaited ops concurrently (timeline_strip ~1014): _resetToFreshCollapsedState
+  (collapse via ExpansionController) + calendar refresh + reassertAppBar. The two WINDOW ops raced
+  → toggled below/above the strut.
+- FIX (use the same flow as everything else):
+  1. Windows reassertAppBar now = `_appBar.dispose(); await applyState(collapsedShown);` — drops the
+     bar (ABM_REMOVE re-broadcast) then re-applies via the SINGLE applier (reserve→position). No more
+     bespoke performResize/setPosition sequence. Test: dispose→register→reserve + setPosition(reserved).
+  2. Refresh button serialises the window ops: `await _resetToFreshCollapsedState(); await reassertAppBar();`
+     (data refresh stays independent). _resetToFreshCollapsedState now sendAndAwait(collapsed).
+- +87 window / +190 timeline green.
+
+## ALL window-state traces now DBG (_log.fine), per Drew. GEO[]/appbar/applyState logs are kept (don't remove) but at fine level.
+
+## INIT POSITION bug #2 (present nudge) — FIXED + now guarded
+- GEO trace 19:55 proved it: GEO[applyState]=pos(0,0) THEN GEO[presentInitialFrame:after]=pos(0,73).
+  The present's 1px nudge GREW the window to 73.5 > band 73 → Windows relocated the AppBar window
+  into the work area (y=73, below its own strut). applyState had it right; the nudge stranded it.
+- FIX: presentInitialFrame now SHRINKS (h-1 → h, stays within band) + pins origin after. windows svc.
+- HARNESS FIX (Drew *learn → L-006): mocks asserted CALLS, never the OS reaction, so they passed while
+  the app failed. Added FakeWin32Desktop modeling the Win32 relocation rule (window taller than band →
+  pushed to band height), wired to mockWM setSize/setPosition/getPosition + the AppBar fake. New test
+  'init + present leaves the strip IN the strut' asserts desktop.position==(0,0). PROVEN: it fails on
+  the buggy grow (Actual Offset(0,55)), passes on the fix. +88 window tests green.
+- Lesson recorded: docs/LESSONS.md L-006; memory feedback_model_os_behavior_in_fakes.md.
+
+## DPI rounding hardening (Drew asked) — DONE
+- Band was (h*dpr).round() physical; window sized in logical, rounded to physical by window_manager
+  independently → at fractional DPI window can round UP while band rounds DOWN → window 1px taller
+  than band → relocation. FIX: _bandHeightPx = (h*dpr).ceil() (band >= window physical, any rounding).
+- Made FakeWin32Desktop DPI-aware (window physical = ceil(size*dpr), compare in physical). Added
+  dpr=1.1/font=16 test. PROVEN: round-band fails (Offset(0,57.3)=63/1.1), ceil-band passes. +89 green.
+- L-006 extended with the DPI corollary.
+
+## ROOT CAUSE of refresh/show below-strut (confirmed by +Nms probes, build.below.out 22:55):
+async OS relocation to (0,73) ~150ms after we set (0,0) — outside AsyncGate. Fires on ABM_REMOVE→NEW
+cycle while window at (0,0); NOT on fresh init nor when already at (0,73). Drew's ABM_REMOVE instinct.
+
+## CONVERGENCE PLAN documented: docs/WINDOW_ENTRYPOINT_CONVERGENCE_PLAN.md
+Only INIT uses applyState; all other entrypoints (refresh/hide/show/expand/collapse/display/font) are
+bespoke paths → that divergence IS the recurring bug. Converge ALL through applyState via one gate
+(StripController). Rule: ABM_REMOVE ONLY on →hidden; shown→shown re-SETPOS without teardown (kills
+refresh drift at root). One legit REMOVE→NEW (hide→show) handled by onWindowMoved re-pin.
+Migration: (1) refresh/reassert→applyState no dispose [tests ABM_REMOVE hyp], (2) hide/show, (3)
+onWindowMoved re-pin + model it, (4) expand/collapse+display/font, fold ExpansionController.
+
+## CONVERGENCE STEP 1 DONE (2026-06-19)
+- Refresh button → calendars-only: dropped reassertAppBar (the strut band-aid that caused the
+  ABM_REMOVE→NEW drift). Now just calendarController.refresh() + _resetToFreshCollapsedState (view reset).
+- Added base button press feedback to _IconButton (now StatefulWidget): AnimatedScale 0.86 on press +
+  shadow sink. Drew: "would be nice if it visually responded to the click."
+- +190 timeline green, analyze clean.
+- Decisions baked into plan §2a: refresh=calendars only; onWindowMoved re-pin APPROVED; animation DEFERRED.
+
+## NEXT: Drew tests refresh (should NOT strand strip now; button should depress). Then STEP 2:
+converge hide/show through applyState (controller.hide/show), delete resizeToMini/Full + onHide/ShowStrip;
+hide becomes the only ABM_REMOVE → validates the hypothesis. STEP 3: onWindowMoved re-pin + model it.
+
+## What fixed it (root causes, both proven by GEO[] trace)
+1. SLIVER: presentInitialFrame fired ~150ms BEFORE Flutter's first frame (initialize() runs before
+   runApp()). RedrawWindow can't composite a frame that doesn't exist. FIX: defer present to
+   addPostFrameCallback (post-first-frame) + make present a 1px size-settle (h+1→h) — a metrics
+   change is what makes the ANGLE/D3D engine present (same reason mouse-over fixed it). Verified:
+   afterWindowShown:applied .675 → presentInitialFrame .869 (+194ms, post-frame). NOT a position bug
+   (Win32 reported pos=(0,0) size=3840x72 throughout).
+2. HEIGHT DESYNC (72.5 vs 69.5): timeline_strip _collapsedHeight subtracted a magic 3 from
+   WindowService.getCollapsedHeight(). FIX: _collapsedHeight => getCollapsedHeight() (single source).
+
+## Seam + tests (the confirm-the-fix harness)
+- windows_app_bar.dart: WindowsAppBar interface + Win32AppBar FFI impl (register/reserveTopBand/
+  reassertTopBand/dispose/presentFrame). All FFI out of the service.
+- windows_window_service_test.dart: FakeWindowsAppBar; ORACLE test encodes the verified 17:26 trace
+  (resize→reserve order, present deferred). +85 window tests green via `make win-test`.
+
+## Debug logging REMOVED (logGeometry + GEO[] calls gone from window_service + windows_window_service).
+
+## NEXT (Step 3 — refactor, not bugfix): wire hide/show/expand through StripController/applyState so
+there is ONE path (Drew's "fix here fixes everywhere"). Currently only INIT uses applyState; runtime
+hide/show use resizeToFull/Mini + onShow/HideStrip, expand uses _doExpand. They WORK, but unifying
+removes the last drifting paths. Then fold ExpansionController into StripController; drop dead
+resizeToMini/Full. Consider: commit this milestone first.
+
+## Manual gate result (2026-06-19, build/build.out 14:33)
+- Init: sliver persisted; strip below strut. applyState logged origin=(0,0), reserve rcTop=0,
+  presentInitialFrame (RedrawWindow) RAN but did NOT composite. Mouse-over composited (as before).
+- Hot reload repositioned correctly; hide→show put strip below strut again.
+- LOG PROVED waitUntilReadyToShow does NOT await its callback (afterReadyToShow ran at .380 while
+  the callback's moveToDisplay/performShow ran at .743/.808). BUT afterWindowShown (.810) still ran
+  AFTER performShow — so the ordering choice was correct; the remaining bugs are OS-visual, not ordering.
+- So: (a) RedrawWindow alone is insufficient to composite this frameless/AppBar window;
+  (b) position-below-strut is a workAreaOrigin-vs-display-top anchor issue (suspected) — need runtime data.
+
+## SEAM DONE (the "way to confirm the fix")
+- NEW app/lib/core/window/windows_app_bar.dart: `WindowsAppBar` interface + `Win32AppBar` FFI impl.
+  Moves ALL FFI (SHAppBarMessage/FindWindow/RedrawWindow + APPBARDATA struct) out of the service.
+  Methods: register / reserveTopBand(widthPx,heightPx)->rcTop / reassertTopBand / dispose / presentFrame.
+  Sync FFI ⇒ dropped the old _appBarBusy reentrancy guard (no longer meaningful).
+- windows_window_service.dart now depends on injected WindowsAppBar (default Win32AppBar).
+- NEW app/test/core/window/windows_window_service_test.dart: FakeWindowsAppBar; asserts init order
+  (register→reserve→present once), reserve dims (px), hidden→dispose, overlay→no-reserve, register-once,
+  hide→show re-register+reserve. +83 window tests green, analyze clean (make win-test).
+
+## DEBUG LOGGING ADDED (remove after fix)
+- base WindowService.logGeometry(label): logs GEO[label] pos/size/workAreaOrigin/displaySize/dpr.
+- Called in applyState, resizeToFullStrip, resizeToMiniStrip; Windows afterWindowShown:end, onShowStrip:end.
+
+## NEXT: Drew runs `make run-windows`; do init + mouse-over + hide→show; Neo scrapes build.out GEO[] lines.
+Then: fix present (try SetWindowPos(SWP_FRAMECHANGED) or present after first Flutter frame) + position
+anchor (likely position strip at display top, not workAreaOrigin). Add regression tests via the seam.
+
+## Step 2 DONE — init rewrite (windows_window_service.dart), awaiting manual gate
+- Init now applies final state ONCE post-show via `afterWindowShown` override:
+  `applyState(StripState.collapsedShown)` → `presentInitialFrame()`. Chosen `afterWindowShown`
+  (not `afterReadyToShow`) because it runs INSIDE the readyToShow callback's await chain right
+  after `performShow` — guaranteed post-show regardless of whether `waitUntilReadyToShow` awaits
+  its outer callback. This sidesteps the B2 race entirely (no probe needed).
+- DELETED: `onWindowFocus`, `_handleFirstShow`, `_firstShowHandled`, `_safetyNet`, the
+  `afterReadyToShow` safety-net override, the `beforeShow` override (AppBar pre-register), and the
+  `with WindowListener` mixin + its add/removeListener calls. Removed the `actual window size=`
+  diagnostic logs.
+- NEW `applyReservation(StripState)` (Windows): pure reservation, NO geometry (applyState already
+  sized/placed). shown+reserved → create handle if null + `_reserveSpace()` (QUERYPOS/SETPOS at
+  collapsed height); hidden or overlay → `_disposeAppBar()`. Keeps `_appBarBusy` guard. Warns if
+  ABM_QUERYPOS returns non-zero rcTop (B5).
+- NEW `presentInitialFrame()` (Windows): FindWindow(FLUTTER_RUNNER_WIN32_WINDOW) →
+  `RedrawWindow(hwnd, nullptr, null, RDW_INVALIDATE | RDW_UPDATENOW)`; null-hwnd guard. win32 6.3.0.
+- Refactored helpers: `_createAppBarHandle()` (FindWindow + ABM_NEW) + `_reserveSpace()`
+  (QUERYPOS/SETPOS, no geometry) extracted; `_reserveCollapsedSpace()` = `_reserveSpace` + collapsed
+  geometry (legacy display-change/reassert paths); `_registerAppBar()` = handle + reserveCollapsed.
+- macOS/Linux untouched: neither overrides `afterWindowShown`/`afterReadyToShow` in a conflicting
+  way (Linux uses afterWindowShown for strut — separate subclass; macOS defers performShow).
+- Verified: `make win-test FILE=test/core/window/` → analyze clean + 75 tests green.
+
+## MANUAL GATE (Drew) — the thesis
+`make run-windows` (kill any stray running instance first — it pollutes build.out). PASS =
+full-width strip composites IMMEDIATELY on launch (no 1px sliver, no mouse-over needed). Also
+sanity: hide→show, expand/collapse, multi-monitor still work (those still use the OLD runtime
+paths — unchanged by Step 2).
+
+## Makefile fix (2026-06-19)
+- Added `win-test` target (analyze + test, no bash `ulimit`); added to MKF_TARGETS. Made `analyze`
+  skip `ulimit` on Windows. Run `make` from REPO ROOT.
+
+## STEP 3 — NEXT: wire StripController into the app (callers)
+- timeline_strip.dart: replace ExpansionController + _isHidden + prepareToHide/resizeToMini/Full/
+  completeShow sequencing with StripController.collapse/expand/hide/show. Widget keeps view-only
+  anim (_hideAnim, height tween) and listens to controller.state.
+- app.dart: construct/own StripController; pass to TimelineStrip.
+- B4: route display-change + font-size (updateHeights) through StripController.reapply().
+- Fold ExpansionController fully into StripController; retire reassert hack; drop dead
+  resizeToMini/Full once subsumed.
+
+Plan: docs/WINDOW_STATE_REFACTOR_PLAN.md · Morpheus review (binding): docs/WINDOW_STATE_REFACTOR_REVIEW_2026-06-17.md
+
+## Step 1 DONE — foundation (no callers yet)
+New files:
+- `app/lib/core/window/strip_state.dart` — `StripState {collapsedShown, expandedShown, hidden}` + isShown/isExpanded.
+- `app/lib/core/window/async_gate.dart` — generic `AsyncGate<T>`: one-slot last-wins serialiser
+  (extracted/generalised from ExpansionController's inline loop). Coalesces identical pending,
+  supersedes different pending (completes the superseded future — no dangle), eager `_settled`
+  dedup, `force` flag for geometry re-apply, error propagates + loop survives.
+- `app/lib/core/window/strip_controller.dart` — `StripController extends ChangeNotifier` (the MVC
+  controller / model owner). Transition API: collapse/expand/hide/show + reapply(force). Single
+  serialised entry point (AsyncGate). Delegates OS geometry to `WindowService.applyState`.
+WindowService changes:
+- `applyState(StripState)` — idempotent applier: `_sizeFor(state)` → `strategy.applySize(size, position: origin)`
+  → `applyReservation(state)`. Keeps legacy `_isExpanded` in sync during migration.
+- `_sizeFor(state)` — full-width×collapsed/expanded, mini×collapsed for hidden.
+- `@protected applyReservation(StripState)` — base no-op (named, NOT `_`-prefixed, so subclasses in
+  other files can override — Dart private is library-scoped; plan's `_applyReservation` would NOT work).
+- `@protected presentInitialFrame()` — base no-op (Windows FFI RedrawWindow lands in Step 2).
+Tests (all green, +75 window suite, analyze clean):
+- `async_gate_test.dart` (8), `strip_controller_test.dart` (6), `applyState` group in `window_service_test.dart` (6).
+- StripController test reuses `window_service_test.mocks.dart` + inline DisplayService stubs; `_FakeWindowService` overrides applyState.
+
+## STEP 2 — NEXT (the thesis; manual-Windows gate per review B2)
+1. Probe what `waitUntilReadyToShow` actually does (one logged run) — to know what to delete.
+2. Rebuild Windows init as a deterministic awaited chain: create → performShow → applyState(collapsedShown)
+   → presentInitialFrame(). Pre-show config (strategy.initialize, moveToDisplay, beforeShow, setAsFrameless)
+   stays in the ready-to-show callback; show+apply+present become awaited steps in initialize().
+3. DELETE onWindowFocus / _safetyNet / _firstShowHandled / _handleFirstShow.
+4. Implement WindowsWindowService.applyReservation (B5: keep _appBarBusy guard + rcTop feedback;
+   pure reservation, NO geometry — applyState already applied size) and presentInitialFrame
+   (RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW), null-hwnd guard).
+5. Wire StripController into TimelineStrip + app.dart (this is where callers appear; may be Step 3).
+6. MANUAL GATE: `make run-windows` → full strip on launch, no mouse-over needed.
+   Tests can't see the compositing bug — Drew verifies.
+
+## Owed cleanup (do in step 2)
+- Remove two `actual window size=${await wm.getSize()}` diagnostic logs in windows_window_service.dart.
+
+## Later steps (review §6 / B4)
+- Migrate hide/show/expand/collapse + display-change + font-size onto StripController (B4: those are
+  extra geometry paths — must re-apply current state, not stay separate).
+- Fold ExpansionController fully into StripController; retire reassert hack; drop dead resizeToMini/Full.
+- Capture macOS/Linux constraints in plan "Other platforms" section (B3) for separate scheduling.
+
+## Build/test notes
+- Use the Makefile, not direct flutter, for builds/tests (Drew preference). `make test FILE=test/core/window/`.
+- `make analyze` / `make lint-style` FAIL on Windows: `make analyze` chains a bash `ulimit` (absent under
+  Windows sh) → exit 2; and a backgrounded app instance pollutes build.out so the wrapper tail hides
+  real output. For a clean analyzer signal: `flutter analyze lib test integration_test` directly.
