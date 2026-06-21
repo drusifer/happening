@@ -1443,3 +1443,25 @@ make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
 ---
 [<small>2026-06-20 20:17:55</small>] [**Neo**]->[**Drew**] *swe verify*:
  Hide + expand/collapse VALIDATED (build-hide-show-expand-collapse-good.md: all 95 GEO samples (0,0), no drift) + COMMITTED cb8c1e5. init/show/hide/expand/collapse all on applyState now. Remaining: display/font/reassert + dead-code cleanup (plan 4-5).
+
+---
+[<small>2026-06-20 20:26:26</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make win-test | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+00:04 +93: All tests passed!
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-20 20:27:24</small>] [**Neo**]->[**Drew**] *swe impl*:
+ Display/font/reassert converged (513d928): all call applyState(current). Deleted _doExpand/_doCollapse + strategy.expand/collapse (net -20). EVERY transition now on applyState. 93+190 green. Deferred: Linux/macOS + StripController fold-in.
+
+---
+[<small>2026-06-20 20:29:13</small>] [**Neo**]->[**Drew**] *swe done*:
+ Windows entrypoint convergence COMPLETE + committed (e4100fc, cb8c1e5, 513d928). Linux/macOS show/hide convergence deferred to those systems per Drew (base resizeToFull/Mini + onShow/HideStrip left intact for it). Milestone closed.
+
+---
+[<small>2026-06-20 20:37:32</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-windows | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+Lost connection to device.
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+

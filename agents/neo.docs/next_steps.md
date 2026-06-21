@@ -6,22 +6,20 @@
    reconciliation, §6 migration steps 2-3). And `neo.docs/current_task.md` + `context.md`.
 3. Read `docs/LESSONS.md` L-005, L-006 (+ DPI corollary).
 
-## IMMEDIATE NEXT — AWAITING Drew's manual gate on SHOW
-SHOW was converged onto the init path (showStrip = applyState(collapsedShown)+presentInitialFrame,
-Windows override). 91 window tests green, analyze clean. Drew must `make run-windows` and test
-hide->show: strip should now stay IN the strut (NOT drift to (0,73)). Scrape build.out GEO[] +Nms.
+## WINDOWS CONVERGENCE: DONE + VALIDATED + COMMITTED (e4100fc, cb8c1e5, 513d928).
+Every Windows entrypoint (init/show/hide/expand/collapse/display/font/reassert) routes through
+applyState. refresh=calendars-only. Validated by GEO logs (all (0,0), no drift). Re-pin dropped.
 
-### IF manual gate PASSES (no drift):
-- Convergence alone fixed it. The §4.3 onWindowMoved re-pin stays DROPPED (update plan: mark §2b
-  decision validated). Then continue normalizing the rest:
-  - **Hide**: `_hideStrip -> applyState(hidden)` (Windows override showStrip's sibling, e.g. hideStrip()).
-  - **Expand/collapse**: route ExpansionController through applyState(expandedShown/collapsedShown)
-    (Drew also saw expand strand below strut). Same converge-onto-init principle.
-  - Then delete dead resizeToMini/Full, onHide/ShowStrip (plan §5). Keep GEO logging.
-### IF manual gate STILL drifts:
-- Empirically proves the ABM_REMOVE->ABM_NEW teardown itself relocates regardless of path (not the
-  inverted order / missing present). ONLY THEN add the §4.3 onWindowMoved re-pin (plan §2b contingent),
-  model relocation->move-event in FakeWin32Desktop + regression test (L-006). Discuss with Drew first.
+## NEXT PICKUP — Linux/macOS show/hide convergence (DO THIS ON A LINUX/MAC MACHINE, per Drew):
+Base `showStrip`/`hideStrip` (window_service.dart ~430/442) still use resizeToFullStrip/resizeToMiniStrip
++ onShow/HideStrip — the only un-converged path, kept because Linux strut lives in onShow/HideStrip.
+- Converge: give Linux/macOS an applyState-based show/hide (likely via applyReservation override for
+  Linux strut, mirroring Windows AppBar), then retire resizeToFull/Mini + onShow/HideStrip + prepareToHide/
+  completeShow. MUST gate on the real Linux + macOS desktops (strut/Spaces behavior only shows there).
+- Also deletable then: Windows onShowStrip/onHideStrip overrides (already DEAD in prod — showStrip/
+  hideStrip bypass them; only base path + tests still reference).
+- Optional structural cleanup (no behavior change): fold ExpansionController into StripController (§4.1);
+  wire StripController instead of calling applyState directly. Not required for correctness.
 
 ## GOTCHAS (still apply)
 - mkf tail-printer crashes on '→' (cp1252) in build.out tail (exit 2) but the run completes. Avoid →
