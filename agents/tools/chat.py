@@ -19,6 +19,16 @@ import os
 import sys
 from pathlib import Path
 
+# Force UTF-8 console output on every platform. Windows consoles default to
+# cp1252, which raises UnicodeEncodeError when a message echoes glyphs like ✖/→;
+# errors='replace' guarantees printing the message back never crashes. No-op
+# where the stream can't be reconfigured, harmless on Linux/macOS (already UTF-8).
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
+
 
 def is_make_build(persona, cmd):
     """Return whether this message is mkf's build-status chat entry."""

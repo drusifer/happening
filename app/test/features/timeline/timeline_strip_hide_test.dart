@@ -7,12 +7,12 @@ import 'package:happening/core/display/display_info.dart';
 import 'package:happening/core/display/display_service.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/time/clock_service.dart';
+import 'package:happening/core/window/strip_state.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:happening/features/calendar/calendar_controller.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/calendar/calendar_service.dart';
 import 'package:happening/features/timeline/countdown_display.dart';
-import 'package:happening/features/timeline/expansion_logic.dart';
 import 'package:happening/features/timeline/settings_panel.dart';
 import 'package:happening/features/timeline/timeline_strip.dart';
 import 'package:mockito/mockito.dart';
@@ -55,8 +55,11 @@ class _HideTrackingWindowService extends WindowService {
   final List<Size> miniSizes = [];
   int resizeToFullCalls = 0;
 
+  // Expand/collapse route through applyState; no-op it so the test doesn't drive
+  // real geometry through the bare mock WindowManager. Hide/show are observed via
+  // the prepareToHide/completeShow/resize* overrides below (the base path).
   @override
-  Future<void> performResize(ExpansionState intent) async {}
+  Future<void> applyState(StripState state) async {}
 
   @override
   Future<void> setWindowMode(WindowMode mode) async {}

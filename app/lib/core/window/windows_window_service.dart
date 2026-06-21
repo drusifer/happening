@@ -91,7 +91,8 @@ class WindowsWindowService extends WindowService {
         _appBar.reserveTopBand(widthPx: _bandWidthPx, heightPx: _bandHeightPx);
     final double xOffset = activeDisplay?.workAreaOrigin.dx ?? 0;
     final origin = Offset(xOffset, rcTop / dpr);
-    _log.fine('applyReservation: $state reserved → origin=$origin (rcTop=$rcTop)');
+    _log.fine(
+        'applyReservation: $state reserved → origin=$origin (rcTop=$rcTop)');
     return origin;
   }
 
@@ -107,7 +108,8 @@ class WindowsWindowService extends WindowService {
     // Shrinking stays inside the band, so the window keeps its position.
     final h = getCollapsedHeight();
     final origin = Offset(activeDisplay?.workAreaOrigin.dx ?? 0, 0);
-    _log.fine('presentInitialFrame: 1px shrink-settle ${h - 1}→$h, pin=$origin');
+    _log.fine(
+        'presentInitialFrame: 1px shrink-settle ${h - 1}→$h, pin=$origin');
     await strategy.applySize(Size(screenWidth, h - 1), position: origin);
     await strategy.applySize(Size(screenWidth, h), position: origin);
     _appBar.presentFrame();
@@ -118,26 +120,10 @@ class WindowsWindowService extends WindowService {
     probeGeometryLater('presentInitialFrame');
   }
 
-  @override
-  Future<void> onHideStrip() async {
-    if (!_enableWindowsAppBar) return;
-    _appBar.dispose();
-  }
-
-  @override
-  Future<void> onShowStrip() async {
-    if (!_enableWindowsAppBar) return;
-    if (windowMode != WindowMode.reserved) return;
-    if (!_appBar.isRegistered) _appBar.register();
-    final rcTop =
-        _appBar.reserveTopBand(widthPx: _bandWidthPx, heightPx: _bandHeightPx);
-    // Reposition after reserving — ABM_SETPOS can move the window, and the show
-    // path positioned (resizeToFullStrip) BEFORE this reservation.
-    final double xOffset = activeDisplay?.workAreaOrigin.dx ?? 0;
-    await wm.setPosition(Offset(xOffset, rcTop / dpr));
-    await logGeometry('onShowStrip:end');
-    probeGeometryLater('onShowStrip');
-  }
+  // NOTE: Windows does NOT override onHideStrip/onShowStrip — show/hide route
+  // through showStrip/hideStrip (applyState) below, which never call
+  // completeShow/prepareToHide. Those legacy hooks remain only on the base +
+  // Linux path.
 
   // Show = EXACTLY what init does (afterWindowShown), the one path that keeps the
   // strip in its strut: reserve→size via applyState, then force the present. The

@@ -12,7 +12,6 @@ import 'package:happening/core/window/linux_dock_window_manager.dart';
 import 'package:happening/core/window/linux_window_service.dart';
 import 'package:happening/core/window/strip_state.dart';
 import 'package:happening/core/window/window_service.dart';
-import 'package:happening/features/timeline/expansion_logic.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:screen_retriever/screen_retriever.dart';
@@ -336,9 +335,9 @@ void main() {
         await service.initialize(initialFontSizePx: kDefaultFontSizePx);
         clearInteractions(mockWM);
 
-        // Trigger a collapse — _doCollapse uses the cached _screenWidth, which
+        // Trigger a collapse — applyState uses the cached _screenWidth, which
         // must have been hydrated from DisplayService.activeDisplay.size.width.
-        await service.performResize(ExpansionState.collapsed);
+        await service.applyState(StripState.collapsedShown);
 
         verify(mockWM.setSize(argThat(predicate<Size>(
           (s) => s.width == 3000,

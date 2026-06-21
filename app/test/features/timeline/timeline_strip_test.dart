@@ -8,12 +8,12 @@ import 'package:happening/core/display/display_info.dart';
 import 'package:happening/core/display/display_service.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/time/clock_service.dart';
+import 'package:happening/core/window/strip_state.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:happening/features/calendar/calendar_controller.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/calendar/calendar_service.dart';
 import 'package:happening/features/timeline/countdown_display.dart';
-import 'package:happening/features/timeline/expansion_logic.dart';
 import 'package:happening/features/timeline/hover_detail_overlay.dart';
 import 'package:happening/features/timeline/settings_panel.dart';
 import 'package:happening/features/timeline/timeline_painter.dart';
@@ -56,10 +56,10 @@ class _FakeWindowService extends WindowService {
   final List<WindowMode> windowModeCalls = [];
 
   @override
-  Future<void> performResize(ExpansionState intent) async {
-    if (intent == ExpansionState.expanded) {
+  Future<void> applyState(StripState state) async {
+    if (state == StripState.expandedShown) {
       expandCalls++;
-    } else {
+    } else if (state == StripState.collapsedShown) {
       collapseCalls++;
     }
   }
