@@ -1,5 +1,12 @@
 # ExpansionController Architecture
 
+> ⛔ **SUPERSEDED (2026-06).** `ExpansionController`, `ResizeExecutor`, and
+> `PhysicalWindowState` no longer exist — they were folded into **`StripController`**
+> when every window transition converged onto the single `WindowService.applyState`
+> applier. This document is kept for historical context only; it does **not** reflect
+> the current design. For the current window-state architecture see
+> [ARCH.md §6](ARCH.md#6-window-strategy) and `DECISIONS.md` DEC-009.
+
 ## Problem with the current design
 
 The expand/collapse logic is scattered across at least six call sites, each doing its own conditional reasoning:

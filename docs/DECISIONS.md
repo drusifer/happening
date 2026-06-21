@@ -3,7 +3,7 @@
 This document records the architectural and technical decisions made during the development of "What's Happening?".
 
 ## TL;DR
-Linux keeps the GTK header bar disabled and uses Dart-side window sizing/constraint strategies for a thin strip. Linux shell-reservation is implemented via a `linux_dock_window_manager` Flutter plugin that sets `_NET_WM_STRUT_PARTIAL` — NOT via C++ runner code or `window_manager.dock()` (left/right only). DEC-006 supersedes DEC-005's non-reserving stance. Linux must use `LinuxResizeStrategy` (sets `resizable=true`) — GTK3 silently ignores `gtk_window_resize` on non-resizable windows (DEC-007). F-31 hide/show animation is Flutter-only (width tween); OS window resizes once per transition to avoid platform channel flooding (DEC-008).
+Linux keeps the GTK header bar disabled and uses Dart-side window sizing/constraint strategies for a thin strip. Linux shell-reservation is implemented via a `linux_dock_window_manager` Flutter plugin that sets `_NET_WM_STRUT_PARTIAL` — NOT via C++ runner code or `window_manager.dock()` (left/right only). DEC-006 supersedes DEC-005's non-reserving stance. Linux must use `LinuxResizeStrategy` (sets `resizable=true`) — GTK3 silently ignores `gtk_window_resize` on non-resizable windows (DEC-007). F-31 hide/show animation is Flutter-only (width tween); OS window resizes once per transition to avoid platform channel flooding (DEC-008). All window transitions converged onto one applier (`WindowService.applyState`) gated by one `StripController`; `ExpansionController` and the bespoke resize/reservation paths were deleted (DEC-009).
 
 ## DEC-001: Linux Window Height Constraint (Wayland/GTK)
 **Date**: 2026-02-26
@@ -266,3 +266,41 @@ happen at 60fps — no IPC on each frame.
 - `AnimationController` uses no `CurvedAnimation` wrapper (linear curve). A future sprint
   can add `CurvedAnimation(parent: _hideAnim, curve: Curves.easeInOut)` for polish without
   changing this architecture.
+
+## DEC-009: Converge All Window Transitions onto `applyState` + `StripController`
+**Date**: 2026-06-21
+**Status**: Implemented (Windows-validated; Linux/macOS show/hide deferred to those systems)
+**Authors**: Neo (SWE), Drew
+
+### Context
+Window transitions had each grown their own bespoke path: init used `applyState`, but
+show/hide used `resizeToFull/MiniStrip` + `onShow/HideStrip`, expand/collapse used
+`ExpansionController → performResize → _doExpand/_doCollapse`, refresh used a `reassertAppBar`
+band-aid, and display/font changes had their own re-resize. Each re-implemented reservation
+and positioning slightly differently, so the same "strip lands below its own strut" bug kept
+recurring once per path ("works here / breaks there"). Root cause: a path that sized the
+window *before* reserving the AppBar band (or never re-pinned to the reserved origin) let
+Windows relocate the AppBar window into the work area.
+
+### Decision
+1. **One applier.** `WindowService.applyState(StripState)` is the single source of OS geometry:
+   reserve the work-area band FIRST (`applyReservation`), then apply size + position AT the
+   returned reserved origin. Every transition routes through it.
+2. **One gate.** `StripController` (a `ChangeNotifier`, `StripState` owner, serialized by an
+   `AsyncGate` — one-slot, last-wins) is the single entry point for user-driven transitions
+   (`collapse/expand/hide/show/reapply`). `ExpansionController` folded into it.
+3. **No new mechanism for the OS relocation.** An `onWindowMoved` re-pin was proposed and
+   *rejected* after the manual gate proved that simply making every path take the init
+   sequence (reserve→size→present) eliminated the drift — the inverted order + missing
+   present was the real cause, not an intrinsic `ABM_REMOVE→ABM_NEW` relocation.
+
+### Consequences
+- Deleted: `ExpansionController`, `ResizeExecutor`, `WindowServiceResizeExecutor`,
+  `PhysicalWindowState`, `performResize`, `_doExpand/_doCollapse`. Net ≈ −230 lib lines; the
+  dead-code + complexity lints pass for the first time.
+- `showStrip`/`hideStrip` remain as the per-platform transition primitives the controller
+  dispatches to (Windows = `applyState` + present; Linux base = `resizeToFull/Mini` +
+  `onShow/HideStrip` for its strut, **not yet converged** — deferred to a Linux/macOS session).
+- Validated on Windows: every hide/show/expand/collapse cycle holds `(0,0)` through delayed
+  GEO probes. See LESSONS L-005/L-006 and [ARCH.md §6](ARCH.md#6-window-strategy).
+- `docs/EXPANSION_CONTROLLER.md` is superseded (banner added).
