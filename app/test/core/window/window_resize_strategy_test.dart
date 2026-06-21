@@ -86,7 +86,11 @@ void main() {
           animate: anyNamed('animate')));
     });
 
-    test('expand and collapse both delegate to applySize', () async {
+    // L-005: applySize must bracket setSize as min(0)→max(target)→size→min(target)
+    // so Win32 reliably reaches the target. Every transition routes through
+    // applySize (via WindowService.applyState), so this one bracket is the only
+    // place it must be correct.
+    test('applySize brackets setSize with min/max/size/min (L-005)', () async {
       final order = <String>[];
       when(mockWM.setMinimumSize(any))
           .thenAnswer((_) async => order.add('min'));
@@ -95,11 +99,11 @@ void main() {
       when(mockWM.setSize(any, animate: anyNamed('animate')))
           .thenAnswer((_) async => order.add('size'));
 
-      await strategy.expand(const Size(1920, 250));
+      await strategy.applySize(const Size(1920, 250));
       expect(order, ['min', 'max', 'size', 'min']);
 
       order.clear();
-      await strategy.collapse(const Size(1920, 55));
+      await strategy.applySize(const Size(1920, 55));
       expect(order, ['min', 'max', 'size', 'min']);
     });
   });
