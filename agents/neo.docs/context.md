@@ -1,40 +1,67 @@
-# Neo Context — 2026-06-11
+# Neo Context — 2026-06-17 (see 2026-06-19 UPDATE below for current state)
 
-## F-31 Architecture Summary
+## 2026-06-19 UPDATE — refactor implemented + Windows-verified; now CONVERGING entrypoints
+The 3-state plan below is IMPLEMENTED. StripState + applyState + StripController + AsyncGate + the
+WindowsAppBar seam all exist and are green. Init bug chain FIXED on real Windows. Current work:
+converging ALL window entrypoints onto applyState (only init used it). See
+`docs/WINDOW_ENTRYPOINT_CONVERGENCE_PLAN.md` and `next_steps.md` for the live plan + resume.
 
-### WindowService hooks (Phase A)
-- `getMiniWidth(fontSizePx)` = `fontSizePx * 6.0 + 60.0` (formula from arch)
-- `prepareToHide()` → `onHideStrip()` (virtual, no-op base)
-- `completeShow()` → `onShowStrip()` (virtual, no-op base)
-- `resizeToMiniStrip(fontSizePx)` → `wm.setSize(miniWidth × collapsedHeight)`
-- `resizeToFullStrip()` → `wm.setSize(_screenWidth × collapsedHeight)`
-- Linux: undock on hide, redock on show (only if reserved mode)
-- Windows: disposeAppBar on hide, registerAppBar on show (only if enabled + reserved)
-- macOS: inherits base no-ops
+Durable findings this round:
+- **The init sliver was present-timing**, not position: presentInitialFrame ran BEFORE Flutter's
+  first frame (initialize() runs before runApp). Fix: defer present to addPostFrameCallback + a 1px
+  SHRINK-settle (grow-past-band makes Windows relocate the AppBar window).
+- **Below-strut on refresh/show = async OS relocation** to (0,73) ~150ms after we set (0,0), on
+  ABM_REMOVE→ABM_NEW cycles. Outside AsyncGate. Confirmed via +Nms probes. Drew's ABM_REMOVE instinct.
+- **applyState now reserves FIRST then positions** (ABM_SETPOS can move the window; position after).
+- **Band height uses CEIL(h*dpr)** so DPI rounding can't leave the window taller than its band.
+- **Testing method (L-006)**: model the OS reaction in a fake (FakeWin32Desktop), assert resulting
+  state, and PROVE the test fails on the bug. Mocks that only record calls are worthless for OS bugs.
+- **Keep all GEO/probe logging** (Drew directive). chat MSG ≤256 (draft ≤230, count first).
 
-### Strip hide/show state machine (Phase B)
-- `_isHidden = false` (starts visible per AC-F31-3-6)
-- `_preHideSentToBack = false` (saves STB state for restore after show)
-- `_hideAnim`: AnimationController, 300ms, value=1.0 (fully visible)
-- On hide: save STB → restoreToFront if STB → prepareToHide → close settings → `_isHidden=true` → `_hideAnim.reverse()` → `resizeToMiniStrip`
-- On show: `resizeToFullStrip` → `_isHidden=false` → `EC.collapsed` → `_hideAnim.forward()` → `completeShow` → restore STB if needed
+## Window subsystem (2026-06-17 — historical): resize normalization DONE; init paint bug diagnosed; refactor planned.
 
-### Critical layout detail
-- Hide button (`arrow_left`) is positioned at `left: 8.0`, with width of 38px (layout icon size 24 + 12px padding + 2px border) -> ends at x = 46.0.
-- Left toolbar starts at `left: 54.0`. Spacing between the hide button and the first toolbar icon (refresh) is `54 - 46 = 8`px.
-- Spacing between other toolbar buttons is exactly 8px, ensuring uniform spacing.
-- Show button in the mini-widget is also padded by `left: 8.0` for consistent padding/margin.
-- All icons inside `_IconButton` default to a visual scale size of 32px, while retaining a layout footprint size of 24px to preserve structural spacing.
-- Spacing around `DisplayFallbackIndicator` is managed dynamically (it packages its own trailing `SizedBox(width: 8.0)` when visible) to prevent a 16px double-gap when hidden.
+### The resize seam (DONE — LESSONS L-005)
+- `WindowResizeStrategy.applySize(Size, {Offset? position})` is THE one resize primitive.
+  Bracket: setMinimumSize(Size.zero) → setMaximumSize(size) → applyGeometry(size,position) →
+  setMinimumSize(size). **Never setMaximumSize(Size.infinite)** — it leaves a garbage native
+  max-track and Win32 truncates the window to OS-min (~136×39).
+- `applyGeometry` = setPosition + setSize on ALL platforms. NOT setBounds: setBounds flakes on
+  Windows first show (lands ~1px, setMin can't force-grow it back). setSize + the max-cap is reliable.
+- Routed through applySize: expand, collapse, resizeToMiniStrip, resizeToFullStrip,
+  WindowsWindowService._reserveCollapsedSpace. Deleted: _resizeViaBounds + the base hand-rolled brackets.
+- 54 window tests green; window_resize_strategy_test asserts max never ∞.
 
-### Mini widget
-- In `_buildLayout`: when `_isHidden || _hideAnim.value < 1.0` → return `_buildMiniWidget`.
-- Mini widget: `MouseRegion(cursor: click) > GestureDetector(showStrip) > Row[countdown StreamBuilder + show button]`.
-- Countdown uses `_buildCountdownContent` (not `_buildCountdownPositioned` — avoid Positioned in Row).
+### Init "1px sliver" bug — it's PAINT/COMPOSITING, not geometry
+- Proven via getSize: OS window is Size(3840, 55) at all init checkpoints.
+- The window is shoved around AFTER first paint: onWindowFocus never fires → 2s safety-net →
+  _handleFirstShow re-reserves/repositions/re-resizes ~1.5s post-paint → strands the frame.
+- Windows doesn't composite Flutter's frames for this frameless/AppBar window until a WM event
+  (mouse-over). A Flutter repaint already fired post-resize (events=17) and did NOT present →
+  the fix must be an OS-level present (RedrawWindow), not setState.
 
-## Session Key Findings (2026-06-11)
-- **Window Resizing Positioning**: Shrinking a window using `setSize` alone on Windows/Linux without explicitly defining position offsets can cause the window manager to relocate the window relative to its right edge or cascaded placement (causing the mini-widget to drift to the right side of the screen/about an inch down). Fixed by explicitly positioning the window at `_activeDisplay.workAreaOrigin` during `resizeToMiniStrip` and `resizeToFullStrip`.
-- **Defensive UI Alignment**: Wrapped the mini widget in `Align(alignment: Alignment.topLeft)` to defend against OS constraints forcing the layout to center or shift right.
-- **Hide-When-Expanded Race Condition**: Tapping the hide button when the strip is expanded (either via mouse hover or open settings) can trigger a race condition where the asynchronous collapse operation runs concurrently with/after the hide operation. We resolved this by introducing `sendAndAwait` in `ExpansionController` to await the completion of the collapse before proceeding with the hide sequence. We now unconditionally collapse and await the collapse completion when hiding.
-- **Debug Logging**: Added detailed `_log.info` and `_log.fine` logging statements to track the sequence of operations inside `_hideStrip()` and `_showStrip()`.
-- **Snap AOT Library Path Resolution**: The snap packaging copies `libapp.so` to `$SNAP/lib/libapp.so`. However, the launcher passed `--aot-shared-library-name="./data/lib/libapp.so"` relative to `$SNAP/bin`, which failed to load the library and caused the engine to crash because it couldn't resolve the AOT binary. Fixed by correcting the path to `$SNAP/lib/libapp.so`.
+### The plan (docs/WINDOW_STATE_REFACTOR_PLAN.md) — awaiting Morpheus *lead review
+- 3 states only: collapsedShown / expandedShown / hidden. Geometry = pure fn of state.
+- applyState(state) idempotent applier = _sizeFor(state) → applySize + _applyReservation(state).
+- presentInitialFrame() hook: Windows FFI RedrawWindow, run once as the LAST init step.
+- Deletes: onWindowFocus first-show, 2s safety-net, _handleFirstShow, reassertAppBar "refresh" hack,
+  bespoke resizeToMini/Full.
+- Incremental migration; init first (step 2) to prove the thesis.
+
+### Architecture map (window subsystem)
+- WindowService (base): public API resizeToMini/FullStrip, performResize/_doExpand/_doCollapse,
+  initialize (WindowOptions + waitUntilReadyToShow + beforeShow + performShow + afterReadyToShow),
+  prepareToHide/completeShow → onHideStrip/onShowStrip. Holds _strategy (now @protected `strategy` getter).
+- WindowsWindowService: AppBar via SHAppBarMessage FFI (_registerAppBar/_disposeAppBar/
+  _reserveCollapsedSpace/reassertAppBar), _handleFirstShow + safety-net + onWindowFocus (TO BE DELETED).
+- WindowResizeStrategy: applySize/applyGeometry + expand/collapse delegators; resizable getter
+  (Linux=true per L-001). Thin platform subclasses.
+- TimelineStrip (_TimelineStripState): _hideStrip/_showStrip; _isHidden; _hideAnim (value:1.0=shown);
+  ExpansionController drives height; build returns _buildMiniWidget when _isHidden||_hideAnim.value<1.
+
+### Working-style / tooling
+- User builds & tries candidate fixes BEFORE Neo runs full suite (token cost). App logs INFO+ to
+  build/build.out (HOME unset on Windows → ignore $HOME path). make chat 256-char limit → docs/.
+- wm.getDevicePixelRatio() is SYNC (no await). dpr=1.0 on this 4K monitor (no DPR mismatch).
+- .vscode/launch.json exists (Windows debug/profile; cwd=app, program=lib/main.dart).
+
+### Lessons: L-001 (GTK setSize), L-005 (Windows setMax(∞) truncates; setBounds first-show flake). docs/LESSONS.md.

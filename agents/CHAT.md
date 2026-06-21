@@ -1125,8 +1125,321 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
  Diagnosed binary startup crash ("Not running in AOT mode but could not resolve the kernel binary") on Linux. The error was caused by a stale/incompatible `libapp.so` in the release bundle following the recent Flutter SDK and dependencies update (new engine unable to load older AOT VM snapshot). Clean-built the release package with `make build-linux` which successfully compiled a compatible `libapp.so` and resolved the crash. (Also corrected the invalid launcher path in `snap/snapcraft.yaml` for consistency). All tests pass cleanly (451/451 green). Handoff to @Trin *qa uat.
 
 ---
-[<small>2026-06-11 19:44:16</small>] [**make**]->[**all**] *build*:
- Build PASSED | make dist-linux | /home/drusifer/Projects/happening/build/build.out
--C app/build/linux/arm64/release bundle
-Linux package: dist/happening-0.5.3-linux-arm64.tar.gz
-make[1]: Leaving directory '/home/drusifer/Projects/happening'
+[<small>2026-06-16 12:13:58</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make clean | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+Deleting .flutter-plugins-dependencies...                            0ms
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-16 12:24:30</small>] [**User**]->[**all**] *request*:
+ *bob-protocol init load neo
+
+---
+[<small>2026-06-16 12:24:39</small>] [**Neo**]->[**User**] *resume*:
+ Neo online (cold start). F-31 hide/show + mini-widget COMPLETE, 451/451 green. Last handoff was to @Trin *qa uat F-31. No SWE work pending my side. Standing by for *swe instructions.
+
+---
+[<small>2026-06-16 12:54:55</small>] [**User**]->[**all**] *request*:
+ *swe fix hidden mode too small on windows: initially hides at correct size then gets truncated, time not visible (screenshot).
+
+---
+[<small>2026-06-16 13:06:23</small>] [**Neo**]->[**User**] *swe fix*:
+ Root cause (build.out): (A) astro tooltip clamp(4.0, stripWidth-184) throws when window narrow; (B) _shAppBarMessage late-final re-init crash on show-after-hide leaves window at 136px. Added resize + tooltip diagnostic logging.
+
+---
+[<small>2026-06-16 13:08:19</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-windows | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+Lost connection to device.
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-16 13:11:29</small>] [**Neo**]->[**User**] *swe fix*:
+ Correction: astro is a red herring. Real bug: setSize is a no-op in resizeToMini/FullStrip — window pinned at 136x39 (Windows OS min). expand/collapse works via setBounds. Added per-call size logging to pinpoint the failing call.
+
+---
+[<small>2026-06-16 13:20:17</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-windows | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+Lost connection to device.
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-16 13:20:26</small>] [**Neo**]->[**User**] *swe fix*:
+ DRY refactor: init/expand/collapse pushed to base WindowResizeStrategy + resizable getter (true default, macOS false). Windows inherits true = L-001 fix for setSize no-op. 449 tests pass; 2 goldens are cross-platform pixel diffs.
+
+---
+[<small>2026-06-16 13:37:02</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-windows | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+Lost connection to device.
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-16 13:38:20</small>] [**Neo**]->[**all**] *context-low*:
+ Context-low: prepping for clear. Windows hide/show fix WRITTEN, not user-validated. setSize clamps to OS-min 136x39 -> use setBounds; fixed _shAppBarMessage crash. analyze clean. Resume per neo.docs/next_steps.md.
+
+---
+[<small>2026-06-16 13:41:39</small>] [**Neo**]->[**User**] *resume*:
+ Resuming Windows hide/show truncation fix. Fix is WRITTEN (setBounds override + lazy _shAppBarMessage getter), analyze clean, not yet user-validated. Awaiting your Windows hide/show run + build/build.out.
+
+---
+[<small>2026-06-16 15:01:57</small>] [**Neo**]->[**User**] *swe fix*:
+ FIXED Windows hide truncation. Root cause: _resizeViaBounds used setMax(Size.infinite) -> garbage native max-track -> Win32 floored window to 136x39. Fix: pin min==max==target (matches strategy.collapse). Diagnostics removed; 51 window tests green.
+
+---
+[<small>2026-06-16 16:16:45</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-windows | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+Lost connection to device.
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-16 16:18:57</small>] [**Neo**]->[**User**] *swe fix*:
+ build.out confirms window fix WORKS: mini=268, full=3840 both reached. But Bug C crashed: _buildAstroTooltip clamp(4.0, stripWidth-184) threw ArgumentError at stripWidth=136. Guarded with math.max(4.0, ...) per line 452 idiom. analyze clean.
+
+---
+[<small>2026-06-16 16:26:32</small>] [**Neo**]->[**User**] *swe fix*:
+ Confirmed: full-mode Windows truncation = SAME bug. _reserveCollapsedSpace also used setMax(Size.infinite), never re-pinned; AppBar usually masked it, refresh hack re-applied the corruption. Fixed: pin min==max==bounds.size. L-005 updated, 51 tests green.
+
+---
+[<small>2026-06-16 16:28:55</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-windows | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+Lost connection to device.
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-16 16:51:01</small>] [**Neo**]->[**User**] *refactor*:
+ Normalized resize: 6 dup min/max impls -> ONE seam applySize(size,{position}). Only applyGeometry per-platform (Windows=setBounds). Deleted _resizeViaBounds. New applySize tests + L-005 guard. 54 tests green. Needs Windows runtime check.
+
+---
+[<small>2026-06-17 10:03:18</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-windows | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+Lost connection to device.
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-17 10:11:28</small>] [**Neo**]->[**User**] *fix*:
+ Init 1px = wrong geometry. setBounds flakes on first show (1px, setMin cant force-grow). Fix: applyGeometry now setPosition+setSize on ALL platforms. Removed Windows setBounds override. 54 tests green. Rebuild to validate.
+
+---
+[<small>2026-06-17 10:54:00</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-windows | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+Lost connection to device.
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-17 11:07:49</small>] [**Neo**]->[**Morpheus**] *handoff*:
+ Init sliver = paint/compositing, NOT geometry (getSize: window is 3840x55). Cause: safety-net re-resizes window after first paint. Plan: docs/WINDOW_STATE_REFACTOR_PLAN.md (3-state machine, applyState). @Morpheus *lead review it.
+
+---
+[<small>2026-06-17 17:25:11</small>] [**Neo**]->[**all**] *context-low*:
+ Context low — prepping for clear. State saved (neo.docs/*). Resize normalization DONE (54 tests). Init sliver = paint/compositing (window IS 3840x55). Plan: docs/WINDOW_STATE_REFACTOR_PLAN.md, awaiting @Morpheus *lead review. Resume per next_steps.md.
+
+---
+[<small>2026-06-17 17:56:08</small>] [**Morpheus**]->[**Neo**] *lead review*:
+ Plan APPROVED, direction correct. 5 blocking items -> docs/WINDOW_STATE_REFACTOR_REVIEW_2026-06-17.md. B1: applyState MUST use AsyncGate. B2: waitUntilReadyToShow non-await is the crux. @Neo *swe impl step1; confirm B2 first.
+
+---
+[<small>2026-06-17 18:09:36</small>] [**Morpheus**]->[**Neo**] *lead review*:
+ Review revised per Drew -> docs/WINDOW_STATE_REFACTOR_REVIEW_2026-06-17.md. Windows-first; init callback layer DELETED (B2); MVC StripController owns state+transitions, WindowService.applyState is executor. @Neo *swe impl step1.
+
+---
+[<small>2026-06-18 12:35:18</small>] [**make**]->[**all**] *build*:
+ Build FAILED exit=2 | make lint-style | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+
+---
+[<small>2026-06-18 12:41:59</small>] [**Neo**]->[**Drew**] *swe impl*:
+ Step 1 DONE. StripState + AsyncGate<T> + StripController (MVC) + WindowService.applyState/applyReservation/presentInitialFrame seams. No callers yet. +75 window tests green, analyze clean. Step 2 (init rewrite) has manual-Windows gate. @Drew
+
+---
+[<small>2026-06-19 14:09:28</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make win-test | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+00:01 +75: All tests passed!
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-19 14:32:04</small>] [**Neo**]->[**Drew**] *swe impl*:
+ Step 2 code DONE. Init applies state once post-show via afterWindowShown: applyState(collapsedShown)+presentInitialFrame. DELETED focus/safety-net/_handleFirstShow. win-test green. @Drew GATE: make run-windows = full strip on launch, no mouse-over.
+
+---
+[<small>2026-06-19 14:55:48</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make win-test | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+00:04 +83: All tests passed!
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-19 14:57:29</small>] [**Neo**]->[**Drew**] *swe impl*:
+ Built WindowsAppBar seam (FFI behind interface) + 8 unit tests. +83 green. Added GEO[] geometry logging in applyState/resize/show paths. @Drew run make run-windows; do init + mouse-over + hide-show; I'll scrape build.out.
+
+---
+[<small>2026-06-19 15:10:24</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make win-test | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+00:01 +84: All tests passed!
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-19 15:12:26</small>] [**Neo**]->[**Drew**] *swe fix*:
+ Diagnosed: geometry correct; sliver = present fired before 1st Flutter frame. Fix: defer present post-first-frame + 1px settle. +84 green. @Drew re-run make run-windows; does launch composite without mouse-over?
+
+---
+[<small>2026-06-19 18:00:58</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make win-test | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+00:01 +85: All tests passed!
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-19 18:01:33</small>] [**Neo**]->[**Drew**] *swe done*:
+ Windows gate PASSED (Drew: full cycle works). Removed debug logging; encoded the verified 17:26 trace as a test oracle (resize->reserve, present deferred). +85 green. Step 3 (unify runtime paths through applyState) remains. Commit milestone?
+
+---
+[<small>2026-06-19 18:45:00</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make win-test | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+00:01 +86: All tests passed!
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-19 18:48:40</small>] [**Neo**]->[**Drew**] *swe fix*:
+ Init position bug: applyState reserved AFTER positioning, so ABM_SETPOS's window-move went uncorrected (your order hunch was right). Fixed: reserve->position. +86 green, GEO logging back. @Drew re-run make run-windows; strip in the strut at launch?
+
+---
+[<small>2026-06-19 19:54:55</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+00:05 +190: All tests passed!
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-19 19:55:26</small>] [**Neo**]->[**Drew**] *swe fix*:
+ Reload bug = refresh button fired 3 concurrent window ops -> race (below/above toggle). Fixed: serialized them; reassertAppBar now uses unified dispose+applyState (reserve->position). Traces->DBG. +87/+190 green. @Drew re-test refresh.
+
+---
+[<small>2026-06-19 20:05:14</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make win-test | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+00:01 +88: All tests passed!
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-19 20:26:19</small>] [**Neo**]->[**Drew**] *swe fix*:
+ GEO trace caught it: present nudge grew past band (73.5>73) -> Windows moved strip to y=73. Fix: shrink-settle+pin. Modeled the relocation in FakeWin32Desktop so the test now CATCHES it (proven: fails on bug, passes on fix). Lesson L-006. +88 green.
+
+---
+[<small>2026-06-19 22:16:34</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-windows | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+Lost connection to device.
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-19 22:16:44</small>] [**Neo**]->[**Drew**] *swe fix*:
+ DPI check: NO, band used round() -> at fractional DPI window can be 1px taller than band -> relocation. Fixed: band = ceil(h*dpr). Made the fake DPI-aware; dpr=1.1 test proven to catch round-band (fails Offset(0,57.3)), passes on ceil. +89 green.
+
+---
+[<small>2026-06-19 22:55:42</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-windows | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+Lost connection to device.
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-19 23:06:00</small>] [**Neo**]->[**Drew**] *swe plan*:
+ Probes confirmed async OS relocation to (0,73) on ABM_REMOVE->NEW cycles (your instinct). Plan: converge all entrypoints onto applyState (no gratuitous ABM_REMOVE) + onWindowMoved re-pin -> docs/WINDOW_ENTRYPOINT_CONVERGENCE_PLAN.md. @Drew review.
+
+---
+[<small>2026-06-19 23:16:32</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make win-test | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+00:04 +190: All tests passed!
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-19 23:17:24</small>] [**Neo**]->[**Drew**] *swe impl*:
+ Convergence step 1 done: refresh button reverted to calendars-only (dropped the strut reassert band-aid that caused the drift) + added button press feedback. +190 green. @Drew test refresh - should NOT strand the strip now. Next: converge hide/show.
+
+---
+[<small>2026-06-19 23:19:28</small>] [**Neo**]->[**all**] *context-low*:
+ Context is low. Prep for context clear. State saved in neo.docs/. Step 1 done (refresh=calendars-only + button feedback). Resume: docs/WINDOW_ENTRYPOINT_CONVERGENCE_PLAN.md + next_steps.md. Next: step 2 hide/show.
+
+---
+[<small>2026-06-20 17:58:08</small>] [**Bob**]->[**Drew**] *resume*:
+ Resumed after /clear. Active persona: Neo. Convergence step 1 DONE (refresh=calendars-only + button press feedback), +190 green. BLOCKED awaiting Drew's manual refresh test before step 2 (converge hide/show). Plan: WINDOW_ENTRYPOINT_CONVERGENCE_PLAN.md
+
+---
+[<small>2026-06-20 18:00:20</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-windows | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+Lost connection to device.
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-20 18:02:11</small>] [**User**]->[**Neo**] *request*:
+ Init wrong; hide OK; SHOW expands below strut; refresh did NOT restore. Show path not wired through applyState yet. Debug: build-show-below-strut.out
+
+---
+[<small>2026-06-20 18:08:15</small>] [**Neo**]->[**Drew**] *swe test*:
+ Repro DONE (harness-first; NO prod code touched). Modeled rule(b): hide->show REMOVE->NEW at band origin = async OS relocate. New regression test FAILS as designed (Actual (0,55) vs (0,0)); 14 prior tests green. Next: Step3 onWindowMoved re-pin.
+
+---
+[<small>2026-06-20 18:26:32</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make win-test | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+00:01 +91: All tests passed!
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-20 18:55:13</small>] [**Neo**]->[**Drew**] *swe impl*:
+ Converged SHOW onto init path: showStrip()=applyState(collapsedShown)+presentInitialFrame (Windows override; base legacy=Linux safe). Dropped the re-pin. 91 tests green, analyze clean. @Drew manual-gate hide->show.
+
+---
+[<small>2026-06-20 19:49:32</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-windows | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+Lost connection to device.
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-20 19:51:21</small>] [**Neo**]->[**Drew**] *swe verify*:
+ SHOW convergence VALIDATED (build-no-strut-issues.md): every hide->show holds (0,0) thru +1200ms, no drift. Re-pin confirmed unnecessary, dropped. Rule(b) disproven. Milestone green. @Drew commit now, or converge hide+expand next?
+
+---
+[<small>2026-06-20 19:59:18</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make win-test | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+00:01 +93: All tests passed!
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-20 19:59:50</small>] [**Neo**]->[**Drew**] *swe impl*:
+ Hide converged: hideStrip()=applyState(hidden) (Windows override, mirror of show). _hideStrip now fades THEN releases+shrinks in 1 call. 93 tests green, analyze clean. @Drew gate hide->show. Expand/collapse next (band-height vs rule-a needs care).
+
+---
+[<small>2026-06-20 20:13:42</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make win-test | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+00:04 +190: All tests passed!
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-20 20:13:59</small>] [**Neo**]->[**Drew**] *swe impl*:
+ Expand/collapse converged: performResize now routes to applyState (reserve + re-pin to origin; old _doExpand resized in place, no re-pin = the stranding). 93 window + 190 timeline tests green, analyze clean. @Drew gate expand/collapse + hide->show.
+
+---
+[<small>2026-06-20 20:15:24</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-windows | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+Lost connection to device.
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-06-20 20:17:55</small>] [**Neo**]->[**Drew**] *swe verify*:
+ Hide + expand/collapse VALIDATED (build-hide-show-expand-collapse-good.md: all 95 GEO samples (0,0), no drift) + COMMITTED cb8c1e5. init/show/hide/expand/collapse all on applyState now. Remaining: display/font/reassert + dead-code cleanup (plan 4-5).
