@@ -74,7 +74,7 @@ else
 	@echo "Git hooks installed."
 endif
 
-.PHONY: run run-linux run-macos run-windows run-windows-test run-windows-simple
+.PHONY: run run-linux run-macos run-windows
 run:
 	@echo "Please specify a platform: make run-linux, run-macos, or run-windows"
 
@@ -87,26 +87,6 @@ run-macos: $(PUB_STAMP)
 run-windows: $(PUB_STAMP)
 	@powershell -Command "if (Test-Path $(APP_DIR)/windows/flutter/ephemeral) { Remove-Item -Recurse -Force $(APP_DIR)/windows/flutter/ephemeral }"
 	cd $(APP_DIR) && $(FLUTTER) run -d windows
-
-run-windows-test: $(PUB_STAMP)
-	cd $(APP_DIR) && $(FLUTTER) run -d windows --target lib/windows_test.dart
-
-run-windows-simple: $(PUB_STAMP)
-	cd $(APP_DIR) && $(FLUTTER) run -d windows --target lib/simple_main.dart
-
-CLICK_TEST_DIR := tools/click_through_test
-
-.PHONY: run-click-test run-click-test-x11 build-click-test
-# Native Wayland: wl_surface.set_input_region — honored by Mutter
-run-click-test:
-	cd $(CLICK_TEST_DIR) && GDK_BACKEND=wayland $(FLUTTER) run -d linux
-
-# XWayland: X11 SHAPE extension — may not be honored by Wayland compositor
-run-click-test-x11:
-	cd $(CLICK_TEST_DIR) && GDK_BACKEND=x11 $(FLUTTER) run -d linux
-
-build-click-test:
-	cd $(CLICK_TEST_DIR) && $(FLUTTER) build linux --release
 
 .PHONY: test update-goldens test-watch win-test
 test: $(PUB_STAMP)
@@ -386,14 +366,12 @@ else
 #   make tldr V=-vvv       stderr + full stdout to terminal
 
 .PHONY: help chat install_bob update_bob pull_bob clean_bob diff_bob sync-version set-version
-.PHONY: setup install-hooks run run-linux run-macos run-windows run-windows-test run-windows-simple
-.PHONY: run-click-test run-click-test-x11 build-click-test
+.PHONY: setup install-hooks run run-linux run-macos run-windows
 .PHONY: test update-goldens test-watch integration-test integration-test-linux integration-test-macos integration-test-windows
 .PHONY: build-linux build-macos build-windows dist dist-linux dist-macos dist-windows dist-windows-msix dist-proxy-linux
 .PHONY: format analyze lint lint-style lint-metrics lint-format proxy proxy-setup export-proxy-image clean tldr via_index fetch-cities
 
-MKF_TARGETS := setup install-hooks run run-linux run-macos run-windows run-windows-test run-windows-simple \
-	run-click-test run-click-test-x11 build-click-test \
+MKF_TARGETS := setup install-hooks run run-linux run-macos run-windows \
 	test win-test update-goldens test-watch integration-test integration-test-linux integration-test-macos integration-test-windows \
 	build-linux build-macos build-windows dist dist-linux dist-macos dist-windows dist-windows-msix dist-proxy-linux \
 	format analyze lint lint-style lint-metrics lint-format proxy proxy-setup export-proxy-image clean tldr via_index \
