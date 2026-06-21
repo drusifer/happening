@@ -152,6 +152,15 @@ class WindowsWindowService extends WindowService {
     await presentInitialFrame();
   }
 
+  // Hide = the single applier (mirror of showStrip): applyState(hidden) releases
+  // the strut (the one allowed ABM_REMOVE) and sizes the mini pill in one step,
+  // replacing prepareToHide (dispose) + resizeToMiniStrip.
+  @override
+  Future<void> hideStrip() async {
+    _log.fine('hideStrip: applyState(hidden) (converged onto the applier)');
+    await applyState(StripState.hidden);
+  }
+
   @override
   Future<void> onWindowModeChanged(WindowMode mode) async {
     _log.fine(

@@ -457,5 +457,36 @@ void main() {
       expect(desktop.position, Offset.zero,
           reason: 'collapsed show stays at the reserved band origin');
     });
+
+    // Hide is the mirror: applyState(hidden) releases the strut and sizes the
+    // mini pill in one applier call (replaces prepareToHide + resizeToMiniStrip).
+    test('hideStrip releases the strut and sizes the mini pill (one applier)',
+        () async {
+      final service = makeService();
+      await service.initialize(initialFontSizePx: kDefaultFontSizePx);
+      appBar.calls.clear();
+
+      await service.hideStrip();
+
+      expect(appBar.calls, contains('dispose'));
+      expect(appBar.calls, isNot(contains('reserve')));
+      expect(appBar.isRegistered, isFalse);
+      // Mini footprint: narrower than the full screen, collapsed height.
+      expect(desktop.size.width, service.getMiniWidth(kDefaultFontSizePx));
+      expect(desktop.size.height, service.getCollapsedHeight());
+    });
+
+    test('hide → show round-trips through the applier and re-reserves', () async {
+      final service = makeService();
+      await service.initialize(initialFontSizePx: kDefaultFontSizePx);
+
+      await service.hideStrip();
+      expect(appBar.isRegistered, isFalse);
+
+      await service.showStrip();
+      expect(appBar.isRegistered, isTrue);
+      expect(desktop.size.width, 1920, reason: 'back to full screen width');
+      expect(desktop.position, Offset.zero);
+    });
   });
 }
