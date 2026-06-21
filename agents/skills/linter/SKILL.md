@@ -6,6 +6,13 @@ triggers: ["*qa lint", "*qa quality", "*qa check"]
 
 # Linter Skill
 
+One-line summary: Runs Flutter/Dart code quality checks — style, analyzer, complexity, duplication, and formatting — through `make`.
+
+TLDR:
+    Use `make lint` to run the full quality suite (style + metrics + format); narrower targets exist for each stage.
+    Triggered by Trin via `*qa lint`, `*qa quality`, or `*qa check`; run the full suite before any PR.
+    Fix priority: errors first, then warnings, then style; auto-format with `make format` and re-check with `make lint-format`.
+
 ## Overview
 
 Code quality analysis via `make`. All checks run against the Flutter/Dart toolchain.

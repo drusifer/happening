@@ -145,3 +145,13 @@ make chat MSG="<summary> @NextPersona *command" PERSONA="<Name>" CMD="<prefix> h
 ```
 
 The next persona reads CHAT.md on entry — if the handoff isn't there, they start blind.
+
+---
+
+## Loop Optimization & Anti-Loop Rules
+
+To minimize token usage and prevent coordination overhead:
+1. **Pre-Handoff Self-Validation**: Neo must run local checks (e.g. static analysis, syntax lints, or quick targeted tests) before handing off code to Trin (`*qa verify` / `*qa uat`). Trivial typos, syntax errors, or lint warnings should be resolved before switching personas.
+2. **Consolidation for Minor Changes**: For trivial features or bug fixes (e.g. document typos, adding a canned query JSON, or configuration tweaks), do not trigger a full multi-persona loop. Combine implementation, verification, and state update into a **single-step execution** by a single persona to avoid state-saving overhead.
+3. **Active Anti-Loop Guard**: If any loop iteration (e.g. Neo fix → Trin test fail → Neo fix) repeats **more than twice** for the same issue without resolution, the loop must be paused. The active agent must post logs, describe the blocker to the user, and request manual intervention rather than attempting a third cycle.
+4. **Fast-Track Sprint Planning**: If a sprint plan consists only of small maintenance items, bypass the full 6-step planning chain. Cypher and Morpheus should compile stories and architecture details into a single document for unified approval by Smith, reducing the transition count.
