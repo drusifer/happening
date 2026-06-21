@@ -238,11 +238,13 @@ class WindowService with WidgetsBindingObserver {
   ///
   /// Called by [WindowServiceResizeExecutor] on behalf of [ExpansionController].
   Future<void> performResize(ExpansionState intent) async {
-    if (intent == ExpansionState.expanded) {
-      await _doExpand();
-    } else {
-      await _doCollapse();
-    }
+    // Converged onto the proven applier — the same reserve→size-at-reserved-origin
+    // path init/show/hide use. Unlike the old _doExpand/_doCollapse (resize in
+    // place, NO reposition), applyState re-pins the strip to the reserved band
+    // origin every time, so an expand/collapse cannot strand it below the strut.
+    await applyState(intent == ExpansionState.expanded
+        ? StripState.expandedShown
+        : StripState.collapsedShown);
   }
 
   /// The single applier: maps a [StripState] to geometry + platform
@@ -437,6 +439,18 @@ class WindowService with WidgetsBindingObserver {
   Future<void> showStrip() async {
     await resizeToFullStrip();
     await completeShow();
+  }
+
+  /// Hides the strip to the mini pill.
+  ///
+  /// Default (Linux/macOS): the legacy two-step — release the platform
+  /// reservation ([onHideStrip]), then shrink to the mini footprint. Windows
+  /// overrides this to the single `applyState(StripState.hidden)` (release +
+  /// size in one applier call), the mirror of [showStrip]. Geometry comes from
+  /// the service's tracked font size, the same source `applyState` already uses.
+  Future<void> hideStrip() async {
+    await prepareToHide();
+    await resizeToMiniStrip(_fontSizePx);
   }
 
   /// Resizes the OS window to the mini strip footprint (called at hide-animation end).

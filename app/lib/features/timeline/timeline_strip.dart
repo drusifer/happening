@@ -485,16 +485,15 @@ class _TimelineStripState extends State<TimelineStrip>
     _lastSentExpansionState = ExpansionState.collapsed;
     await _expansionController.sendAndAwait(ExpansionState.collapsed);
 
-    _log.fine('TimelineStrip: calling windowService.prepareToHide');
-    await _windowService.prepareToHide();
     setState(() {
       _isHidden = true;
     });
     _log.fine('TimelineStrip: reversing hide animation');
     await _hideAnim.reverse();
-    final double fontSize = widget.settingsService.current.fontSizePx;
-    _log.info('TimelineStrip: resizing to mini strip (fontSize=$fontSize)');
-    await _windowService.resizeToMiniStrip(fontSize);
+    // Release the strut + shrink to the mini pill in one applier call (mirror of
+    // showStrip). Done AFTER the fade so the window shrinks once content is out.
+    _log.info('TimelineStrip: hiding window via windowService.hideStrip()');
+    await _windowService.hideStrip();
     _log.info('TimelineStrip: hide complete');
   }
 
