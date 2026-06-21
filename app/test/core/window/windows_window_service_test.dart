@@ -217,10 +217,12 @@ void main() {
           reason: 'reserve BEFORE positioning so ABM_SETPOS cannot strand the '
               'strip below its strut');
       expect(appBar.calls, isNot(contains('present')),
-          reason: 'present is deferred to the first frame, not run during init');
+          reason:
+              'present is deferred to the first frame, not run during init');
     });
 
-    test('positions the window at the reserved band origin, not work-area origin',
+    test(
+        'positions the window at the reserved band origin, not work-area origin',
         () async {
       final service = makeService();
       await service.initialize(initialFontSizePx: kDefaultFontSizePx);
@@ -290,8 +292,8 @@ void main() {
       expect(desktop.position, Offset.zero,
           reason: 'strip must stay at the reserved band top; a grow-past-band '
               'nudge would strand it at the band height (below its own strut)');
-      expect(desktop.size.height.round(),
-          lessThanOrEqualTo(appBar.lastHeightPx!),
+      expect(
+          desktop.size.height.round(), lessThanOrEqualTo(appBar.lastHeightPx!),
           reason: 'window must never end taller than its reserved band');
     });
 
@@ -369,7 +371,8 @@ void main() {
   });
 
   group('WindowsWindowService reassert (refresh path)', () {
-    test('reassertAppBar re-broadcasts via dispose → register → reserve, then '
+    test(
+        'reassertAppBar re-broadcasts via dispose → register → reserve, then '
         'positions at the reserved origin', () async {
       final service = makeService();
       await service.initialize(initialFontSizePx: kDefaultFontSizePx);
@@ -383,22 +386,6 @@ void main() {
       // reserve, then position AFTER reserving.
       expect(appBar.calls, ['dispose', 'register', 'reserve']);
       verify(mockWM.setPosition(const Offset(0, 100))).called(1);
-    });
-  });
-
-  group('WindowsWindowService hide/show hooks', () {
-    test('onHideStrip releases; onShowStrip re-registers and reserves',
-        () async {
-      final service = makeService();
-      await service.initialize(initialFontSizePx: kDefaultFontSizePx);
-
-      await service.prepareToHide();
-      expect(appBar.isRegistered, isFalse);
-
-      appBar.calls.clear();
-      await service.completeShow();
-      expect(appBar.calls, containsAllInOrder(['register', 'reserve']));
-      expect(appBar.isRegistered, isTrue);
     });
   });
 
@@ -423,7 +410,7 @@ void main() {
 
       final service = makeService();
       await service.initialize(initialFontSizePx: kDefaultFontSizePx);
-      await service.prepareToHide(); // hide releases the strut (ABM_REMOVE)
+      await service.hideStrip(); // hide releases the strut (ABM_REMOVE)
       appBar.calls.clear();
 
       await service.showStrip();
@@ -441,10 +428,11 @@ void main() {
               'never presented');
     });
 
-    test('showStrip re-registers, reserves, and stays within the band', () async {
+    test('showStrip re-registers, reserves, and stays within the band',
+        () async {
       final service = makeService();
       await service.initialize(initialFontSizePx: kDefaultFontSizePx);
-      await service.prepareToHide();
+      await service.hideStrip();
       expect(appBar.isRegistered, isFalse);
       appBar.calls.clear();
 
@@ -453,7 +441,8 @@ void main() {
       expect(appBar.isRegistered, isTrue);
       expect(appBar.calls, containsAllInOrder(['register', 'reserve']));
       // Window never ends taller than its reserved band (rule a) → not relocated.
-      expect(desktop.size.height.round(), lessThanOrEqualTo(appBar.lastHeightPx!));
+      expect(
+          desktop.size.height.round(), lessThanOrEqualTo(appBar.lastHeightPx!));
       expect(desktop.position, Offset.zero,
           reason: 'collapsed show stays at the reserved band origin');
     });
@@ -476,7 +465,8 @@ void main() {
       expect(desktop.size.height, service.getCollapsedHeight());
     });
 
-    test('hide → show round-trips through the applier and re-reserves', () async {
+    test('hide → show round-trips through the applier and re-reserves',
+        () async {
       final service = makeService();
       await service.initialize(initialFontSizePx: kDefaultFontSizePx);
 

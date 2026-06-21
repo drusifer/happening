@@ -18,10 +18,8 @@ import 'package:happening/core/astro/astro_data_service.dart';
 import 'package:happening/core/display/display_service.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/time/clock_service.dart';
-import 'package:happening/core/window/expansion_controller.dart';
-import 'package:happening/core/window/physical_window_state.dart';
+import 'package:happening/core/window/strip_controller.dart';
 import 'package:happening/core/window/window_service.dart';
-import 'package:happening/core/window/window_service_resize_executor.dart';
 import 'package:happening/features/calendar/calendar_controller.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/timeline/countdown_display.dart';
@@ -88,7 +86,7 @@ class _TimelineStripState extends State<TimelineStrip>
     with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   static final _log = Logger('_TimelineStripState');
   late final WindowService _windowService;
-  late final ExpansionController _expansionController;
+  late final StripController _stripController;
   late final TimelineFocusController _focusController;
   late final FocusNode _keyboardFocusNode;
   final _flashNotifier = ValueNotifier<double>(0.0);
@@ -127,9 +125,7 @@ class _TimelineStripState extends State<TimelineStrip>
     _windowService = widget.windowService;
     _paintTicks = widget.clockService.tick10s;
     _countdownTicks = widget.clockService.tick1s;
-    _expansionController = ExpansionController(
-      executor: WindowServiceResizeExecutor(_windowService),
-    )..start();
+    _stripController = StripController(windowService: _windowService);
     _hideAnim = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -210,7 +206,7 @@ class _TimelineStripState extends State<TimelineStrip>
   @override
   void dispose() {
     _hideAnim.dispose();
-    _expansionController.dispose();
+    _stripController.dispose();
     _focusController.isSentToBackNotifier.removeListener(_onSentToBackChanged);
     widget.settingsService.removeListener(_onSettingsChanged);
     _astroDataService.removeListener(_onAstroDataChanged);
@@ -257,7 +253,7 @@ class _TimelineStripState extends State<TimelineStrip>
         _layout = null;
       });
     }
-    await _expansionController.sendAndAwait(ExpansionState.collapsed);
+    await _stripController.collapse();
 
     _log.fine('TimelineStrip.resetFreshCollapsed DONE '
         'hovered=${_hoveredEvent != null} hovering=$_isHoveringStrip '
@@ -311,7 +307,7 @@ class _TimelineStripState extends State<TimelineStrip>
         _isHoveringStrip = false;
         _hoveredEvent = null;
       });
-      _expansionController.send(ExpansionState.collapsed);
+      unawaited(_stripController.collapse());
     }
   }
 
@@ -368,7 +364,9 @@ class _TimelineStripState extends State<TimelineStrip>
       _log.fine(
           '[TS] expansion → ${state.name} mouseX=${mouseX.toStringAsFixed(1)} mouseY=${mouseY.toStringAsFixed(1)} isExit=${details is PointerExitEvent}');
     }
-    _expansionController.send(state);
+    unawaited(state == ExpansionState.expanded
+        ? _stripController.expand()
+        : _stripController.collapse());
 
     final settings = widget.settingsService.current;
     final astroData = _astroDataService.current;
@@ -483,7 +481,7 @@ class _TimelineStripState extends State<TimelineStrip>
       _isSettingsOpen = false;
     });
     _lastSentExpansionState = ExpansionState.collapsed;
-    await _expansionController.sendAndAwait(ExpansionState.collapsed);
+    await _stripController.collapse();
 
     setState(() {
       _isHidden = true;
@@ -491,9 +489,9 @@ class _TimelineStripState extends State<TimelineStrip>
     _log.fine('TimelineStrip: reversing hide animation');
     await _hideAnim.reverse();
     // Release the strut + shrink to the mini pill in one applier call (mirror of
-    // showStrip). Done AFTER the fade so the window shrinks once content is out.
-    _log.info('TimelineStrip: hiding window via windowService.hideStrip()');
-    await _windowService.hideStrip();
+    // show). Done AFTER the fade so the window shrinks once content is out.
+    _log.info('TimelineStrip: hiding window via stripController.hide()');
+    await _stripController.hide();
     _log.info('TimelineStrip: hide complete');
   }
 
@@ -505,13 +503,11 @@ class _TimelineStripState extends State<TimelineStrip>
       _isHidden = false;
       _isHoveringStrip = false;
     });
-    _expansionController.send(ExpansionState.collapsed);
-    // Restore via the SAME sequence init uses (reserve→size→present) — the one
-    // path that keeps the strip in its strut. Replaces the divergent
-    // resizeToFullStrip + completeShow/onShowStrip (sized before reserving, no
-    // present → the strip drifted below the strut: build-still-below-strut.out).
-    _log.fine('TimelineStrip: restoring window via windowService.showStrip()');
-    await _windowService.showStrip();
+    // Restore via the controller's show() — hidden→shown routes through the
+    // validated showStrip sequence (reserve→size→present), the one path that
+    // keeps the strip in its strut.
+    _log.fine('TimelineStrip: restoring window via stripController.show()');
+    await _stripController.show();
     _log.fine('TimelineStrip: playing show animation');
     await _hideAnim.forward();
     if (_preHideSentToBack) {
@@ -528,10 +524,10 @@ class _TimelineStripState extends State<TimelineStrip>
       _hoveredEvent = null;
     });
     if (_isSettingsOpen) {
-      _expansionController.send(ExpansionState.expanded);
+      unawaited(_stripController.expand());
       unawaited(_windowService.focus());
     } else {
-      _expansionController.send(ExpansionState.collapsed);
+      unawaited(_stripController.collapse());
     }
   }
 
@@ -589,11 +585,10 @@ class _TimelineStripState extends State<TimelineStrip>
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<PhysicalWindowState>(
-      stream: _expansionController.stateStream,
-      initialData: PhysicalWindowState.collapsed,
-      builder: (context, expansionSnapshot) {
-        final isExpanded = expansionSnapshot.data!.isExpanded;
+    return ListenableBuilder(
+      listenable: _stripController,
+      builder: (context, _) {
+        final isExpanded = _stripController.state.isExpanded;
         return StreamBuilder<DateTime>(
           stream: _paintTicks,
           initialData: widget.clockService.now,

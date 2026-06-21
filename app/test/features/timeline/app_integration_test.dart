@@ -10,12 +10,12 @@ import 'package:happening/core/display/display_info.dart';
 import 'package:happening/core/display/display_service.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/time/clock_service.dart';
+import 'package:happening/core/window/strip_state.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:happening/features/auth/auth_service.dart';
 import 'package:happening/features/calendar/calendar_controller.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/calendar/calendar_service.dart';
-import 'package:happening/features/timeline/expansion_logic.dart';
 import 'package:happening/features/timeline/timeline_strip.dart';
 import 'package:mockito/mockito.dart';
 import 'package:screen_retriever/screen_retriever.dart';
@@ -47,7 +47,7 @@ class _FakeWindowService extends WindowService {
         );
 
   @override
-  Future<void> performResize(ExpansionState intent) async {
+  Future<void> applyState(StripState state) async {
     return;
   }
 

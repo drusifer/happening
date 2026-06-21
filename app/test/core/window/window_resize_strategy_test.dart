@@ -118,7 +118,8 @@ void main() {
       verify(mockWM.setPosition(Offset.zero)).called(1);
     });
 
-    test('repositions via setPosition + setSize, never setBounds (first-show '
+    test(
+        'repositions via setPosition + setSize, never setBounds (first-show '
         'setBounds flakes to ~1px — L-005)', () async {
       await strategy.applySize(const Size(268, 72),
           position: const Offset(10, 20));

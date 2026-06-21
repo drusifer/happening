@@ -20,8 +20,11 @@ class _StubEvents implements DisplayEvents {
   void Function() subscribe(void Function() onChange) => () {};
 }
 
-/// WindowService whose [applyState] is recorded and (optionally) held open, so
-/// the controller's serialisation/last-wins behaviour can be observed.
+/// WindowService whose transitions are recorded and (optionally) held open, so
+/// the controller's serialisation/last-wins behaviour can be observed. The
+/// controller dispatches `→hidden` to [hideStrip], `hidden→shown` to [showStrip],
+/// and `shown→shown` to [applyState]; all three record their target state so the
+/// observed sequence reflects the logical transitions regardless of the path.
 class _FakeWindowService extends WindowService {
   _FakeWindowService({
     required super.windowManager,
@@ -32,11 +35,19 @@ class _FakeWindowService extends WindowService {
   final List<StripState> applied = [];
   Completer<void>? blockOn;
 
-  @override
-  Future<void> applyState(StripState state) async {
+  Future<void> _record(StripState state) async {
     if (blockOn != null) await blockOn!.future;
     applied.add(state);
   }
+
+  @override
+  Future<void> applyState(StripState state) => _record(state);
+
+  @override
+  Future<void> hideStrip() => _record(StripState.hidden);
+
+  @override
+  Future<void> showStrip() => _record(StripState.collapsedShown);
 }
 
 void main() {

@@ -29,6 +29,18 @@ import subprocess
 import threading
 from pathlib import Path
 
+# Force UTF-8 console output on every platform. Windows consoles default to
+# cp1252, which raises UnicodeEncodeError when build output contains spinner
+# (⠙) or arrow (→) glyphs; errors='replace' guarantees we never crash printing
+# the tail or echoing build lines. No-op where the stream can't be reconfigured
+# (e.g. already-wrapped or non-text streams), and harmless on Linux/macOS
+# (already UTF-8).
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding='utf-8', errors='replace')
+    except (AttributeError, ValueError):
+        pass
+
 # ── Constants ────────────────────────────────────────────────────────────────
 
 FAILURE_PATTERNS = re.compile(r'×|FAIL|Error:|AssertionError|failed \(|npm ERR')

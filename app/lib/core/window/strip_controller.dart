@@ -54,11 +54,23 @@ class StripController extends ChangeNotifier {
 
   Future<void> _request(StripState s) => _gate.send(s);
 
-  Future<void> _apply(StripState s) async {
-    _log.fine('apply $s');
-    await _windowService.applyState(s);
-    if (_state != s) {
-      _state = s;
+  Future<void> _apply(StripState target) async {
+    _log.fine('apply $target (from $_state)');
+    final wasHidden = _state == StripState.hidden;
+    if (target == StripState.hidden) {
+      // Release the strut + shrink to the mini pill (the one ABM_REMOVE).
+      await _windowService.hideStrip();
+    } else if (wasHidden) {
+      // hidden → shown: re-register + reserve + present (the validated show
+      // path that keeps the strip in its strut).
+      await _windowService.showStrip();
+    } else {
+      // shown → shown (expand/collapse, display/font reapply): re-pin via the
+      // applier; no teardown, no present needed (a frame is already composited).
+      await _windowService.applyState(target);
+    }
+    if (_state != target) {
+      _state = target;
       notifyListeners();
     }
   }

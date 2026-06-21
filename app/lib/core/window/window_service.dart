@@ -5,14 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:happening/core/display/display_info.dart';
 import 'package:happening/core/display/display_service.dart';
 import 'package:happening/core/settings/settings_service.dart';
-import 'package:happening/core/window/expansion_controller.dart'
-    show ExpansionController;
 import 'package:happening/core/window/interaction_strategy/window_interaction_strategy.dart';
 import 'package:happening/core/window/resize_strategy/window_resize_strategy.dart';
 import 'package:happening/core/window/strip_state.dart';
-import 'package:happening/core/window/window_service_resize_executor.dart'
-    show WindowServiceResizeExecutor;
-import 'package:happening/features/timeline/expansion_logic.dart';
 import 'package:logging/logging.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
@@ -224,19 +219,6 @@ class WindowService with WidgetsBindingObserver {
 
   /// Returns expanded height in logical pixels (for window_manager APIs).
   double getExpandedHeight() => _fontSizePx * 10.0 + 170.0;
-
-  /// Executes the platform resize sequence for [intent].
-  ///
-  /// Called by [WindowServiceResizeExecutor] on behalf of [ExpansionController].
-  Future<void> performResize(ExpansionState intent) async {
-    // Converged onto the proven applier — the same reserve→size-at-reserved-origin
-    // path init/show/hide use. Unlike the old _doExpand/_doCollapse (resize in
-    // place, NO reposition), applyState re-pins the strip to the reserved band
-    // origin every time, so an expand/collapse cannot strand it below the strut.
-    await applyState(intent == ExpansionState.expanded
-        ? StripState.expandedShown
-        : StripState.collapsedShown);
-  }
 
   /// The single applier: maps a [StripState] to geometry + platform
   /// reservation, idempotently. Geometry is a pure function of state
