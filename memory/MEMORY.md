@@ -4,8 +4,10 @@
 Flutter desktop app (Linux/macOS/Windows) — a top-of-screen calendar strip that shows hovercards and a settings panel when expanded.
 
 ## Key Files
-- `app/lib/core/window/window_service.dart` — window resize logic (expand/collapse)
+- `app/lib/core/window/window_service.dart` — `applyState(StripState)`, the single OS-geometry applier
+- `app/lib/core/window/strip_controller.dart` — `StripController`, the single serialized transition gate (DEC-009)
 - `app/lib/features/timeline/timeline_strip.dart` — main UI, hover/mouse logic
+- Window architecture: `docs/ARCH.md` §6 + `docs/DECISIONS.md` DEC-009
 - `app/linux/runner/my_application.cc` — GTK native setup (RGBA visual, first_frame_cb)
 - `app/lib/main.dart` — entry point
 - `~/.config/happening/debug.log` — runtime log file

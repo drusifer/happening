@@ -1,5 +1,46 @@
 # Current Task
 
+## Groom pass 2 — reorg + archive + filenames — 2026-06-21
+**Status**: DONE ✅
+- [x] **CHAT.md archived/deduped**: a prior archive (CHAT-ARCHIVE-20260611.md, covers 2026-05-06→06-03)
+  had been created but never removed from CHAT.md nor linked. Removed the 721 duplicated lines, added the
+  missing top link + a "through 2026-06-03" summary. CHAT.md 1476→761 lines. Live tail = 2026-06-03→today.
+- [x] **Reorg**: `git mv` the completed planning artifacts to `docs/sprints/window-convergence-2026-06/`
+  (WINDOW_ENTRYPOINT_CONVERGENCE_PLAN, WINDOW_STATE_REFACTOR_PLAN, ..._REVIEW_2026-06-17, +
+  app/test/core/window/windows_reservation_plan.md which was misplaced in the test tree).
+- [x] **Removed scratch** debug logs from repo root: build-hide-show-expand-collapse-good.md,
+  build-no-strut-issues.md, build-show-below-strut.out, build-still-below-strut.out, build.below.out.
+- [x] **Filenames**: renamed all 25 remaining EN-DASH (`–`) filenames → `-` (git mv; quotepath=false to get
+  literal UTF-8). 0 Windows-invalid filenames remain repo-wide.
+- [x] **Stale memory**: `memory/project_expansion_controller.md` → `project_strip_controller.md` (rewritten
+  to the converged truth); `memory/MEMORY.md` Key Files updated (applyState/StripController).
+- ARCH.md version bumped 0.7→0.8 (date 2026-06-21).
+
+## Groom arch docs for StripController convergence — 2026-06-21
+**Status**: DONE ✅ (focused arch pass; remainder queued in next_steps)
+
+### Done
+- [x] `docs/ARCH.md` §6 rewritten: new "Unified Window-State Machine (StripController → applyState)"
+  subsection (single applier, AsyncGate gate, reserve-before-position, transition dispatch). Fixed the
+  stale Display/DPI paragraph (was "re-expand/re-collapse" + per-collapse `_reserveCollapsedSpace`; now
+  "re-apply current StripState via applyState"). Noted hidden-pill honors idle transparency.
+- [x] `docs/DECISIONS.md`: recorded **DEC-009** (converge all transitions onto applyState + StripController;
+  ExpansionController/ResizeExecutor/PhysicalWindowState/performResize/_doExpand/_doCollapse deleted;
+  onWindowMoved re-pin rejected). TL;DR updated.
+- [x] `docs/EXPANSION_CONTROLLER.md`: added ⛔ SUPERSEDED banner (subsystem deleted; points to ARCH §6 + DEC-009).
+- [x] Verified README.md + USER_GUIDE.md have NO stale internal window-arch refs (grep clean); user-facing
+  behavior unchanged by the convergence, so no user-doc edits needed.
+
+### Verified-stale but NOT yet groomed (see next_steps)
+- `memory/project_expansion_controller.md` — describes the deleted subsystem.
+- `docs/WINDOW_ENTRYPOINT_CONVERGENCE_PLAN.md`, `WINDOW_STATE_REFACTOR_PLAN.md`,
+  `WINDOW_STATE_REFACTOR_REVIEW_2026-06-17.md` — completed-sprint planning artifacts; candidates to move to
+  `docs/sprints/` (the refactor they planned is now shipped).
+- `docs/DECISIONS.md:118` / `docs/LESSONS.md` mention `_doExpand`/`_doCollapse`/`resizeToMini` — these are
+  HISTORICAL records (frozen), left as-is by design.
+- 25 tracked filenames with EN-DASH (`–`) in `calendar-threading/`, `linux-wayland-simplification/`,
+  `agents/mouse.docs/` — Windows-invalid; will block future commits touching them.
+
 ## F-31 Docs, Goldens + USER_GUIDE Updates — 2026-06-11
 **Status**: DONE ✅
 

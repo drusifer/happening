@@ -1,17 +1,21 @@
 # Next Steps
 
-## After F-31 ships
-- [ ] Archive CHAT.md — it's growing; archive when > 50 messages.
-- [ ] Update ARCH.md to v0.8: add F-31 hide/show architecture (onHideStrip/onShowStrip hooks, mini widget, z-order save/restore), reference DEC-008.
-- [ ] Update ARCH.md to document `docs/sprints/` structure for future sprints.
-- [ ] Update docs/LINUX_SIMPLIFICATION.md to reference F-28 strut now lives in docs/sprints/F-28/.
+## Done in the 2026-06-21 groom (pass 1 + 2)
+ARCH §6 rewritten + DEC-009 + EXPANSION_CONTROLLER superseded + ARCH v0.8; CHAT.md deduped/archived
+(1476→761); WINDOW_* plans → `docs/sprints/window-convergence-2026-06/`; scratch logs removed; 25 en-dash
+files renamed; stale memory refreshed → `project_strip_controller.md`. See current_task.md.
 
-## After v0.5.1 ships
-- [ ] Update docs/DECISIONS.md DEC-006 + DEC-007 status to "Implemented" after Morpheus review.
-- [ ] Record a new decision DEC-008 for the Astronomical Theme and offline local GeoNames search strategy.
-- [ ] Add TLDR headers to new files: `linux_dock_window_manager_plugin.cc/.h`, `linux_dock_window_manager.dart`, `linux_resize_strategy.dart`, and `city_search.dart`.
-- [ ] Update `ARCH.md` to v0.8: add Linux strut section, `WindowResizeStrategy`, and the `AstroDataService` + `SkyBody` subsystem architecture.
+## Remaining / lower priority
+1. **ARCH.md §8 decision table** — optionally add an AOQ row pointing at DEC-009 (the §6 body is current).
+2. **`docs/sprints/window-convergence-2026-06/`** — consider a one-line README (other sprint dirs mostly
+   lack one, so optional). The authoritative pointers are ARCH §6 + DEC-009.
+3. **CHAT.md still ~761 lines** (2026-06-03→today). The 06-03→06-11 portion (F-31 + early window work) could
+   be archived next time it crosses the threshold again; the 06-11→today window-refactor history is still
+   active context, keep it live.
+4. **`docs/EXPANSION_CONTROLLER.md`** kept with SUPERSEDED banner (history). If Drew prefers, move it under
+   `docs/sprints/window-convergence-2026-06/` alongside the other historical window docs.
 
 ## Ongoing
-- [ ] @Oracle *ora archive: CHAT.md is growing — archive when > 50 messages.
-- [ ] @Oracle *ora groom: Watch for new decisions or architecture updates to record.
+- [ ] `*ora archive` when CHAT.md > ~100 msgs again.
+- [ ] Record a follow-up decision when the Linux/macOS show/hide convergence lands (deferred per DEC-009).
+- [ ] Watch DECISIONS/ARCH consistency as the StripController fold-in settles.

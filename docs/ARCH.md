@@ -1,9 +1,9 @@
 # ARCH: What's Happening? — System Architecture
 
-**Version**: 0.7
+**Version**: 0.8
 **Author**: Morpheus (Tech Lead) / Ora (Knowledge Officer)
-**Date**: 2026-05-14
-**Status**: Approved
+**Date**: 2026-06-21
+**Status**: Approved — §6 updated for the window-transition convergence (DEC-009)
 
 ## TLDR
 A stateless-first Flutter desktop app using a tiered `StreamBuilder` architecture to drive real-time updates. Optimized for ultra-low CPU usage via isolated repaints and multi-frequency clock ticks. Uses a decoupled Service/Controller pattern for Google Calendar integration.
@@ -118,12 +118,37 @@ To provide stable interactions, hit-test bounds are context-aware:
 
 ## 6. Window Strategy
 
+### Unified Window-State Machine (`StripController` → `applyState`)
+Every window transition — init, hover expand/collapse, hide/show, settings, display
+change, font change, AppBar reassert — routes through **one applier**:
+`WindowService.applyState(StripState)`, the single source of OS geometry. `StripState`
+has three values: `collapsedShown`, `expandedShown`, `hidden`.
+
+- **`StripController`** (a `ChangeNotifier`) owns the logical `StripState` and is the
+  serialized gate for user-driven transitions (`collapse / expand / hide / show /
+  reapply`). It funnels concurrent requests through an `AsyncGate` (one-slot,
+  last-wins) so a hide racing an in-flight expand always settles on the latest
+  intent. The widget observes the controller for `isExpanded`.
+- **`applyState`** is idempotent: it reserves the platform work-area band FIRST
+  (`applyReservation` — Windows AppBar register + reserve; macOS no-op), then applies
+  size + position AT the returned reserved origin via the active `WindowResizeStrategy`.
+  Reserve-before-position is what keeps the strip inside its own strut.
+- **Transition dispatch:** `→ hidden` releases the strut and shrinks to the mini pill;
+  `hidden → shown` re-registers + reserves + forces a first-frame present (the one
+  path that composites a frameless reserved window); `shown → shown` (expand/collapse)
+  re-applies in place, re-pinning to the reserved origin.
+
+This convergence (sprint 2026-06) replaced a set of divergent per-transition paths
+(`ExpansionController`, `resizeToMini/FullStrip`, `_doExpand/_doCollapse`,
+`performResize`) that each re-implemented reservation/positioning slightly
+differently — the root cause of the recurring "strip lands below its own strut" bug
+class. See [DECISIONS.md](DECISIONS.md) DEC-009.
+
 ### Dynamic Resize with Solid Background
-The window resizes between two heights driven by hover state:
+The window resizes between two heights (driven by `StripState`):
 - **Collapsed** (~55px): only the strip is visible. Background covers full window height (solid color, no transparency dependency).
 - **Expanded** (~250px): the strip + hover card area. Background uses `WindowService.getExpandedHeight()` (not `constraints.maxHeight`) to cover the full area even during the async OS resize transition.
 
-The background is always a solid color — no compositor transparency required. This avoids the common GTK/Wayland black-area bug where transparent pixels render as black when the compositor does not composite the window.
 
 ### Linux Platform Layer (`my_application.cc`)
 On Linux, the runner stays close to the standard Flutter GTK startup path. It sets
@@ -146,9 +171,9 @@ protocol such as layer-shell or implements a separate conservative Wayland mode.
 - `_dpr` from `window_manager.getDevicePixelRatio()`
 - `_screenWidth` from `screen_retriever.getPrimaryDisplay().size.width`
 
-If either value changes, `WindowService` resizes the window through the active `WindowResizeStrategy`. Expanded windows are re-expanded to the new width/height, and collapsed windows are re-collapsed to the new width/height.
+If either value changes, `WindowService` re-applies the *current* `StripState` through `applyState` — the logical state is unchanged, only the computed geometry (width, origin, band height) is recomputed.
 
-On Windows, display/DPI changes can also stale the shell AppBar work-area reservation because the AppBar rect is expressed in physical pixels. After refreshing DPR and width, Windows calls `_reserveCollapsedSpace()` so `ABM_QUERYPOS`/`ABM_SETPOS` reassert the reserved band with updated physical-pixel values, then repositions the Flutter window using the trusted `rcTop / dpr`. This covers DPI scaling changes, resolution changes, and primary-display size changes without Win32 message subclassing.
+Because `applyState` reserves before positioning, that one call also refreshes the Windows AppBar band (`ABM_QUERYPOS`/`ABM_SETPOS` with updated physical-pixel values — the rect is expressed in physical pixels and DPI/resolution changes stale it) and repositions the Flutter window at the trusted `rcTop / dpr`. This covers DPI scaling, resolution, and primary-display size changes without Win32 message subclassing.
 
 ### Always-Visible Controls
 Four icon buttons are always painted on the strip (visible once authenticated):

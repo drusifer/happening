@@ -1,5 +1,16 @@
 # Oracle Context
 
+## Window-architecture SoT map (post-convergence, 2026-06-21)
+The window subsystem converged this sprint (DEC-009). Authoritative now:
+- **Current arch** → `docs/ARCH.md` §6 "Unified Window-State Machine" (StripController → applyState).
+- **Decision** → `docs/DECISIONS.md` DEC-009.
+- **Lessons** → `docs/LESSONS.md` L-005 (applySize min/max bracket), L-006 (model OS behavior in fakes).
+- **SUPERSEDED / historical** (do NOT cite as current): `docs/EXPANSION_CONTROLLER.md` (banner added),
+  `docs/WINDOW_*_PLAN.md`, `WINDOW_STATE_REFACTOR_REVIEW_2026-06-17.md` (completed-sprint plans),
+  `memory/project_expansion_controller.md` (stale).
+Key code: `app/lib/core/window/{strip_controller,strip_state,async_gate,window_service,windows_window_service}.dart`.
+Deleted this sprint: ExpansionController, ResizeExecutor, WindowServiceResizeExecutor, PhysicalWindowState.
+
 ## Project: Happening
 **Date**: 2026-06-11
 **Status**: Post-v0.5.1. F-31 Hide/Show feature fully implemented, tested, and documented. Astronomical theme fully implemented and documented. Send-to-Back shipped and documented. GeoNames offline city search integrated. Tooling fixed for Windows compatibility.
