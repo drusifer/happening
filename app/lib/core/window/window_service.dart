@@ -76,6 +76,19 @@ class WindowService with WidgetsBindingObserver {
   @protected
   double get screenWidth => _screenWidth;
 
+  /// Converts a display's OS-reported width to the LOGICAL pixels that
+  /// `window_manager` (and thus [WindowResizeStrategy.applySize]) expects.
+  ///
+  /// screen_retriever reports PHYSICAL pixels on Windows — a value that stays
+  /// constant when the DPI scale changes (e.g. a 3840px monitor still reports
+  /// 3840 at 150%). The logical width is therefore physical/dpr. macOS/Linux
+  /// already report logical points, so they pass through unchanged. Without
+  /// this, a DPI change leaves the strip sized to physical width as if logical
+  /// (3840 logical = 5760 physical at 150% on a 3840 screen) — overshooting the
+  /// screen horizontally and reserving an over-wide AppBar band.
+  double _toLogicalWidth(double reportedWidth, double dpr) =>
+      Platform.isWindows && dpr > 0 ? reportedWidth / dpr : reportedWidth;
+
   @protected
   bool get isExpanded => _isExpanded;
 
@@ -102,7 +115,7 @@ class WindowService with WidgetsBindingObserver {
     if (nextActive == null) return;
 
     _dpr = newDpr;
-    _screenWidth = nextActive.size.width;
+    _screenWidth = _toLogicalWidth(nextActive.size.width, newDpr);
     _activeDisplay = nextActive;
 
     await _strategy.moveToDisplay(nextActive);
@@ -122,7 +135,7 @@ class WindowService with WidgetsBindingObserver {
     final double realDpr = _wm.getDevicePixelRatio();
     _dpr = realDpr;
     final width = await _readActiveDisplayWidth();
-    _screenWidth = width;
+    _screenWidth = _toLogicalWidth(width, _dpr);
     final targetHeight = getCollapsedHeight();
     final size = Size(width, targetHeight);
 
@@ -465,7 +478,7 @@ class WindowService with WidgetsBindingObserver {
   Future<void> _onDisplayChangedInner() async {
     final newDpr = _wm.getDevicePixelRatio();
     final nextActive = _displayService.activeDisplay;
-    final newWidth = nextActive?.size.width ?? 0;
+    final newWidth = _toLogicalWidth(nextActive?.size.width ?? 0, newDpr);
     final activeChanged = _activeDisplay != nextActive;
     final previousActiveId = _activeDisplay?.id;
     final nextActiveId = nextActive?.id;
@@ -524,6 +537,22 @@ class WindowService with WidgetsBindingObserver {
   /// display change, reassert. Mirror of `StripController.reapply()`; replaces
   /// the old `_doExpand`/`_doCollapse` (which resized in place without
   /// re-pinning to the reserved origin).
-  Future<void> _reapplyCurrentState() => applyState(
-      _isExpanded ? StripState.expandedShown : StripState.collapsedShown);
+  Future<void> _reapplyCurrentState() async {
+    final state =
+        _isExpanded ? StripState.expandedShown : StripState.collapsedShown;
+    await applyState(state);
+    await afterReapplyState(state);
+  }
+
+  /// Hook invoked right after [_reapplyCurrentState]'s [applyState], for
+  /// platforms that must re-present/re-pin so an asynchronous OS relocation
+  /// cannot strand the window after the geometry settles. On Windows a DPI
+  /// change triggers a late (~150ms) Win32 re-evaluation that drops the AppBar
+  /// window to its band bottom (below its own strut); init/show survive it via
+  /// [presentInitialFrame], so the re-apply paths must do the same. Base no-op
+  /// (macOS/Linux have no such relocation).
+  @protected
+  Future<void> afterReapplyState(StripState state) async {
+    return;
+  }
 }

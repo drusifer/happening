@@ -769,7 +769,7 @@ make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
  Shutdown prep: persona state saved (Oracle+Neo). Code committed thru f9b2c18. Uncommitted = docs groom only (ARCH/DEC edits, WINDOW_* moved, 25 en-dash renames, CHAT archive, memory). Run 'git commit -a' to capture. Tests/lint green.
 
 ---
-[<small>2026-06-21 12:41:10</small>] [**make**]->[**all**] *build*:
+[<small>2026-06-22 11:07:21</small>] [**make**]->[**all**] *build*:
  Build PASSED | make run-windows | C:\Users\drusi\VSCode_Projects\happening\build\build.out
 Lost connection to device.
 make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
