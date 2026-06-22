@@ -1,0 +1,475 @@
+=== make run-windows @ 2026-06-22 10:36:55 ===
+make[1]: Entering directory 'C:/Users/drusi/VSCode_Projects/happening'
+==> Flutter SDK not found �?" cloning stable into .flutter/flutter ...
+mkdir : An item with the specified name C:\Users\drusi\VSCode_Projects\happening\.flutter already exists.
+At line:1 char:120
++ ...  cloning stable into .flutter/flutter ...'; mkdir -p .flutter; git cl ...
++                                                 ~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ResourceExists: (C:\Users\drusi\...pening\.flutter:String) [New-Item], IOException
+    + FullyQualifiedErrorId : DirectoryExist,Microsoft.PowerShell.Commands.NewItemCommand
+ 
+fatal: destination path '.flutter/flutter' already exists and is not an empty directory.
+�o" flutter SDK cloned
+cd app && flutter pub get
+Resolving dependencies...
+Downloading packages...
+  _fe_analyzer_shared 93.0.0 (104.0.0 available)
+  analysis_server_plugin 0.3.7 (0.3.19 available)
+  analyzer 10.0.1 (14.0.0 available)
+  analyzer_plugin 0.14.1 (0.14.13 available)
+  cli_util 0.4.2 (0.5.1 available)
+  dart_code_linter 4.1.3 (4.1.5 available)
+  dart_style 3.1.7 (3.1.9 available)
+  flutter_secure_storage_darwin 0.3.2 (0.4.0 available)
+  matcher 0.12.19 (0.12.20 available)
+> meta 1.18.0 (was 1.17.0) (1.18.3 available)
+  mockito 5.6.4 (5.7.0 available)
+  package_config 2.2.0 (3.0.0 available)
+> test_api 0.7.11 (was 0.7.10) (0.7.12 available)
+  url_launcher_android 6.3.30 (6.3.32 available)
+  vector_math 2.2.0 (2.4.0 available)
+Changed 2 dependencies!
+15 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+cd app && flutter run -d windows
+Launching lib\main.dart on Windows in debug mode...
+Building Windows application...                                    22.9s
+√ Built build\windows\x64\runner\Debug\happening.exe
+[2026-06-22T10:37:24.294705] [DBG] [main] Main entry point: WidgetsFlutterBinding initialized.
+[2026-06-22T10:37:24.313716] [DBG] [main] Settings loaded.
+[2026-06-22T10:37:24.329709] [WRN] [main] DisplayService: weak fingerprint match — persisted=\\.\DISPLAY1 matched DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001) (\\.\DISPLAY1). User can re-pick in Settings.
+[2026-06-22T10:37:24.334710] [DBG] [main] DisplayService initialized: active=DisplayInfo(id=DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001), osName=\\.\DISPLAY1, size=Size(3840.0, 2160.0), workArea=(Offset(0.0, 0.0), Size(3840.0, 2112.0)), scale=1.0, primary=true)
+[2026-06-22T10:37:24.336706] [INF] [main] WindowService.initialize() start
+[2026-06-22T10:37:24.347705] [DBG] [WindowService] WindowService.initialize: dpr=1.0 activeDisplay=DisplayInfo(id=DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001), osName=\\.\DISPLAY1, size=Size(3840.0, 2160.0), workArea=(Offset(0.0, 0.0), Size(3840.0, 2112.0)), scale=1.0, primary=true) size=Size(3840.0, 60.0) collapsedHeight=60.0 expandedHeight=340.0
+[2026-06-22T10:37:24.347705] [DBG] [WindowService] WindowService.initialize: calling waitUntilReadyToShow
+[2026-06-22T10:37:24.348705] [DBG] [WindowService] WindowService.initialize: awaiting readyToShow
+[2026-06-22T10:37:24.583712] [DBG] [WindowService] WindowService.initialize: readyToShow callback — calling strategy.initialize
+[2026-06-22T10:37:24.584717] [DBG] [WindowService] WindowService.initialize: readyToShow complete, calling afterReadyToShow
+[2026-06-22T10:37:24.584717] [DBG] [WindowService] WindowService.initialize: afterReadyToShow complete
+[2026-06-22T10:37:24.584717] [DBG] [WindowService] WindowService.initialize: registering WidgetsBindingObserver
+[2026-06-22T10:37:24.584717] [INF] [main] WindowService.initialize() done — calling runApp()
+[2026-06-22T10:37:24.590704] [INF] [main] runApp() returned
+[2026-06-22T10:37:24.628716] [DBG] [_HappeningAppState] HappeningApp._initServices starting...
+[2026-06-22T10:37:24.938713] [DBG] [WindowService] WindowService.initialize: readyToShow callback — calling strategy.moveToDisplay DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)
+[2026-06-22T10:37:24.966705] [DBG] [WindowService] WindowService.initialize: readyToShow callback — calling beforeShow
+[2026-06-22T10:37:24.967706] [DBG] [WindowService] WindowService.initialize: readyToShow callback — calling setAsFrameless
+[2026-06-22T10:37:24.982715] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=1.0→1.0 width=3840.0→3840.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=false
+[2026-06-22T10:37:24.982715] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:37:25.005714] [DBG] [WindowService] WindowService.initialize: readyToShow callback — calling performShow
+[2026-06-22T10:37:25.006715] [DBG] [WindowService] WindowService.initialize: readyToShow callback — calling afterWindowShown
+[2026-06-22T10:37:25.007714] [DBG] [WindowsWindowService] afterWindowShown: applyState(collapsedShown); present deferred to first frame
+[2026-06-22T10:37:25.017709] [DBG] [Win32AppBar] loading SHAppBarMessage from shell32.dll
+[2026-06-22T10:37:25.019705] [DBG] [Win32AppBar] register: ABM_NEW hWnd=0x100774
+[2026-06-22T10:37:25.027705] [DBG] [Win32AppBar] reserveTopBand: req=3840x60 → rect=[0,0,3840,60]
+[2026-06-22T10:37:25.027705] [DBG] [WindowsWindowService] applyReservation: StripState.collapsedShown reserved → origin=Offset(0.0, 0.0) (rcTop=0)
+[2026-06-22T10:37:25.027705] [DBG] [WindowService] applyState: StripState.collapsedShown → size=Size(3840.0, 60.0) origin=Offset(0.0, 0.0) (reserved=Offset(0.0, 0.0))
+[2026-06-22T10:37:25.037712] [DBG] [_HappeningAppState] Secure storage verified.
+[2026-06-22T10:37:25.039714] [DBG] [_HappeningAppState] AuthService initialized. Attempting restore...
+[2026-06-22T10:37:25.060706] [DBG] [_HappeningAppState] Auth restored successfully.
+[2026-06-22T10:37:25.061707] [DBG] [_HappeningAppState] HappeningApp._startCalendar called.
+[2026-06-22T10:37:25.062715] [DBG] [CalendarController] CalendarController.start() called.
+[2026-06-22T10:37:25.063705] [DBG] [CalendarController] CalendarController._fetch() started (forceRefresh: false)
+[2026-06-22T10:37:25.063705] [DBG] [CalendarController] Fetching 9 configured calendars
+[2026-06-22T10:37:25.089715] [DBG] [_HappeningAppState] CalendarController started.
+[2026-06-22T10:37:25.089715] [DBG] [_HappeningAppState] AuthState changed to: authenticated
+[2026-06-22T10:37:25.141706] [DBG] [_HappeningAppState] app StreamBuilder: state=ConnectionState.waiting hasData=false dataLen=null lastEvents=null
+[2026-06-22T10:37:25.145705] [DBG] [AstroDataService] _onSettingsChanged: theme=astronomical hasLocation=true lat=40.71427 lng=-74.00597
+[2026-06-22T10:37:25.146706] [DBG] [AstroDataService] _recalculate: lat=40.71427 lng=-74.00597 dateKey=2026-6-22
+[2026-06-22T10:37:25.149710] [DBG] [AstroDataService] _recalculate: civilTwilightBegin=2026-06-22 08:51:57.850Z sunrise=2026-06-22 09:30:35.222Z solarNoon=2026-06-22 12:58:16.269 sunset=2026-06-23 00:25:57.316Z civilTwilightEnd=2026-06-23 01:04:34.428Z
+[2026-06-22T10:37:25.150713] [DBG] [AstroDataService] _recalculate: moonIllum={fraction: 0.5684901869725915, phase: 0.2718698637497986, angle: -1.170277931652859}
+[2026-06-22T10:37:25.151706] [DBG] [AstroDataService] _recalculate: AstroData built — notifying listeners
+[2026-06-22T10:37:25.151706] [DBG] [_TimelineStripState] TimelineStrip: astroData changed → current=AstroData(sunrise=2026-06-22 09:30:35.222Z)
+[2026-06-22T10:37:25.152706] [DBG] [_TimelineStripState] Timestrip: _updatgeHeights called:  strip height is to 60.0
+[2026-06-22T10:37:25.153706] [DBG] [_TimelineStripState] TimelineStrip: Initializing
+[2026-06-22T10:37:25.161706] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=false sentToBack=false signIn=false cancelSignIn=false loading=true layout=true events=0 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:37:25.232716] [DBG] [TimelinePainter] TimelinePainter.paint size=3840.0x60.0 bg=#ff1a1a2e surfaceOpacity=1.00 emphasisOpacity=1.00 events=0 hovered=false loading=true signIn=false
+[2026-06-22T10:37:25.303704] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:25.303704] [DBG] [WindowService] WindowService.initialize: readyToShow callback — calling interactionStrategy.initialize
+[2026-06-22T10:37:25.304705] [DBG] [WindowService] WindowService.initialize: readyToShow callback — done
+[2026-06-22T10:37:25.392706] [DBG] [WindowsWindowService] presentInitialFrame: 1px shrink-settle 59.0→60.0, pin=Offset(0.0, 0.0)
+[2026-06-22T10:37:25.396714] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=1.0→1.0 width=3840.0→3840.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=false
+[2026-06-22T10:37:25.396714] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:37:25.401706] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=false sentToBack=false signIn=false cancelSignIn=false loading=true layout=true events=0 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=59.0
+[2026-06-22T10:37:25.436709] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=1.0→1.0 width=3840.0→3840.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=false
+[2026-06-22T10:37:25.436709] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:37:25.443710] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=false sentToBack=false signIn=false cancelSignIn=false loading=true layout=true events=0 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:37:25.501713] [DBG] [Win32AppBar] presentFrame: RedrawWindow(RDW_INVALIDATE|RDW_UPDATENOW) hwnd=0x100774
+[2026-06-22T10:37:25.505713] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +150ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:25.505713] [DBG] [WindowService] GEO[presentInitialFrame:after]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:25.657710] [DBG] [WindowService] GEO[presentInitialFrame +150ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+Syncing files to device Windows...                              
+[2026-06-22T10:37:25.806711] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +500ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:25.883717] [DBG] [GoogleCalendarService] [CalendarFetch] fetched 5 raw items, 5 timed items
+[2026-06-22T10:37:25.885716] [DBG] [CalendarController] Fetched configured calendar: 5 events
+[2026-06-22T10:37:26.008710] [DBG] [WindowService] GEO[presentInitialFrame +500ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+Syncing files to device Windows...                                 147ms
+
+Flutter run key commands.
+r Hot reload. 
+R Hot restart.
+h List all available interactive commands.
+d Detach (terminate "flutter run" but leave application running).
+c Clear the screen
+q Quit (terminate the application on the device).
+
+A Dart VM Service on Windows is available at: http://127.0.0.1:65089/2dPn6_2e7zE=/
+The Flutter DevTools debugger and profiler on Windows is available at: http://127.0.0.1:65089/2dPn6_2e7zE=/devtools/?uri=ws://127.0.0.1:65089/2dPn6_2e7zE=/ws
+[2026-06-22T10:37:26.206712] [DBG] [GoogleCalendarService] [CalendarFetch] fetched 5 raw items, 5 timed items
+[2026-06-22T10:37:26.206712] [DBG] [CalendarController] Fetched configured calendar: 5 events
+[2026-06-22T10:37:26.505947] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +1200ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:26.648952] [DBG] [GoogleCalendarService] [CalendarFetch] fetched 2 raw items, 2 timed items
+[2026-06-22T10:37:26.649952] [DBG] [CalendarController] Fetched configured calendar: 2 events
+[2026-06-22T10:37:26.707953] [DBG] [WindowService] GEO[presentInitialFrame +1200ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:27.273176] [DBG] [GoogleCalendarService] [CalendarFetch] fetched 2 raw items, 1 timed items
+[2026-06-22T10:37:27.273176] [DBG] [CalendarController] Fetched configured calendar: 1 events
+[2026-06-22T10:37:27.712176] [DBG] [GoogleCalendarService] [CalendarFetch] fetched 0 raw items, 0 timed items
+[2026-06-22T10:37:27.713177] [DBG] [CalendarController] Fetched configured calendar: 0 events
+[2026-06-22T10:37:28.182258] [DBG] [GoogleCalendarService] [CalendarFetch] fetched 0 raw items, 0 timed items
+[2026-06-22T10:37:28.182258] [DBG] [CalendarController] Fetched configured calendar: 0 events
+[2026-06-22T10:37:28.714190] [DBG] [GoogleCalendarService] [CalendarFetch] fetched 0 raw items, 0 timed items
+[2026-06-22T10:37:28.715189] [DBG] [CalendarController] Fetched configured calendar: 0 events
+[2026-06-22T10:37:29.434190] [DBG] [GoogleCalendarService] [CalendarFetch] fetched 8 raw items, 8 timed items
+[2026-06-22T10:37:29.434190] [DBG] [CalendarController] Fetched configured calendar: 8 events
+[2026-06-22T10:37:30.048933] [DBG] [GoogleCalendarService] [CalendarFetch] fetched 8 raw items, 8 timed items
+[2026-06-22T10:37:30.050934] [DBG] [CalendarController] Fetched configured calendar: 8 events
+[2026-06-22T10:37:30.050934] [DBG] [CalendarController] Fetch complete. Found 29 events (24 deduped).
+[2026-06-22T10:37:30.050934] [DBG] [CalendarController] Emitted events to stream.
+[2026-06-22T10:37:30.053933] [DBG] [_HappeningAppState] app StreamBuilder: state=ConnectionState.active hasData=true dataLen=24 lastEvents=24
+[2026-06-22T10:37:30.054934] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=false sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:37:30.060933] [DBG] [TimelinePainter] TimelinePainter.paint size=3840.0x60.0 bg=#ff1a1a2e surfaceOpacity=1.00 emphasisOpacity=1.00 events=24 hovered=false loading=false signIn=false
+[2026-06-22T10:37:34.695005] [DBG] [_TimelineStripState] [TS] expansion → expanded mouseX=119.0 mouseY=56.0 isExit=false
+[2026-06-22T10:37:34.696008] [DBG] [AsyncGate] send value=StripState.expandedShown force=false
+[2026-06-22T10:37:34.699007] [DBG] [StripController] apply StripState.expandedShown (from StripState.collapsedShown)
+[2026-06-22T10:37:34.700008] [DBG] [Win32AppBar] reserveTopBand: req=3840x60 → rect=[0,0,3840,60]
+[2026-06-22T10:37:34.700008] [DBG] [WindowsWindowService] applyReservation: StripState.expandedShown reserved → origin=Offset(0.0, 0.0) (rcTop=0)
+[2026-06-22T10:37:34.700008] [DBG] [WindowService] applyState: StripState.expandedShown → size=Size(3840.0, 340.0) origin=Offset(0.0, 0.0) (reserved=Offset(0.0, 0.0))
+[2026-06-22T10:37:34.703010] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=1.0→1.0 width=3840.0→3840.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=true
+[2026-06-22T10:37:34.703010] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:37:34.710007] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=true hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=340.0
+[2026-06-22T10:37:34.714006] [DBG] [TimelinePainter] TimelinePainter.paint size=3840.0x60.0 bg=#ff1a1a2e surfaceOpacity=1.00 emphasisOpacity=1.00 events=24 hovered=true loading=false signIn=false
+[2026-06-22T10:37:34.731005] [DBG] [WindowService] GEO[applyState:StripState.expandedShown]: pos=Offset(0.0, 0.0) size=Size(3840.0, 340.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:34.740013] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=true card=true settings=false hovered=true hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=340.0
+[2026-06-22T10:37:34.899012] [DBG] [WindowService] GEO[applyState:StripState.expandedShown +150ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 340.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:34.917008] [DBG] [_TimelineStripState] [TS] expansion → collapsed mouseX=98.0 mouseY=27.0 isExit=false
+[2026-06-22T10:37:34.917008] [DBG] [AsyncGate] send value=StripState.collapsedShown force=false
+[2026-06-22T10:37:34.918008] [DBG] [StripController] apply StripState.collapsedShown (from StripState.expandedShown)
+[2026-06-22T10:37:34.919009] [DBG] [Win32AppBar] reserveTopBand: req=3840x60 → rect=[0,0,3840,60]
+[2026-06-22T10:37:34.919009] [DBG] [WindowsWindowService] applyReservation: StripState.collapsedShown reserved → origin=Offset(0.0, 0.0) (rcTop=0)
+[2026-06-22T10:37:34.919009] [DBG] [WindowService] applyState: StripState.collapsedShown → size=Size(3840.0, 60.0) origin=Offset(0.0, 0.0) (reserved=Offset(0.0, 0.0))
+[2026-06-22T10:37:34.920006] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=true card=false settings=false hovered=false hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=340.0
+[2026-06-22T10:37:34.935006] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=1.0→1.0 width=3840.0→3840.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=false
+[2026-06-22T10:37:34.935006] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:37:34.945006] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=true card=false settings=false hovered=false hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:37:34.956006] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:34.960012] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:37:35.109005] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +150ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:35.161006] [DBG] [TimelinePainter] TimelinePainter.paint size=3840.0x60.0 bg=#ff1a1a2e surfaceOpacity=1.00 emphasisOpacity=1.00 events=24 hovered=false loading=false signIn=false
+[2026-06-22T10:37:35.234009] [DBG] [WindowService] GEO[applyState:StripState.expandedShown +500ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:35.287029] [INF] [_TimelineStripState] TimelineStrip: hiding strip (preHideSentToBack=false, settingsOpen=false, hoveredEvent=null)
+[2026-06-22T10:37:35.289023] [DBG] [_TimelineStripState] TimelineStrip: ensuring strip is collapsed before hiding
+[2026-06-22T10:37:35.289023] [DBG] [_TimelineStripState] TimelineStrip: reversing hide animation
+[2026-06-22T10:37:35.457794] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +500ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:35.592802] [INF] [_TimelineStripState] TimelineStrip: hiding window via stripController.hide()
+[2026-06-22T10:37:35.593792] [DBG] [AsyncGate] send value=StripState.hidden force=false
+[2026-06-22T10:37:35.593792] [DBG] [StripController] apply StripState.hidden (from StripState.collapsedShown)
+[2026-06-22T10:37:35.593792] [DBG] [WindowsWindowService] hideStrip: applyState(hidden) (converged onto the applier)
+[2026-06-22T10:37:35.599799] [DBG] [Win32AppBar] dispose: ABM_REMOVE done
+[2026-06-22T10:37:35.599799] [DBG] [WindowService] applyState: StripState.hidden → size=Size(223.0, 60.0) origin=Offset(0.0, 0.0) (reserved=null)
+[2026-06-22T10:37:35.634803] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=1.0→1.0 width=3840.0→3840.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=false
+[2026-06-22T10:37:35.634803] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:37:35.657793] [DBG] [WindowService] GEO[applyState:StripState.hidden]: pos=Offset(0.0, 0.0) size=Size(223.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:35.658794] [INF] [_TimelineStripState] TimelineStrip: hide complete
+[2026-06-22T10:37:35.809792] [DBG] [WindowService] GEO[applyState:StripState.hidden +150ms]: pos=Offset(0.0, 0.0) size=Size(223.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:35.932800] [DBG] [WindowService] GEO[applyState:StripState.expandedShown +1200ms]: pos=Offset(0.0, 0.0) size=Size(223.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:36.157225] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +1200ms]: pos=Offset(0.0, 0.0) size=Size(223.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:36.159226] [DBG] [WindowService] GEO[applyState:StripState.hidden +500ms]: pos=Offset(0.0, 0.0) size=Size(223.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:36.418238] [INF] [_TimelineStripState] TimelineStrip: restoring strip
+[2026-06-22T10:37:36.419226] [DBG] [_TimelineStripState] TimelineStrip: restoring window via stripController.show()
+[2026-06-22T10:37:36.419226] [DBG] [AsyncGate] send value=StripState.collapsedShown force=false
+[2026-06-22T10:37:36.420226] [DBG] [StripController] apply StripState.collapsedShown (from StripState.hidden)
+[2026-06-22T10:37:36.420226] [DBG] [WindowsWindowService] showStrip: applyState(collapsedShown) + presentInitialFrame (converged onto the init path)
+[2026-06-22T10:37:36.422225] [DBG] [Win32AppBar] register: ABM_NEW hWnd=0x100774
+[2026-06-22T10:37:36.427230] [DBG] [Win32AppBar] reserveTopBand: req=3840x60 → rect=[0,0,3840,60]
+[2026-06-22T10:37:36.427230] [DBG] [WindowsWindowService] applyReservation: StripState.collapsedShown reserved → origin=Offset(0.0, 0.0) (rcTop=0)
+[2026-06-22T10:37:36.427230] [DBG] [WindowService] applyState: StripState.collapsedShown → size=Size(3840.0, 60.0) origin=Offset(0.0, 0.0) (reserved=Offset(0.0, 0.0))
+[2026-06-22T10:37:36.462226] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=1.0→1.0 width=3840.0→3840.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=false
+[2026-06-22T10:37:36.462226] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:37:36.480225] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:36.480225] [DBG] [WindowsWindowService] presentInitialFrame: 1px shrink-settle 59.0→60.0, pin=Offset(0.0, 0.0)
+[2026-06-22T10:37:36.492226] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=1.0→1.0 width=3840.0→3840.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=false
+[2026-06-22T10:37:36.492226] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:37:36.522226] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=1.0→1.0 width=3840.0→3840.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=false
+[2026-06-22T10:37:36.522226] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:37:36.537225] [DBG] [Win32AppBar] presentFrame: RedrawWindow(RDW_INVALIDATE|RDW_UPDATENOW) hwnd=0x100774
+[2026-06-22T10:37:36.539235] [DBG] [WindowService] GEO[presentInitialFrame:after]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:36.539235] [DBG] [_TimelineStripState] TimelineStrip: playing show animation
+[2026-06-22T10:37:36.631235] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +150ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:36.691226] [DBG] [WindowService] GEO[presentInitialFrame +150ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:36.847251] [INF] [_TimelineStripState] TimelineStrip: show complete
+[2026-06-22T10:37:36.848254] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=false sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:37:36.854253] [DBG] [TimelinePainter] TimelinePainter.paint size=3840.0x60.0 bg=#ff1a1a2e surfaceOpacity=1.00 emphasisOpacity=1.00 events=24 hovered=false loading=false signIn=false
+[2026-06-22T10:37:36.865253] [DBG] [WindowService] GEO[applyState:StripState.hidden +1200ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:36.869251] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:37:36.981527] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +500ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:37.041514] [DBG] [WindowService] GEO[presentInitialFrame +500ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:37.312527] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=false sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:37:37.681527] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +1200ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:37.742520] [DBG] [WindowService] GEO[presentInitialFrame +1200ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:37:44.569187] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=1.0→1.0 width=3840.0→3840.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=false
+[2026-06-22T10:37:44.570185] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:37:44.594188] [DBG] [WindowService] WindowService._onDisplayChanged: already in progress, skipping
+[2026-06-22T10:37:44.627188] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=false sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=30.0
+[2026-06-22T10:37:44.631190] [DBG] [TimelinePainter] TimelinePainter.paint size=1920.5x60.0 bg=#ff1a1a2e surfaceOpacity=1.00 emphasisOpacity=1.00 events=24 hovered=false loading=false signIn=false
+[2026-06-22T10:37:44.659179] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=1.0→2.0 width=3840.0→1920.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=false
+[2026-06-22T10:37:44.660180] [DBG] [WindowService] WindowService._onDisplayChangedInner: display CHANGED — applying resize
+[2026-06-22T10:37:44.668180] [DBG] [WindowService] WindowService._onDisplayChangedInner: triggering resize isExpanded=false
+[2026-06-22T10:37:45.270986] [DBG] [Win32AppBar] reserveTopBand: req=3840x120 → rect=[0,0,3840,120]
+[2026-06-22T10:37:45.270986] [DBG] [WindowsWindowService] applyReservation: StripState.collapsedShown reserved → origin=Offset(0.0, 0.0) (rcTop=0)
+[2026-06-22T10:37:45.271987] [DBG] [WindowService] applyState: StripState.collapsedShown → size=Size(1920.0, 60.0) origin=Offset(0.0, 0.0) (reserved=Offset(0.0, 0.0))
+[2026-06-22T10:37:45.299985] [DBG] [WindowService] WindowService._onDisplayChanged: already in progress, skipping
+[2026-06-22T10:37:45.325986] [DBG] [TimelinePainter] TimelinePainter.paint size=1920.0x60.0 bg=#ff1a1a2e surfaceOpacity=1.00 emphasisOpacity=1.00 events=24 hovered=false loading=false signIn=false
+[2026-06-22T10:37:45.376991] [DBG] [WindowService] WindowService._onDisplayChanged: already in progress, skipping
+[2026-06-22T10:37:45.420984] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=false sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:37:45.496987] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown]: pos=Offset(0.0, 0.0) size=Size(1920.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:37:45.652990] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +150ms]: pos=Offset(0.0, 60.0) size=Size(1920.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:37:45.999986] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +500ms]: pos=Offset(0.0, 60.0) size=Size(1920.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:37:46.699998] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +1200ms]: pos=Offset(0.0, 60.0) size=Size(1920.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:37:46.753988] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:37:46.780989] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=false sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:37:47.004997] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:37:47.081992] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=false sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:37:47.250988] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:37:48.433203] [DBG] [CalendarController] CalendarController._fetch() started (forceRefresh: true)
+[2026-06-22T10:37:48.433203] [DBG] [CalendarController] Fetching 9 configured calendars
+[2026-06-22T10:37:48.434203] [DBG] [_TimelineStripState] TimelineStrip.resetFreshCollapsed START hovered=false hovering=true settings=false sentToBack=false layout=true events=24
+[2026-06-22T10:37:48.435202] [DBG] [_TimelineStripState] TimelineStrip.resetFreshCollapsed DONE hovered=false hovering=false settings=false sentToBack=false layout=false events=24
+[2026-06-22T10:37:48.435202] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=false sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:37:48.996821] [DBG] [GoogleCalendarService] [CalendarFetch] fetched 5 raw items, 5 timed items
+[2026-06-22T10:37:48.996821] [DBG] [CalendarController] Fetched configured calendar: 5 events
+[2026-06-22T10:37:49.449840] [DBG] [GoogleCalendarService] [CalendarFetch] fetched 5 raw items, 5 timed items
+[2026-06-22T10:37:49.449840] [DBG] [CalendarController] Fetched configured calendar: 5 events
+[2026-06-22T10:37:49.484263] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:37:49.938583] [DBG] [GoogleCalendarService] [CalendarFetch] fetched 2 raw items, 2 timed items
+[2026-06-22T10:37:49.938583] [DBG] [CalendarController] Fetched configured calendar: 2 events
+[2026-06-22T10:37:50.247575] [DBG] [CalendarController] CalendarController._fetch() already in flight; ignoring request forceRefresh=true
+[2026-06-22T10:37:50.247575] [DBG] [_TimelineStripState] TimelineStrip.resetFreshCollapsed START hovered=false hovering=true settings=false sentToBack=false layout=true events=24
+[2026-06-22T10:37:50.247575] [DBG] [_TimelineStripState] TimelineStrip.resetFreshCollapsed DONE hovered=false hovering=false settings=false sentToBack=false layout=false events=24
+[2026-06-22T10:37:50.253568] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=false sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:37:50.327656] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:37:50.378804] [DBG] [GoogleCalendarService] [CalendarFetch] fetched 2 raw items, 1 timed items
+[2026-06-22T10:37:50.378804] [DBG] [CalendarController] Fetched configured calendar: 1 events
+[2026-06-22T10:37:50.742188] [DBG] [GoogleCalendarService] [CalendarFetch] fetched 0 raw items, 0 timed items
+[2026-06-22T10:37:50.742188] [DBG] [CalendarController] Fetched configured calendar: 0 events
+[2026-06-22T10:37:51.151570] [DBG] [GoogleCalendarService] [CalendarFetch] fetched 0 raw items, 0 timed items
+[2026-06-22T10:37:51.152571] [DBG] [CalendarController] Fetched configured calendar: 0 events
+[2026-06-22T10:37:51.245559] [INF] [_TimelineStripState] TimelineStrip: hiding strip (preHideSentToBack=false, settingsOpen=false, hoveredEvent=null)
+[2026-06-22T10:37:51.246557] [DBG] [_TimelineStripState] TimelineStrip: ensuring strip is collapsed before hiding
+[2026-06-22T10:37:51.246557] [DBG] [_TimelineStripState] TimelineStrip: reversing hide animation
+[2026-06-22T10:37:51.557020] [INF] [_TimelineStripState] TimelineStrip: hiding window via stripController.hide()
+[2026-06-22T10:37:51.558021] [DBG] [AsyncGate] send value=StripState.hidden force=false
+[2026-06-22T10:37:51.558021] [DBG] [StripController] apply StripState.hidden (from StripState.collapsedShown)
+[2026-06-22T10:37:51.558021] [DBG] [WindowsWindowService] hideStrip: applyState(hidden) (converged onto the applier)
+[2026-06-22T10:37:51.563024] [DBG] [Win32AppBar] dispose: ABM_REMOVE done
+[2026-06-22T10:37:51.563024] [DBG] [WindowService] applyState: StripState.hidden → size=Size(223.0, 60.0) origin=Offset(0.0, 0.0) (reserved=null)
+[2026-06-22T10:37:51.605017] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=2.0→2.0 width=1920.0→1920.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=false
+[2026-06-22T10:37:51.605017] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:37:51.639026] [DBG] [WindowService] GEO[applyState:StripState.hidden]: pos=Offset(0.0, 0.0) size=Size(223.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:37:51.639026] [INF] [_TimelineStripState] TimelineStrip: hide complete
+[2026-06-22T10:37:51.659018] [DBG] [GoogleCalendarService] [CalendarFetch] fetched 0 raw items, 0 timed items
+[2026-06-22T10:37:51.660018] [DBG] [CalendarController] Fetched configured calendar: 0 events
+[2026-06-22T10:37:51.791941] [DBG] [WindowService] GEO[applyState:StripState.hidden +150ms]: pos=Offset(0.0, 0.0) size=Size(223.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:37:52.140090] [DBG] [WindowService] GEO[applyState:StripState.hidden +500ms]: pos=Offset(0.0, 0.0) size=Size(223.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:37:52.156096] [DBG] [GoogleCalendarService] [CalendarFetch] fetched 8 raw items, 8 timed items
+[2026-06-22T10:37:52.156096] [DBG] [CalendarController] Fetched configured calendar: 8 events
+[2026-06-22T10:37:52.663222] [DBG] [GoogleCalendarService] [CalendarFetch] fetched 8 raw items, 8 timed items
+[2026-06-22T10:37:52.663222] [DBG] [CalendarController] Fetched configured calendar: 8 events
+[2026-06-22T10:37:52.664221] [DBG] [CalendarController] Fetch complete. Found 29 events (24 deduped).
+[2026-06-22T10:37:52.664221] [DBG] [CalendarController] Emitted events to stream.
+[2026-06-22T10:37:52.671225] [DBG] [_HappeningAppState] app StreamBuilder: state=ConnectionState.active hasData=true dataLen=24 lastEvents=24
+[2026-06-22T10:37:52.840644] [DBG] [WindowService] GEO[applyState:StripState.hidden +1200ms]: pos=Offset(0.0, 0.0) size=Size(223.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:37:53.322277] [INF] [_TimelineStripState] TimelineStrip: restoring strip
+[2026-06-22T10:37:53.323283] [DBG] [_TimelineStripState] TimelineStrip: restoring window via stripController.show()
+[2026-06-22T10:37:53.323283] [DBG] [AsyncGate] send value=StripState.collapsedShown force=false
+[2026-06-22T10:37:53.324278] [DBG] [StripController] apply StripState.collapsedShown (from StripState.hidden)
+[2026-06-22T10:37:53.324278] [DBG] [WindowsWindowService] showStrip: applyState(collapsedShown) + presentInitialFrame (converged onto the init path)
+[2026-06-22T10:37:53.325282] [DBG] [Win32AppBar] register: ABM_NEW hWnd=0x100774
+[2026-06-22T10:37:53.330284] [DBG] [Win32AppBar] reserveTopBand: req=3840x120 → rect=[0,0,3840,120]
+[2026-06-22T10:37:53.330284] [DBG] [WindowsWindowService] applyReservation: StripState.collapsedShown reserved → origin=Offset(0.0, 0.0) (rcTop=0)
+[2026-06-22T10:37:53.330284] [DBG] [WindowService] applyState: StripState.collapsedShown → size=Size(1920.0, 60.0) origin=Offset(0.0, 0.0) (reserved=Offset(0.0, 0.0))
+[2026-06-22T10:37:53.369278] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=2.0→2.0 width=1920.0→1920.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=false
+[2026-06-22T10:37:53.369278] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:37:53.392278] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown]: pos=Offset(0.0, 0.0) size=Size(1920.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:37:53.392278] [DBG] [WindowsWindowService] presentInitialFrame: 1px shrink-settle 59.0→60.0, pin=Offset(0.0, 0.0)
+[2026-06-22T10:37:53.407288] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=2.0→2.0 width=1920.0→1920.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=false
+[2026-06-22T10:37:53.407288] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:37:53.524284] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=2.0→2.0 width=1920.0→1920.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=false
+[2026-06-22T10:37:53.524284] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:37:53.535277] [DBG] [Win32AppBar] presentFrame: RedrawWindow(RDW_INVALIDATE|RDW_UPDATENOW) hwnd=0x100774
+[2026-06-22T10:37:53.536277] [DBG] [WindowService] GEO[presentInitialFrame:after]: pos=Offset(0.0, 0.0) size=Size(1920.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:37:53.537278] [DBG] [_TimelineStripState] TimelineStrip: playing show animation
+[2026-06-22T10:37:53.543289] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +150ms]: pos=Offset(0.0, 0.0) size=Size(1920.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:37:53.690888] [DBG] [WindowService] GEO[presentInitialFrame +150ms]: pos=Offset(0.0, 0.0) size=Size(1920.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:37:53.842895] [INF] [_TimelineStripState] TimelineStrip: show complete
+[2026-06-22T10:37:53.844894] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=false sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:37:53.852890] [DBG] [TimelinePainter] TimelinePainter.paint size=1920.0x60.0 bg=#ff1a1a2e surfaceOpacity=1.00 emphasisOpacity=1.00 events=24 hovered=false loading=false signIn=false
+[2026-06-22T10:37:53.863889] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:37:53.893680] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +500ms]: pos=Offset(0.0, 0.0) size=Size(1920.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:37:54.038506] [DBG] [WindowService] GEO[presentInitialFrame +500ms]: pos=Offset(0.0, 0.0) size=Size(1920.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:37:54.593170] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +1200ms]: pos=Offset(0.0, 0.0) size=Size(1920.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:37:54.738183] [DBG] [WindowService] GEO[presentInitialFrame +1200ms]: pos=Offset(0.0, 0.0) size=Size(1920.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:37:55.160329] [DBG] [TimelinePainter] TimelinePainter.paint size=1920.0x60.0 bg=#ff1a1a2e surfaceOpacity=1.00 emphasisOpacity=1.00 events=24 hovered=false loading=false signIn=false
+[2026-06-22T10:37:56.833353] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=false sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:37:57.964414] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:37:58.035603] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=false sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:38:00.834450] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:38:00.896456] [DBG] [_TimelineStripState] [TS] expansion → expanded mouseX=1713.0 mouseY=45.5 isExit=false
+[2026-06-22T10:38:00.896456] [DBG] [AsyncGate] send value=StripState.expandedShown force=false
+[2026-06-22T10:38:00.897456] [DBG] [StripController] apply StripState.expandedShown (from StripState.collapsedShown)
+[2026-06-22T10:38:00.898456] [DBG] [Win32AppBar] reserveTopBand: req=3840x120 → rect=[0,0,3840,120]
+[2026-06-22T10:38:00.898456] [DBG] [WindowsWindowService] applyReservation: StripState.expandedShown reserved → origin=Offset(0.0, 0.0) (rcTop=0)
+[2026-06-22T10:38:00.898456] [DBG] [WindowService] applyState: StripState.expandedShown → size=Size(1920.0, 340.0) origin=Offset(0.0, 0.0) (reserved=Offset(0.0, 0.0))
+[2026-06-22T10:38:00.900460] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=true hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:38:00.902461] [DBG] [TimelinePainter] TimelinePainter.paint size=1920.0x60.0 bg=#ff1a1a2e surfaceOpacity=1.00 emphasisOpacity=1.00 events=24 hovered=true loading=false signIn=false
+[2026-06-22T10:38:00.910468] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=2.0→2.0 width=1920.0→1920.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=true
+[2026-06-22T10:38:00.910468] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:38:00.919474] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=true hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=340.0
+[2026-06-22T10:38:00.928475] [DBG] [WindowService] GEO[applyState:StripState.expandedShown]: pos=Offset(0.0, 0.0) size=Size(1920.0, 340.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:38:00.936473] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=true card=true settings=false hovered=true hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=340.0
+[2026-06-22T10:38:01.080472] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=true card=true settings=false hovered=true hovering=false sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=340.0
+[2026-06-22T10:38:01.084470] [DBG] [WindowService] GEO[applyState:StripState.expandedShown +150ms]: pos=Offset(0.0, 0.0) size=Size(1920.0, 340.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:38:01.430446] [DBG] [WindowService] GEO[applyState:StripState.expandedShown +500ms]: pos=Offset(0.0, 0.0) size=Size(1920.0, 340.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:38:01.530738] [DBG] [TimelinePainter] TimelinePainter.paint size=1920.0x60.0 bg=#ff1a1a2e surfaceOpacity=1.00 emphasisOpacity=1.00 events=24 hovered=true loading=false signIn=false
+[2026-06-22T10:38:01.556433] [DBG] [_TimelineStripState] [TS] expansion → collapsed mouseX=1828.5 mouseY=185.0 isExit=false
+[2026-06-22T10:38:01.556433] [DBG] [AsyncGate] send value=StripState.collapsedShown force=false
+[2026-06-22T10:38:01.556433] [DBG] [StripController] apply StripState.collapsedShown (from StripState.expandedShown)
+[2026-06-22T10:38:01.557615] [DBG] [Win32AppBar] reserveTopBand: req=3840x120 → rect=[0,0,3840,120]
+[2026-06-22T10:38:01.557615] [DBG] [WindowsWindowService] applyReservation: StripState.collapsedShown reserved → origin=Offset(0.0, 0.0) (rcTop=0)
+[2026-06-22T10:38:01.557615] [DBG] [WindowService] applyState: StripState.collapsedShown → size=Size(1920.0, 60.0) origin=Offset(0.0, 0.0) (reserved=Offset(0.0, 0.0))
+[2026-06-22T10:38:01.560617] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=2.0→2.0 width=1920.0→1920.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=false
+[2026-06-22T10:38:01.560617] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:38:01.561617] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=true card=false settings=false hovered=false hovering=false sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:38:01.576616] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown]: pos=Offset(0.0, 0.0) size=Size(1920.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:38:01.581617] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=false sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:38:01.727987] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +150ms]: pos=Offset(0.0, 0.0) size=Size(1920.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:38:02.077999] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +500ms]: pos=Offset(0.0, 0.0) size=Size(1920.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:38:02.130010] [DBG] [WindowService] GEO[applyState:StripState.expandedShown +1200ms]: pos=Offset(0.0, 0.0) size=Size(1920.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:38:02.777075] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +1200ms]: pos=Offset(0.0, 0.0) size=Size(1920.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:38:05.161886] [DBG] [TimelinePainter] TimelinePainter.paint size=1920.0x60.0 bg=#ff1a1a2e surfaceOpacity=1.00 emphasisOpacity=1.00 events=24 hovered=false loading=false signIn=false
+[2026-06-22T10:38:10.930348] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:38:11.126341] [DBG] [_TimelineStripState] [TS] expansion → expanded mouseX=203.0 mouseY=52.0 isExit=false
+[2026-06-22T10:38:11.126341] [DBG] [AsyncGate] send value=StripState.expandedShown force=false
+[2026-06-22T10:38:11.127341] [DBG] [StripController] apply StripState.expandedShown (from StripState.collapsedShown)
+[2026-06-22T10:38:11.128342] [DBG] [Win32AppBar] reserveTopBand: req=3840x120 → rect=[0,0,3840,120]
+[2026-06-22T10:38:11.128342] [DBG] [WindowsWindowService] applyReservation: StripState.expandedShown reserved → origin=Offset(0.0, 0.0) (rcTop=0)
+[2026-06-22T10:38:11.128342] [DBG] [WindowService] applyState: StripState.expandedShown → size=Size(1920.0, 340.0) origin=Offset(0.0, 0.0) (reserved=Offset(0.0, 0.0))
+[2026-06-22T10:38:11.130341] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=2.0→2.0 width=1920.0→1920.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=true
+[2026-06-22T10:38:11.131342] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:38:11.132341] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=true hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=340.0
+[2026-06-22T10:38:11.135342] [DBG] [TimelinePainter] TimelinePainter.paint size=1920.0x60.0 bg=#ff1a1a2e surfaceOpacity=1.00 emphasisOpacity=1.00 events=24 hovered=true loading=false signIn=false
+[2026-06-22T10:38:11.148341] [DBG] [WindowService] GEO[applyState:StripState.expandedShown]: pos=Offset(0.0, 0.0) size=Size(1920.0, 340.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:38:11.151341] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=true card=true settings=false hovered=true hovering=false sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=340.0
+[2026-06-22T10:38:11.299100] [DBG] [WindowService] GEO[applyState:StripState.expandedShown +150ms]: pos=Offset(0.0, 0.0) size=Size(1920.0, 340.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:38:11.448218] [DBG] [_TimelineStripState] [TS] expansion → collapsed mouseX=189.0 mouseY=94.0 isExit=false
+[2026-06-22T10:38:11.448218] [DBG] [AsyncGate] send value=StripState.collapsedShown force=false
+[2026-06-22T10:38:11.449217] [DBG] [StripController] apply StripState.collapsedShown (from StripState.expandedShown)
+[2026-06-22T10:38:11.450212] [DBG] [Win32AppBar] reserveTopBand: req=3840x120 → rect=[0,0,3840,120]
+[2026-06-22T10:38:11.450212] [DBG] [WindowsWindowService] applyReservation: StripState.collapsedShown reserved → origin=Offset(0.0, 0.0) (rcTop=0)
+[2026-06-22T10:38:11.450212] [DBG] [WindowService] applyState: StripState.collapsedShown → size=Size(1920.0, 60.0) origin=Offset(0.0, 0.0) (reserved=Offset(0.0, 0.0))
+[2026-06-22T10:38:11.452213] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=2.0→2.0 width=1920.0→1920.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=false
+[2026-06-22T10:38:11.452213] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:38:11.455213] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=true card=false settings=false hovered=false hovering=false sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:38:11.459219] [DBG] [TimelinePainter] TimelinePainter.paint size=1920.0x60.0 bg=#ff1a1a2e surfaceOpacity=1.00 emphasisOpacity=1.00 events=24 hovered=false loading=false signIn=false
+[2026-06-22T10:38:11.470218] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown]: pos=Offset(0.0, 0.0) size=Size(1920.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:38:11.477347] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=false sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:38:11.622145] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +150ms]: pos=Offset(0.0, 0.0) size=Size(1920.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:38:11.650038] [DBG] [WindowService] GEO[applyState:StripState.expandedShown +500ms]: pos=Offset(0.0, 0.0) size=Size(1920.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:38:11.974940] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +500ms]: pos=Offset(0.0, 0.0) size=Size(1920.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:38:12.349413] [DBG] [WindowService] GEO[applyState:StripState.expandedShown +1200ms]: pos=Offset(0.0, 0.0) size=Size(1920.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:38:12.672454] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +1200ms]: pos=Offset(0.0, 0.0) size=Size(1920.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=2.0
+[2026-06-22T10:38:15.159740] [DBG] [TimelinePainter] TimelinePainter.paint size=1920.0x60.0 bg=#ff1a1a2e surfaceOpacity=1.00 emphasisOpacity=1.00 events=24 hovered=false loading=false signIn=false
+[2026-06-22T10:38:23.056418] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=2.0→2.0 width=1920.0→1920.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=false
+[2026-06-22T10:38:23.056418] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:38:23.072421] [DBG] [WindowService] WindowService._onDisplayChanged: already in progress, skipping
+[2026-06-22T10:38:23.100411] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=false sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=120.0
+[2026-06-22T10:38:23.104411] [DBG] [TimelinePainter] TimelinePainter.paint size=3841.0x60.0 bg=#ff1a1a2e surfaceOpacity=1.00 emphasisOpacity=1.00 events=24 hovered=false loading=false signIn=false
+[2026-06-22T10:38:23.129410] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=2.0→1.0 width=1920.0→3840.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=false
+[2026-06-22T10:38:23.129410] [DBG] [WindowService] WindowService._onDisplayChangedInner: display CHANGED — applying resize
+[2026-06-22T10:38:23.133411] [DBG] [WindowService] WindowService._onDisplayChangedInner: triggering resize isExpanded=false
+[2026-06-22T10:38:23.432423] [DBG] [Win32AppBar] reserveTopBand: req=3840x60 → rect=[0,0,3840,60]
+[2026-06-22T10:38:23.433415] [DBG] [WindowsWindowService] applyReservation: StripState.collapsedShown reserved → origin=Offset(0.0, 0.0) (rcTop=0)
+[2026-06-22T10:38:23.433415] [DBG] [WindowService] applyState: StripState.collapsedShown → size=Size(3840.0, 60.0) origin=Offset(0.0, 0.0) (reserved=Offset(0.0, 0.0))
+[2026-06-22T10:38:23.471416] [DBG] [WindowService] WindowService._onDisplayChanged: already in progress, skipping
+[2026-06-22T10:38:23.489415] [DBG] [TimelinePainter] TimelinePainter.paint size=3840.0x60.0 bg=#ff1a1a2e surfaceOpacity=1.00 emphasisOpacity=1.00 events=24 hovered=false loading=false signIn=false
+[2026-06-22T10:38:23.531417] [DBG] [WindowService] WindowService._onDisplayChanged: already in progress, skipping
+[2026-06-22T10:38:23.562410] [DBG] [WindowService] WindowService._onDisplayChanged: already in progress, skipping
+[2026-06-22T10:38:23.567411] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=false sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:38:23.607409] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown]: pos=Offset(0.0, 60.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:38:23.761411] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +150ms]: pos=Offset(0.0, 60.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:38:24.110885] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +500ms]: pos=Offset(0.0, 60.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:38:24.810388] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +1200ms]: pos=Offset(0.0, 60.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:38:25.163407] [DBG] [TimelinePainter] TimelinePainter.paint size=3840.0x60.0 bg=#ff1a1a2e surfaceOpacity=1.00 emphasisOpacity=1.00 events=24 hovered=false loading=false signIn=false
+[2026-06-22T10:38:26.556030] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:38:27.123178] [INF] [_TimelineStripState] TimelineStrip: hiding strip (preHideSentToBack=false, settingsOpen=false, hoveredEvent=null)
+[2026-06-22T10:38:27.124173] [DBG] [_TimelineStripState] TimelineStrip: ensuring strip is collapsed before hiding
+[2026-06-22T10:38:27.125172] [DBG] [_TimelineStripState] TimelineStrip: reversing hide animation
+[2026-06-22T10:38:27.430758] [INF] [_TimelineStripState] TimelineStrip: hiding window via stripController.hide()
+[2026-06-22T10:38:27.431755] [DBG] [AsyncGate] send value=StripState.hidden force=false
+[2026-06-22T10:38:27.431755] [DBG] [StripController] apply StripState.hidden (from StripState.collapsedShown)
+[2026-06-22T10:38:27.431755] [DBG] [WindowsWindowService] hideStrip: applyState(hidden) (converged onto the applier)
+[2026-06-22T10:38:27.436759] [DBG] [Win32AppBar] dispose: ABM_REMOVE done
+[2026-06-22T10:38:27.436759] [DBG] [WindowService] applyState: StripState.hidden → size=Size(223.0, 60.0) origin=Offset(0.0, 0.0) (reserved=null)
+[2026-06-22T10:38:27.470760] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=1.0→1.0 width=3840.0→3840.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=false
+[2026-06-22T10:38:27.470760] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:38:27.495754] [DBG] [WindowService] GEO[applyState:StripState.hidden]: pos=Offset(0.0, 0.0) size=Size(223.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:38:27.496754] [INF] [_TimelineStripState] TimelineStrip: hide complete
+[2026-06-22T10:38:27.647033] [DBG] [WindowService] GEO[applyState:StripState.hidden +150ms]: pos=Offset(0.0, 0.0) size=Size(223.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:38:27.997202] [DBG] [WindowService] GEO[applyState:StripState.hidden +500ms]: pos=Offset(0.0, 0.0) size=Size(223.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:38:28.258028] [INF] [_TimelineStripState] TimelineStrip: restoring strip
+[2026-06-22T10:38:28.259031] [DBG] [_TimelineStripState] TimelineStrip: restoring window via stripController.show()
+[2026-06-22T10:38:28.259031] [DBG] [AsyncGate] send value=StripState.collapsedShown force=false
+[2026-06-22T10:38:28.260031] [DBG] [StripController] apply StripState.collapsedShown (from StripState.hidden)
+[2026-06-22T10:38:28.260031] [DBG] [WindowsWindowService] showStrip: applyState(collapsedShown) + presentInitialFrame (converged onto the init path)
+[2026-06-22T10:38:28.261023] [DBG] [Win32AppBar] register: ABM_NEW hWnd=0x100774
+[2026-06-22T10:38:28.267031] [DBG] [Win32AppBar] reserveTopBand: req=3840x60 → rect=[0,0,3840,60]
+[2026-06-22T10:38:28.267031] [DBG] [WindowsWindowService] applyReservation: StripState.collapsedShown reserved → origin=Offset(0.0, 0.0) (rcTop=0)
+[2026-06-22T10:38:28.267031] [DBG] [WindowService] applyState: StripState.collapsedShown → size=Size(3840.0, 60.0) origin=Offset(0.0, 0.0) (reserved=Offset(0.0, 0.0))
+[2026-06-22T10:38:28.302030] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=1.0→1.0 width=3840.0→3840.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=false
+[2026-06-22T10:38:28.302030] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:38:28.423020] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:38:28.423020] [DBG] [WindowsWindowService] presentInitialFrame: 1px shrink-settle 59.0→60.0, pin=Offset(0.0, 0.0)
+[2026-06-22T10:38:28.426021] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=1.0→1.0 width=3840.0→3840.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=false
+[2026-06-22T10:38:28.426021] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:38:28.440020] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=1.0→1.0 width=3840.0→3840.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=false
+[2026-06-22T10:38:28.440020] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:38:28.451020] [DBG] [Win32AppBar] presentFrame: RedrawWindow(RDW_INVALIDATE|RDW_UPDATENOW) hwnd=0x100774
+[2026-06-22T10:38:28.452020] [DBG] [WindowService] GEO[presentInitialFrame:after]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:38:28.452020] [DBG] [_TimelineStripState] TimelineStrip: playing show animation
+[2026-06-22T10:38:28.577021] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +150ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:38:28.605029] [DBG] [WindowService] GEO[presentInitialFrame +150ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:38:28.698025] [DBG] [WindowService] GEO[applyState:StripState.hidden +1200ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:38:28.764025] [INF] [_TimelineStripState] TimelineStrip: show complete
+[2026-06-22T10:38:28.765035] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=false sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:38:28.772023] [DBG] [TimelinePainter] TimelinePainter.paint size=3840.0x60.0 bg=#ff1a1a2e surfaceOpacity=1.00 emphasisOpacity=1.00 events=24 hovered=false loading=false signIn=false
+[2026-06-22T10:38:28.786025] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:38:28.926028] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +500ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:38:28.953029] [DBG] [WindowService] GEO[presentInitialFrame +500ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:38:29.542072] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=false hovering=false sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:38:29.625072] [DBG] [WindowService] GEO[applyState:StripState.collapsedShown +1200ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:38:29.655069] [DBG] [WindowService] GEO[presentInitialFrame +1200ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 60.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:38:30.161281] [DBG] [_TimelineStripState] [TS] expansion → expanded mouseX=3783.0 mouseY=54.0 isExit=false
+[2026-06-22T10:38:30.162279] [DBG] [AsyncGate] send value=StripState.expandedShown force=false
+[2026-06-22T10:38:30.162279] [DBG] [StripController] apply StripState.expandedShown (from StripState.collapsedShown)
+[2026-06-22T10:38:30.163278] [DBG] [Win32AppBar] reserveTopBand: req=3840x60 → rect=[0,0,3840,60]
+[2026-06-22T10:38:30.163278] [DBG] [WindowsWindowService] applyReservation: StripState.expandedShown reserved → origin=Offset(0.0, 0.0) (rcTop=0)
+[2026-06-22T10:38:30.163278] [DBG] [WindowService] applyState: StripState.expandedShown → size=Size(3840.0, 340.0) origin=Offset(0.0, 0.0) (reserved=Offset(0.0, 0.0))
+[2026-06-22T10:38:30.164276] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=true hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=60.0
+[2026-06-22T10:38:30.167278] [DBG] [TimelinePainter] TimelinePainter.paint size=3840.0x60.0 bg=#ff1a1a2e surfaceOpacity=1.00 emphasisOpacity=1.00 events=24 hovered=true loading=false signIn=false
+[2026-06-22T10:38:30.176273] [DBG] [WindowService] WindowService._onDisplayChangedInner: dpr=1.0→1.0 width=3840.0→3840.0 activeChanged=false (DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)→DisplayId(MONITOR\GBT2800\{4d36e96e-e325-11ce-bfc1-08002be10318}\0001)) isExpanded=true
+[2026-06-22T10:38:30.177273] [DBG] [WindowService] WindowService._onDisplayChangedInner: no change, skipping
+[2026-06-22T10:38:30.179274] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=false card=false settings=false hovered=true hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=340.0
+[2026-06-22T10:38:30.187281] [DBG] [WindowService] GEO[applyState:StripState.expandedShown]: pos=Offset(0.0, 0.0) size=Size(3840.0, 340.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:38:30.195279] [DBG] [_TimelineStripState] TimelineStrip.paint-state expanded=true card=true settings=false hovered=true hovering=true sentToBack=false signIn=false cancelSignIn=false loading=false layout=true events=24 collapsedH=60.0 expandedH=340.0 backdrop=#00000000 painterBg=#ff1a1a2e maxH=340.0
+[2026-06-22T10:38:30.339179] [DBG] [WindowService] GEO[applyState:StripState.expandedShown +150ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 340.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+[2026-06-22T10:38:30.689133] [DBG] [WindowService] GEO[applyState:StripState.expandedShown +500ms]: pos=Offset(0.0, 0.0) size=Size(3840.0, 340.0) workAreaOrigin=Offset(0.0, 0.0) dpr=1.0
+Lost connection to device.
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'

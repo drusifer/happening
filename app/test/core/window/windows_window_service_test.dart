@@ -271,6 +271,36 @@ void main() {
       expect(appBar.lastHeightPx, service.getCollapsedHeight().ceil());
     });
 
+    // REGRESSION (DPI scale change): build-chage-dpr.out 2026-06-22. A 3840px
+    // PHYSICAL monitor switched to 150%. screen_retriever keeps reporting 3840
+    // (physical, scale-invariant), but window_manager.setSize wants LOGICAL
+    // pixels — so the strip must be 3840/1.5 = 2560 logical (= 3840 physical,
+    // full screen) and the band must span the full 3840 physical width. The bug
+    // sized 3840 logical (5760 physical, 1.5× too wide) and reserved 5760px.
+    test('DPI scale: sizes to logical width, reserves full physical band',
+        () async {
+      when(mockWM.getDevicePixelRatio()).thenReturn(1.5);
+      desktop.dpr = 1.5;
+      final ds = DisplayService(
+        probe: _StubProbe([_display(width: 3840)]),
+        events: _StubEvents(),
+        sleep: (_) async {},
+      );
+      await ds.initialize();
+      final service = WindowsWindowService(
+        windowManager: mockWM,
+        screenRetriever: mockSR,
+        displayService: ds,
+        appBar: appBar,
+      );
+      await service.initialize(initialFontSizePx: kDefaultFontSizePx);
+
+      expect(desktop.size.width, 3840 / 1.5,
+          reason: 'window logical width = physical / dpr (fills the screen)');
+      expect(appBar.lastWidthPx, 3840,
+          reason: 'reserved band spans the full physical screen width');
+    });
+
     test('the AppBar ends up registered after init', () async {
       final service = makeService();
       await service.initialize(initialFontSizePx: kDefaultFontSizePx);
@@ -367,6 +397,36 @@ void main() {
 
       expect(appBar.calls.where((c) => c == 'register'), isEmpty);
       expect(appBar.calls.where((c) => c == 'reserve').length, 2);
+    });
+  });
+
+  group('WindowsWindowService display change (re-apply path)', () {
+    // REGRESSION (DPI strut drift): build-chage-dpr-fix1.out 2026-06-22 line
+    // 234. A DPI change re-applied geometry via applyState only — no present —
+    // so a late Win32 re-evaluation relocated the AppBar window to its band
+    // bottom (pos (0,0)→(0,60), below its own strut). The re-apply must mirror
+    // init/show: reserve AND present (the metrics-settle + origin re-pin).
+    test('DPI change re-presents (converges onto the init/show path)',
+        () async {
+      final service = makeService();
+      await service.initialize(initialFontSizePx: kDefaultFontSizePx);
+      appBar.calls.clear();
+
+      // Same monitor, scale 1.0 → 2.0.
+      when(mockWM.getDevicePixelRatio()).thenReturn(2.0);
+      desktop.dpr = 2.0;
+      service.didChangeMetrics();
+      for (var i = 0; i < 6; i++) {
+        await Future.delayed(Duration.zero);
+      }
+
+      expect(appBar.calls, contains('reserve'),
+          reason: 'the display change must re-reserve the band');
+      expect(appBar.calls, contains('present'),
+          reason: 'and present, the way init/show do, to re-pin the origin');
+      expect(desktop.position, Offset.zero,
+          reason: 'strip must stay at the strut top, not drift to the band '
+              'bottom');
     });
   });
 

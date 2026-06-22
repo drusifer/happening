@@ -164,17 +164,30 @@ class WindowsWindowService extends WindowService {
     }
   }
 
+  // NOTE: no onDisplayChangedExtra override. A display/DPI change is just
+  // another transition, so it converges onto the single applier like every
+  // other one: WindowService._onDisplayChangedInner updates dpr/width/display,
+  // then calls _reapplyCurrentState() → applyState, whose applyReservation
+  // re-reserves the band (at the now-correct logical-derived _bandWidthPx) and
+  // returns the origin to pin to. The old override pre-reserved + setPosition
+  // here as well, double-reserving the band — at a DPI change that second
+  // ABM_SETPOS stranded the strip below its own strut (build-chage-dpr.out
+  // 2026-06-22 line 315: pos drifted to (0,60)).
+
+  // After a display/DPI or font re-apply, mirror what init/show do: present.
+  // applyState alone leaves the AppBar window exposed to a late (~150ms) Win32
+  // re-evaluation that relocates it to the band bottom, below its own strut
+  // (build-chage-dpr-fix1.out 2026-06-22 line 234: pos drifted (0,0)→(0,60)).
+  // presentInitialFrame's metrics-settle re-confirms the geometry and re-pins
+  // the origin — the show path runs it and stays put through +1200ms. Only the
+  // collapsed shown state qualifies: presentInitialFrame settles at the
+  // collapsed height (it would wrongly shrink an expanded card), and a hidden
+  // mini pill reserves nothing to strand.
   @override
-  Future<void> onDisplayChangedExtra() async {
-    _log.fine(
-        'onDisplayChangedExtra: windowMode=$windowMode registered=${_appBar.isRegistered}');
-    if (windowMode == WindowMode.reserved && _appBar.isRegistered) {
-      final rcTop = _appBar.reserveTopBand(
-          widthPx: _bandWidthPx, heightPx: _bandHeightPx);
-      final double xOffset = activeDisplay?.workAreaOrigin.dx ?? 0;
-      final pos = Offset(xOffset, rcTop / dpr);
-      _log.fine('onDisplayChangedExtra: setPosition $pos (rcTop=$rcTop)');
-      await wm.setPosition(pos);
+  Future<void> afterReapplyState(StripState state) async {
+    if (state == StripState.collapsedShown &&
+        windowMode == WindowMode.reserved) {
+      await presentInitialFrame();
     }
   }
 
