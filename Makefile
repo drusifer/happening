@@ -127,7 +127,7 @@ build-macos: $(PUB_STAMP)
 build-windows: $(PUB_STAMP)
 	cd $(APP_DIR) && $(FLUTTER) build windows --release
 
-.PHONY: dist dist-linux dist-macos dist-windows dist-windows-msix dist-proxy-linux
+.PHONY: dist dist-linux dist-macos dist-macos-appstore dist-windows dist-windows-msix dist-proxy-linux
 dist: dist-linux
 	@echo "Done. Artifacts in $(DIST_DIR)/"
 
@@ -145,6 +145,23 @@ dist-macos: build-macos
 	    -ov -format UDZO \
 	    $(DMG)
 	@echo "macOS package: $(DMG)"
+
+dist-macos-appstore: $(PUB_STAMP)
+	@test -n "$(ASC_API_KEY_ID)"    || (echo "Error: ASC_API_KEY_ID not set";    exit 1)
+	@test -n "$(ASC_API_ISSUER_ID)" || (echo "Error: ASC_API_ISSUER_ID not set"; exit 1)
+	@test -n "$(ASC_API_KEY_PATH)"  || (echo "Error: ASC_API_KEY_PATH not set";  exit 1)
+	xcodebuild archive \
+	    -workspace $(APP_DIR)/macos/Runner.xcworkspace \
+	    -scheme Runner \
+	    -configuration Release \
+	    -archivePath $(APP_DIR)/build/macos/Runner.xcarchive
+	xcodebuild -exportArchive \
+	    -archivePath $(APP_DIR)/build/macos/Runner.xcarchive \
+	    -exportOptionsPlist $(APP_DIR)/macos/ExportOptions-AppStore.plist \
+	    -authenticationKeyID "$(ASC_API_KEY_ID)" \
+	    -authenticationKeyIssuerID "$(ASC_API_ISSUER_ID)" \
+	    -authenticationKeyPath "$(ASC_API_KEY_PATH)"
+	@echo "macOS v$(VERSION) submitted to App Store Connect"
 
 dist-windows: build-windows
 	@cmd /c if not exist $(DIST_DIR) mkdir $(DIST_DIR)
@@ -368,12 +385,12 @@ else
 .PHONY: help chat install_bob update_bob pull_bob clean_bob diff_bob sync-version set-version
 .PHONY: setup install-hooks run run-linux run-macos run-windows
 .PHONY: test update-goldens test-watch integration-test integration-test-linux integration-test-macos integration-test-windows
-.PHONY: build-linux build-macos build-windows dist dist-linux dist-macos dist-windows dist-windows-msix dist-proxy-linux
+.PHONY: build-linux build-macos build-windows dist dist-linux dist-macos dist-macos-appstore dist-windows dist-windows-msix dist-proxy-linux
 .PHONY: format analyze lint lint-style lint-metrics lint-format proxy proxy-setup export-proxy-image clean tldr via_index fetch-cities
 
 MKF_TARGETS := setup install-hooks run run-linux run-macos run-windows \
 	test win-test update-goldens test-watch integration-test integration-test-linux integration-test-macos integration-test-windows \
-	build-linux build-macos build-windows dist dist-linux dist-macos dist-windows dist-windows-msix dist-proxy-linux \
+	build-linux build-macos build-windows dist dist-linux dist-macos dist-macos-appstore dist-windows dist-windows-msix dist-proxy-linux \
 	format analyze lint lint-style lint-metrics lint-format proxy proxy-setup export-proxy-image clean tldr via_index \
 	fetch-cities sync-version set-version
 

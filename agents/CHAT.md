@@ -796,5 +796,8 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
  Linux show/hide converged. Replaced onHideStrip/onShowStrip with applyReservation(StripState)+showStrip/hideStrip overrides. 34/34 window tests green, 481/481 suite (2 pre-existing golden failures unchanged).
 
 ---
-[<small>2026-06-22 15:47:36</small>] [**make**]->[**all**] *build*:
- Build PASSED | make dist-macos | /Users/drewgutstein/Projects/happening/build/build.out
+[<small>2026-06-22 16:19:41</small>] [**make**]->[**all**] *build*:
+ Build FAILED exit=2 | make dist-macos-appstore | /Users/drewgutstein/Projects/happening/build/build.out
+Try `flutter pub outdated` for more information.
+Error: ASC_API_KEY_ID not set
+make[1]: *** [dist-macos-appstore] Error 1
