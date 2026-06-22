@@ -776,3 +776,27 @@ make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
 
 make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
 
+
+---
+[<small>2026-06-22 10:21:10</small>] [**Neo**]->[**all**] *init*:
+ Neo online. Resuming Windows convergence sprint. Windows path DONE+validated (e4100fc). NEXT: Linux/macOS show/hide convergence — we're ON Linux now. Loading context.
+
+---
+[<small>2026-06-22 10:24:01</small>] [**User**]->[**Neo**] *request*:
+ *impl show/hide convergence for Linux (existing behavior correct, cleanup only)
+
+---
+[<small>2026-06-22 10:28:32</small>] [**make**]->[**all**] *build*:
+ Build FAILED exit=2 | make test | /home/drusifer/Projects/happening/build/build.out
+make[1]: *** [Makefile:93: test] Error 1
+make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-06-22 11:34:44</small>] [**Neo**]->[**Drew**] *swe impl*:
+ Linux show/hide converged. Replaced onHideStrip/onShowStrip with applyReservation(StripState)+showStrip/hideStrip overrides. 34/34 window tests green, 481/481 suite (2 pre-existing golden failures unchanged).
+
+---
+[<small>2026-06-22 11:40:56</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make run-linux | /home/drusifer/Projects/happening/build/build.out
+Lost connection to device.
+make[1]: Leaving directory '/home/drusifer/Projects/happening'

@@ -686,7 +686,7 @@ void main() {
       });
     });
 
-    group('F-31 Linux hide/show hooks', () {
+    group('F-31 Linux hide/show (converged onto applyState)', () {
       LinuxWindowService linuxService() => LinuxWindowService(
             windowManager: mockWM,
             screenRetriever: mockSR,
@@ -694,7 +694,7 @@ void main() {
             linuxDockWindowManager: fakeLinuxDock,
           );
 
-      test('onHideStrip calls undock when mode is reserved', () async {
+      test('hideStrip undocks the strut when mode is reserved', () async {
         final svc = linuxService();
         await svc.initialize(
           initialFontSizePx: kDefaultFontSizePx,
@@ -702,13 +702,13 @@ void main() {
         );
         fakeLinuxDock.calls.clear();
 
-        await svc.prepareToHide();
+        await svc.hideStrip();
 
         expect(fakeLinuxDock.calls, contains('undock'));
         expect(fakeLinuxDock.calls, isNot(contains('dock')));
       });
 
-      test('onShowStrip calls dock when mode is reserved', () async {
+      test('showStrip re-docks the strut when mode is reserved', () async {
         final svc = linuxService();
         await svc.initialize(
           initialFontSizePx: kDefaultFontSizePx,
@@ -716,12 +716,13 @@ void main() {
         );
         fakeLinuxDock.calls.clear();
 
-        await svc.completeShow();
+        await svc.showStrip();
 
         expect(fakeLinuxDock.calls, contains('dock'));
+        expect(fakeLinuxDock.calls, isNot(contains('undock')));
       });
 
-      test('onHideStrip is no-op when mode is overlay', () async {
+      test('hideStrip leaves strut unchanged when mode is overlay', () async {
         final svc = linuxService();
         await svc.initialize(
           initialFontSizePx: kDefaultFontSizePx,
@@ -729,12 +730,12 @@ void main() {
         );
         fakeLinuxDock.calls.clear();
 
-        await svc.prepareToHide();
+        await svc.hideStrip();
 
         expect(fakeLinuxDock.calls, isEmpty);
       });
 
-      test('onShowStrip is no-op when mode is overlay', () async {
+      test('showStrip leaves strut unchanged when mode is overlay', () async {
         final svc = linuxService();
         await svc.initialize(
           initialFontSizePx: kDefaultFontSizePx,
@@ -742,7 +743,7 @@ void main() {
         );
         fakeLinuxDock.calls.clear();
 
-        await svc.completeShow();
+        await svc.showStrip();
 
         expect(fakeLinuxDock.calls, isEmpty);
       });
@@ -758,8 +759,8 @@ void main() {
 
         // Simulate 3 rapid hide/show cycles
         for (var i = 0; i < 3; i++) {
-          await svc.prepareToHide();
-          await svc.completeShow();
+          await svc.hideStrip();
+          await svc.showStrip();
         }
 
         // Must alternate undock/dock with no dangling state

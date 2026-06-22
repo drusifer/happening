@@ -1036,12 +1036,14 @@ class _TimelineStripState extends State<TimelineStrip>
             stripBackgroundColor: stripBg,
           ),
           const SizedBox(width: 8),
-          if (widget.displayService != null)
+          if (widget.displayService != null) ...[
             DisplayFallbackIndicator(
               displayService: widget.displayService!,
               stripHeight: _collapsedHeight,
               onTap: _openSettingsToDisplaySection,
             ),
+            const SizedBox(width: 8),
+          ],
           _IconButton(
             icon: Icons.settings,
             onTap: _toggleSettings,
@@ -1224,7 +1226,7 @@ class _IconButtonState extends State<_IconButton> {
         duration: const Duration(milliseconds: 80),
         curve: Curves.easeOut,
         child: Container(
-          padding: const EdgeInsets.all(6),
+          padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
             color: widget.active
                 ? theme.colorScheme.primary.withValues(alpha: 0.25)

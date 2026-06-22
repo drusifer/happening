@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/window/interaction_strategy/reserved_window_interaction_strategy.dart';
 import 'package:happening/core/window/linux_dock_window_manager.dart';
+import 'package:happening/core/window/strip_state.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:logging/logging.dart';
 
@@ -59,18 +61,22 @@ class LinuxWindowService extends WindowService {
   }
 
   @override
-  Future<void> onHideStrip() async {
+  Future<Offset?> applyReservation(StripState state) async {
     if (windowMode == WindowMode.reserved) {
-      await _linuxDock.undock();
+      if (state.isShown) {
+        await _reserveLinuxStrut();
+      } else {
+        await _linuxDock.undock();
+      }
     }
+    return null;
   }
 
   @override
-  Future<void> onShowStrip() async {
-    if (windowMode == WindowMode.reserved) {
-      await _reserveLinuxStrut();
-    }
-  }
+  Future<void> showStrip() => applyState(StripState.collapsedShown);
+
+  @override
+  Future<void> hideStrip() => applyState(StripState.hidden);
 
   // ── Internals ─────────────────────────────────────────────────────────────
 
