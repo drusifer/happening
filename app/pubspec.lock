@@ -13,34 +13,34 @@ packages:
     dependency: transitive
     description:
       name: _fe_analyzer_shared
-      sha256: "8d7ff3948166b8ec5da0fbb5962000926b8e02f2ed9b3e51d1738905fbd4c98d"
+      sha256: cd6add6f846f35fb79f3c315296703c1a24f3cfd7f4739d91a74961c1c7e9f1b
       url: "https://pub.dev"
     source: hosted
-    version: "93.0.0"
+    version: "100.0.0"
   analysis_server_plugin:
     dependency: transitive
     description:
       name: analysis_server_plugin
-      sha256: "5f3920acbd5765764ec9ef6c5bbdd102015424281232ee4fb4f5431c87abb4eb"
+      sha256: c4021359e7a673ecd9c6db5f11fea12fabb55e0ba96fa08c78920ae81936f1d1
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.7"
+    version: "0.3.15"
   analyzer:
     dependency: transitive
     description:
       name: analyzer
-      sha256: de7148ed2fcec579b19f122c1800933dfa028f6d9fd38a152b04b1516cec120b
+      sha256: "6ba98576948803398b69e3a444df24eacdbe12ed699c7014e120ea38552debbf"
       url: "https://pub.dev"
     source: hosted
-    version: "10.0.1"
+    version: "13.0.0"
   analyzer_plugin:
     dependency: transitive
     description:
       name: analyzer_plugin
-      sha256: "7df504f0c9d6891bacc9f73a5a8c5f6fe4fc49c90ec8e3379916372906ba0b32"
+      sha256: "9a81dc36f7f71890d7cf83960a3a7df1e6c9a24035f98eb848e91ad48b1d21c6"
       url: "https://pub.dev"
     source: hosted
-    version: "0.14.1"
+    version: "0.14.9"
   ansicolor:
     dependency: transitive
     description:
@@ -229,18 +229,18 @@ packages:
     dependency: "direct dev"
     description:
       name: dart_code_linter
-      sha256: a46044fe63eab402d172de53c2ad4aef30bfc23d61aba1a1d462ea053ee4add1
+      sha256: a4649ee1c604dfb7ce25fd427179cdba37dbfdfdabcd8b52b9211c6b460a8e91
       url: "https://pub.dev"
     source: hosted
-    version: "4.1.3"
+    version: "4.1.5"
   dart_style:
     dependency: transitive
     description:
       name: dart_style
-      sha256: "29f7ecc274a86d32920b1d9cfc7502fa87220da41ec60b55f329559d5732e2b2"
+      sha256: "59d53ef8eaed9d288ed9767618e2b31c4fa0383a127db59d5eb2e737a7638a60"
       url: "https://pub.dev"
     source: hosted
-    version: "3.1.7"
+    version: "3.1.9"
   fake_async:
     dependency: transitive
     description:
@@ -587,10 +587,10 @@ packages:
     dependency: "direct dev"
     description:
       name: mockito
-      sha256: eff30d002f0c8bf073b6f929df4483b543133fcafce056870163587b03f1d422
+      sha256: c8d040d754367108fbe482dcb79dd72b8fe60ac6727abd15b4783c5560297ee6
       url: "https://pub.dev"
     source: hosted
-    version: "5.6.4"
+    version: "5.7.0"
   msix:
     dependency: "direct dev"
     description:
@@ -904,10 +904,10 @@ packages:
     dependency: transitive
     description:
       name: url_launcher_android
-      sha256: "17bc677f0b301615530dd1d67e0a9828cafa2d0b6b6eae4cd3679b7eac4a273c"
+      sha256: b413d49b73867ac08dd2f9890efd3cc11f2a0e577618d50843440a1fb3776c32
       url: "https://pub.dev"
     source: hosted
-    version: "6.3.30"
+    version: "6.3.32"
   url_launcher_ios:
     dependency: transitive
     description:
@@ -1069,5 +1069,5 @@ packages:
     source: hosted
     version: "2.2.4"
 sdks:
-  dart: ">=3.11.0 <4.0.0"
-  flutter: ">=3.38.4"
+  dart: ">=3.12.0 <4.0.0"
+  flutter: ">=3.44.0"
