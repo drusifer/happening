@@ -72,12 +72,6 @@ class LinuxWindowService extends WindowService {
     return null;
   }
 
-  @override
-  Future<void> showStrip() => applyState(StripState.collapsedShown);
-
-  @override
-  Future<void> hideStrip() => applyState(StripState.hidden);
-
   // ── Internals ─────────────────────────────────────────────────────────────
 
   Future<void> _reserveLinuxStrut() async {

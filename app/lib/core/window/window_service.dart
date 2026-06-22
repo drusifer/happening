@@ -78,16 +78,11 @@ class WindowService with WidgetsBindingObserver {
 
   /// Converts a display's OS-reported width to the LOGICAL pixels that
   /// `window_manager` (and thus [WindowResizeStrategy.applySize]) expects.
-  ///
-  /// screen_retriever reports PHYSICAL pixels on Windows — a value that stays
-  /// constant when the DPI scale changes (e.g. a 3840px monitor still reports
-  /// 3840 at 150%). The logical width is therefore physical/dpr. macOS/Linux
-  /// already report logical points, so they pass through unchanged. Without
-  /// this, a DPI change leaves the strip sized to physical width as if logical
-  /// (3840 logical = 5760 physical at 150% on a 3840 screen) — overshooting the
-  /// screen horizontally and reserving an over-wide AppBar band.
-  double _toLogicalWidth(double reportedWidth, double dpr) =>
-      Platform.isWindows && dpr > 0 ? reportedWidth / dpr : reportedWidth;
+  /// Base (macOS/Linux): identity — screen_retriever already reports logical pts.
+  /// Windows overrides to divide by DPR because screen_retriever reports physical
+  /// pixels there (scale-invariant, so a 3840px monitor still reports 3840 at 150%).
+  @protected
+  double toLogicalWidth(double reportedWidth, double dpr) => reportedWidth;
 
   @protected
   bool get isExpanded => _isExpanded;
@@ -115,7 +110,7 @@ class WindowService with WidgetsBindingObserver {
     if (nextActive == null) return;
 
     _dpr = newDpr;
-    _screenWidth = _toLogicalWidth(nextActive.size.width, newDpr);
+    _screenWidth = toLogicalWidth(nextActive.size.width, newDpr);
     _activeDisplay = nextActive;
 
     await _strategy.moveToDisplay(nextActive);
@@ -135,7 +130,7 @@ class WindowService with WidgetsBindingObserver {
     final double realDpr = _wm.getDevicePixelRatio();
     _dpr = realDpr;
     final width = await _readActiveDisplayWidth();
-    _screenWidth = _toLogicalWidth(width, _dpr);
+    _screenWidth = toLogicalWidth(width, _dpr);
     final targetHeight = getCollapsedHeight();
     final size = Size(width, targetHeight);
 
@@ -388,76 +383,19 @@ class WindowService with WidgetsBindingObserver {
     return;
   }
 
-  /// Called before the hide animation starts. Subclasses override to release
-  /// platform reservations (strut on Linux, AppBar on Windows).
-  @protected
-  Future<void> onHideStrip() async {
-    return;
-  }
-
-  /// Called after the show animation completes. Subclasses override to
-  /// re-acquire platform reservations.
-  @protected
-  Future<void> onShowStrip() async {
-    return;
-  }
-
-  // ── Public hide/show API (called by _TimelineStripState) ─────────────────
+  // ── Public hide/show API ──────────────────────────────────────────────────
 
   /// Returns the mini strip width in logical pixels for the given font size.
   double getMiniWidth(double fontSizePx) =>
       fontSizePx * 9.0 + 12.0 + 8.0 + 24.0 + 16.0 + 10.0;
 
-  /// Releases platform reservation before the hide animation.
-  Future<void> prepareToHide() => onHideStrip();
-
-  /// Re-acquires platform reservation after the show animation completes.
-  Future<void> completeShow() => onShowStrip();
+  /// Hides the strip to the mini pill via the single applier.
+  /// Windows overrides to also call [presentInitialFrame] on show.
+  Future<void> hideStrip() => applyState(StripState.hidden);
 
   /// Restores the strip from hidden to the full-width collapsed strip.
-  ///
-  /// Default (Linux/macOS): the legacy two-step — resize to full, then re-acquire
-  /// the platform reservation ([onShowStrip]). Windows overrides this to reuse
-  /// the *init* sequence ([applyState] reserve→size, then [presentInitialFrame]),
-  /// the one path proven to keep the strip inside its own strut. Converging show
-  /// onto init removes the divergent resize-then-reserve path that stranded the
-  /// re-registered AppBar window below the strut.
-  Future<void> showStrip() async {
-    await resizeToFullStrip();
-    await completeShow();
-  }
-
-  /// Hides the strip to the mini pill.
-  ///
-  /// Default (Linux/macOS): the legacy two-step — release the platform
-  /// reservation ([onHideStrip]), then shrink to the mini footprint. Windows
-  /// overrides this to the single `applyState(StripState.hidden)` (release +
-  /// size in one applier call), the mirror of [showStrip]. Geometry comes from
-  /// the service's tracked font size, the same source `applyState` already uses.
-  Future<void> hideStrip() async {
-    await prepareToHide();
-    await resizeToMiniStrip(_fontSizePx);
-  }
-
-  /// Resizes the OS window to the mini strip footprint (called at hide-animation end).
-  Future<void> resizeToMiniStrip(double fontSizePx) async {
-    final miniSize = Size(getMiniWidth(fontSizePx), getCollapsedHeight());
-    final origin = _activeDisplay?.workAreaOrigin ?? Offset.zero;
-    _log.fine('resizeToMiniStrip: target=$miniSize origin=$origin');
-    await _strategy.applySize(miniSize, position: origin);
-    await logGeometry('resizeToMiniStrip');
-    probeGeometryLater('resizeToMiniStrip');
-  }
-
-  /// Resizes the OS window to full strip width (called at show-animation start).
-  Future<void> resizeToFullStrip() async {
-    final fullSize = Size(_screenWidth, getCollapsedHeight());
-    final origin = _activeDisplay?.workAreaOrigin ?? Offset.zero;
-    _log.fine('resizeToFullStrip: target=$fullSize origin=$origin');
-    await _strategy.applySize(fullSize, position: origin);
-    await logGeometry('resizeToFullStrip');
-    probeGeometryLater('resizeToFullStrip');
-  }
+  /// Windows overrides to also call [presentInitialFrame].
+  Future<void> showStrip() => applyState(StripState.collapsedShown);
 
   // ── Internal ──────────────────────────────────────────────────────────────
 
@@ -478,7 +416,7 @@ class WindowService with WidgetsBindingObserver {
   Future<void> _onDisplayChangedInner() async {
     final newDpr = _wm.getDevicePixelRatio();
     final nextActive = _displayService.activeDisplay;
-    final newWidth = _toLogicalWidth(nextActive?.size.width ?? 0, newDpr);
+    final newWidth = toLogicalWidth(nextActive?.size.width ?? 0, newDpr);
     final activeChanged = _activeDisplay != nextActive;
     final previousActiveId = _activeDisplay?.id;
     final nextActiveId = nextActive?.id;

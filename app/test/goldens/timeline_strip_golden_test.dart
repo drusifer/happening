@@ -47,17 +47,6 @@ class _FakeWindowService extends WindowService {
     WidgetsBinding.instance.handleMetricsChanged();
   }
 
-  @override
-  Future<void> resizeToMiniStrip(double fontSizePx) async {}
-
-  @override
-  Future<void> resizeToFullStrip() async {}
-
-  @override
-  Future<void> prepareToHide() async {}
-
-  @override
-  Future<void> completeShow() async {}
 }
 
 class _FakeClock extends ClockService {

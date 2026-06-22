@@ -38,7 +38,7 @@ class _StubDisplayEvents implements DisplayEvents {
   void Function() subscribe(void Function() onChange) => () {};
 }
 
-/// Extends the base fake to track hide/show calls and swallow resize ops.
+/// Extends the base to track applyState calls and swallow real geometry ops.
 class _HideTrackingWindowService extends WindowService {
   _HideTrackingWindowService()
       : super(
@@ -50,42 +50,18 @@ class _HideTrackingWindowService extends WindowService {
           ),
         );
 
-  int prepareToHideCalls = 0;
-  int completeShowCalls = 0;
-  final List<Size> miniSizes = [];
-  int resizeToFullCalls = 0;
+  final List<StripState> appliedStates = [];
 
-  // Expand/collapse route through applyState; no-op it so the test doesn't drive
-  // real geometry through the bare mock WindowManager. Hide/show are observed via
-  // the prepareToHide/completeShow/resize* overrides below (the base path).
   @override
-  Future<void> applyState(StripState state) async {}
+  Future<void> applyState(StripState state) async {
+    appliedStates.add(state);
+  }
 
   @override
   Future<void> setWindowMode(WindowMode mode) async {}
 
   @override
   Future<void> focus() async {}
-
-  @override
-  Future<void> prepareToHide() async {
-    prepareToHideCalls++;
-  }
-
-  @override
-  Future<void> completeShow() async {
-    completeShowCalls++;
-  }
-
-  @override
-  Future<void> resizeToMiniStrip(double fontSizePx) async {
-    miniSizes.add(Size(getMiniWidth(fontSizePx), getCollapsedHeight()));
-  }
-
-  @override
-  Future<void> resizeToFullStrip() async {
-    resizeToFullCalls++;
-  }
 }
 
 class _FakeClock extends ClockService {
@@ -176,8 +152,7 @@ void main() {
       expect(find.byIcon(Icons.arrow_left), findsOneWidget);
     });
 
-    testWidgets('tapping hide button triggers prepareToHide and resizeToMini',
-        (tester) async {
+    testWidgets('tapping hide button applies hidden state', (tester) async {
       final ws = _HideTrackingWindowService();
       await tester.pumpWidget(wrap(makeStrip(ws: ws)));
       await tester.pump(Duration.zero);
@@ -185,8 +160,7 @@ void main() {
       await tester.tap(find.byIcon(Icons.arrow_left));
       await tester.pumpAndSettle();
 
-      expect(ws.prepareToHideCalls, 1);
-      expect(ws.miniSizes, isNotEmpty);
+      expect(ws.appliedStates, contains(StripState.hidden));
     });
 
     testWidgets('after hide, mini widget shows show-button (arrow_right)',
@@ -213,8 +187,7 @@ void main() {
       await tester.tap(find.byIcon(Icons.arrow_right));
       await tester.pumpAndSettle();
 
-      expect(ws.completeShowCalls, 1);
-      expect(ws.resizeToFullCalls, 1);
+      expect(ws.appliedStates, contains(StripState.collapsedShown));
       expect(find.byIcon(Icons.arrow_left), findsOneWidget);
       expect(find.byIcon(Icons.arrow_right), findsNothing);
     });
@@ -324,7 +297,7 @@ void main() {
       await tester.tap(find.byType(CountdownDisplay), warnIfMissed: false);
       await tester.pumpAndSettle();
 
-      expect(ws.completeShowCalls, 1);
+      expect(ws.appliedStates, contains(StripState.collapsedShown));
       expect(find.byIcon(Icons.arrow_left), findsOneWidget);
     });
 
