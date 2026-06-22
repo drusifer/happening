@@ -17,13 +17,9 @@ class MacOsResizeStrategy extends WindowResizeStrategy {
   MacOsResizeStrategy({
     required WindowManager wm,
     required ScreenRetriever sr,
-  })  : _wm = wm,
-        // ignore: unused_field
-        _sr = sr;
+  }) : _wm = wm;
 
   final WindowManager _wm;
-  // ignore: unused_field
-  final ScreenRetriever _sr;
 
   @override
   WindowManager get wm => _wm;

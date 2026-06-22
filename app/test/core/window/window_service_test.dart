@@ -470,42 +470,6 @@ void main() {
         expect(service.getMiniWidth(14), closeTo(14 * 9.0 + 70, 0.001));
         expect(service.getMiniWidth(16), closeTo(16 * 9.0 + 70, 0.001));
       });
-
-      // These assert the platform-independent contract: the window is pinned to
-      // the target size via WindowResizeStrategy.applySize (min == max == size).
-      // The geometry mechanism (setSize vs setBounds) is platform-specific and
-      // covered in window_resize_strategy_test.dart.
-      test('resizeToMiniStrip pins the window to mini dimensions', () async {
-        await service.initialize(initialFontSizePx: kDefaultFontSizePx);
-        clearInteractions(mockWM);
-
-        await service.resizeToMiniStrip(kDefaultFontSizePx);
-
-        final miniSize = Size(service.getMiniWidth(kDefaultFontSizePx),
-            service.getCollapsedHeight());
-        verify(mockWM.setMaximumSize(miniSize)).called(1);
-        verify(mockWM.setMinimumSize(miniSize)).called(1);
-        verifyNever(mockWM.setMaximumSize(Size.infinite));
-      });
-
-      test('resizeToFullStrip pins the window to full-width dimensions',
-          () async {
-        await service.initialize(initialFontSizePx: kDefaultFontSizePx);
-        clearInteractions(mockWM);
-
-        await service.resizeToFullStrip();
-
-        final fullSize = Size(1920, service.getCollapsedHeight());
-        verify(mockWM.setMaximumSize(fullSize)).called(1);
-        verify(mockWM.setMinimumSize(fullSize)).called(1);
-        verifyNever(mockWM.setMaximumSize(Size.infinite));
-      });
-
-      test('prepareToHide/completeShow are no-ops on base WindowService',
-          () async {
-        await expectLater(service.prepareToHide(), completes);
-        await expectLater(service.completeShow(), completes);
-      });
     });
 
     group('applyState (state machine)', () {

@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 
 import 'package:crypto/crypto.dart';
@@ -9,17 +8,8 @@ import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'oauth_redirect_handler.dart';
 import 'token_store.dart';
-
-// Abstract authentication service interface.
-///
-/// TLDR:
-/// Overview: Defines the required methods for any auth implementation.
-/// Problem: Need to decouple the UI from specific auth providers (GCP, etc).
-/// Solution: Declares an abstract AuthService class with a Google implementation.
-/// Breaking Changes: No.
-///
-/// ---------------------------------------------------------------------------
 
 abstract class AuthService {
   Future<bool> signIn();
@@ -64,26 +54,29 @@ class _ProxyingClient extends http.BaseClient {
 
 class GoogleAuthService implements AuthService {
   static final _log = Logger('GoogleAuthService');
+
   GoogleAuthService({
     required ClientId clientId,
     required List<String> scopes,
     required TokenStore tokenStore,
     http.Client? httpClient,
     String proxyUrl = _kProxyUrl,
+    OAuthRedirectHandler? redirectHandler,
   })  : _clientId = clientId,
         _scopes = scopes,
         _tokenStore = tokenStore,
         _httpClient = httpClient ?? http.Client(),
-        _proxyUrl = proxyUrl;
+        _proxyUrl = proxyUrl,
+        _redirectHandler = redirectHandler ?? OAuthRedirectHandler.create();
 
   final ClientId _clientId;
   final List<String> _scopes;
   final TokenStore _tokenStore;
   final http.Client _httpClient;
   final String _proxyUrl;
+  final OAuthRedirectHandler _redirectHandler;
 
   AutoRefreshingAuthClient? _client;
-  HttpServer? _pendingServer;
 
   @override
   AutoRefreshingAuthClient? get client => _client;
@@ -92,10 +85,7 @@ class GoogleAuthService implements AuthService {
   bool get isSignedIn => _client != null;
 
   @override
-  void cancelSignIn() {
-    unawaited(_pendingServer?.close(force: true));
-    _pendingServer = null;
-  }
+  void cancelSignIn() => _redirectHandler.cancel();
 
   @override
   Future<bool> tryRestore() async {
@@ -121,11 +111,7 @@ class GoogleAuthService implements AuthService {
       final challenge = _sha256Challenge(verifier);
       final state = _generateVerifier(); // CSRF protection (RFC 6749 §10.12)
 
-      // Bind on a random free port — OS picks it.
-      final server = await HttpServer.bind('localhost', 0);
-      _pendingServer = server;
-      final port = server.port;
-      final redirectUri = 'http://localhost:$port';
+      final redirectUri = _redirectHandler.redirectUri;
 
       final authUrl = Uri.https('accounts.google.com', '/o/oauth2/auth', {
         'client_id': _clientId.identifier,
@@ -141,39 +127,20 @@ class GoogleAuthService implements AuthService {
 
       await launchUrl(authUrl, mode: LaunchMode.externalApplication);
 
-      // Wait for browser to redirect back (or for cancelSignIn to close the server).
-      final HttpRequest request;
-      try {
-        request = await server.first;
-      } catch (_) {
-        // Server was closed by cancelSignIn() or another error.
-        _pendingServer = null;
-        _log.fine('PKCE signIn: cancelled or server closed');
+      final callbackUri = await _redirectHandler.waitForCallback();
+      if (callbackUri == null) {
+        _log.fine('PKCE signIn: cancelled');
         return false;
       }
-      _pendingServer = null;
 
       // Verify state to prevent CSRF (RFC 6749 §10.12).
-      final returnedState = request.uri.queryParameters['state'];
+      final returnedState = callbackUri.queryParameters['state'];
       if (returnedState != state) {
         _log.fine('PKCE signIn: state mismatch — possible CSRF');
-        request.response
-          ..statusCode = 400
-          ..write('Bad request: state mismatch.');
-        await request.response.close();
-        await server.close();
         return false;
       }
 
-      final code = request.uri.queryParameters['code'];
-      request.response
-        ..statusCode = 200
-        ..headers.contentType = ContentType.html
-        ..write(
-            '<html><body><p>Sign-in complete. You may close this window.</p></body></html>');
-      await request.response.close();
-      await server.close();
-
+      final code = callbackUri.queryParameters['code'];
       if (code == null) {
         // User denied access — Google redirects back with error= instead of code=.
         _log.fine('PKCE signIn: access denied by user');

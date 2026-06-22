@@ -40,6 +40,10 @@ class WindowsWindowService extends WindowService {
   final bool _enableWindowsAppBar;
   final WindowsAppBar _appBar;
 
+  @override
+  double toLogicalWidth(double reportedWidth, double dpr) =>
+      dpr > 0 ? reportedWidth / dpr : reportedWidth;
+
   int get _bandWidthPx => (screenWidth * dpr).round();
 
   // CEIL, not round: the window is sized in logical px and window_manager rounds
@@ -120,31 +124,14 @@ class WindowsWindowService extends WindowService {
     probeGeometryLater('presentInitialFrame');
   }
 
-  // NOTE: Windows does NOT override onHideStrip/onShowStrip — show/hide route
-  // through showStrip/hideStrip (applyState) below, which never call
-  // completeShow/prepareToHide. Those legacy hooks remain only on the base +
-  // Linux path.
-
-  // Show = EXACTLY what init does (afterWindowShown), the one path that keeps the
-  // strip in its strut: reserve→size via applyState, then force the present. The
-  // legacy show path (resizeToFullStrip → onShowStrip) sized BEFORE reserving and
-  // never presented, so the re-registered AppBar window drifted below the strut
-  // (GEO build-still-below-strut.out 2026-06-20: onShowStrip +500ms = (0,73)).
+  // Show mirrors init (afterWindowShown): reserve→size via applyState, then
+  // present. Needed because a re-registered AppBar window can drift below its
+  // own strut without the metrics-settle in presentInitialFrame.
   @override
   Future<void> showStrip() async {
-    _log.fine('showStrip: applyState(collapsedShown) + presentInitialFrame '
-        '(converged onto the init path)');
+    _log.fine('showStrip: applyState(collapsedShown) + presentInitialFrame');
     await applyState(StripState.collapsedShown);
     await presentInitialFrame();
-  }
-
-  // Hide = the single applier (mirror of showStrip): applyState(hidden) releases
-  // the strut (the one allowed ABM_REMOVE) and sizes the mini pill in one step,
-  // replacing prepareToHide (dispose) + resizeToMiniStrip.
-  @override
-  Future<void> hideStrip() async {
-    _log.fine('hideStrip: applyState(hidden) (converged onto the applier)');
-    await applyState(StripState.hidden);
   }
 
   @override
