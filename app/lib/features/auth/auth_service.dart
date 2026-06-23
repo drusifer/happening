@@ -111,7 +111,7 @@ class GoogleAuthService implements AuthService {
       final challenge = _sha256Challenge(verifier);
       final state = _generateVerifier(); // CSRF protection (RFC 6749 §10.12)
 
-      final redirectUri = _redirectHandler.redirectUri;
+      final redirectUri = await _redirectHandler.start();
 
       final authUrl = Uri.https('accounts.google.com', '/o/oauth2/auth', {
         'client_id': _clientId.identifier,
