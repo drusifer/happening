@@ -796,8 +796,10 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
  Linux show/hide converged. Replaced onHideStrip/onShowStrip with applyReservation(StripState)+showStrip/hideStrip overrides. 34/34 window tests green, 481/481 suite (2 pre-existing golden failures unchanged).
 
 ---
-[<small>2026-06-22 16:19:41</small>] [**make**]->[**all**] *build*:
- Build FAILED exit=2 | make dist-macos-appstore | /Users/drewgutstein/Projects/happening/build/build.out
-Try `flutter pub outdated` for more information.
-Error: ASC_API_KEY_ID not set
-make[1]: *** [dist-macos-appstore] Error 1
+[<small>2026-06-23 11:27:53</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make dist-windows | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+
+"Windows package: dist/happening-0.5.3-windows-x64.zip"
+
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
