@@ -1,4 +1,13 @@
-# Trin Next Steps — 2026-06-11
+# Trin Next Steps — 2026-07-01
+
+## macOS ASWebAuth Phase C UAT DONE — Awaiting Morpheus review (parallel track)
+Gate approved with 3 flagged, non-blocking gaps (see current_task.md / the UAT report). If Morpheus's
+review finds real issues → Neo fixes → Trin re-UAT just the failing item. If Smith wants to weigh in
+on the `cancelSignIn()` no-op gap, that's a separate follow-up, not a re-open of this UAT.
+
+---
+
+# Trin Next Steps — 2026-06-11 (F-31, prior)
 
 ## F-31 UAT DONE — Awaiting Morpheus review
 

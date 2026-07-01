@@ -22,7 +22,7 @@ dependencies:
   ffi: any
   logging: any
   apsl_sun_calc: ^0.0.4
-  app_links: any
+  flutter_web_auth_2: ^5.0.3
 
 dev_dependencies:
   flutter_test:
@@ -32,6 +32,7 @@ dev_dependencies:
   flutter_lints: any
   mockito: any
   build_runner: any
+  flutter_web_auth_2_platform_interface: any
   dart_code_linter: any
   msix: ">=3.16.13"
   flutter_launcher_icons: ">=0.14.0"

@@ -1,4 +1,60 @@
-# Neo Current Task — 2026-06-20
+# Neo Current Task — 2026-07-01
+
+## STATUS (2026-07-01): macOS ASWebAuth *bloop impl — Phase A + B DONE, handed to Trin for UAT.
+Parallel track (task.md), does NOT touch F-31/window code. F-31 window convergence status below (2026-06-20) is UNCHANGED — resume there when this lands.
+
+### Phase A (spike) — RESOLVED, no escalation needed
+Plan's open question: does Google's Desktop OAuth client type accept a custom-URL-scheme redirect_uri,
+or does macOS ASWebAuth need a second (iOS-type) client? Answered by evidence already in the codebase:
+`oauth_redirect_handler.dart` already used `com.googleusercontent.apps.732125393297-...:/oauth2redirect`
+with the existing Desktop client, shipped in v0.5.3. Google's redirect_uri validation is server-side and
+scheme-based — it doesn't care how the browser was launched. So: no second client, no Cypher/Drew escalation.
+
+### Phase B (implement) — DONE
+- Added `flutter_web_auth_2: ^5.0.3` (macOS/iOS only usage; `pubspec.yaml`).
+- `oauth_redirect_handler.dart`: replaced `_AppLinksRedirectHandler` (external Safari launch + `app_links`
+  stream) with `_ASWebAuthRedirectHandler` (macOS) using `FlutterWebAuth2.authenticate(url:, callbackUrlScheme:)`
+  — plugin owns both browser-launch and callback-capture in one call. Interface changed:
+  `waitForCallback()` → `authenticate(Uri authUrl)` (now owns the launch too); `_LoopbackRedirectHandler`
+  (Windows/Linux) updated to match — moved the `launchUrl` call in from `auth_service.dart` (behavior
+  unchanged, same HttpServer loopback).
+- `auth_service.dart`: `signIn()` now calls `_redirectHandler.authenticate(authUrl)` instead of
+  `launchUrl(...)` + `waitForCallback()`. Removed now-unused `url_launcher` import.
+- `app_links` dependency removed entirely (was only used by the old macOS handler) — confirmed zero
+  remaining Dart references. `AppDelegate.swift`'s `application(_:open:)` override (forwarded URLs to
+  app_links, with a comment already stale re: the old `works.gs.happening://` scheme) deleted as dead
+  code — `ASWebAuthenticationSession` intercepts its callback scheme itself, no app-delegate path needed.
+- `Info.plist` CFBundleURLTypes already registered the right reverse-client-ID scheme — no change needed.
+- **AC-6 (cancel/dismiss)**: read the actual native plugin source (not just README, which documents
+  nothing about error codes) — `FlutterWebAuth2Plugin.swift` maps `ASWebAuthenticationSessionError
+  .canceledLogin` to `FlutterError(code: "CANCELED")`, which Flutter surfaces as
+  `PlatformException(code: 'CANCELED')`. `_ASWebAuthRedirectHandler.authenticate` catches that
+  specifically and returns null (routes to existing sign-in-cancelled state, same as any other null return).
+- **Known limitation (flag for Smith/Trin, not a blocker)**: `flutter_web_auth_2`'s public API is only
+  `authenticate()` — no programmatic dismiss for an in-flight `ASWebAuthenticationSession`. Our own
+  "tap to cancel" affordance on the sign-in strip (`GoogleAuthService.cancelSignIn()` → `handler.cancel()`)
+  is a documented no-op on macOS now — only the user's own tap on the *system sheet's* Cancel button ends
+  it (which AC-6 already covers via the PlatformException path). This wasn't true before (the old
+  `_AppLinksRedirectHandler.cancel()` could actually interrupt a pending callback) — worth a UX note.
+
+### Self-validation (bloop rule #1) — all green
+- `flutter analyze lib/ test/` — no issues.
+- New `test/features/auth/oauth_redirect_handler_test.dart` (5 tests): start() returns correct redirect,
+  authenticate() success/cancel(AC-6)/unrelated-failure paths, cancel() no-op doesn't throw. Uses a fake
+  `FlutterWebAuth2Platform` (the plugin's own platform-interface seam) — no real system sheet needed.
+- Full suite: 483/485 green. The 2 failures are the pre-existing golden failures already noted in
+  CHAT.md (2026-06-23, F-31/window work) — unrelated to auth, confirmed by diff scope.
+- Real `flutter build macos --debug` — succeeds. Confirms SPM resolves the plugin's native macOS
+  implementation with no CocoaPods/manual install step (matches this project's SPM-only convention).
+  `GeneratedPluginRegistrant.swift` now registers `FlutterWebAuth2Plugin`, no more `AppLinks`.
+
+### Known open item from Morpheus's research — not yet checked
+The `flutter_web_auth_2` README documents an open, unresolved upstream bug: errors on macOS when Chrome
+is the default browser (issue #136, no workaround found). This is an Apple/plugin-level bug outside our
+control. Trin's Phase C UAT should note whether it manifests in a manual smoke test (can't be exercised
+by unit tests — needs a real system sheet + a machine where Chrome is default).
+
+---
 
 ## STATUS (2026-06-20 PM): SHOW convergence COMMITTED (e4100fc) + VALIDATED. HIDE convergence DONE (unit-verified, awaiting Drew manual gate). NEXT phase: expand/collapse.
 

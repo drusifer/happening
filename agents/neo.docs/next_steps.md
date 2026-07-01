@@ -1,6 +1,12 @@
-# Neo Next Steps — 2026-06-20 (updated)
+# Neo Next Steps — 2026-07-01 (updated)
 
-## COLD-START RESUME ORDER
+## macOS ASWebAuth (*bloop impl) — HANDED OFF to Trin for Phase C UAT
+Phase A+B done (see current_task.md 2026-07-01 section). Trin: run/verify AC-1..6, especially AC-6
+(unit-tested, but confirm no regression manually if possible) and the known Chrome-default-browser
+plugin bug (flag if it manifests; can't be caught by unit tests). Then Morpheus final review.
+This is a small parallel track — does NOT block or change F-31 pickup below.
+
+## F-31 / WINDOW CONVERGENCE — untouched by the above, still the primary board. COLD-START RESUME ORDER
 1. Read `agents/CHAT.md` bottom — last is Neo→Drew "Repro DONE ... Next: Step3 onWindowMoved re-pin".
 2. Read `docs/WINDOW_ENTRYPOINT_CONVERGENCE_PLAN.md` — THE source of truth (esp. §4.3 OS-move
    reconciliation, §6 migration steps 2-3). And `neo.docs/current_task.md` + `context.md`.
