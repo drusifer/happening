@@ -41,7 +41,8 @@
       "PowerShell(make test FILE=test/core/window/ 2>&1)",
       "PowerShell(make lint-style 2>&1)",
       "PowerShell(make win-test FILE=test/core/window/ 2>&1)",
-      "PowerShell(make chat MSG=\"Step 2 code DONE. Init applies state once post-show via afterWindowShown: applyState\\(collapsedShown\\)+presentInitialFrame. DELETED focus/safety-net/_handleFirstShow. win-test green. @Drew GATE: make run-windows = full strip on launch, no mouse-over.\" PERSONA=\"Neo\" CMD=\"swe impl\" TO=\"Drew\")"
+      "PowerShell(make chat MSG=\"Step 2 code DONE. Init applies state once post-show via afterWindowShown: applyState\\(collapsedShown\\)+presentInitialFrame. DELETED focus/safety-net/_handleFirstShow. win-test green. @Drew GATE: make run-windows = full strip on launch, no mouse-over.\" PERSONA=\"Neo\" CMD=\"swe impl\" TO=\"Drew\")",
+      "Bash(make chat *)"
     ]
   },
   "enabledMcpjsonServers": [

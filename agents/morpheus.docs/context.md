@@ -1,5 +1,8 @@
 # Morpheus Context — 2026-06-03
 
+## 2026-07-01 — ASWebAuthenticationSession guidance (Apple review feedback)
+Drew asked whether OAuth needs ASWebAuthenticationSession + custom Swift for macOS App Store review. Answered: `flutter_web_auth_2` package wraps it natively, pure Dart API, no Swift needed. Recommended macOS-only branch in AuthService (keep existing googleapis_auth PKCE + proxy loopback flow for Windows/Linux, unaffected by App Store). Flagged 2 risks for Neo to spike first: (1) whether Google's OAuth desktop client type accepts a custom-URL-scheme redirect_uri, since loopback is deprecated for iOS/Android client types; (2) an open unresolved ASWebAuthenticationSession bug in the plugin's tracker. Not yet recorded as a DECISIONS.md entry — pending Neo's spike. Full writeup: `agents/morpheus.docs/aswebauth_guidance_2026-07-01.md`.
+
 ## Current State
 - F-31 Timestrip Hide/Show architecture COMPLETE + sprint plan APPROVED. Arch doc: `F31_HIDE_SHOW_ARCH_2026-06-11.md`.
 - F-30 Polish & app.dart displayService Fix APPROVED.

@@ -1,5 +1,13 @@
 # Mouse Context
 
+## macOS ASWebAuthenticationSession Sprint — 2026-07-01
+- Fast-tracked planning (bloop rule #4): Cypher+Morpheus combined doc → 1 Smith gate (approved + AC-6) → this
+  phase breakdown → Morpheus final review next.
+- 3 short phases: A (Neo spike on Google redirect URI client-type), B (Neo implement macOS branch), C (Trin UAT)
+- Plan: `docs/sprints/macos-aswebauth-oauth/sprint_plan_2026-07-01.md`; listed in `task.md` under
+  Parallel/Carry-Over Work (not the primary board — F-31 Phase C remains primary board)
+- **Not started** — planning-only, Drew asked for `*plan` not `*impl`
+
 ## F-31 Timestrip Hide/Show Sprint — 2026-06-11
 - Full planning loop complete: Cypher → Smith G1 → Morpheus arch → Smith G2 → Mouse plan → Morpheus review (pending)
 - Sprint board in `task.md`; F-30 board archived in `agents/mouse.docs/f30_task_archive_2026-06-11.md`

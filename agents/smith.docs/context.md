@@ -1,5 +1,11 @@
 # Smith Context
 
+## 2026-07-01: macOS ASWebAuth compliance item — Gate APPROVED with 1 must-add AC
+Reviewed combined Cypher+Morpheus doc (fast-tracked, bloop rule #4). No visible UI change, but flagged a real gap:
+AC set didn't specify cancel/error handling for the ASWebAuthenticationSession system sheet dismissal — added
+AC-6 (must show existing "sign-in cancelled" state, not hang/crash). Also noted the system dialog is a UX upgrade
+over the current custom browser-bounce flow. Review: `docs/sprints/macos-aswebauth-oauth/gate1_review_2026-07-01.md`
+
 ## Recent Decisions
 - 2026-06-11: F-31 Timestrip Hide/Show Gate 1 APPROVED with 1 must-add AC (Note B: 24×24px target) + 2 non-blocking notes. Review: `agents/smith.docs/f31_gate1_review_2026-06-11.md`
 - 2026-04-24: Approved transparent timestrip sprint stories with UX constraints.

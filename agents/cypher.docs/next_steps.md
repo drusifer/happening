@@ -1,6 +1,12 @@
-# Next Steps — 2026-06-09
+# Next Steps — 2026-07-01
 
-## F-31 sprint planning loop (*bloop plan)
+## macOS ASWebAuth compliance sprint (fast-tracked, *bloop *plan)
+1. ✓ Combined Cypher+Morpheus doc written: `docs/sprints/macos-aswebauth-oauth/MACOS_ASWEBAUTH_STORIES_ARCH_2026-07-01.md`
+2. NOW: `@Smith *user review` — single gate (fast-track skips the 2nd gate since arch is already in the same doc)
+3. Smith approve → `@Mouse *sm plan` phase breakdown
+4. `@Morpheus *lead review sprint plan` — final review, then report to Drew
+
+## F-31 sprint planning loop (*bloop plan) — DONE, shipped 2026-06
 
 1. ✓ Cypher stories written (5 stories, 3 OQs raised)
 2. **NOW: Drew answers OQ-F31-1..3** (see current_task.md)

@@ -1,6 +1,18 @@
-# Current Task — 2026-06-09
+# Current Task — 2026-07-01
 
-**Status:** F-31 stories READY — OQs resolved, sending to Smith Gate 1
+**Status:** macOS ASWebAuth compliance item — combined stories+arch doc READY, sending to Smith (single fast-track gate)
+
+## What was done (2026-07-01)
+- Fast-tracked per bloop rule #4 (small maintenance/compliance item, not a new feature)
+- Combined with Morpheus's architecture into one doc: `docs/sprints/macos-aswebauth-oauth/MACOS_ASWEBAUTH_STORIES_ARCH_2026-07-01.md`
+- 1 user story (US-AUTH-01), 5 AC — no PRD table change needed (compliance fix to existing F-02, not a new feature)
+- 2 open risks flagged for Neo to spike before implementation (redirect URI client type; known plugin bug)
+
+## Next action
+- `@Smith *user review docs/sprints/macos-aswebauth-oauth/MACOS_ASWEBAUTH_STORIES_ARCH_2026-07-01.md` — single fast-track gate
+- Smith approve → Mouse phase breakdown → Morpheus final review
+
+## Previous: F-31 stories READY — OQs resolved (2026-06-09, shipped since)
 
 ## What was done (2026-06-09)
 - Read requirement doc (`agents/nreq_timestrip_hide.md`) + codebase (timeline_strip.dart, linux_window_service.dart, countdown_display.dart)

@@ -1,4 +1,10 @@
-# Next Steps — 2026-06-11
+# Next Steps — 2026-07-01
+
+## macOS ASWebAuth compliance sprint — PLANNING COMPLETE, awaiting go-ahead
+- Full fast-track loop done: Cypher+Morpheus doc → Smith gate (APPROVED + AC-6) → Mouse phases → Morpheus review (APPROVED)
+- Plan: `docs/sprints/macos-aswebauth-oauth/sprint_plan_2026-07-01.md`
+- **Not started.** Next action is Drew's call: `*bloop *impl macos-aswebauth phase-a` (or `@Neo *swe impl phase-a`)
+  to kick off the Phase A spike (Google redirect URI client-type question) whenever ready.
 
 ## F-31 — IMPL LOOP COMPLETE
 - Neo Phase A+B ✅, Trin UAT ✅, Morpheus review APPROVED ✅
