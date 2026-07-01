@@ -801,3 +801,35 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
 -C app/build/linux/arm64/release bundle
 Linux package: dist/happening-0.5.3-linux-arm64.tar.gz
 make[1]: Leaving directory '/home/drusifer/Projects/happening'
+
+---
+[<small>2026-06-30 20:01:35</small>] [**User**]->[**all**] *request*:
+ chat to=morpheus The apple folks want us to use ASWebAuthenticationSession when we use OAuth. Is there a flutter / dart frontend for that or will we need some Swift special sauce?
+
+---
+[<small>2026-07-01 11:51:54</small>] [**Morpheus**]->[**User**] *lead guide*:
+ flutter_web_auth_2 wraps ASWebAuthenticationSession, pure Dart, no custom Swift needed. Recommend macOS-only branch, keep Win/Linux loopback. Details: agents/morpheus.docs/aswebauth_guidance_2026-07-01.md
+
+---
+[<small>2026-07-01 12:08:00</small>] [**Morpheus**]->[**Cypher**] *lead handoff*:
+ Fast-tracking macOS ASWebAuth as a small compliance item (bloop plan rule #4) - combining Cypher+Morpheus into one doc for a single Smith gate. @Cypher *pm doc stories
+
+---
+[<small>2026-07-01 12:13:35</small>] [**Cypher**]->[**Smith**] *pm handoff*:
+ Combined stories+arch doc ready: docs/sprints/macos-aswebauth-oauth/MACOS_ASWEBAUTH_STORIES_ARCH_2026-07-01.md. 1 story, 5 AC, no PRD change (compliance fix not new feature). @Smith *user review
+
+---
+[<small>2026-07-01 12:14:00</small>] [**Smith**]->[**Mouse**] *user approve*:
+ Gate APPROVED + 1 must-add AC-6: handle ASWebAuthenticationSession cancel/dismiss with existing sign-in-cancelled state, not a hang. Review: docs/sprints/macos-aswebauth-oauth/gate1_review_2026-07-01.md. @Mouse *sm plan
+
+---
+[<small>2026-07-01 12:14:34</small>] [**Mouse**]->[**Morpheus**] *sm handoff*:
+ 3-phase plan written: docs/sprints/macos-aswebauth-oauth/sprint_plan_2026-07-01.md. Listed in task.md as parallel track (F-31 stays primary board). Not started - planning only. @Morpheus *lead review sprint plan
+
+---
+[<small>2026-07-01 12:14:45</small>] [**Morpheus**]->[**User**] *lead review*:
+ Sprint plan APPROVED - matches architecture, correctly gates Phase B on Phase A's spike result. Planning complete, not started (awaiting go-ahead for *impl). Docs: docs/sprints/macos-aswebauth-oauth/
+
+---
+[<small>2026-07-01 12:32:42</small>] [**Morpheus**]->[**Drew**] *shutdown*:
+ Shutdown prep: all persona state saved for macOS ASWebAuth planning loop. No code touched (docs only), no test run needed. 14 files uncommitted incl. 4 new sprint docs. Last commit 0dea3bb. Awaiting Drew to review/commit.

@@ -153,6 +153,10 @@ Dependency: A → B → C (strictly sequential; each gate requires the previous 
 - **F-28 Phase C** (Trin UAT + Morpheus review): still pending; can run parallel with F-31 Phase A
 - **F-30 C3/F1/F2**: hardware-blocked on Drew's machine (no action until hardware available)
 - **F-30 F3**: Oracle docs — can write post-hardware-verify
+- **macOS ASWebAuthenticationSession** (Apple review compliance, not a PRD feature) — small 3-phase sprint,
+  fast-tracked planning complete 2026-07-01, Smith-approved with AC-6 (cancel handling). Plan:
+  `docs/sprints/macos-aswebauth-oauth/sprint_plan_2026-07-01.md`. Phase A (Neo spike on Google redirect URI
+  client-type acceptance) is NOT started — implementation not yet greenlit, planning-only per Drew's request.
 
 ---
 
