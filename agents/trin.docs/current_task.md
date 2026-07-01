@@ -1,4 +1,15 @@
-# Trin Current Task — 2026-06-11
+# Trin Current Task — 2026-07-01
+
+## Status: macOS ASWebAuth Phase C UAT — COMPLETE, handed off to Morpheus (parallel track, F-31 below unaffected)
+Full report: `docs/sprints/macos-aswebauth-oauth/macos_aswebauth_phase_c_uat_2026-07-01.md`.
+AC-1..4, AC-6 PASS. AC-5 unverifiable pre-submission (expected). 483/485 green (2 pre-existing
+goldens, unrelated — confirmed by diff scope). 3 flagged (not blocking) gaps: no real system-sheet
+smoke test possible in this env; open upstream Chrome-default-browser bug (#136) unconfirmed either
+way; own "tap to cancel" is now a no-op on macOS (Smith should weigh in).
+
+---
+
+# Trin Current Task — 2026-06-11 (F-31, prior)
 
 ## Status: F-31 UAT — COMPLETE ✅ Handed off to Morpheus
 

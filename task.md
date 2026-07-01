@@ -153,10 +153,15 @@ Dependency: A → B → C (strictly sequential; each gate requires the previous 
 - **F-28 Phase C** (Trin UAT + Morpheus review): still pending; can run parallel with F-31 Phase A
 - **F-30 C3/F1/F2**: hardware-blocked on Drew's machine (no action until hardware available)
 - **F-30 F3**: Oracle docs — can write post-hardware-verify
-- **macOS ASWebAuthenticationSession** (Apple review compliance, not a PRD feature) — small 3-phase sprint,
-  fast-tracked planning complete 2026-07-01, Smith-approved with AC-6 (cancel handling). Plan:
-  `docs/sprints/macos-aswebauth-oauth/sprint_plan_2026-07-01.md`. Phase A (Neo spike on Google redirect URI
-  client-type acceptance) is NOT started — implementation not yet greenlit, planning-only per Drew's request.
+- **macOS ASWebAuthenticationSession** (Apple review compliance, not a PRD feature) — small 3-phase sprint.
+  Plan: `docs/sprints/macos-aswebauth-oauth/sprint_plan_2026-07-01.md`. **All 3 phases DONE 2026-07-01**
+  (Drew greenlit via `*bloop impl`): Phase A spike resolved by evidence already in the codebase (no second
+  Google client needed); Phase B implemented (macOS now uses `flutter_web_auth_2`/`ASWebAuthenticationSession`,
+  AC-6 cancel handled); Phase C UAT gate APPROVED by Trin, final review APPROVED by Morpheus (below).
+  **Uncommitted** — awaiting Drew's review/commit. 3 non-blocking follow-ups flagged, see
+  `docs/sprints/macos-aswebauth-oauth/macos_aswebauth_phase_c_uat_2026-07-01.md` and Morpheus's review doc.
+  Recommended next: Oracle records the architecture decision in DECISIONS.md (per Morpheus's original
+  research doc) once Drew reviews.
 
 ---
 

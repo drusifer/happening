@@ -1,4 +1,12 @@
-# Next Steps — 2026-07-01
+# Next Steps — 2026-07-01 (updated)
+
+## macOS ASWebAuth compliance sprint — IMPLEMENTED + REVIEWED, awaiting Drew's commit
+`*bloop impl` ran the full Neo→Trin→Morpheus chain. APPROVED, no changes requested. Nothing further
+for this team to do until Drew reviews the diff — then optionally `@Oracle *ora record decision`.
+
+---
+
+## PRIOR (2026-07-01, planning phase) — superseded by the above
 
 ## macOS ASWebAuth compliance sprint — PLANNING COMPLETE, awaiting go-ahead
 - Full fast-track loop done: Cypher+Morpheus doc → Smith gate (APPROVED + AC-6) → Mouse phases → Morpheus review (APPROVED)

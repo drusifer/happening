@@ -1,4 +1,15 @@
-# Trin Context — 2026-06-11
+# Trin Context — 2026-06-11 (see 2026-07-01 UPDATE for latest)
+
+## 2026-07-01 UPDATE — macOS ASWebAuth Phase C UAT
+- `flutter_web_auth_2`'s platform-interface (`FlutterWebAuth2Platform.instance`) is a clean fake seam —
+  no real system sheet needed to test the cancel/success/failure paths (see
+  `oauth_redirect_handler_test.dart`). Worth reusing this pattern for other native-plugin-backed code.
+- The plugin's README documents nothing about error codes/exceptions — had to verify AC-6 by reading
+  the actual native `FlutterWebAuth2Plugin.swift` in the pub cache. Don't trust package READMEs alone
+  for error-handling contracts; check the source when the stakes are a required acceptance criterion.
+- Full regression suite (`flutter test`) has 2 known pre-existing golden failures unrelated to any
+  given change (`timeline_strip_golden_test.dart`) — confirm via `git diff` scope before assuming a
+  change caused them, don't just eyeball the failure count.
 
 ## F-31 UAT Findings
 

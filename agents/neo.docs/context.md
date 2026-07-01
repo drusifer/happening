@@ -1,4 +1,16 @@
-# Neo Context — 2026-06-17 (see 2026-06-19 UPDATE below for current state)
+# Neo Context — 2026-06-17 (see 2026-07-01 UPDATE for most current; 2026-06-19 UPDATE for window-refactor state)
+
+## 2026-07-01 UPDATE — macOS ASWebAuth impl (parallel track, see current_task.md for full detail)
+- oauth_redirect_handler.dart architecture: `OAuthRedirectHandler.start()` returns the redirect URI;
+  `authenticate(Uri authUrl)` now owns BOTH the browser-launch and the callback-wait (was split across
+  auth_service.dart's launchUrl call + a separate waitForCallback()). Each platform impl decides how:
+  macOS's `_ASWebAuthRedirectHandler` delegates the whole thing to `FlutterWebAuth2.authenticate()`;
+  Windows/Linux's `_LoopbackRedirectHandler` explicitly calls `launchUrl` then awaits its HttpServer.
+- Native plugin error codes aren't in any README — had to read `FlutterWebAuth2Plugin.swift` in the pub
+  cache directly to learn cancel surfaces as `PlatformException(code: 'CANCELED')`. Worth remembering:
+  for this plugin, source > docs.
+- `flutter_web_auth_2`'s platform-interface (`FlutterWebAuth2Platform.instance`, settable) is the seam
+  for testing without a real system sheet — see oauth_redirect_handler_test.dart's `_FakeWebAuthPlatform`.
 
 ## 2026-06-19 UPDATE — refactor implemented + Windows-verified; now CONVERGING entrypoints
 The 3-state plan below is IMPLEMENTED. StripState + applyState + StripController + AsyncGate + the

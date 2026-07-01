@@ -1,5 +1,14 @@
 # Current Task — 2026-07-01
 
+**Status:** macOS ASWebAuthenticationSession *impl loop — COMPLETE. All 3 phases done, final review
+APPROVED. Uncommitted, awaiting Drew's review/commit. Review doc:
+`docs/sprints/macos-aswebauth-oauth/morpheus_final_review_2026-07-01.md`. Recommended follow-up (not
+executed, just flagged): `@Oracle *ora record decision` for a DEC-0XX once Drew reviews.
+
+---
+
+## PRIOR (2026-07-01, planning phase)
+
 **Status:** macOS ASWebAuthenticationSession compliance item — fast-tracked sprint plan IN PROGRESS (handed to Cypher)
 
 ## Final review (2026-07-01)

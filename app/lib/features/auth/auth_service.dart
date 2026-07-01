@@ -6,7 +6,6 @@ import 'package:crypto/crypto.dart';
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'oauth_redirect_handler.dart';
 import 'token_store.dart';
@@ -125,9 +124,7 @@ class GoogleAuthService implements AuthService {
         'state': state,
       });
 
-      await launchUrl(authUrl, mode: LaunchMode.externalApplication);
-
-      final callbackUri = await _redirectHandler.waitForCallback();
+      final callbackUri = await _redirectHandler.authenticate(authUrl);
       if (callbackUri == null) {
         _log.fine('PKCE signIn: cancelled');
         return false;

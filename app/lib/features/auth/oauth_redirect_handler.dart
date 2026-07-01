@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:app_links/app_links.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:logging/logging.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // Custom URL scheme — macOS only. Must match CFBundleURLSchemes (macOS
 // Info.plist) and the redirect URI registered in Google Cloud Console.
@@ -14,72 +16,72 @@ const _kCustomSchemeRedirect = '$_kScheme:/oauth2redirect';
 /// approves access in the system browser.
 ///
 /// Two transports, split by platform constraint:
-///  - **macOS** uses a custom URL scheme via `app_links`. The Mac App Store
-///    sandbox intentionally ships without the `com.apple.security.network.server`
-///    entitlement a loopback server needs, so the custom scheme (no listening
-///    socket) is the only sandbox-clean option.
+///  - **macOS** uses `ASWebAuthenticationSession` (via `flutter_web_auth_2`),
+///    Apple's required system-trust auth sheet. The Mac App Store sandbox
+///    intentionally ships without the `com.apple.security.network.server`
+///    entitlement a loopback server needs, and App Review requires this API
+///    specifically over a plain browser launch.
 ///  - **Windows/Linux** use an ephemeral loopback HTTP server — the recommended
 ///    desktop flow (RFC 8252 §7.3, Google "Desktop app" client). No registry,
 ///    no privileges, no native runner wiring, and no sandbox to satisfy.
 ///
-/// [start] begins listening and returns the redirect URI to send the browser
-/// to; it MUST be called (and awaited) before launching the auth URL so the
-/// loopback socket is bound / the deep-link subscription is live. The same URI
-/// must be replayed in the token exchange. [waitForCallback] resolves with the
-/// full callback URI (carrying `code=` and `state=`), or null if [cancel] fires
-/// first. Callers validate `state`.
+/// [start] begins listening and returns the redirect URI for the auth request.
+/// [authenticate] launches the auth URL and resolves with the full callback
+/// URI (carrying `code=` and `state=`), or null if the user cancels. Callers
+/// validate `state`.
 abstract class OAuthRedirectHandler {
-  factory OAuthRedirectHandler.create() => Platform.isMacOS
-      ? _AppLinksRedirectHandler()
-      : _LoopbackRedirectHandler();
+  factory OAuthRedirectHandler.create() =>
+      Platform.isMacOS ? _ASWebAuthRedirectHandler() : _LoopbackRedirectHandler();
 
-  /// Starts listening and returns the redirect URI for the auth request.
+  /// Starts listening (if needed) and returns the redirect URI for the auth
+  /// request.
   Future<String> start();
 
-  /// Completes when the callback arrives, or with null if cancelled.
-  Future<Uri?> waitForCallback();
+  /// Launches [authUrl] and resolves with the callback URI, or null if
+  /// cancelled.
+  Future<Uri?> authenticate(Uri authUrl);
 
-  /// Cancels a pending [waitForCallback] (resolves it with null).
+  /// Cancels a pending [authenticate] call (resolves it with null).
   void cancel();
 }
 
-/// macOS: custom URL scheme delivered by `app_links`.
-class _AppLinksRedirectHandler implements OAuthRedirectHandler {
-  final _appLinks = AppLinks();
-  Completer<Uri?>? _completer;
-  StreamSubscription<Uri>? _sub;
+/// macOS: `ASWebAuthenticationSession` via `flutter_web_auth_2`. The plugin
+/// owns both the browser-launch and the callback-capture in one call — no
+/// separate listener to set up.
+class _ASWebAuthRedirectHandler implements OAuthRedirectHandler {
+  static final _log = Logger('OAuthASWebAuth');
 
   @override
-  Future<String> start() async {
-    final completer = Completer<Uri?>();
-    _completer = completer;
-    // Subscribe BEFORE returning so the auth-URL launch can't out-race the
-    // callback (a tight loop on macOS could otherwise deliver before we listen).
-    _sub = _appLinks.uriLinkStream.listen(
-      (uri) {
-        if (uri.scheme == _kScheme) {
-          unawaited(_sub?.cancel());
-          _sub = null;
-          if (!completer.isCompleted) completer.complete(uri);
-        }
-      },
-      onError: (_) {
-        if (!completer.isCompleted) completer.complete(null);
-      },
-    );
-    return _kCustomSchemeRedirect;
+  Future<String> start() async => _kCustomSchemeRedirect;
+
+  @override
+  Future<Uri?> authenticate(Uri authUrl) async {
+    try {
+      final result = await FlutterWebAuth2.authenticate(
+        url: authUrl.toString(),
+        callbackUrlScheme: _kScheme,
+      );
+      return Uri.parse(result);
+    } on PlatformException catch (e) {
+      // ASWebAuthenticationSessionError.canceledLogin surfaces as this code —
+      // see FlutterWebAuth2Plugin.swift. Any other code is a real failure,
+      // but callers only distinguish "cancelled" from "failed" via null today.
+      if (e.code == 'CANCELED') {
+        _log.fine('ASWebAuth: user cancelled');
+      } else {
+        _log.fine('ASWebAuth: failed — ${e.code}: ${e.message}');
+      }
+      return null;
+    }
   }
 
   @override
-  Future<Uri?> waitForCallback() => _completer?.future ?? Future.value(null);
-
-  @override
   void cancel() {
-    unawaited(_sub?.cancel());
-    _sub = null;
-    final c = _completer;
-    _completer = null;
-    if (c != null && !c.isCompleted) c.complete(null);
+    // flutter_web_auth_2 exposes no programmatic dismiss for an in-flight
+    // ASWebAuthenticationSession; only the user's own tap on the sheet's
+    // Cancel button ends it (AC-6). Our own "tap to cancel" affordance
+    // (GoogleAuthService.cancelSignIn) has no in-flight session to interrupt
+    // on macOS — it's a no-op here by design.
   }
 }
 
@@ -103,9 +105,10 @@ class _LoopbackRedirectHandler implements OAuthRedirectHandler {
   }
 
   @override
-  Future<Uri?> waitForCallback() async {
+  Future<Uri?> authenticate(Uri authUrl) async {
     final server = _server;
     if (server == null) return null;
+    await launchUrl(authUrl, mode: LaunchMode.externalApplication);
     try {
       // Completes when the browser redirects back, OR throws when cancel()
       // force-closes the server.
