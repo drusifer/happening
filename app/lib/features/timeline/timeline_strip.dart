@@ -655,6 +655,13 @@ class _TimelineStripState extends State<TimelineStrip>
 
     final isAuthPrompt =
         widget.onSignIn != null || widget.onCancelSignIn != null;
+    // Single source of truth for "is the hover-detail card actually showing" —
+    // used both to gate the card widget itself and to style its event's block
+    // (full opacity, square bottom corners, no bottom border) so the two never
+    // fall out of sync.
+    final cardOpenEventId = (!isAuthPrompt && isExpanded && !_isSettingsOpen)
+        ? _hoveredEvent?.id
+        : null;
 
     return Focus(
       focusNode: _keyboardFocusNode,
@@ -677,7 +684,7 @@ class _TimelineStripState extends State<TimelineStrip>
                   : constraints.maxHeight,
               child: const ColoredBox(color: Colors.transparent),
             ),
-            _buildPainterPositioned(context, layout),
+            _buildPainterPositioned(context, layout, cardOpenEventId),
             if (isAuthPrompt)
               Positioned.fill(
                 child: GestureDetector(
@@ -690,30 +697,34 @@ class _TimelineStripState extends State<TimelineStrip>
             if (!isAuthPrompt)
               _buildCountdownPositioned(context, layout, outerMode),
             if (!isAuthPrompt) _buildLeftToolbar(context),
-            if (!isAuthPrompt)
-              Positioned(
-                right: 8,
-                top: 0,
-                height: _collapsedHeight,
-                child: Center(
-                  child: _IconButton(
-                    icon: Icons.power_settings_new,
-                    onTap: () => exit(0),
-                    stripBackgroundColor: stripBg,
-                  ),
+            // Quit button stays visible even during the sign-in / cancel-sign-in
+            // prompt (isAuthPrompt) — otherwise a user stuck there (e.g. no
+            // network, OAuth misconfigured) would have no way to quit the app.
+            Positioned(
+              right: 8,
+              top: 0,
+              height: _collapsedHeight,
+              child: Center(
+                child: _IconButton(
+                  icon: Icons.power_settings_new,
+                  onTap: () => exit(0),
+                  stripBackgroundColor: stripBg,
                 ),
               ),
+            ),
             // Only host the astro tooltip when the strip is wide enough to
             // place it; skips a transient narrow frame during a hide/show
             // resize (where layout.stripWidth can momentarily be the mini width).
             if (_astroHit != null && stripWidth >= _kMinAstroTooltipStripWidth)
               _buildAstroTooltip(context, layout),
-            if (!isAuthPrompt &&
-                isExpanded &&
-                !_isSettingsOpen &&
-                _hoveredEvent != null)
+            if (cardOpenEventId != null)
               Positioned(
-                top: _collapsedHeight,
+                // Aligns with the event rect's own bottom edge (8px border+
+                // shadow margin, events_layer.dart bottomInset) so the card
+                // tucks under the block's shadow/border instead of floating
+                // below a gap. Stops exactly at the rect edge (not into it)
+                // so it doesn't clip the event label's text descenders.
+                top: _collapsedHeight - 8,
                 left: _cardLeft(stripWidth),
                 child: HoverDetailOverlay(
                   event: _hoveredEvent!,
@@ -846,7 +857,8 @@ class _TimelineStripState extends State<TimelineStrip>
     );
   }
 
-  Widget _buildPainterPositioned(BuildContext context, TimelineLayout layout) {
+  Widget _buildPainterPositioned(
+      BuildContext context, TimelineLayout layout, String? cardOpenEventId) {
     final theme = Theme.of(context);
     final settings = widget.settingsService.current;
     final stripBg = theme.brightness == Brightness.dark
@@ -866,6 +878,7 @@ class _TimelineStripState extends State<TimelineStrip>
             windowStart: layout.windowStart,
             windowEnd: layout.windowEnd,
             hoveredEventId: _hoveredEvent?.id,
+            cardOpenEventId: cardOpenEventId,
             collidingIds: _collidingIds,
             fontSize: settings.fontSizePx,
             backgroundColor: stripBg,

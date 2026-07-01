@@ -19,6 +19,7 @@ class EventsLayer implements TimelineLayer {
     required this.fontSize,
     required this.surfaceOpacity,
     this.excludeEventId,
+    this.cardOpenEventId,
   });
 
   final List<CalendarEvent> events;
@@ -31,6 +32,12 @@ class EventsLayer implements TimelineLayer {
   final double fontSize;
   final double surfaceOpacity;
   final String? excludeEventId;
+
+  /// The event whose hover-detail card is currently showing below the
+  /// strip, if any. That event's block renders fully opaque with square
+  /// bottom corners and no bottom border, so it reads as one continuous
+  /// shape with the card attached below it.
+  final String? cardOpenEventId;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -82,9 +89,14 @@ class EventsLayer implements TimelineLayer {
     final w = (endX - adjustedX).clamp(minW, double.infinity);
 
     final int rank = overlapInfo?.rank ?? 0;
-    final baseColor = event.isCompleted ? const Color(0xFF51B749) : event.color;
-    final color =
-        baseColor.withValues(alpha: (rank == 0 ? 1.0 : 0.55) * surfaceOpacity);
+    final baseColor = event.displayColor;
+    final isCardOpen = event.id == cardOpenEventId;
+    // Full opacity while its card is open — ignores overlap-rank dimming and
+    // the idle-transparency slider, so the block matches the card's color
+    // exactly (the card is always drawn fully opaque, see HoverDetailOverlay).
+    final color = isCardOpen
+        ? baseColor
+        : baseColor.withValues(alpha: (rank == 0 ? 1.0 : 0.55) * surfaceOpacity);
 
     if (event.isTask) {
       final taskEndX =
@@ -98,9 +110,16 @@ class EventsLayer implements TimelineLayer {
         fontSize: fontSize,
       );
     } else {
-      final rect = RRect.fromLTRBR(adjustedX, top, adjustedX + w,
-          top + blockHeight, const Radius.circular(4));
-      _paintEventBlock(canvas, event, rect, color, baseColor);
+      // Square bottom corners + no bottom border while the card is open, so
+      // the block and the card below it read as one continuous shape.
+      final rect = isCardOpen
+          ? RRect.fromLTRBAndCorners(adjustedX, top, adjustedX + w,
+              top + blockHeight,
+              topLeft: const Radius.circular(4),
+              topRight: const Radius.circular(4))
+          : RRect.fromLTRBR(adjustedX, top, adjustedX + w, top + blockHeight,
+              const Radius.circular(4));
+      _paintEventBlock(canvas, event, rect, color, baseColor, isCardOpen);
     }
 
     _paintEventLabel(
@@ -113,6 +132,7 @@ class EventsLayer implements TimelineLayer {
     RRect rect,
     Color color,
     Color baseColor,
+    bool isCardOpen,
   ) {
     canvas.drawRRect(
       rect.shift(const Offset(3, 3)),
@@ -125,13 +145,29 @@ class EventsLayer implements TimelineLayer {
     } else {
       canvas.drawRRect(rect, Paint()..color = color);
     }
-    canvas.drawRRect(
-      rect,
-      Paint()
-        ..color = Color.lerp(baseColor, Colors.black, 0.4)!
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.0,
-    );
+    final borderPaint = Paint()
+      ..color = Color.lerp(baseColor, Colors.black, 0.4)!
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+    if (isCardOpen) {
+      // Left edge + top corners + right edge only — omitting the bottom edge
+      // is what makes the seam with the card below disappear; the card
+      // continues this same border down its own left/right/bottom sides.
+      canvas.drawPath(
+        Path()
+          ..moveTo(rect.left, rect.bottom)
+          ..lineTo(rect.left, rect.top + rect.tlRadiusY)
+          ..arcToPoint(Offset(rect.left + rect.tlRadiusX, rect.top),
+              radius: Radius.elliptical(rect.tlRadiusX, rect.tlRadiusY))
+          ..lineTo(rect.right - rect.trRadiusX, rect.top)
+          ..arcToPoint(Offset(rect.right, rect.top + rect.trRadiusY),
+              radius: Radius.elliptical(rect.trRadiusX, rect.trRadiusY))
+          ..lineTo(rect.right, rect.bottom),
+        borderPaint,
+      );
+    } else {
+      canvas.drawRRect(rect, borderPaint);
+    }
 
     if (collidingIds.contains(event.id)) {
       _paintCollisionOutlines(canvas, event, rect);

@@ -53,7 +53,8 @@ class HoverDetailOverlay extends StatelessWidget {
     final titleSize = fontSize * 0.93;
     final bodySize = fontSize * 0.80;
 
-    final isLight = event.color.computeLuminance() > 0.4;
+    final color = event.displayColor;
+    final isLight = color.computeLuminance() > 0.4;
     final kShadows = [
       Shadow(
         color: isLight ? const Color(0x22FFFFFF) : Colors.black54,
@@ -65,102 +66,135 @@ class HoverDetailOverlay extends StatelessWidget {
     final textSecondary = isLight ? const Color(0x99000000) : Colors.white70;
     final textMuted = isLight ? const Color(0x77000000) : Colors.white60;
 
-    return Material(
-      color: Colors.transparent,
-      child: Container(
-        width: width,
-        padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
-        decoration: BoxDecoration(
-          color: event.color.withValues(alpha: 0.95),
-          borderRadius: const BorderRadius.only(
-            bottomLeft: Radius.circular(6),
-            bottomRight: Radius.circular(6),
+    // Clips the card's own boxShadow above its top edge — that edge attaches
+    // directly to the event block, so a shadow bleeding upward there would
+    // look like a seam instead of one continuous shape. Left/right/bottom
+    // overflow (where the shadow actually reads as a shadow) is untouched.
+    return ClipRect(
+      clipper: const _NoTopShadowClipper(),
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          width: width,
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+          decoration: BoxDecoration(
+            // Fully opaque, matching the event block's own color exactly (the
+            // block also renders fully opaque while this card is open — see
+            // EventsLayer.cardOpenEventId) so the two read as one shape.
+            color: color,
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(6),
+              bottomRight: Radius.circular(6),
+            ),
+            // No top border — it attaches directly to the event block above,
+            // which omits its own bottom border for the same reason. Left/
+            // right/bottom continue the block's border style around the card.
+            border: Border(
+              left: BorderSide(color: Color.lerp(color, Colors.black, 0.4)!),
+              right: BorderSide(color: Color.lerp(color, Colors.black, 0.4)!),
+              bottom: BorderSide(color: Color.lerp(color, Colors.black, 0.4)!),
+            ),
+            boxShadow: const [
+              BoxShadow(
+                  color: Colors.black45, blurRadius: 8, offset: Offset(0, 4)),
+            ],
           ),
-          boxShadow: const [
-            BoxShadow(
-                color: Colors.black45, blurRadius: 8, offset: Offset(0, 4)),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Top Row: Category + Buttons
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    event.isTask
-                        ? 'TASK:\n ${event.calendarName.toUpperCase()}'
-                        : event.calendarName.toUpperCase(),
-                    style: TextStyle(
-                      color: textMuted,
-                      fontSize: labelSize,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
-                      shadows: kShadows,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Top Row: Category + Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      event.isTask
+                          ? 'TASK:\n ${event.calendarName.toUpperCase()}'
+                          : event.calendarName.toUpperCase(),
+                      style: TextStyle(
+                        color: textMuted,
+                        fontSize: labelSize,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                        shadows: kShadows,
+                      ),
                     ),
                   ),
-                ),
-                if (event.videoCallUrl != null) ...[
-                  _LinkButton(
-                    label: 'JOIN',
-                    url: event.videoCallUrl!,
-                    fontSize: labelSize,
-                    highlight: true,
-                    isLight: isLight,
-                  ),
-                  const SizedBox(width: 6),
+                  if (event.videoCallUrl != null) ...[
+                    _LinkButton(
+                      label: 'JOIN',
+                      url: event.videoCallUrl!,
+                      fontSize: labelSize,
+                      highlight: true,
+                      isLight: isLight,
+                    ),
+                    const SizedBox(width: 6),
+                  ],
+                  if (event.calendarEventUrl != null)
+                    _LinkButton(
+                      label: 'OPEN',
+                      url: event.calendarEventUrl!,
+                      fontSize: labelSize,
+                      isLight: isLight,
+                    ),
                 ],
-                if (event.calendarEventUrl != null)
-                  _LinkButton(
-                    label: 'OPEN',
-                    url: event.calendarEventUrl!,
-                    fontSize: labelSize,
-                    isLight: isLight,
-                  ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(
-              event.title,
-              style: TextStyle(
-                color: textPrimary,
-                fontSize: titleSize,
-                fontWeight: FontWeight.w600,
-                shadows: kShadows,
               ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              '${_fmt(context, event.startTime)} – ${_fmt(context, event.endTime)}',
-              style: TextStyle(
-                color: textSecondary,
-                fontSize: bodySize,
-                shadows: kShadows,
-              ),
-            ),
-            if (!event.isTask &&
-                truncatedDescription != null &&
-                truncatedDescription.isNotEmpty) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Text(
-                truncatedDescription,
+                event.title,
                 style: TextStyle(
                   color: textPrimary,
-                  fontSize: bodySize,
-                  height: 1.3,
+                  fontSize: titleSize,
+                  fontWeight: FontWeight.w600,
                   shadows: kShadows,
                 ),
-                maxLines: 4,
-                overflow: TextOverflow.ellipsis,
               ),
+              const SizedBox(height: 2),
+              Text(
+                '${_fmt(context, event.startTime)} – ${_fmt(context, event.endTime)}',
+                style: TextStyle(
+                  color: textSecondary,
+                  fontSize: bodySize,
+                  shadows: kShadows,
+                ),
+              ),
+              if (!event.isTask &&
+                  truncatedDescription != null &&
+                  truncatedDescription.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Text(
+                  truncatedDescription,
+                  style: TextStyle(
+                    color: textPrimary,
+                    fontSize: bodySize,
+                    height: 1.3,
+                    shadows: kShadows,
+                  ),
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
   }
+}
+
+/// Clips the card's own boxShadow above its top edge and left of its left
+/// edge — see the comment where this is used in [HoverDetailOverlay.build].
+/// Leaves the right/bottom shadow untouched, consistent with a light source
+/// from the upper-left (shadows fall down and to the right).
+class _NoTopShadowClipper extends CustomClipper<Rect> {
+  const _NoTopShadowClipper();
+
+  @override
+  Rect getClip(Size size) =>
+      Rect.fromLTRB(0, 0, size.width + 100, size.height + 100);
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Rect> oldClipper) => false;
 }
 
 class _LinkButton extends StatelessWidget {

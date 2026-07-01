@@ -739,6 +739,42 @@ void main() {
       expect(find.byType(CountdownDisplay), findsNothing);
     });
 
+    testWidgets('onSignIn set: quit button remains visible', (tester) async {
+      await tester.pumpWidget(wrap(
+        TimelineStrip(
+          events: const [],
+          clockService: clock,
+          settingsService: fakeSettings,
+          windowService: _FakeWindowService(),
+          onSignOut: () {},
+          onSignIn: () {},
+        ),
+      ));
+      await tester.pump(Duration.zero);
+
+      // A user stuck on the sign-in prompt (no network, misconfigured OAuth,
+      // etc.) must still be able to quit the app.
+      expect(find.byIcon(Icons.power_settings_new), findsOneWidget);
+    });
+
+    testWidgets('onCancelSignIn set: quit button remains visible',
+        (tester) async {
+      await tester.pumpWidget(wrap(
+        TimelineStrip(
+          events: const [],
+          clockService: clock,
+          settingsService: fakeSettings,
+          windowService: _FakeWindowService(),
+          onSignOut: () {},
+          onSignIn: () {},
+          onCancelSignIn: () {},
+        ),
+      ));
+      await tester.pump(Duration.zero);
+
+      expect(find.byIcon(Icons.power_settings_new), findsOneWidget);
+    });
+
     testWidgets('onSignIn set: tapping strip calls onSignIn', (tester) async {
       bool signInCalled = false;
 

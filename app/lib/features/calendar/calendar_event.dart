@@ -55,6 +55,11 @@ class CalendarEvent {
   /// True when the event is marked as "Free" (transparency = transparent).
   final bool isFree;
 
+  /// The color actually painted for this event — completed tasks render
+  /// green regardless of their source calendar's color.
+  Color get displayColor =>
+      isCompleted ? const Color(0xFF51B749) : color;
+
   Duration get duration => endTime.difference(startTime);
 
   bool isNow(DateTime at) => at.isAfter(startTime) && at.isBefore(endTime);
