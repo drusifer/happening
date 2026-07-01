@@ -38,6 +38,7 @@ class TimelinePainter extends CustomPainter {
     required this.tickColor,
     required this.alwaysUse24HourFormat,
     this.hoveredEventId,
+    this.cardOpenEventId,
     this.collidingIds = const {},
     this.countdownColor = Colors.white,
     this.fontSize = 11,
@@ -61,6 +62,7 @@ class TimelinePainter extends CustomPainter {
   final DateTime windowStart;
   final DateTime windowEnd;
   final String? hoveredEventId;
+  final String? cardOpenEventId;
   final Set<String> collidingIds;
   final Color countdownColor;
   final double fontSize;
@@ -144,6 +146,7 @@ class TimelinePainter extends CustomPainter {
         layout: layout,
         now: now,
         hoveredEventId: hoveredEventId,
+        cardOpenEventId: cardOpenEventId,
         collidingIds: collidingIds,
         tickColor: tickColor,
         backgroundColor: backgroundColor,
@@ -208,6 +211,7 @@ class TimelinePainter extends CustomPainter {
             layout: layout,
             now: now,
             hoveredEventId: hoveredEventId,
+            cardOpenEventId: cardOpenEventId,
             collidingIds: collidingIds,
             tickColor: tickColor,
             backgroundColor: backgroundColor,
@@ -224,6 +228,7 @@ class TimelinePainter extends CustomPainter {
       old.now != now ||
       old.events != events ||
       old.hoveredEventId != hoveredEventId ||
+      old.cardOpenEventId != cardOpenEventId ||
       old.collidingIds != collidingIds ||
       old.countdownColor != countdownColor ||
       old.fontSize != fontSize ||
