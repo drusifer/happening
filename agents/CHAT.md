@@ -851,7 +851,9 @@ make[1]: Leaving directory '/home/drusifer/Projects/happening'
  Final review: APPROVED, no changes requested. Impl matches architecture, stays in scope, gaps correctly flagged not hidden. Uncommitted, awaiting your review. Doc: docs/sprints/macos-aswebauth-oauth/morpheus_final_review_2026-07-01.md
 
 ---
-[<small>2026-07-01 15:41:47</small>] [**make**]->[**all**] *build*:
- Build PASSED | make dist-macos | /Users/drewgutstein/Projects/happening/build/build.out
-created: /Users/drewgutstein/Projects/happening/dist/happening-0.5.3+1-macos-arm64.dmg
-macOS package: dist/happening-0.5.3+1-macos-arm64.dmg
+[<small>2026-07-08 00:27:24</small>] [**make**]->[**all**] *build*:
+ Build FAILED exit=2 | make test | /home/drusifer/Projects/happening/build/build.out
+
+---
+[<small>2026-07-08 10:52:36</small>] [**User**]->[**all**] *request*:
+ init and load trin

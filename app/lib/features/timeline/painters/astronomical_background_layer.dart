@@ -1,9 +1,9 @@
 // Replaces BackgroundLayer when the astronomical theme is active.
 //
 // TLDR:
-// Overview: Asks each SkyBody for its Arcs over the window, clips solar where lunar overlaps, paints as one LinearGradient.
-// Problem:  Need a single horizontal gradient that blends solar phases with moon glow without per-pattern branching.
-// Solution: Two SkyBody instances (Solar, Lunar). Lunar wins over solar where they overlap. Gaps default to night navy.
+// Overview: Asks each SkyBody for its Arcs over the window, merges them by pointwise brightness, paints as one LinearGradient.
+// Problem:  Need a single horizontal gradient that blends solar phases with moon glow without either body needing to know the other's schedule.
+// Solution: Two SkyBody instances (Solar, Lunar). At every breakpoint the brighter body's colour wins (Color.computeLuminance) -- daytime always wins because solar colours are always brighter than any lunar colour by palette construction, and twilight blends smoothly for free. Gaps default to night navy.
 // Breaking Changes: No (callers unchanged).
 //
 // ---------------------------------------------------------------------------
@@ -93,17 +93,13 @@ class AstronomicalBackgroundLayer implements TimelineLayer {
     final bodies = _bodies;
 
     final solar = bodies.whereType<SolarBody>().first;
+    final solarArcs = solar.getArcs(layout.windowStart, layout.windowEnd);
     final lunarArcs = bodies
         .whereType<LunarBody>()
         .expand((b) => b.getArcs(layout.windowStart, layout.windowEnd))
         .toList();
-    final solarArcs = _clipBy(
-      solar.getArcs(layout.windowStart, layout.windowEnd),
-      lunarArcs,
-    );
 
-    final arcs = [...solarArcs, ...lunarArcs]
-      ..sort((a, b) => a.startTime.compareTo(b.startTime));
+    final arcs = mergeByBrightness(solarArcs, lunarArcs);
 
     canvas.drawRect(
       Rect.fromLTWH(0, 0, w, size.height),
@@ -156,47 +152,64 @@ class AstronomicalBackgroundLayer implements TimelineLayer {
         .createShader(Rect.fromLTWH(0, 0, w, h));
   }
 
-  /// Removes the portions of [solar] arcs that overlap with any [lunar] arc.
-  /// Where overlap occurs, the solar arc is split into the leading and
-  /// trailing remainders (either may be empty). Solar arcs that are fully
-  /// covered by a lunar arc are dropped.
-  static List<Arc> _clipBy(List<Arc> solar, List<Arc> lunar) {
-    var result = solar;
-    for (final la in lunar) {
-      final next = <Arc>[];
-      for (final sa in result) {
-        if (!la.endTime.isAfter(sa.startTime) ||
-            !la.startTime.isBefore(sa.endTime)) {
-          next.add(sa);
-          continue;
-        }
-        if (la.startTime.isAfter(sa.startTime)) {
-          next.add(Arc(
-            startTime: sa.startTime,
-            endTime: la.startTime,
-            startColor: sa.startColor,
-            endColor: _interp(sa, la.startTime),
-          ));
-        }
-        if (la.endTime.isBefore(sa.endTime)) {
-          next.add(Arc(
-            startTime: la.endTime,
-            endTime: sa.endTime,
-            startColor: _interp(sa, la.endTime),
-            endColor: sa.endColor,
-          ));
-        }
-      }
-      result = next;
+  /// Merges [solarArcs] and [lunarArcs] into one non-overlapping, chronologically
+  /// sorted arc list, deciding at every breakpoint which body's colour wins by
+  /// [Color.computeLuminance] alone -- no day/night cutoff is hard-coded here.
+  /// This works because solar colours (`dayBlue`/`dawnDusk`) are always
+  /// brighter than any colour [LunarBody] can produce, by palette
+  /// construction (see the invariant test asserting exactly that): daytime
+  /// wins outright, and twilight blends smoothly as each body's colour ramps
+  /// through the shared breakpoints. Exposed for unit testing.
+  static List<Arc> mergeByBrightness(
+      List<Arc> solarArcs, List<Arc> lunarArcs) {
+    final breakpoints = <DateTime>{
+      for (final a in solarArcs) ...[a.startTime, a.endTime],
+      for (final a in lunarArcs) ...[a.startTime, a.endTime],
+    }.toList()
+      ..sort();
+
+    final result = <Arc>[];
+    for (var i = 0; i + 1 < breakpoints.length; i++) {
+      final segStart = breakpoints[i];
+      final segEnd = breakpoints[i + 1];
+      if (!segEnd.isAfter(segStart)) continue;
+
+      final mid = DateTime.fromMicrosecondsSinceEpoch(
+        (segStart.microsecondsSinceEpoch + segEnd.microsecondsSinceEpoch) ~/
+            2,
+      );
+      final solarAtMid = _colorAt(mid, solarArcs);
+      final lunarAtMid = _colorAt(mid, lunarArcs);
+      if (solarAtMid == null && lunarAtMid == null) continue;
+
+      final useSolar = lunarAtMid == null ||
+          (solarAtMid != null &&
+              solarAtMid.computeLuminance() >= lunarAtMid.computeLuminance());
+      final winner = useSolar ? solarArcs : lunarArcs;
+      final winnerMid = useSolar ? solarAtMid! : lunarAtMid;
+
+      result.add(Arc(
+        startTime: segStart,
+        endTime: segEnd,
+        startColor: _colorAt(segStart, winner) ?? winnerMid,
+        endColor: _colorAt(segEnd, winner) ?? winnerMid,
+      ));
     }
     return result;
   }
 
-  static Color _interp(Arc arc, DateTime t) {
-    final span = arc.endTime.difference(arc.startTime).inMicroseconds;
-    if (span <= 0) return arc.startColor;
-    final pos = t.difference(arc.startTime).inMicroseconds / span;
-    return Color.lerp(arc.startColor, arc.endColor, pos.clamp(0.0, 1.0))!;
+  /// The colour [arcs] defines at instant [t], linearly interpolated within
+  /// whichever arc covers it, or null if no arc in [arcs] covers [t].
+  static Color? _colorAt(DateTime t, List<Arc> arcs) {
+    for (final a in arcs) {
+      if (!t.isBefore(a.startTime) && !t.isAfter(a.endTime)) {
+        final span = a.endTime.difference(a.startTime).inMicroseconds;
+        if (span <= 0) return a.startColor;
+        final frac = t.difference(a.startTime).inMicroseconds / span;
+        return Color.lerp(a.startColor, a.endColor, frac.clamp(0.0, 1.0));
+      }
+    }
+    return null;
   }
 
   void _paintStars(Canvas canvas, Size size) {
