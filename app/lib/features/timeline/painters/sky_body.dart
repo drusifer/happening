@@ -26,6 +26,50 @@ class Arc {
   final DateTime endTime;
   final Color startColor;
   final Color endColor;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Arc &&
+          startTime == other.startTime &&
+          endTime == other.endTime &&
+          startColor == other.startColor &&
+          endColor == other.endColor;
+
+  @override
+  int get hashCode => Object.hash(startTime, endTime, startColor, endColor);
+}
+
+/// Spreads [colors] evenly across `[from, to]` as `colors.length - 1`
+/// contiguous linear arcs. Direction-agnostic: works equally for a body
+/// brightening (dim→bright) or dimming (bright→dim) — the caller picks the
+/// color order. Shared by SolarBody and LunarBody so both bodies build
+/// their gradients through the same mechanism.
+List<Arc> ramp({
+  required DateTime from,
+  required DateTime to,
+  required List<Color> colors,
+}) {
+  assert(colors.length >= 2, 'ramp needs at least 2 colors');
+  final totalMicros = to.difference(from).inMicroseconds;
+  final steps = colors.length - 1;
+  final arcs = <Arc>[];
+  var stepStart = from;
+  for (var i = 0; i < steps; i++) {
+    final stepEnd = i == steps - 1
+        ? to
+        : from.add(Duration(
+            microseconds: totalMicros * (i + 1) ~/ steps,
+          ));
+    arcs.add(Arc(
+      startTime: stepStart,
+      endTime: stepEnd,
+      startColor: colors[i],
+      endColor: colors[i + 1],
+    ));
+    stepStart = stepEnd;
+  }
+  return arcs;
 }
 
 /// One celestial body. There are exactly two instances in production: the Sun

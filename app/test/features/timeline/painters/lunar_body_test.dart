@@ -62,18 +62,33 @@ void main() {
           isEmpty);
     });
 
-    test('emitted arcs never overlap the [sunrise, sunset] daytime window', () {
-      final body = LunarBody(astroData: astroFull, lat: lat, lng: lng);
+    test(
+        'output is independent of AstroData\'s solar fields (regression '
+        'guard for the old day-anchoring bug class)', () {
+      // Same illumination/phase/lat/lng/date, wildly different solar
+      // schedule. LunarBody no longer reads civilTwilightBegin/sunrise/
+      // solarNoon/sunset/civilTwilightEnd at all -- moonrise/moonset come
+      // from getLunarTimes(date, lat, lng), independent of AstroData's solar
+      // fields, so the arcs must be identical regardless.
+      final shiftedSolar = AstroData(
+        civilTwilightBegin: astroFull.civilTwilightBegin
+            .add(const Duration(hours: 3, minutes: 17)),
+        sunrise: astroFull.sunrise.add(const Duration(hours: 3, minutes: 17)),
+        solarNoon:
+            astroFull.solarNoon.add(const Duration(hours: 3, minutes: 17)),
+        sunset: astroFull.sunset.add(const Duration(hours: 3, minutes: 17)),
+        civilTwilightEnd: astroFull.civilTwilightEnd
+            .add(const Duration(hours: 3, minutes: 17)),
+        phase: astroFull.phase,
+        illuminationFraction: astroFull.illuminationFraction,
+      );
       final ws = solarTimes.solarNoon.subtract(const Duration(hours: 24));
       final we = solarTimes.solarNoon.add(const Duration(hours: 24));
-      for (final arc in body.getArcs(ws, we)) {
-        final sNear = solarTimesNear(arc.startTime, astroFull);
-        final overlapsDay = arc.startTime.isBefore(sNear.sunset) &&
-            arc.endTime.isAfter(sNear.sunrise);
-        expect(overlapsDay, isFalse,
-            reason:
-                'Arc ${arc.startTime}→${arc.endTime} overlaps daytime [${sNear.sunrise}, ${sNear.sunset}]');
-      }
+      final a = LunarBody(astroData: astroFull, lat: lat, lng: lng)
+          .getArcs(ws, we);
+      final b = LunarBody(astroData: shiftedSolar, lat: lat, lng: lng)
+          .getArcs(ws, we);
+      expect(a, equals(b));
     });
 
     test('first/last colors are navy or amber (never dayBlue)', () {

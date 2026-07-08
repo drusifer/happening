@@ -83,7 +83,8 @@ class SolarBody extends SkyBody {
 
   /// Five arcs covering `[civilTwilightBegin, civilTwilightEnd]`:
   /// navy→amber (dawn-rise), amber→blue (dawn-finish), blue (day),
-  /// blue→amber (dusk-start), amber→navy (dusk-finish).
+  /// blue→amber (dusk-start), amber→navy (dusk-finish). Built from the same
+  /// shared ramp() primitive LunarBody uses for its own gradient.
   List<Arc> _arcsForDay(
       ({
         DateTime civilTwilightBegin,
@@ -91,46 +92,18 @@ class SolarBody extends SkyBody {
         DateTime solarNoon,
         DateTime sunset,
         DateTime civilTwilightEnd,
-      }) t) {
-    final dawnMid = _midpoint(t.civilTwilightBegin, t.sunrise);
-    final duskMid = _midpoint(t.sunset, t.civilTwilightEnd);
-    return [
-      Arc(
-        startTime: t.civilTwilightBegin,
-        endTime: dawnMid,
-        startColor: nightNavy,
-        endColor: dawnDusk,
-      ),
-      Arc(
-        startTime: dawnMid,
-        endTime: t.sunrise,
-        startColor: dawnDusk,
-        endColor: dayBlue,
-      ),
-      Arc(
-        startTime: t.sunrise,
-        endTime: t.sunset,
-        startColor: dayBlue,
-        endColor: dayBlue,
-      ),
-      Arc(
-        startTime: t.sunset,
-        endTime: duskMid,
-        startColor: dayBlue,
-        endColor: dawnDusk,
-      ),
-      Arc(
-        startTime: duskMid,
-        endTime: t.civilTwilightEnd,
-        startColor: dawnDusk,
-        endColor: nightNavy,
-      ),
-    ];
-  }
-
-  static DateTime _midpoint(DateTime a, DateTime b) =>
-      DateTime.fromMillisecondsSinceEpoch(
-        (a.millisecondsSinceEpoch + b.millisecondsSinceEpoch) ~/ 2,
-        isUtc: a.isUtc,
-      );
+      }) t) =>
+      [
+        ...ramp(
+          from: t.civilTwilightBegin,
+          to: t.sunrise,
+          colors: [nightNavy, dawnDusk, dayBlue],
+        ),
+        ...ramp(from: t.sunrise, to: t.sunset, colors: [dayBlue, dayBlue]),
+        ...ramp(
+          from: t.sunset,
+          to: t.civilTwilightEnd,
+          colors: [dayBlue, dawnDusk, nightNavy],
+        ),
+      ];
 }
