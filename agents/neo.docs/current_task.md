@@ -83,6 +83,47 @@
 - NOT investigated: whether the same `[\d\.]+`-style pattern appears in `update_snapcraft()` —
   untested, lower risk (Linux-only, optional file, no reported symptom). Flag if it recurs there.
 
+## FOLLOW-UP (2026-07-09 #3): msix_version formula was also broken — FIXED
+- `update_pubspec`'s old msix formula (`f"1.0.{parts[0]}.{parts[1]}{parts[2]}"`) was nonsensical —
+  string-concatenated minor+patch into one field (`0.5.4` → `1.0.0.54`) and, since it split on `.`
+  only, a `+build` suffix leaked into the last field verbatim (`0.5.4+9` → `1.0.0.54+9`). The real
+  convention (confirmed against the pubspec.yaml inline comment "has to end in .0" and Drew's ask):
+  msix_version = `1.<minor>.<patch>.0` — major fixed at 1 (independent of the app's own pre-1.0
+  major), build suffix dropped entirely, last field is ALWAYS literal 0 (Microsoft Store
+  requirement, not a build counter).
+- Test-first: added `test_msix_version_mirrors_minor_patch_and_always_ends_in_zero` +
+  `test_msix_version_drops_build_suffix_keeps_last_field_zero` to `test_sync_version.py` (also had
+  to add an `msix_version:` line to the test fixture's `_write()` helper — it was missing entirely,
+  so `update_pubspec`'s msix logic was never exercised by any prior test). Confirmed RED, fixed,
+  confirmed GREEN (5/5).
+- Ran `make sync-version` for real: version.txt had independently been bumped to `1.5.4` (not by
+  me — found already changed when I went to verify). Confirms end-to-end: `pubspec.yaml` →
+  `version: 1.5.4` + `msix_version: 1.5.4.0`; `app_metadata.dart` → `appVersion = '1.5.4'`. All
+  three files consistent.
+- Files: `agents/tools/sync_version.py` (`update_pubspec`'s msix formula),
+  `agents/tools/test_sync_version.py` (fixture + 2 new tests).
+
+## FOLLOW-UP (2026-07-09 #4): drop '+' build-suffix support entirely (Drew: "will not work with the appstores")
+- Added `_reject_build_suffix(version)` — called at the top of `read_version`, `write_version`,
+  `update_pubspec`, `update_metadata`, `update_snapcraft`. Any version string containing `+` is
+  rejected with `sys.exit(1)` + a clear stderr message, before anything is written. This is a policy
+  change, not a parsing fix: the project no longer accepts a Flutter build-number suffix as a valid
+  version anywhere in the pipeline (CLI `--set`, `version.txt` contents, or a direct call to any
+  `update_*` function).
+- The OLD-value-tolerant regexes in `update_pubspec`/`update_metadata` (added in the 2026-07-09 #1
+  fix) are UNCHANGED and deliberately kept — they still clean up a legacy `+`-suffixed value already
+  sitting in a generated file, which is a different concern (matching stale output) from whether a
+  NEW version is allowed to have one (now: never).
+- Test changes: replaced `test_msix_version_drops_build_suffix_keeps_last_field_zero` (which
+  expected a dirty new version to succeed with the suffix silently dropped) with
+  `test_rejects_new_version_with_build_suffix` (expects `SystemExit`) — the old expected behavior is
+  no longer the policy. Added `UpdateSnapcraftTest` and `VersionFileValidationTest` (covers
+  `read_version`/`write_version`). 9/9 green.
+- Verified end-to-end: `make set-version VERSION="1.5.5+3"` fails loudly (exit 2 via mkf), leaves
+  `version.txt` untouched at `1.5.4`. `make sync-version` on the real (clean) `1.5.4` still works.
+- Files: `agents/tools/sync_version.py` (`_reject_build_suffix` + call sites),
+  `agents/tools/test_sync_version.py` (replaced one test, added 2 new test classes).
+
 ## STATUS (2026-07-01): macOS ASWebAuth *bloop impl — Phase A + B DONE, handed to Trin for UAT.
 Parallel track (task.md), does NOT touch F-31/window code. F-31 window convergence status below (2026-06-20) is UNCHANGED — resume there when this lands.
 

@@ -29,15 +29,33 @@ SNAPCRAFT_FILE = PROJECT_ROOT / 'snap' / 'snapcraft.yaml'
 
 # ── Core Operations ──────────────────────────────────────────────────────────
 
+def _reject_build_suffix(version):
+    """App stores (Microsoft Store, App Store) require a clean X.Y.Z version —
+    a Flutter build-number suffix ('+N') is not a supported version format
+    here. Fail fast rather than let it propagate into a store submission."""
+    if '+' in version:
+        print(
+            f"Error: version '{version}' contains '+' (a Flutter build-number "
+            "suffix). This project does not support build-number suffixes - "
+            "app stores require a clean X.Y.Z version. Use a version with no "
+            "'+' suffix.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
 def read_version():
     if not VERSION_FILE.exists():
         print(f"Error: Single source of truth file not found at {VERSION_FILE}", file=sys.stderr)
         sys.exit(1)
     with open(VERSION_FILE, 'r', encoding='utf-8') as f:
-        return f.read().strip()
+        version = f.read().strip()
+    _reject_build_suffix(version)
+    return version
 
 
 def write_version(version):
+    _reject_build_suffix(version)
     VERSION_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(VERSION_FILE, 'w', encoding='utf-8') as f:
         f.write(f"{version}\n")
@@ -45,25 +63,30 @@ def write_version(version):
 
 
 def update_pubspec(version):
+    _reject_build_suffix(version)
     if not PUBSPEC_FILE.exists():
         print(f"Warning: pubspec.yaml not found at {PUBSPEC_FILE}", file=sys.stderr)
         return False
-    
+
     with open(PUBSPEC_FILE, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    # 1. Update version field (may carry a Flutter build suffix, e.g. 0.5.3+2)
+    # 1. Update version field. The OLD value in the file may still carry a
+    # legacy Flutter build suffix (e.g. 0.5.3+2) from before this project
+    # stopped supporting them — tolerate matching it away, even though the
+    # NEW version (validated above) never has one.
     content, count_v = re.subn(r'^version:\s*[\d.]+(?:\+\S+)?', f"version: {version}", content, flags=re.MULTILINE)
 
-    # 2. Update msix version field (four-part format like 1.0.X.Y or 1.0.5.1)
-    # Parse version to check parts
-    parts = version.split('.')
-    if len(parts) >= 3:
-        msix_ver = f"1.0.{parts[0]}.{parts[1]}{parts[2]}" # Keep standard format: 1.0.<major>.<minor><patch>
-    else:
-        msix_ver = f"1.0.{version}"
-    
-    content, count_m = re.subn(r'msix_version:\s*[\d\.]+', f"msix_version: {msix_ver}", content)
+    # 2. Update msix_version (four-part Store version: 1.<minor>.<patch>.0).
+    # Microsoft Store requires the last field to always be 0 (see the
+    # msix_version comment in pubspec.yaml). Major is fixed at 1, independent
+    # of the app's own pre-1.0 major.
+    version_parts = version.split('.')
+    minor = version_parts[1] if len(version_parts) > 1 else '0'
+    patch = version_parts[2] if len(version_parts) > 2 else '0'
+    msix_ver = f"1.{minor}.{patch}.0"
+
+    content, count_m = re.subn(r'msix_version:\s*[\d.]+(?:\+\S+)?', f"msix_version: {msix_ver}", content)
 
     with open(PUBSPEC_FILE, 'w', encoding='utf-8') as f:
         f.write(content)
@@ -75,14 +98,18 @@ def update_pubspec(version):
 
 
 def update_metadata(version):
+    _reject_build_suffix(version)
     if not METADATA_FILE.exists():
         print(f"Warning: app_metadata.dart not found at {METADATA_FILE}", file=sys.stderr)
         return False
-    
+
     with open(METADATA_FILE, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    # Existing value may carry a Flutter build suffix, e.g. '0.5.3+1'.
+    # The OLD value in the file may still carry a legacy Flutter build suffix
+    # (e.g. '0.5.3+1') from before this project stopped supporting them —
+    # tolerate matching it away, even though the NEW version (validated
+    # above) never has one.
     content, count = re.subn(
         r"const String appVersion = '[\d.]+(?:\+\S+)?';",
         f"const String appVersion = '{version}';",
@@ -99,6 +126,7 @@ def update_metadata(version):
 
 
 def update_snapcraft(version):
+    _reject_build_suffix(version)
     if not SNAPCRAFT_FILE.exists():
         # Snapcraft is optional / Linux only
         return False
