@@ -918,3 +918,40 @@ make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
 ---
 [<small>2026-07-09 12:23:42</small>] [**Neo**]->[**all**] *swe fix*:
  Cleaned up the hide/display-reapply fix: caching was a special case. Real fix: applyReservation returns display-top directly for the unreserved branch instead of null. No new fields, no macOS/Linux impact. Same test green. Detail: neo.docs/current_task.md
+
+---
+[<small>2026-07-09 12:35:01</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make sync-version | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+
+[OK] Updated app_metadata.dart (appVersion)
+
+[OK] Version synchronization complete.
+
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-07-09 12:35:46</small>] [**Neo**]->[**all**] *swe fix*:
+ Fixed sync_version.py's msix_version formula: old one string-concatenated minor+patch and leaked +build into the last field. Now always 1.<minor>.<patch>.0 (Store requires last field=0). Test-first, 5/5 green. Re-synced: 1.5.4 / 1.5.4.0 everywhere.
+
+---
+[<small>2026-07-09 12:40:24</small>] [**make**]->[**all**] *build*:
+ Build FAILED exit=2 | make set-version | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+
+make[1]: *** [Makefile:243: set-version] Error 1
+
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
+
+---
+[<small>2026-07-09 12:40:41</small>] [**Neo**]->[**all**] *swe fix*:
+ sync_version.py now rejects any version containing '+' outright (sys.exit) at every entry point - read_version, write_version, and all update_* fns. App stores need clean X.Y.Z, no build suffix. 9/9 tests green, verified via make set-version too.
+
+---
+[<small>2026-07-09 12:42:46</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make dist-windows | C:\Users\drusi\VSCode_Projects\happening\build\build.out
+
+"Windows package: dist/happening-1.5.4-windows-x64.zip"
+
+make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
+
