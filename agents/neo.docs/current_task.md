@@ -1,4 +1,87 @@
-# Neo Current Task — 2026-07-01
+# Neo Current Task — 2026-07-09 (see below for most current; 2026-07-01 section unchanged beneath)
+
+## STATUS (2026-07-09 #2): hide-after-display-reapply strand bug — FIXED, tests added. DONE.
+- Repro (Drew): open Settings, re-select the Display setting (even the SAME display), press Hide
+  → strip hides but lands below where its strut would be.
+- Root cause: `WindowService.applyState`'s origin fallback was `reservedOrigin ??
+  _activeDisplay?.workAreaOrigin ?? Offset.zero`. Our OWN Windows AppBar reservation shrinks the
+  OS-reported work area WHILE it is registered (Windows recalculates `rcWork` to exclude a
+  registered AppBar band). Re-selecting a display in Settings calls
+  `DisplayService.setPersistedChoice` → `_refresh()`, which re-probes displays LIVE — since the
+  reservation is active at that moment, the freshly-probed `DisplayInfo.workAreaOrigin` is already
+  shifted down by the band height. `DisplayInfo.==` includes `workAreaOrigin`, so this reads as a
+  genuine "display changed" event even though it's the SAME monitor — purely a side effect of our
+  own reservation. `WindowService._onDisplayChangedInner` then caches this shrunk `DisplayInfo` as
+  `_activeDisplay`. The SHOWN re-apply right after stays correct (Windows' `applyReservation`
+  returns an origin from the AppBar's own `rcTop`, immune to work-area shrinkage) — but later,
+  pressing Hide → `applyState(hidden)` → `applyReservation` disposes the AppBar and returns null →
+  origin falls back to the now-contaminated `_activeDisplay.workAreaOrigin` → mini pill lands at
+  the shrunk work-area Y instead of the strut top.
+- Test-first: added a regression test in `windows_window_service_test.dart` (`display-reset then
+  hide (regression)` group) using a `_FixedResolver` (DisplayChoiceResolver) to simulate
+  DisplayService resolving to a `DisplayInfo` whose `workAreaOrigin` is already shrunk by our own
+  reservation, then asserting `hideStrip()` still lands at `Offset.zero`. Confirmed RED first
+  (actual `Offset(0, 73)`).
+- **First pass (reverted, Drew flagged it as a special case, not a fix)**: cached the last
+  successful `applyReservation` origin on `WindowService` and fell back to it before the work
+  area. Worked, but was a patch: added mutable state with an implicit "must have been shown before
+  hidden" invariant nothing enforces, and didn't even cover `WindowMode.overlay` starting cold
+  (cache never warms if the app never reserves). Reverted `window_service.dart` back to its
+  original `reservedOrigin ?? _activeDisplay?.workAreaOrigin ?? Offset.zero` — untouched.
+- **Actual fix**: `WindowsWindowService.applyReservation`'s hidden/unreserved branch now returns
+  `Offset(workAreaOrigin.dx, 0)` directly instead of `null`. Reasoning: `workAreaOrigin.dy` is
+  definitionally "space not reserved by us" — using it to place OUR OWN window is circular the
+  moment our own reservation is what shrank it, on Windows specifically, in EVERY windowMode
+  (reserved and overlay alike). `workAreaOrigin.dx` stays safe to use (a full-width top strut never
+  shrinks the work area horizontally, so it's genuine multi-monitor X placement, not
+  self-contamination). `applyState`'s `?? _activeDisplay?.workAreaOrigin` fallback is now
+  effectively dead code on Windows (reservedOrigin is never null there anymore) and stays exactly
+  as-is for macOS/Linux, which never call any of this Windows logic — no shared-code blast radius,
+  no cache, no new field, no invariant to maintain.
+- Verified GREEN: new test passes; `make win-test FILE=test/core/window/` — analyze clean, 83/83
+  window tests green; full `make test` — 493 green, only the 2 pre-existing golden failures
+  (documented since 2026-06-22/2026-07-01, unrelated) remain.
+- Files: `app/lib/core/window/windows_window_service.dart` (`applyReservation`'s
+  hidden/unreserved-branch return value only — `window_service.dart` ended up untouched),
+  `app/test/core/window/windows_window_service_test.dart` (`_FixedResolver` + new regression
+  test group).
+- **Related gap found, NOT fixed (out of scope for this repro, flagged for follow-up)**:
+  `WindowService._reapplyCurrentState()` derives the state to reapply purely from the `_isExpanded`
+  bool (`_isExpanded ? expandedShown : collapsedShown`) — it has no way to represent `hidden`.
+  `StripState.hidden.isExpanded == false`, same as `collapsedShown`. So if a display or font-size
+  change fires while the strip is legitimately HIDDEN, `_reapplyCurrentState` will force it back to
+  `collapsedShown` (un-hide it) — WindowService has no visibility into StripController's actual
+  `StripState.hidden`. Did not reproduce in Drew's repro (strip was shown, not hidden, when the
+  display reapply fired), so left alone as scope discipline — but it's a real latent bug in the
+  same subsystem. Next step if picked up: give `WindowService` a way to know the strip is
+  hidden (e.g. have `StripController` pass/track it) so `_reapplyCurrentState` can no-op instead of
+  un-hiding.
+
+## STATUS (2026-07-09): sync_version.py build-suffix bug — FIXED, tests added. DONE.
+- Bug: settings panel ("SETTINGS v. $appVersion") stuck showing '0.5.3+1' after version.txt was
+  bumped to 0.5.4 and `make sync-version`/`make set-version` was run. Root cause:
+  `sync_version.py`'s `update_metadata()` regex `[\d\.]+` doesn't include `+`, so once
+  `app_metadata.dart`'s `appVersion` constant carries a Flutter build suffix (e.g. `'0.5.3+1'`),
+  the regex never matches again — `re.subn` returns count=0, function returns False, file is
+  silently never updated (no error surfaced). Same flaw existed in `update_pubspec()`'s version
+  regex, but there it partially matched (stopped before `+`) and left a stray `+N` suffix
+  (`0.5.3+2` → `0.5.4+2`) instead of failing outright — same root cause, different symptom.
+- Test-first: added `agents/tools/test_sync_version.py` (stdlib unittest, monkeypatches
+  `sv.METADATA_FILE`/`sv.PUBSPEC_FILE` to a tempfile so it never touches real project files).
+  Added a `test-tools` Makefile target (`python -m unittest discover -s agents/tools`) since no
+  Python test runner existed yet for `agents/tools/`. Confirmed RED (`make test-tools`) before fixing.
+- Fix: both regexes changed from `[\d\.]+` to `[\d.]+(?:\+\S+)?` so an existing `+build` suffix is
+  consumed and replaced, not left stranded or blocking the match entirely.
+- Verified GREEN: `make test-tools` (3/3 pass). Ran `make sync-version` for real — `app_metadata.dart`
+  now correctly shows `appVersion = '0.5.4'`. `make test FILE=test/features/timeline/settings_panel_test.dart`
+  — 25/25 green (that test asserts `$appVersion` interpolated, not hardcoded, so it was never
+  failing — the bug was invisible to existing Dart tests; only a Python-level regex issue).
+- Files: `agents/tools/sync_version.py`, `agents/tools/test_sync_version.py` (new), `Makefile`
+  (new `test-tools` target + `.PHONY`/`MKF_TARGETS` entries), `app/lib/core/app_metadata.dart`
+  (data fix, 0.5.3+1 → 0.5.4), `app/pubspec.yaml`/`app/assets/version.txt` (already at 0.5.4,
+  untouched by this fix — msix_version re-synced identically).
+- NOT investigated: whether the same `[\d\.]+`-style pattern appears in `update_snapcraft()` —
+  untested, lower risk (Linux-only, optional file, no reported symptom). Flag if it recurs there.
 
 ## STATUS (2026-07-01): macOS ASWebAuth *bloop impl — Phase A + B DONE, handed to Trin for UAT.
 Parallel track (task.md), does NOT touch F-31/window code. F-31 window convergence status below (2026-06-20) is UNCHANGED — resume there when this lands.

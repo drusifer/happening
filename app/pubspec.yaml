@@ -1,6 +1,6 @@
 name: happening
 description: Always-on-top calendar timeline strip for ADHD-friendly time awareness.
-version: 0.5.3+2
+version: 0.5.4
 publish_to: none
 
 environment:
@@ -57,7 +57,7 @@ msix_config:
     publisher_display_name: Gutstein Security Works, LLC
     identity_name: GutsteinSecurityWorksLLC.WhatsHappening # From Product Identity
     publisher: CN=1BCC9C93-9384-4EDD-BC44-CAC345171F9F     # From Product Identity
-    msix_version: 1.5.3.2                        # Four-part Store version; keep in sync with version above
+    msix_version: 1.0.0.54                        # Four-part Store version; keep in sync with version above (has to end in .0)
     logo_path: assets/images/store_logo.png      # High-res square icon
     store: true                                  # Crucial: Tells the tool this is for the Store
     capabilities: "internetClient"

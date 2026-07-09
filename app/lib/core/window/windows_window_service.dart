@@ -82,18 +82,26 @@ class WindowsWindowService extends WindowService {
   /// placed at — `applyState` applies geometry AFTER this, so positioning
   /// happens after ABM_SETPOS (which can move the AppBar window). shown+reserved
   /// registers (if needed) + reserves the top band; hidden or overlay releases
-  /// it (and returns null → caller falls back to the work-area origin).
+  /// it and returns the display's top edge directly (NOT null): our own
+  /// reservation shrinks `workAreaOrigin.dy` while active (Windows excludes a
+  /// registered AppBar's band from `rcWork`), so once released that value no
+  /// longer means "top of display" — it means "below wherever we just were".
+  /// `applyState`'s work-area fallback is for platforms that never reserve
+  /// (macOS/base); Windows always knows its own top edge, reserved or not, so
+  /// it should never fall through to it. `workAreaOrigin.dx` is unaffected
+  /// (a full-width top strut doesn't shrink the work area horizontally) and
+  /// stays the source for multi-monitor X placement.
   @override
   Future<Offset?> applyReservation(StripState state) async {
     if (!_enableWindowsAppBar) return null;
+    final double xOffset = activeDisplay?.workAreaOrigin.dx ?? 0;
     if (state == StripState.hidden || windowMode != WindowMode.reserved) {
       _appBar.dispose();
-      return null;
+      return Offset(xOffset, 0);
     }
     if (!_appBar.isRegistered) _appBar.register();
     final rcTop =
         _appBar.reserveTopBand(widthPx: _bandWidthPx, heightPx: _bandHeightPx);
-    final double xOffset = activeDisplay?.workAreaOrigin.dx ?? 0;
     final origin = Offset(xOffset, rcTop / dpr);
     _log.fine(
         'applyReservation: $state reserved → origin=$origin (rcTop=$rcTop)');

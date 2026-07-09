@@ -1,4 +1,17 @@
-# Neo Context — 2026-06-17 (see 2026-07-01 UPDATE for most current; 2026-06-19 UPDATE for window-refactor state)
+# Neo Context — 2026-06-17 (see 2026-07-09 UPDATE for most current)
+
+## 2026-07-09 UPDATE — sync_version.py version-sync bug (see current_task.md for full detail)
+- Lesson: `sync_version.py`'s regexes (`update_metadata`, `update_pubspec`) used `[\d\.]+`, which
+  excludes `+` — so once a target file's version string carries a Flutter build suffix (`0.5.3+1`),
+  the regex either fails to match at all (silent no-op, no error) or matches only the numeric prefix
+  and leaves the old suffix stranded. `re.subn`'s count return was already there to detect this but
+  nothing checked/surfaced it upstream (`sync_all`/`main` ignore the bool). Fixed both patterns to
+  `[\d.]+(?:\+\S+)?`.
+- No Python test runner existed for `agents/tools/`; added `make test-tools` (stdlib `unittest
+  discover`) as the first one — future Python-tool tests go in `agents/tools/test_*.py`.
+- General takeaway: this class of bug (silent no-op on regex non-match) is easy to miss because nothing
+  crashes — `main()`'s per-step `[OK] Updated ...` print lines are the only signal, and they're easy not
+  to check. Worth grep-ing `sync_version.py` output whenever a version bump doesn't show up somewhere.
 
 ## 2026-07-01 UPDATE — macOS ASWebAuth impl (parallel track, see current_task.md for full detail)
 - oauth_redirect_handler.dart architecture: `OAuthRedirectHandler.start()` returns the redirect URI;

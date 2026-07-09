@@ -131,6 +131,18 @@ class _StubEvents implements DisplayEvents {
   void Function() subscribe(void Function() onChange) => () {};
 }
 
+/// Always resolves to a fixed [DisplayInfo], regardless of what the probe
+/// returns — lets a test simulate DisplayService re-picking a display whose
+/// reported `workAreaOrigin` differs from what WindowService last cached.
+class _FixedResolver implements DisplayChoiceResolver {
+  _FixedResolver(this.display);
+  final DisplayInfo? display;
+  @override
+  bool get hasPreference => true;
+  @override
+  DisplayInfo? resolve(List<DisplayInfo> available) => display;
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -537,6 +549,62 @@ void main() {
       expect(appBar.isRegistered, isTrue);
       expect(desktop.size.width, 1920, reason: 'back to full screen width');
       expect(desktop.position, Offset.zero);
+    });
+  });
+
+  // REGRESSION (Drew repro, 2026-07-09): open Settings, re-select the Display
+  // setting (even the SAME display), then press Hide — the strip hid but
+  // landed below where its strut would be. Root cause: our own AppBar
+  // reservation shrinks the OS-reported work area while it is registered, so a
+  // live display re-probe (triggered merely by re-selecting a display) reports
+  // a `workAreaOrigin` already shifted down by the band height — a "changed"
+  // display purely as a side effect of our own reservation. WindowService
+  // cached that shrunk `workAreaOrigin` as `_activeDisplay`, and
+  // `applyState(hidden)` falls back to it once `applyReservation` disposes the
+  // AppBar and returns null. Fix: `WindowsWindowService.applyReservation`
+  // returns an explicit `Offset(workAreaOrigin.dx, 0)` for the
+  // hidden/unreserved branch instead of null — Windows always knows its own
+  // top edge, reserved or not, so it should never fall through to
+  // `applyState`'s work-area fallback (that fallback exists for platforms
+  // that never reserve at all, e.g. macOS). `workAreaOrigin.dx` is still safe
+  // to use — a full-width top strut never shrinks the work area horizontally.
+  group('WindowsWindowService display-reset then hide (regression)', () {
+    test(
+        'hide after a display re-apply stays at the reserved origin, not the '
+        'shrunk work-area origin', () async {
+      final service = makeService();
+      await service.initialize(initialFontSizePx: kDefaultFontSizePx);
+      expect(desktop.position, Offset.zero);
+
+      // Simulate re-selecting the (same) display in Settings: DisplayService
+      // re-probes live and this time resolves to a DisplayInfo whose
+      // workAreaOrigin already reflects OUR OWN active reservation (Windows
+      // recalculates the monitor work area to exclude a registered AppBar).
+      const contaminated = DisplayInfo(
+        id: DisplayId('0'),
+        osName: 'M-0',
+        size: Size(1920, 1080),
+        workAreaOrigin: Offset(0, 73), // shrunk by our own reservation
+        workAreaSize: Size(1920, 1080 - 73),
+        scaleFactor: 1.0,
+        isPrimary: true,
+      );
+      await displayService.setChoiceResolver(_FixedResolver(contaminated));
+      for (var i = 0; i < 6; i++) {
+        await Future.delayed(Duration.zero);
+      }
+
+      // The re-apply itself must stay correct — it uses the AppBar's own
+      // rcTop, not the (now shrunk) work-area origin.
+      expect(desktop.position, Offset.zero,
+          reason: 'display re-apply must stay pinned to the reserved band top');
+
+      await service.hideStrip();
+
+      expect(desktop.position, Offset.zero,
+          reason: 'hiding after a display re-apply must not fall back to the '
+              'work-area origin our own (now-released) reservation had '
+              'shrunk — it must stay at the last-known reserved origin');
     });
   });
 }

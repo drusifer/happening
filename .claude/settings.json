@@ -13,7 +13,9 @@
       "Read(//c/Users/drusi/.claude/**)",
       "PowerShell(make win-test FILE=test/core/window/windows_window_service_test.dart 2>&1)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(python -c \"import json,sys; d=json.load\\(sys.stdin\\); [print\\(p['name'], p['rootUri']\\) for p in d['packages'] if 'screen_retriever' in p['name']]\")",
+      "Bash(make win-test *)"
     ]
   }
 }
