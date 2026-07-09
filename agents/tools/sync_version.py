@@ -52,8 +52,8 @@ def update_pubspec(version):
     with open(PUBSPEC_FILE, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    # 1. Update version field
-    content, count_v = re.subn(r'^version:\s*[\d\.]+', f"version: {version}", content, flags=re.MULTILINE)
+    # 1. Update version field (may carry a Flutter build suffix, e.g. 0.5.3+2)
+    content, count_v = re.subn(r'^version:\s*[\d.]+(?:\+\S+)?', f"version: {version}", content, flags=re.MULTILINE)
 
     # 2. Update msix version field (four-part format like 1.0.X.Y or 1.0.5.1)
     # Parse version to check parts
@@ -82,8 +82,9 @@ def update_metadata(version):
     with open(METADATA_FILE, 'r', encoding='utf-8') as f:
         content = f.read()
 
+    # Existing value may carry a Flutter build suffix, e.g. '0.5.3+1'.
     content, count = re.subn(
-        r"const String appVersion = '[\d\.]+';",
+        r"const String appVersion = '[\d.]+(?:\+\S+)?';",
         f"const String appVersion = '{version}';",
         content
     )

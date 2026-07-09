@@ -234,13 +234,16 @@ clean:
 
 # ── Bob Protocol Targets ─────────────────────────────────────────────────────
 
-.PHONY: tldr via_index install_bob update_bob pull_bob clean_bob diff_bob sync-version set-version
+.PHONY: tldr via_index install_bob update_bob pull_bob clean_bob diff_bob sync-version set-version test-tools
 
 sync-version: ## Synchronize build configurations based on app/assets/version.txt
 	@$(PYTHON) agents/tools/sync_version.py
 
 set-version: ## Set a new version number and sync all files (usage: make set-version VERSION=0.5.2)
 	@$(PYTHON) agents/tools/sync_version.py --set "$(VERSION)"
+
+test-tools: ## Run agents/tools Python unit tests
+	@$(PYTHON) -m unittest discover -s agents/tools -p "test_*.py" -v
 
 tldr: ## Show TL;DR summaries from all project files (quick orientation for agents)
 	@rg --no-heading "TL;DR:" --glob "*.md" -N | sed 's|^\./||' | sort
@@ -382,7 +385,7 @@ else
 #   make tldr V=-vv        stderr + filtered failures to terminal
 #   make tldr V=-vvv       stderr + full stdout to terminal
 
-.PHONY: help chat install_bob update_bob pull_bob clean_bob diff_bob sync-version set-version
+.PHONY: help chat install_bob update_bob pull_bob clean_bob diff_bob sync-version set-version test-tools
 .PHONY: setup install-hooks run run-linux run-macos run-windows
 .PHONY: test update-goldens test-watch integration-test integration-test-linux integration-test-macos integration-test-windows
 .PHONY: build-linux build-macos build-windows dist dist-linux dist-macos dist-macos-appstore dist-windows dist-windows-msix dist-proxy-linux
@@ -392,7 +395,7 @@ MKF_TARGETS := setup install-hooks run run-linux run-macos run-windows \
 	test win-test update-goldens test-watch integration-test integration-test-linux integration-test-macos integration-test-windows \
 	build-linux build-macos build-windows dist dist-linux dist-macos dist-macos-appstore dist-windows dist-windows-msix dist-proxy-linux \
 	format analyze lint lint-style lint-metrics lint-format proxy proxy-setup export-proxy-image clean tldr via_index \
-	fetch-cities sync-version set-version
+	fetch-cities sync-version set-version test-tools
 
 install_bob: ## Copy agents into a project and set up skill links (usage: make install_bob TARGET=/path/to/project)
 	@$(MAKE) MKF_ACTIVE=1 install_bob TARGET="$(TARGET)"

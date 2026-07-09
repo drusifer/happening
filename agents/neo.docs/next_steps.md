@@ -1,4 +1,16 @@
-# Neo Next Steps — 2026-07-01 (updated)
+# Neo Next Steps — 2026-07-09 (updated)
+
+## hide-after-display-reapply strand bug — DONE. One flagged follow-up (not urgent):
+`WindowService._reapplyCurrentState()` can't distinguish `hidden` from `collapsedShown` (both have
+`isExpanded == false`) — a display/font change while legitimately hidden would force the strip back
+to shown. Not reproduced by Drew's repro (strip was shown at the time), so left alone. If picked up:
+give WindowService visibility into StripController's actual hidden state so reapply can no-op.
+See current_task.md 2026-07-09 #2 section for full root-cause writeup.
+
+## sync_version.py build-suffix bug — DONE, no follow-up required
+Fixed + tested (see current_task.md 2026-07-09 section). One optional, non-urgent item: check
+`update_snapcraft()` in `agents/tools/sync_version.py` for the same `[\d\.]+`-doesn't-allow-`+`
+pattern if a snapcraft version ever needs a build suffix — untested, no known symptom.
 
 ## macOS ASWebAuth (*bloop impl) — HANDED OFF to Trin for Phase C UAT
 Phase A+B done (see current_task.md 2026-07-01 section). Trin: run/verify AC-1..6, especially AC-6
