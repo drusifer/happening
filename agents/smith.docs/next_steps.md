@@ -1,6 +1,13 @@
 # Next Steps
 
-## Immediate Next Action
+## Judge loop CLOSED (2026-07-08) — nothing owed by Smith
+TES 100/100. If Drew wants the Trin-SKILL.md test-table residue (flagged by Bob as a follow-up,
+not yet actioned) turned into a formal judge target, that's a new `*judge trin` invocation, not a
+reopening of this one.
+
+---
+
+## Immediate Next Action (prior)
 F-31 Gate 1 + Gate 2 both approved. Waiting on Neo Phase B implementation.
 On re-entry: run `*user test F-31` after Neo signals Phase B complete.
 Key items to test:

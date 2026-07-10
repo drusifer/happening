@@ -72,8 +72,8 @@ class LunarBody extends SkyBody {
       ];
     }
     // Too short for a full rise+hold+set shape: rise and set meet halfway.
-    final mid = moonrise
-        .add(Duration(microseconds: upDuration.inMicroseconds ~/ 2));
+    final mid =
+        moonrise.add(Duration(microseconds: upDuration.inMicroseconds ~/ 2));
     return [
       ...ramp(from: moonrise, to: mid, colors: [navy, upColor]),
       ...ramp(from: mid, to: moonset, colors: [upColor, navy]),

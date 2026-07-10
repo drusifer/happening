@@ -1,4 +1,3 @@
-import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'window_resize_strategy.dart';
@@ -14,10 +13,7 @@ import 'window_resize_strategy.dart';
 //
 // ---------------------------------------------------------------------------
 class MacOsResizeStrategy extends WindowResizeStrategy {
-  MacOsResizeStrategy({
-    required WindowManager wm,
-    required ScreenRetriever sr,
-  }) : _wm = wm;
+  MacOsResizeStrategy({required WindowManager wm}) : _wm = wm;
 
   final WindowManager _wm;
 

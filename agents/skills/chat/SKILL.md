@@ -49,6 +49,21 @@ make chat MSG="Fixed bug in parser.py line 42" PERSONA="Neo" CMD="swe fix" TO="T
 make chat MSG="@Trin please verify the fix in parser.py" PERSONA="Neo" CMD="handoff" TO="Trin"
 ```
 
+## The 255-char limit
+
+`make chat` hard-fails (no partial post, no truncation) if `MSG` exceeds 255 characters. There is
+no proactive warning while drafting — the failure only surfaces after the call. Before writing a
+long message: **count first, or default to the fallback below** rather than discovering the limit
+by hitting it.
+
+**Fallback pattern for anything long** (detailed findings, UAT reports, multi-file summaries):
+1. Write the full content to a doc file: `agents/<persona>.docs/<TOPIC>_<YYYY-MM-DD>.md`.
+2. Post a short pointer instead: `make chat MSG="<one-line summary>. Details: <path>" ...`.
+
+This is the same pattern already used throughout `agents/*.docs/` for UAT reports and sprint
+summaries — apply it to the chat message itself whenever the content won't fit, not just to
+"detailed technical notes" after the fact.
+
 ## When to Post
 
 - **ENTRY**: After reading CHAT.md to acknowledge context

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 mkf — make filter and build output router.
 
@@ -7,12 +7,10 @@ TLDR:
     build/build.out while selectively echoing output to the terminal based on a
     verbosity level (-v/-vv/-vvv). On completion it prints the last 10 lines of
     the build log and posts a pass/fail status message to agents/CHAT.md via chat.py.
-    Uses multi-threading to achieve perfect cross-platform compatibility on Windows,
-    macOS, and Linux without OS socket select limitations.
     Key functions: main() orchestrates the run; should_echo() controls terminal
     output filtering; build_chat_message() composes the status summary; post_chat()
     delegates to chat.py; parse_args() handles -v/-vv/-vvv verbosity flags;
-    reader_thread() reads stream chunks in a dedicated thread; tail() reads the
+    drain() flushes remaining stream output after process exit; tail() reads the
     last N lines of a file efficiently.
     Role in the system: invoked by developers and agents instead of bare `make`;
     depends on chat.py for status reporting and writes to build/build.out for
@@ -26,20 +24,8 @@ import re
 import sys
 import datetime
 import subprocess
-import threading
+from select import select
 from pathlib import Path
-
-# Force UTF-8 console output on every platform. Windows consoles default to
-# cp1252, which raises UnicodeEncodeError when build output contains spinner
-# (⠙) or arrow (→) glyphs; errors='replace' guarantees we never crash printing
-# the tail or echoing build lines. No-op where the stream can't be reconfigured
-# (e.g. already-wrapped or non-text streams), and harmless on Linux/macOS
-# (already UTF-8).
-for _stream in (sys.stdout, sys.stderr):
-    try:
-        _stream.reconfigure(encoding='utf-8', errors='replace')
-    except (AttributeError, ValueError):
-        pass
 
 # ── Constants ────────────────────────────────────────────────────────────────
 
@@ -72,20 +58,18 @@ def should_echo(line, is_stderr, verbosity):
     return False
 
 
-def stream_reader(stream, is_stderr, out_file, verbosity, lock):
-    """Read a stream line-by-line and log/echo it safely with lock sync."""
+def drain(stream, out_file, verbosity, is_stderr):
+    """Read any remaining bytes after process exits."""
     while True:
         line = stream.readline()
         if not line:
             break
         decoded = line.decode(errors='replace')
-        with lock:
-            out_file.write(decoded)
-            out_file.flush()
-            if should_echo(decoded, is_stderr, verbosity):
-                dest = sys.stderr if is_stderr else sys.stdout
-                dest.write(decoded)
-                dest.flush()
+        out_file.write(decoded)
+        if should_echo(decoded, is_stderr, verbosity):
+            dest = sys.stderr if is_stderr else sys.stdout
+            dest.write(decoded)
+            dest.flush()
 
 
 def tail(path, n):
@@ -157,9 +141,7 @@ def main():
 
     cmd = ['make', target] + extra_args
 
-    # Check if we should execute make using the correct platform shell
-    # On Windows, if no shell is active or make is an alias/exe, Popen handles it.
-    with open(build_path, 'w', encoding='utf-8') as out_file:
+    with open(build_path, 'w') as out_file:
         out_file.write(header)
         out_file.flush()
 
@@ -174,25 +156,30 @@ def main():
             env=env,
         )
 
-        lock = threading.Lock()
-        
-        # Spawn reader threads for concurrent output processing
-        t_stdout = threading.Thread(
-            target=stream_reader, 
-            args=(proc.stdout, False, out_file, verbosity, lock)
-        )
-        t_stderr = threading.Thread(
-            target=stream_reader, 
-            args=(proc.stderr, True, out_file, verbosity, lock)
-        )
+        streams = {proc.stdout: False, proc.stderr: True}  # stream → is_stderr
 
-        t_stdout.start()
-        t_stderr.start()
+        while True:
+            readable, _, _ = select(list(streams.keys()), [], [], 0.1)
 
-        # Wait for the process to complete and join reader threads
-        exit_code = proc.wait()
-        t_stdout.join()
-        t_stderr.join()
+            for stream in readable:
+                line = stream.readline()
+                if not line:
+                    continue
+                is_stderr = streams[stream]
+                decoded = line.decode(errors='replace')
+                out_file.write(decoded)
+                out_file.flush()
+                if should_echo(decoded, is_stderr, verbosity):
+                    dest = sys.stderr if is_stderr else sys.stdout
+                    dest.write(decoded)
+                    dest.flush()
+
+            if proc.poll() is not None:
+                drain(proc.stdout, out_file, verbosity, is_stderr=False)
+                drain(proc.stderr, out_file, verbosity, is_stderr=True)
+                break
+
+        exit_code = proc.returncode
 
     # ── Post-run ─────────────────────────────────────────────────────────────
 

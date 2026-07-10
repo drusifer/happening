@@ -30,8 +30,9 @@ const _kCustomSchemeRedirect = '$_kScheme:/oauth2redirect';
 /// URI (carrying `code=` and `state=`), or null if the user cancels. Callers
 /// validate `state`.
 abstract class OAuthRedirectHandler {
-  factory OAuthRedirectHandler.create() =>
-      Platform.isMacOS ? _ASWebAuthRedirectHandler() : _LoopbackRedirectHandler();
+  factory OAuthRedirectHandler.create() => Platform.isMacOS
+      ? _ASWebAuthRedirectHandler()
+      : _LoopbackRedirectHandler();
 
   /// Starts listening (if needed) and returns the redirect URI for the auth
   /// request.
@@ -82,6 +83,7 @@ class _ASWebAuthRedirectHandler implements OAuthRedirectHandler {
     // Cancel button ends it (AC-6). Our own "tap to cancel" affordance
     // (GoogleAuthService.cancelSignIn) has no in-flight session to interrupt
     // on macOS — it's a no-op here by design.
+    _log.fine('cancel(): no-op on macOS, no in-flight session to interrupt');
   }
 }
 

@@ -1,4 +1,4 @@
-# Neo Current Task — 2026-07-09 (see below for most current; 2026-07-01 section unchanged beneath)
+# Neo Current Task — 2026-07-09 (most current; 07-08 and 07-01 sections below)
 
 ## STATUS (2026-07-09 #2): hide-after-display-reapply strand bug — FIXED, tests added. DONE.
 - Repro (Drew): open Settings, re-select the Display setting (even the SAME display), press Hide
@@ -123,6 +123,27 @@
   `version.txt` untouched at `1.5.4`. `make sync-version` on the real (clean) `1.5.4` still works.
 - Files: `agents/tools/sync_version.py` (`_reject_build_suffix` + call sites),
   `agents/tools/test_sync_version.py` (replaced one test, added 2 new test classes).
+
+# Neo Current Task — 2026-07-08 (historical; see top for latest)
+
+## STATUS (2026-07-08): Astro bg fix + lint remediation DONE; judge-loop BUG-1 fixed, handed to Bob
+Three pieces of work landed today, all uncommitted on top of 6b09cd9:
+1. Astro background luminance-merge fix (see `PreExistingLints_Fix_2026-07-08.md` sibling doc for
+   the lint-remediation half; astro fix details are in the plan file + Trin's UAT doc).
+2. Pre-existing lint remediation (6 metric violations) + suppression audit (unused_element
+   unsuppressed, 2 real dead-code findings fixed) — full writeup:
+   `neo.docs/PreExistingLints_Fix_2026-07-08.md`.
+3. Judge loop on "bob-protocol persona-switching" (broadened to full-session tool/skill usage):
+   TES 86/100. Fixed BUG-1 (`agents/tools/session_trace.py` hardcoded the wrong harness's
+   transcript path, silently reporting 0 via queries instead of the real 10 — added Claude Code
+   support, verified). BUG-2/3/4 (stale Python-templated SKILL.md, unscoped state-file reads,
+   make-chat char-limit doc placement) handed to Bob — see `agents/smith.docs/bugs.md`.
+
+## NEXT STEP
+None owed by Neo right now. If judge loop iterates again after Bob's fixes, Trin re-runs
+verification, not Neo (no code changes expected in that pass).
+
+---
 
 ## STATUS (2026-07-01): macOS ASWebAuth *bloop impl — Phase A + B DONE, handed to Trin for UAT.
 Parallel track (task.md), does NOT touch F-31/window code. F-31 window convergence status below (2026-06-20) is UNCHANGED — resume there when this lands.

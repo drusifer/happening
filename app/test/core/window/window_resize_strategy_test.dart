@@ -2,26 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:happening/core/window/resize_strategy/window_resize_strategy.dart';
 import 'package:mockito/mockito.dart';
-import 'package:screen_retriever/screen_retriever.dart';
 
 import 'window_service_test.mocks.dart';
 
 void main() {
   late MockWindowManager mockWM;
-  late MockScreenRetriever mockSR;
 
   setUp(() {
     mockWM = MockWindowManager();
-    mockSR = MockScreenRetriever();
 
-    when(mockSR.getPrimaryDisplay()).thenAnswer((_) async => const Display(
-          id: '0',
-          name: 'primary',
-          size: Size(1920, 1080),
-          visiblePosition: Offset.zero,
-          visibleSize: Size(1920, 1080),
-          scaleFactor: 1.0,
-        ));
     when(mockWM.setSize(any, animate: anyNamed('animate')))
         .thenAnswer((_) => Future.value());
     when(mockWM.setMinimumSize(any)).thenAnswer((_) => Future.value());
@@ -42,7 +31,7 @@ void main() {
   // the base; only the geometry call (setSize vs setBounds) is per-platform.
   group('applySize — shared min/max bracket (via MacOsResizeStrategy)', () {
     late MacOsResizeStrategy strategy;
-    setUp(() => strategy = MacOsResizeStrategy(wm: mockWM, sr: mockSR));
+    setUp(() => strategy = MacOsResizeStrategy(wm: mockWM));
 
     test('pins floor→cap→size→floor, capping max at the target (not infinite)',
         () async {
@@ -110,7 +99,7 @@ void main() {
 
   group('WindowsResizeStrategy — setBounds geometry', () {
     late WindowsResizeStrategy strategy;
-    setUp(() => strategy = WindowsResizeStrategy(wm: mockWM, sr: mockSR));
+    setUp(() => strategy = WindowsResizeStrategy(wm: mockWM));
 
     test('initialize: setResizable(false) + setPosition(zero)', () async {
       await strategy.initialize(const Size(1920, 55), 1.0);
@@ -151,7 +140,7 @@ void main() {
 
   group('MacOsResizeStrategy', () {
     late MacOsResizeStrategy strategy;
-    setUp(() => strategy = MacOsResizeStrategy(wm: mockWM, sr: mockSR));
+    setUp(() => strategy = MacOsResizeStrategy(wm: mockWM));
 
     test('initialize: setResizable(false) + setPosition(zero)', () async {
       await strategy.initialize(const Size(1920, 55), 1.0);

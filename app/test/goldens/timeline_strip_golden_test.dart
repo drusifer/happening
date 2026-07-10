@@ -46,7 +46,6 @@ class _FakeWindowService extends WindowService {
   Future<void> applyState(StripState state) async {
     WidgetsBinding.instance.handleMetricsChanged();
   }
-
 }
 
 class _FakeClock extends ClockService {

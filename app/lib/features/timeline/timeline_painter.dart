@@ -225,30 +225,42 @@ class TimelinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(TimelinePainter old) =>
+      _timeChanged(old) ||
+      _eventStateChanged(old) ||
+      _visualsChanged(old) ||
+      _astroChanged(old);
+
+  bool _timeChanged(TimelinePainter old) =>
       old.now != now ||
+      old.nowIndicatorX != nowIndicatorX ||
+      old.windowStart != windowStart ||
+      old.windowEnd != windowEnd;
+
+  bool _eventStateChanged(TimelinePainter old) =>
       old.events != events ||
       old.hoveredEventId != hoveredEventId ||
       old.cardOpenEventId != cardOpenEventId ||
       old.collidingIds != collidingIds ||
+      old.isLoading != isLoading ||
+      old.isSignIn != isSignIn ||
+      old.isSigningIn != isSigningIn;
+
+  bool _visualsChanged(TimelinePainter old) =>
       old.countdownColor != countdownColor ||
       old.fontSize != fontSize ||
       old.backgroundColor != backgroundColor ||
       old.pastOverlayColor != pastOverlayColor ||
       old.tickColor != tickColor ||
-      old.nowIndicatorX != nowIndicatorX ||
-      old.isLoading != isLoading ||
-      old.isSignIn != isSignIn ||
-      old.isSigningIn != isSigningIn ||
       old.alwaysUse24HourFormat != alwaysUse24HourFormat ||
       old.surfaceOpacity != surfaceOpacity ||
       old.emphasisOpacity != emphasisOpacity ||
-      old.stripOpacity != stripOpacity ||
+      old.stripOpacity != stripOpacity;
+
+  bool _astroChanged(TimelinePainter old) =>
       old.astroData != astroData ||
       old.isAstroTheme != isAstroTheme ||
       old.astroLat != astroLat ||
-      old.astroLng != astroLng ||
-      old.windowStart != windowStart ||
-      old.windowEnd != windowEnd;
+      old.astroLng != astroLng;
 
   /// Semantic nodes for canvas content — makes ticks, events, and task
   /// diamonds queryable by integration tests via find.bySemanticsLabel.

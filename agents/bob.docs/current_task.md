@@ -1,5 +1,11 @@
 # Current Task
 
+## 2026-07-08 — Judge loop BUG-2/3/4 fixed, handed to Trin for verification re-run
+- [x] neo.docs/SKILL.md rewritten Dart/Flutter-accurate (BUG-2)
+- [x] bob-protocol ENTRY relevance-scoping + EXIT hygiene note added (BUG-3)
+- [x] chat skill documents its own 255-char limit + recovery pattern (BUG-4)
+- [ ] Awaiting Trin's verification pass / re-score from Smith
+
 ## 2026-05-14 — Context Pressure Protocol *learn
 - [x] Added Context Pressure Protocol section to `agents/skills/bob-protocol/SKILL.md`
 - [x] Added Context Pressure Rule to `agents/skills/bloop/SKILL.md`

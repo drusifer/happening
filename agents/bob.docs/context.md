@@ -1,5 +1,21 @@
 # Bob Context
 
+## Session: 2026-07-08 — judge loop BUG-2/3/4 fixes
+- BUG-2: `neo.docs/SKILL.md` was a stale Python/pytest template (Languages: Python (Primary),
+  `pytest`/`make coverage` examples) in a 100%-Dart/Flutter project. Rewrote Technical Profile,
+  Command Interface, Running Tests, added a missing Code Quality section, fixed Via glob patterns
+  (`*.py` → `*.dart`). Trin's SKILL.md has the same *kind* of residue in its test-table details
+  (`make test-unit`, `ARGS="-k pattern"` — neither exists in this Makefile) — not fixed this pass
+  (out of BUG-3's scope), flagging for a future pass.
+- BUG-3: bob-protocol's ENTRY had no relevance-scoping — added guidance to skim state-file
+  headers before reading in full, and an EXIT-time hygiene note to trim closed workstreams from
+  `current_task.md` rather than letting it grow unbounded.
+- BUG-4: `agents/skills/chat/SKILL.md` never documented its own 255-char limit or the
+  write-to-docs-file recovery pattern (it was only ever recorded ad hoc in a persona's
+  context.md). Added directly to the chat skill so every persona sees it regardless of whose
+  state they're reading.
+- Handed to Trin for judge-loop verification re-run (`agents/smith.docs/trace_eval.md` iteration 2).
+
 ## Session: 2026-04-14
 - Bob Protocol initialized on Windows workspace.
 - Loaded `agents/CHAT.md` tail, Bob `SKILL.md`, Bob state files, and `agents/skills/bob-protocol/SKILL.md`.

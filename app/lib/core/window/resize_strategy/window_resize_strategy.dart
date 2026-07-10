@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../../display/display_info.dart';
@@ -16,13 +15,10 @@ export 'windows_resize_strategy.dart';
 /// TLDR: Abstract strategy for platform-specific window expand/collapse sequences.
 /// Factory [create] selects the per-platform implementation at runtime.
 abstract class WindowResizeStrategy {
-  static WindowResizeStrategy create({
-    required WindowManager wm,
-    required ScreenRetriever sr,
-  }) {
-    if (Platform.isLinux) return LinuxResizeStrategy(wm: wm, sr: sr);
-    if (Platform.isWindows) return WindowsResizeStrategy(wm: wm, sr: sr);
-    return MacOsResizeStrategy(wm: wm, sr: sr);
+  static WindowResizeStrategy create({required WindowManager wm}) {
+    if (Platform.isLinux) return LinuxResizeStrategy(wm: wm);
+    if (Platform.isWindows) return WindowsResizeStrategy(wm: wm);
+    return MacOsResizeStrategy(wm: wm);
   }
 
   WindowManager get wm;

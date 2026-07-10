@@ -4,6 +4,23 @@ import 'package:happening/features/timeline/painters/timeline_layer.dart';
 import 'package:happening/features/timeline/painters/timeline_paint_utils.dart';
 import 'package:happening/features/timeline/timeline_layout.dart';
 
+/// The pixel bounds of one event's painted block, as computed by
+/// [EventsLayer._paintEvent] and consumed by [EventsLayer._paintEventLabel].
+@immutable
+class _EventBlockGeometry {
+  const _EventBlockGeometry({
+    required this.x,
+    required this.w,
+    required this.top,
+    required this.blockHeight,
+  });
+
+  final double x;
+  final double w;
+  final double top;
+  final double blockHeight;
+}
+
 /// TLDR: Paints all calendar events as colored blocks (or task diamonds) on the
 /// timeline strip. Handles hover highlight, collision outlines, free-time hatch,
 /// event labels, and inter-event gap labels.
@@ -96,7 +113,8 @@ class EventsLayer implements TimelineLayer {
     // exactly (the card is always drawn fully opaque, see HoverDetailOverlay).
     final color = isCardOpen
         ? baseColor
-        : baseColor.withValues(alpha: (rank == 0 ? 1.0 : 0.55) * surfaceOpacity);
+        : baseColor.withValues(
+            alpha: (rank == 0 ? 1.0 : 0.55) * surfaceOpacity);
 
     if (event.isTask) {
       final taskEndX =
@@ -113,8 +131,8 @@ class EventsLayer implements TimelineLayer {
       // Square bottom corners + no bottom border while the card is open, so
       // the block and the card below it read as one continuous shape.
       final rect = isCardOpen
-          ? RRect.fromLTRBAndCorners(adjustedX, top, adjustedX + w,
-              top + blockHeight,
+          ? RRect.fromLTRBAndCorners(
+              adjustedX, top, adjustedX + w, top + blockHeight,
               topLeft: const Radius.circular(4),
               topRight: const Radius.circular(4))
           : RRect.fromLTRBR(adjustedX, top, adjustedX + w, top + blockHeight,
@@ -123,7 +141,12 @@ class EventsLayer implements TimelineLayer {
     }
 
     _paintEventLabel(
-        canvas, event, baseColor, adjustedX, w, top, blockHeight, size);
+        canvas,
+        event,
+        baseColor,
+        _EventBlockGeometry(
+            x: adjustedX, w: w, top: top, blockHeight: blockHeight),
+        size);
   }
 
   void _paintEventBlock(
@@ -197,21 +220,28 @@ class EventsLayer implements TimelineLayer {
     }
   }
 
-  void _paintEventLabel(Canvas canvas, CalendarEvent event, Color baseColor,
-      double x, double w, double top, double blockHeight, Size size) {
+  void _paintEventLabel(
+    Canvas canvas,
+    CalendarEvent event,
+    Color baseColor,
+    _EventBlockGeometry geometry,
+    Size size,
+  ) {
     final hasDuration = event.endTime.isAfter(event.startTime);
     final titleThreshold = (fontSize / 15.0) * 36;
-    if (hasDuration && w <= titleThreshold) return;
+    if (hasDuration && geometry.w <= titleThreshold) return;
 
     final taskDiamondWidth = fontSize * 0.5;
     const leftPad = 8.0;
     const rightPad = 6.0;
-    final labelX = event.isTask ? x + taskDiamondWidth + leftPad : x + leftPad;
+    final labelX = event.isTask
+        ? geometry.x + taskDiamondWidth + leftPad
+        : geometry.x + leftPad;
     final labelWidth = (!hasDuration && event.isTask)
         ? size.width - labelX - rightPad
         : (event.isTask
-            ? w - taskDiamondWidth - leftPad - rightPad
-            : w - leftPad - rightPad);
+            ? geometry.w - taskDiamondWidth - leftPad - rightPad
+            : geometry.w - leftPad - rightPad);
 
     if (labelWidth <= 10) return;
     TimelinePaintUtils.paintEventLabel(
@@ -219,9 +249,9 @@ class EventsLayer implements TimelineLayer {
       event.title,
       EventLabelConfig(
         x: labelX,
-        top: top,
+        top: geometry.top,
         maxWidth: labelWidth,
-        height: blockHeight,
+        height: geometry.blockHeight,
         fontSize: fontSize,
         backgroundColor: backgroundColor,
         eventColor: baseColor,

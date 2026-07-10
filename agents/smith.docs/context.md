@@ -1,5 +1,14 @@
 # Smith Context
 
+## 2026-07-08: Judge loop (session tool/skill usage) — CLOSED, TES 100/100 (iteration 2)
+Scored the session's full tool/skill usage (broadened from initial "bob-protocol
+persona-switching" target per Drew's direction). 4 bugs cataloged (`smith.docs/bugs.md`):
+session_trace.py false-negative (code, Neo fixed), stale Python-templated Neo SKILL.md, unscoped
+bob-protocol state-file reads, undocumented make-chat char limit (all 3 prompt/skill, Bob fixed).
+All verified by Trin in iteration 2 → re-scored 100/100, loop closed. One soft finding (Explore
+subagent work duplication) left unrouted — no concrete fix exists for a judgment-call tradeoff,
+logged for future awareness only. Full record: `smith.docs/trace_eval.md`.
+
 ## 2026-07-01: macOS ASWebAuth compliance item — Gate APPROVED with 1 must-add AC
 Reviewed combined Cypher+Morpheus doc (fast-tracked, bloop rule #4). No visible UI change, but flagged a real gap:
 AC set didn't specify cancel/error handling for the ASWebAuthenticationSession system sheet dismissal — added

@@ -1,6 +1,16 @@
 # Current Task
 
-**Status:** F-31 Gate 1 + Gate 2 APPROVED — Mouse to plan sprint
+**Status:** Judge loop (session tool/skill usage) CLOSED — TES 100/100, no follow-up owed
+**Updated:** 2026-07-08
+
+## Progress
+- [x] Scored trace (bugs.md, trace_eval.md iteration 1: TES 86)
+- [x] Neo fixed BUG-1 (session_trace.py), Bob fixed BUG-2/3/4 (SKILL.md docs)
+- [x] Trin verification re-run, Smith re-score: TES 100, loop closed
+
+---
+
+**Status (prior):** F-31 Gate 1 + Gate 2 APPROVED — Mouse to plan sprint
 **Updated:** 2026-06-11
 
 ## Progress

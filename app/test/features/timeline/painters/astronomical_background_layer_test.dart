@@ -166,7 +166,8 @@ void main() {
       expect(colorAt(midNight, merged), equals(up));
     });
 
-    test('twilight with the moon rising concurrently: brighter body wins '
+    test(
+        'twilight with the moon rising concurrently: brighter body wins '
         'pointwise, no discontinuity', () {
       final solarArcs = SolarBody(astroData: astro).getArcs(
           windowStart.subtract(const Duration(days: 1)),
@@ -237,13 +238,12 @@ void main() {
         final solarArcs = SolarBody(astroData: dayAstro).getArcs(
             times.civilTwilightBegin.subtract(const Duration(days: 1)),
             times.civilTwilightEnd.add(const Duration(days: 1)));
-        final lunarBody =
-            LunarBody(astroData: dayAstro, lat: lat, lng: lng);
+        final lunarBody = LunarBody(astroData: dayAstro, lat: lat, lng: lng);
         final lunarArcs = lunarBody.getArcs(
             times.civilTwilightBegin.subtract(const Duration(days: 1)),
             times.civilTwilightEnd.add(const Duration(days: 1)));
-        final merged = AstronomicalBackgroundLayer.mergeByBrightness(
-            solarArcs, lunarArcs);
+        final merged =
+            AstronomicalBackgroundLayer.mergeByBrightness(solarArcs, lunarArcs);
         var t = times.sunrise;
         while (t.isBefore(times.sunset)) {
           expect(colorAt(t, merged), approximatelyColor(SolarBody.dayBlue),
