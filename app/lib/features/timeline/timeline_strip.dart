@@ -39,6 +39,29 @@ import 'package:logging/logging.dart';
 /// no valid placement and the tooltip is suppressed instead.
 const double _kMinAstroTooltipStripWidth = 188.0;
 
+/// Everything [_TimelineStripState._buildCountdownContent] needs to render
+/// one countdown (scale/shake animation + [CountdownDisplay]).
+@immutable
+class _CountdownContentSpec {
+  const _CountdownContentSpec({
+    required this.countdown,
+    required this.mode,
+    required this.color,
+    required this.flashValue,
+    required this.fontSize,
+    required this.stripBg,
+    this.alignment = Alignment.center,
+  });
+
+  final Duration countdown;
+  final CountdownMode mode;
+  final Color color;
+  final double flashValue;
+  final double fontSize;
+  final Color stripBg;
+  final Alignment alignment;
+}
+
 /// Root timeline widget. Driven by [clockService] stream.
 class TimelineStrip extends StatefulWidget {
   const TimelineStrip({
@@ -368,20 +391,8 @@ class _TimelineStripState extends State<TimelineStrip>
         ? _stripController.expand()
         : _stripController.collapse());
 
-    final settings = widget.settingsService.current;
-    final astroData = _astroDataService.current;
-    final newAstroHit = (isOverStripZone &&
-            settings.theme == AppTheme.astronomical &&
-            astroData != null)
-        ? AstronomicalBackgroundLayer(
-            astroData: astroData,
-            layout: layout,
-            now: _now,
-            lat: settings.astroSettings.latitude,
-            lng: settings.astroSettings.longitude,
-          ).hitTest(
-            Offset(mouseX, mouseY), Size(layout.stripWidth, _collapsedHeight))
-        : null;
+    final newAstroHit =
+        _computeAstroHit(layout, mouseX, mouseY, isOverStripZone);
 
     if (isOverStrip != _isHoveringStrip ||
         hit?.id != _hoveredEvent?.id ||
@@ -392,6 +403,29 @@ class _TimelineStripState extends State<TimelineStrip>
         _astroHit = newAstroHit;
       });
     }
+  }
+
+  /// The astro glyph under the pointer, if the astronomical theme is active,
+  /// a location is set, and the pointer is over the strip zone — null otherwise.
+  AstroHit? _computeAstroHit(
+    TimelineLayout layout,
+    double mouseX,
+    double mouseY,
+    bool isOverStripZone,
+  ) {
+    if (!isOverStripZone) return null;
+    final settings = widget.settingsService.current;
+    if (settings.theme != AppTheme.astronomical) return null;
+    final astroData = _astroDataService.current;
+    if (astroData == null) return null;
+    return AstronomicalBackgroundLayer(
+      astroData: astroData,
+      layout: layout,
+      now: _now,
+      lat: settings.astroSettings.latitude,
+      lng: settings.astroSettings.longitude,
+    ).hitTest(
+        Offset(mouseX, mouseY), Size(layout.stripWidth, _collapsedHeight));
   }
 
   Map<String, EventBounds> _computeEventBoundsMap(
@@ -835,14 +869,15 @@ class _TimelineStripState extends State<TimelineStrip>
                           builder: (context, flashValue, _) {
                             final countdownColor = _resolveCountdownColor(
                                 countdown, tickBaseColor, flashValue);
-                            return _buildCountdownContent(
-                                countdown,
-                                tickMode,
-                                countdownColor,
-                                flashValue,
-                                settings.fontSizePx * 1.5,
-                                stripBg,
-                                Alignment.centerRight);
+                            return _buildCountdownContent(_CountdownContentSpec(
+                              countdown: countdown,
+                              mode: tickMode,
+                              color: countdownColor,
+                              flashValue: flashValue,
+                              fontSize: settings.fontSizePx * 1.5,
+                              stripBg: stripBg,
+                              alignment: Alignment.centerRight,
+                            ));
                           },
                         );
                       },
@@ -969,8 +1004,14 @@ class _TimelineStripState extends State<TimelineStrip>
               final countdownColor =
                   _resolveCountdownColor(countdown, tickBaseColor, flashValue);
               return Center(
-                child: _buildCountdownContent(countdown, tickMode,
-                    countdownColor, flashValue, settings.fontSizePx, stripBg),
+                child: _buildCountdownContent(_CountdownContentSpec(
+                  countdown: countdown,
+                  mode: tickMode,
+                  color: countdownColor,
+                  flashValue: flashValue,
+                  fontSize: settings.fontSizePx,
+                  stripBg: stripBg,
+                )),
               );
             },
           );
@@ -979,32 +1020,30 @@ class _TimelineStripState extends State<TimelineStrip>
     );
   }
 
-  Widget _buildCountdownContent(Duration countdown, CountdownMode mode,
-      Color color, double flashValue, double fontSize, Color stripBg,
-      [Alignment alignment = Alignment.center]) {
+  Widget _buildCountdownContent(_CountdownContentSpec spec) {
     double scale = 1.0;
     Offset shake = Offset.zero;
-    if (countdown.inSeconds > 0 && widget.enableAnimations) {
-      if (countdown.inSeconds <= 120 && countdown.inSeconds > 30) {
-        scale = 1.0 + (120 - countdown.inSeconds) / 90.0 * 2.0;
-      } else if (countdown.inSeconds <= 30) {
+    if (spec.countdown.inSeconds > 0 && widget.enableAnimations) {
+      if (spec.countdown.inSeconds <= 120 && spec.countdown.inSeconds > 30) {
+        scale = 1.0 + (120 - spec.countdown.inSeconds) / 90.0 * 2.0;
+      } else if (spec.countdown.inSeconds <= 30) {
         scale = 3.0;
       }
-      if (countdown.inSeconds <= 60) {
-        shake = Offset(math.sin(flashValue * 8 * math.pi) * 2.0, 0);
+      if (spec.countdown.inSeconds <= 60) {
+        shake = Offset(math.sin(spec.flashValue * 8 * math.pi) * 2.0, 0);
       }
     }
     return Transform.translate(
       offset: shake,
       child: Transform.scale(
         scale: scale,
-        alignment: alignment,
+        alignment: spec.alignment,
         child: CountdownDisplay(
-          remaining: countdown,
-          mode: mode,
-          color: color,
-          fontSize: fontSize,
-          backgroundColor: stripBg,
+          remaining: spec.countdown,
+          mode: spec.mode,
+          color: spec.color,
+          fontSize: spec.fontSize,
+          backgroundColor: spec.stripBg,
         ),
       ),
     );

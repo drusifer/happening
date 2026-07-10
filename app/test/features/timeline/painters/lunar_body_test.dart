@@ -84,8 +84,8 @@ void main() {
       );
       final ws = solarTimes.solarNoon.subtract(const Duration(hours: 24));
       final we = solarTimes.solarNoon.add(const Duration(hours: 24));
-      final a = LunarBody(astroData: astroFull, lat: lat, lng: lng)
-          .getArcs(ws, we);
+      final a =
+          LunarBody(astroData: astroFull, lat: lat, lng: lng).getArcs(ws, we);
       final b = LunarBody(astroData: shiftedSolar, lat: lat, lng: lng)
           .getArcs(ws, we);
       expect(a, equals(b));

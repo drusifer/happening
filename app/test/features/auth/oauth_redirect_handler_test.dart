@@ -14,7 +14,8 @@ class _FakeWebAuthPlatform extends FlutterWebAuth2Platform {
   _FakeWebAuthPlatform.success(this._result) : _error = null;
   _FakeWebAuthPlatform.cancelled()
       : _result = null,
-        _error = PlatformException(code: 'CANCELED', message: 'User canceled login');
+        _error =
+            PlatformException(code: 'CANCELED', message: 'User canceled login');
   _FakeWebAuthPlatform.failure(String code)
       : _result = null,
         _error = PlatformException(code: code, message: 'boom');
@@ -55,16 +56,18 @@ void main() {
       FlutterWebAuth2Platform.instance = originalPlatform;
     });
 
-    test('start returns the reverse-client-ID custom scheme redirect', () async {
+    test('start returns the reverse-client-ID custom scheme redirect',
+        () async {
       final handler = OAuthRedirectHandler.create();
       expect(await handler.start(), '$_kScheme:/oauth2redirect');
     }, skip: !_isMacOS);
 
     test('authenticate returns the parsed callback URI on success', () async {
-      FlutterWebAuth2Platform.instance =
-          _FakeWebAuthPlatform.success('$_kScheme:/oauth2redirect?code=abc&state=xyz');
+      FlutterWebAuth2Platform.instance = _FakeWebAuthPlatform.success(
+          '$_kScheme:/oauth2redirect?code=abc&state=xyz');
       final handler = OAuthRedirectHandler.create();
-      final result = await handler.authenticate(Uri.parse('https://accounts.google.com/o/oauth2/auth'));
+      final result = await handler
+          .authenticate(Uri.parse('https://accounts.google.com/o/oauth2/auth'));
       expect(result, isNotNull);
       expect(result!.queryParameters['code'], 'abc');
     }, skip: !_isMacOS);
@@ -72,14 +75,18 @@ void main() {
     test('authenticate returns null when the user cancels (AC-6)', () async {
       FlutterWebAuth2Platform.instance = _FakeWebAuthPlatform.cancelled();
       final handler = OAuthRedirectHandler.create();
-      final result = await handler.authenticate(Uri.parse('https://accounts.google.com/o/oauth2/auth'));
+      final result = await handler
+          .authenticate(Uri.parse('https://accounts.google.com/o/oauth2/auth'));
       expect(result, isNull);
     }, skip: !_isMacOS);
 
-    test('authenticate returns null on an unrelated platform failure', () async {
-      FlutterWebAuth2Platform.instance = _FakeWebAuthPlatform.failure('EUNKNOWN');
+    test('authenticate returns null on an unrelated platform failure',
+        () async {
+      FlutterWebAuth2Platform.instance =
+          _FakeWebAuthPlatform.failure('EUNKNOWN');
       final handler = OAuthRedirectHandler.create();
-      final result = await handler.authenticate(Uri.parse('https://accounts.google.com/o/oauth2/auth'));
+      final result = await handler
+          .authenticate(Uri.parse('https://accounts.google.com/o/oauth2/auth'));
       expect(result, isNull);
     }, skip: !_isMacOS);
 

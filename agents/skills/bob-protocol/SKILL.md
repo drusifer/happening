@@ -113,6 +113,17 @@ Write them as if you will never be asked again and someone else must continue.
 6. Verify that agent links are synced (run `setup_agent_links.py` if needed).
 7. Post your persona initialization message using `make chat` immediately.
 8. If `agents/PROJECT.md` exists — read it for project capabilities
+9. **Relevance-scope large state files before reading them in full.** `current_task.md`/
+   `context.md` are append-only logs — the most recent "## STATUS"/"## Session" header is
+   usually all that's load-bearing for a *new, unrelated* incoming task. Skim headers top-to-
+   bottom first; only read a section's full body if its header topic matches (or is a direct
+   continuation of) the task you're about to do. Reading 300+ lines of a prior, unrelated
+   workstream's history is pure token cost with no task benefit — this was measured and cataloged
+   as a real inefficiency (`agents/smith.docs/bugs.md`, BUG-3, 2026-07-08).
+10. **EXIT-time hygiene**: when a workstream is fully handed off/closed (not paused), trim or
+    archive its section from `current_task.md` rather than leaving it to accumulate indefinitely
+    at the top of an ever-growing file — future ENTRY reads should get shorter over time as old
+    threads close out, not longer.
 
 ### WORK
 6. Execute assigned tasks

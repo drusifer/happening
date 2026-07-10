@@ -1,4 +1,15 @@
-# Trin Next Steps — 2026-07-01
+# Trin Next Steps — 2026-07-08
+
+## Astro Background Luminance-Merge Fix UAT DONE — no follow-up owed by Trin
+Gate approved, suite 494/494 green (see current_task.md / AstroBackground_UAT_2026-07-08.md).
+If a cold start resumes here: there is nothing pending — this was a closed-loop QA pass in the
+same session as the fix, not a handoff to another persona. If Drew wants a Morpheus architecture
+review of the ramp()/mergeByBrightness design before committing, that would be a new request, not
+implied by this UAT.
+
+---
+
+# Trin Next Steps — 2026-07-01 (prior)
 
 ## macOS ASWebAuth Phase C UAT DONE — Awaiting Morpheus review (parallel track)
 Gate approved with 3 flagged, non-blocking gaps (see current_task.md / the UAT report). If Morpheus's

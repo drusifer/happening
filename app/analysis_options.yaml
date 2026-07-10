@@ -24,7 +24,7 @@ analyzer:
 
   errors:
     # Dead Code & Performance
-    unused_element: ignore
+    unused_element: error
     unused_field: error
     unused_local_variable: error
     unused_import: error

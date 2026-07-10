@@ -160,8 +160,7 @@ class AstronomicalBackgroundLayer implements TimelineLayer {
   /// construction (see the invariant test asserting exactly that): daytime
   /// wins outright, and twilight blends smoothly as each body's colour ramps
   /// through the shared breakpoints. Exposed for unit testing.
-  static List<Arc> mergeByBrightness(
-      List<Arc> solarArcs, List<Arc> lunarArcs) {
+  static List<Arc> mergeByBrightness(List<Arc> solarArcs, List<Arc> lunarArcs) {
     final breakpoints = <DateTime>{
       for (final a in solarArcs) ...[a.startTime, a.endTime],
       for (final a in lunarArcs) ...[a.startTime, a.endTime],
@@ -175,8 +174,7 @@ class AstronomicalBackgroundLayer implements TimelineLayer {
       if (!segEnd.isAfter(segStart)) continue;
 
       final mid = DateTime.fromMicrosecondsSinceEpoch(
-        (segStart.microsecondsSinceEpoch + segEnd.microsecondsSinceEpoch) ~/
-            2,
+        (segStart.microsecondsSinceEpoch + segEnd.microsecondsSinceEpoch) ~/ 2,
       );
       final solarAtMid = _colorAt(mid, solarArcs);
       final lunarAtMid = _colorAt(mid, lunarArcs);

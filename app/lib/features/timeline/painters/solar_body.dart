@@ -86,13 +86,13 @@ class SolarBody extends SkyBody {
   /// blue→amber (dusk-start), amber→navy (dusk-finish). Built from the same
   /// shared ramp() primitive LunarBody uses for its own gradient.
   List<Arc> _arcsForDay(
-      ({
-        DateTime civilTwilightBegin,
-        DateTime sunrise,
-        DateTime solarNoon,
-        DateTime sunset,
-        DateTime civilTwilightEnd,
-      }) t) =>
+          ({
+            DateTime civilTwilightBegin,
+            DateTime sunrise,
+            DateTime solarNoon,
+            DateTime sunset,
+            DateTime civilTwilightEnd,
+          }) t) =>
       [
         ...ramp(
           from: t.civilTwilightBegin,

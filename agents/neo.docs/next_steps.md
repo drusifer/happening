@@ -12,6 +12,17 @@ Fixed + tested (see current_task.md 2026-07-09 section). One optional, non-urgen
 `update_snapcraft()` in `agents/tools/sync_version.py` for the same `[\d\.]+`-doesn't-allow-`+`
 pattern if a snapcraft version ever needs a build suffix — untested, no known symptom.
 
+# Neo Next Steps — 2026-07-08 (historical; see top for latest)
+
+## Judge loop + lint remediation DONE — nothing owed by Neo
+BUG-1 fixed and verified in `session_trace.py`. Bob owns BUG-2/3/4 next
+(`agents/smith.docs/bugs.md`). If a cold start resumes here for the judge loop specifically:
+check `agents/smith.docs/trace_eval.md` for loop iteration count before redoing any analysis.
+
+---
+
+# Neo Next Steps — 2026-07-01 (prior)
+
 ## macOS ASWebAuth (*bloop impl) — HANDED OFF to Trin for Phase C UAT
 Phase A+B done (see current_task.md 2026-07-01 section). Trin: run/verify AC-1..6, especially AC-6
 (unit-tested, but confirm no regression manually if possible) and the known Chrome-default-browser

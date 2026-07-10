@@ -53,7 +53,8 @@ void main() {
     });
   });
 
-  group('Short moon-up interval (< 2x fade duration) clamps to a meeting point', () {
+  group('Short moon-up interval (< 2x fade duration) clamps to a meeting point',
+      () {
     // Up for only 30 minutes -- shorter than 2x the 25-min fade, so rise and
     // set must meet at the midpoint instead of overlapping.
     final rise = day0.add(const Duration(hours: 22));
@@ -95,7 +96,8 @@ void main() {
       expect(a, equals(b));
     });
 
-    test('a moon rising before dawn and setting after solar noon still '
+    test(
+        'a moon rising before dawn and setting after solar noon still '
         'produces a plain three-arc rise/hold/set shape', () {
       final rise = day0.add(const Duration(hours: 1)); // 01:00
       final set = day0.add(const Duration(hours: 15)); // 15:00, next-day-ish

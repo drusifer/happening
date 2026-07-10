@@ -1,4 +1,21 @@
-# Trin Context — 2026-06-11 (see 2026-07-01 UPDATE for latest)
+# Trin Context — 2026-06-11 (see 2026-07-08 UPDATE for latest)
+
+## 2026-07-08 UPDATE — Astro Background Luminance-Merge Fix UAT
+- Full report: `trin.docs/AstroBackground_UAT_2026-07-08.md`. Gate APPROVED.
+- `make lint`'s `lint-metrics` step still fails project-wide on a pre-existing empty-block in
+  `oauth_redirect_handler.dart:79` (from commit 9186dfa, macOS ASWebAuth) — NOT this fix. When
+  `make lint` fails, always scope-check with `git log -- <file>` before assuming a new change
+  caused it; run the scoped `dart_code_linter:metrics analyze <files>` command directly against
+  just the touched files to verify them in isolation.
+- `dart format --set-exit-if-changed` catches formatting drift `make lint`'s composite target
+  won't reach if an earlier step (`lint-metrics`) already failed and short-circuited the chain —
+  check format independently, don't assume lint-format ran just because `make lint` was invoked.
+- `via -mg <file> -tf -tm --stale --lang dart` (scoped to one file at a time — glob doesn't support
+  OR across multiple patterns) is now a fast way to confirm a specific change didn't introduce a
+  coverage gap, without wading through the ~655 pre-existing project-wide stale hits.
+- The 1 pre-existing golden flake (`timeline_strip_golden_test.dart` S4-31) mentioned in the
+  2026-07-01 note below is now RESOLVED — Drew authorized `flutter test --update-goldens
+  test/goldens/`, only `hover_card_alignment.png` changed, suite is 494/494 green as of this UAT.
 
 ## 2026-07-01 UPDATE — macOS ASWebAuth Phase C UAT
 - `flutter_web_auth_2`'s platform-interface (`FlutterWebAuth2Platform.instance`) is a clean fake seam —

@@ -57,8 +57,7 @@ class CalendarEvent {
 
   /// The color actually painted for this event — completed tasks render
   /// green regardless of their source calendar's color.
-  Color get displayColor =>
-      isCompleted ? const Color(0xFF51B749) : color;
+  Color get displayColor => isCompleted ? const Color(0xFF51B749) : color;
 
   Duration get duration => endTime.difference(startTime);
 

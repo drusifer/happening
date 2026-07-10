@@ -1,4 +1,3 @@
-import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'window_resize_strategy.dart';
@@ -13,16 +12,9 @@ import 'window_resize_strategy.dart';
 //
 // ---------------------------------------------------------------------------
 class LinuxResizeStrategy extends WindowResizeStrategy {
-  LinuxResizeStrategy({
-    required WindowManager wm,
-    required ScreenRetriever sr,
-  })  : _wm = wm,
-        // ignore: unused_field
-        _sr = sr;
+  LinuxResizeStrategy({required WindowManager wm}) : _wm = wm;
 
   final WindowManager _wm;
-  // ignore: unused_field
-  final ScreenRetriever _sr;
 
   @override
   WindowManager get wm => _wm;

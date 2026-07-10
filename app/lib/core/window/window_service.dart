@@ -38,10 +38,7 @@ class WindowService with WidgetsBindingObserver {
         _displayService = displayService,
         _interactionStrategy = interactionStrategy ??
             WindowInteractionStrategy.create(wm: windowManager),
-        _strategy = WindowResizeStrategy.create(
-          wm: windowManager,
-          sr: screenRetriever,
-        );
+        _strategy = WindowResizeStrategy.create(wm: windowManager);
 
   final WindowManager _wm;
   final ScreenRetriever _sr;

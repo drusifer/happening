@@ -7,7 +7,7 @@ TLDR:
     CHAT.md communication log used by AI agents in the project. Each message is
     stamped with a timestamp, persona, command prefix, and optional recipient list.
     Key function: main() — parses arguments and appends a formatted message entry
-    to agents/CHAT.md, enforcing a 256-character message limit.
+    to agents/CHAT.md, enforcing a 512-character message limit.
     Role in the system: consumed by mkf.py (which calls it to post build status)
     and invoked directly by agents or developers to coordinate via the chat log.
 
@@ -18,16 +18,6 @@ import datetime
 import os
 import sys
 from pathlib import Path
-
-# Force UTF-8 console output on every platform. Windows consoles default to
-# cp1252, which raises UnicodeEncodeError when a message echoes glyphs like ✖/→;
-# errors='replace' guarantees printing the message back never crashes. No-op
-# where the stream can't be reconfigured, harmless on Linux/macOS (already UTF-8).
-for _stream in (sys.stdout, sys.stderr):
-    try:
-        _stream.reconfigure(encoding="utf-8", errors="replace")
-    except (AttributeError, ValueError):
-        pass
 
 
 def is_make_build(persona, cmd):
@@ -52,7 +42,7 @@ def write_message(chat_file, formatted_line, overwrite_last_make_build):
     path = Path(chat_file)
 
     try:
-        content = path.read_text(encoding="utf-8")
+        content = path.read_text()
     except FileNotFoundError:
         print(f"Error: Could not find {chat_file}")
         sys.exit(1)
@@ -60,17 +50,17 @@ def write_message(chat_file, formatted_line, overwrite_last_make_build):
     if overwrite_last_make_build and last_entry_is_make_build(content):
         marker = "\n---\n["
         start = content.rfind(marker)
-        path.write_text(content[:start] + formatted_line, encoding="utf-8")
+        path.write_text(content[:start] + formatted_line)
         return "Replaced last make build message in"
 
-    with path.open("a", encoding="utf-8") as f:
+    with path.open("a") as f:
         f.write(formatted_line)
     return "Appended to"
 
 
 def main():
     parser = argparse.ArgumentParser(description="Append a message to agents/CHAT.md")
-    parser.add_argument("message", help="The message content max  256 characters")
+    parser.add_argument("message", help="The message content max 512 characters")
     parser.add_argument("--persona", "-p", default=os.environ.get("USER", "User"), help="Persona name (default: $USER)")
     parser.add_argument("--cmd", "-c", default="chat", help="Command prefix (default: chat)")
     parser.add_argument("--to", "-t", action="append", help="Name of intended recipient. Can be provided multiple times. (default: all)")
@@ -83,8 +73,8 @@ def main():
     
     timestamp = datetime.datetime.now().strftime("<small>%Y-%m-%d %H:%M:%S</small>")
 
-    if len(args.message) > 256:
-        print("Error: Message exceeds 256 characters. Use a Markdown file for longer messages. Then use chat to send the location of the file and a short summary.")
+    if len(args.message) > 512:
+        print("Error: Message exceeds 512 characters. Use a Markdown file for longer messages. Then use chat to send the location of the file and a short summary.")
         sys.exit(1)
     
     # Format: [DATETIME] [Persona] *cmd message

@@ -1,4 +1,30 @@
-# Trin Current Task — 2026-07-01
+# Trin Current Task — 2026-07-08 (latest: judge loop)
+
+## Status: Judge loop (session tool/skill usage) — CLOSED, TES 100/100
+Ran trace compilation (iteration 1) and verification re-run (iteration 2) for the judge loop
+Drew invoked. All 4 cataloged bugs (session_trace.py false-negative + 3 stale/missing prompt
+docs) fixed by Neo/Bob and verified. Full records: `trin.docs/judge_bob-protocol_trace.log`,
+`trin.docs/judge_bob-protocol_trace_v2.log`, `smith.docs/trace_eval.md`. No follow-up owed.
+
+---
+
+# Trin Current Task — 2026-07-08 (astro fix UAT, earlier same day)
+
+## Status: Astro Background Luminance-Merge Fix UAT — COMPLETE, gate APPROVED
+Full report: `agents/trin.docs/AstroBackground_UAT_2026-07-08.md`. Verified the fix committed as
+6b09cd9 ("Astro Theme fix"): lint clean on touched files (1 unrelated pre-existing lint failure in
+oauth_redirect_handler.dart, out of scope), formatted 6 files that needed it, via --stale confirms
+no coverage gaps on the 4 touched painter files, and the previously-known golden flake
+(timeline_strip_golden_test.dart S4-31) was resolved with Drew's go-ahead via
+`--update-goldens`. Suite is 494/494 green.
+
+## NEXT STEP
+Nothing pending from Trin. Uncommitted working-tree changes (regenerated golden + 6 reformatted
+files) are ready for Drew to review/commit whenever convenient — no persona is blocked on this.
+
+---
+
+# Trin Current Task — 2026-07-01 (prior)
 
 ## Status: macOS ASWebAuth Phase C UAT — COMPLETE, handed off to Morpheus (parallel track, F-31 below unaffected)
 Full report: `docs/sprints/macos-aswebauth-oauth/macos_aswebauth_phase_c_uat_2026-07-01.md`.
