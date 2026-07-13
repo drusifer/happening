@@ -1019,8 +1019,7 @@ make[1]: Leaving directory 'C:/Users/drusi/VSCode_Projects/happening'
  sync_version.py now rejects any version containing '+' outright (sys.exit) at every entry point - read_version, write_version, and all update_* fns. App stores need clean X.Y.Z, no build suffix. 9/9 tests green, verified via make set-version too.
 
 ---
-[<small>2026-07-10 14:05:53</small>] [**make**]->[**all**] *build*:
- Build PASSED | make dist-linux | /home/drusifer/Projects/happening/build/build.out
--C app/build/linux/arm64/release bundle
-Linux package: dist/happening-1.5.4-linux-arm64.tar.gz
-make[1]: Leaving directory '/home/drusifer/Projects/happening'
+[<small>2026-07-13 15:25:59</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make dist-macos | /Users/drewgutstein/Projects/happening/build/build.out
+macOS package: dist/happening-1.5.4-macos-arm64.dmg
+Project /Users/drewgutstein/Projects/happening/app built and packaged successfully.
