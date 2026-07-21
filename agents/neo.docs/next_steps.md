@@ -1,4 +1,20 @@
-# Neo Next Steps — 2026-07-09 (updated)
+# Neo Next Steps — 2026-07-21
+
+## Makefile lint scope
+
+No Neo work remains. Trin should run the full `make lint` gate; it should now
+analyze `lib test` and skip the deliberately absent `integration_test` tree.
+If that directory is restored later, it automatically re-enters analyzer scope.
+
+## Lunar-day sunset transition regression
+
+No Neo work remains. Trin should independently review the endpoint-wise
+brightness selection, rerun the focused matrix, and choose any broader QA gate
+appropriate for the product change. If QA finds a failure, resume from
+`Lunar_Transition_Merge_Fix_Summary_2026-07-21T17-10.md` without changing the
+matrix expectations.
+
+# Neo Next Steps — 2026-07-09 (historical)
 
 ## hide-after-display-reapply strand bug — DONE. One flagged follow-up (not urgent):
 `WindowService._reapplyCurrentState()` can't distinguish `hidden` from `collapsedShown` (both have

@@ -33,6 +33,10 @@ HELP_PROJECT_TARGETS = $(PYTHON) agents/tools/print_help.py project "$(MKF_TARGE
 
 LLVM_BIN     := /usr/lib/llvm-22/bin
 PUB_STAMP    := $(APP_DIR)/.dart_tool/package_config.json
+ANALYZE_DIRS := lib test
+ifneq ($(wildcard $(APP_DIR)/integration_test),)
+  ANALYZE_DIRS += integration_test
+endif
 
 ifdef MKF_ACTIVE
 
@@ -95,7 +99,7 @@ test: $(PUB_STAMP)
 # Windows-friendly check: analyze (no bash `ulimit`, which breaks Windows make)
 # then run tests. Scope with FILE=test/core/window/ and pass extra flags via ARGS.
 win-test: $(PUB_STAMP)
-	cd $(APP_DIR) && $(FLUTTER) analyze lib test integration_test
+	cd $(APP_DIR) && $(FLUTTER) analyze $(ANALYZE_DIRS)
 	cd $(APP_DIR) && $(FLUTTER) test $(FILE) $(ARGS)
 
 update-goldens: $(PUB_STAMP)
@@ -186,15 +190,15 @@ format: $(PUB_STAMP)
 
 analyze: $(PUB_STAMP)
 ifeq ($(OS),Windows_NT)
-	cd $(APP_DIR) && $(FLUTTER) analyze lib test integration_test
+	cd $(APP_DIR) && $(FLUTTER) analyze $(ANALYZE_DIRS)
 else
-	cd $(APP_DIR) && ulimit -n 31706 && $(FLUTTER) analyze lib test integration_test
+	cd $(APP_DIR) && ulimit -n 31706 && $(FLUTTER) analyze $(ANALYZE_DIRS)
 endif
 
 lint: lint-style lint-metrics lint-format
 
 lint-style: $(PUB_STAMP)
-	cd $(APP_DIR) && $(FLUTTER) analyze --fatal-warnings lib test integration_test
+	cd $(APP_DIR) && $(FLUTTER) analyze --fatal-warnings $(ANALYZE_DIRS)
 
 lint-metrics: $(PUB_STAMP)
 	cd $(APP_DIR) && $(DART) run dart_code_linter:metrics check-unused-files lib

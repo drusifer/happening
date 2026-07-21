@@ -1,4 +1,54 @@
-# Trin Current Task — 2026-07-08 (latest: judge loop)
+# Trin Current Task — 2026-07-21
+
+## Status: Lunar transition + Make lint fixes — COMPLETE, QA APPROVED
+Independent transition matrix went red before implementation (3 dusk-end failures), then green
+unchanged after endpoint-wise brightness selection. `make lint` now correctly scopes existing
+source directories and passes end to end. Full suite: 507 passed, 5 skipped. Final report:
+`trin.docs/Lunar_Transition_And_Lint_Fix_QA_Summary_2026-07-21T17-25.md`.
+
+## NEXT STEP
+No work remains. Changes are ready for Drew to review and commit.
+
+---
+
+## Status: Lunar fix QA GREEN focused; lint-gate repair handed to Neo
+Lunar transition focused suite is 26/26 green; `lint-metrics` and `lint-format` pass. Composite
+`make lint` is blocked before analysis because Makefile hard-codes the deleted `app/integration_test`
+directory. Drew explicitly requested that gate be fixed. Full regression remains pending until the
+Makefile repair returns.
+
+## NEXT STEP
+Neo makes `integration_test` optional in analyze/lint-style. Trin reruns `make lint`, then one full
+`make test`, without repeating already-green focused or component lint checks.
+
+---
+
+## Status: Lunar transition matrix — RED COMPLETE, handed to Neo
+Added 12 explicit dusk/dawn boundary scenarios. Focused test is red in exactly 3 dusk-end cases:
+already-up moon, moon rising mid-dusk, and moon setting shortly after dusk. Each expected a lunar
+shade and received `nightNavy`. No product code changed. Detail:
+`trin.docs/Lunar_Transition_Matrix_Test_Summary_2026-07-21T17-09.md`.
+
+## NEXT STEP
+Neo corrects `mergeByBrightness` without weakening the matrix; then Trin runs focused verification
+and the relevant quality gates.
+
+---
+
+## Status: Lunar-day sunset regression diagnosis — COMPLETE, fix not requested
+Confirmed commit `6b09cd9` deleted the exact already-up-at-sunset transition test. The replacement
+midpoint-winner compositor can select solar for an entire dusk segment and carry it to night navy,
+because it does not split at the internal solar/lunar luminance crossover. Oracle confirmed the
+correct target is illumination-scaled lunar `upColor`. No product code changed and no tests were
+rerun. Detail: `trin.docs/Lunar_Day_Sunset_Regression_Summary_2026-07-21T16-55.md`.
+
+## NEXT STEP
+If Drew requests a fix: hand off to Neo for a test-first correction that restores the exact
+moon-already-up-at-sunset regression case, then return to Trin for focused verification.
+
+---
+
+# Trin Current Task — 2026-07-08 (prior: judge loop)
 
 ## Status: Judge loop (session tool/skill usage) — CLOSED, TES 100/100
 Ran trace compilation (iteration 1) and verification re-run (iteration 2) for the judge loop
