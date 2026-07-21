@@ -1,4 +1,23 @@
-# Neo Context — 2026-06-17 (see 2026-07-09 UPDATE for most current)
+# Neo Context — 2026-07-21
+
+## 2026-07-21 UPDATE — Makefile analyzer roots are availability-aware
+- Analyzer entry points share `ANALYZE_DIRS`: `lib test` are mandatory and
+  `integration_test` is appended only when `app/integration_test` exists.
+- Keep this shared across `analyze`, `lint-style`, and `win-test` so platform
+  wrappers cannot silently diverge. `make lint-style` passed with `lib test`
+  after the integration harness's deliberate deletion.
+- Detailed record: `Makefile_Conditional_Analyze_Scope_Summary_2026-07-21T17-24.md`.
+
+## 2026-07-21 UPDATE — lunar-day sunset compositor regression fixed
+- `mergeByBrightness` must resolve solar versus lunar brightness independently
+  at both endpoints of every union-breakpoint segment. Choosing one body at the
+  midpoint and reusing it at both endpoints lets solar dusk carry through to
+  `nightNavy` while the moon remains up.
+- Added `_brighterColor` and endpoint-wise selection. Trin's independent 12-row
+  dusk/dawn matrix plus existing compositor coverage passes 26/26 focused tests.
+- Detailed record: `Lunar_Transition_Merge_Fix_Summary_2026-07-21T17-10.md`.
+
+# Neo Context — 2026-06-17 (see 2026-07-09 UPDATE below)
 
 ## 2026-07-09 UPDATE — sync_version.py version-sync bug (see current_task.md for full detail)
 - Lesson: `sync_version.py`'s regexes (`update_metadata`, `update_pubspec`) used `[\d\.]+`, which

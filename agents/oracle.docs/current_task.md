@@ -1,5 +1,23 @@
 # Current Task
 
+## Makefile analyze/lint scope query — 2026-07-21
+**Status**: DONE (100%)
+- Confirmed mandatory analyzer roots are `lib` and `test`.
+- Confirmed `integration_test` is conditional on directory existence after its approved deletion.
+- Identified all affected current analyzer entry points: win-test, analyze (both OS branches), and
+  lint-style. No product or build files changed.
+- Details: `Makefile_Analyze_Scope_Summary_2026-07-21T17-22.md`.
+- Next item: Trin verifies Neo's Makefile change preserves this contract across analyzer targets.
+
+## Lunar-day sunset expected-behavior query — 2026-07-21
+**Status**: DONE (100%)
+- Traced the expected dusk target and prior regression harness without changing product code.
+- Found that the exact May 22 amber->lunar-up dusk assertion was removed in commit `6b09cd9`.
+- Documented current coverage gap and implementation mechanism in
+  `Lunar_Day_Sunset_Expected_Behavior_Summary_2026-07-21T16-55.md`.
+- Next item: Trin should compare the live failure to this specification and file the QA diagnosis;
+  Neo/Morpheus can design a fix only if the user requests implementation.
+
 ## Groom pass 2 — reorg + archive + filenames — 2026-06-21
 **Status**: DONE ✅
 - [x] **CHAT.md archived/deduped**: a prior archive (CHAT-ARCHIVE-20260611.md, covers 2026-05-06→06-03)

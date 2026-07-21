@@ -128,6 +128,177 @@ void main() {
       return null;
     }
 
+    group('complete solar/lunar transition boundary matrix', () {
+      final solarArcs = SolarBody(astroData: astro).getArcs(
+          windowStart.subtract(const Duration(days: 1)),
+          windowEnd.add(const Duration(days: 1)));
+      final duskStart = astro.sunset;
+      final duskMid = astro.sunset.add(const Duration(minutes: 15));
+      final duskEnd = astro.civilTwilightEnd;
+      final dawnStart = astro.civilTwilightBegin;
+      final dawnMid = astro.civilTwilightBegin.add(const Duration(minutes: 15));
+      final dawnEnd = astro.sunrise;
+
+      List<Arc> moonUp(DateTime rise, DateTime set) => LunarBody.moonUpArcs(
+            moonrise: rise,
+            moonset: set,
+            upColor: up,
+          );
+
+      // These colors are stated independently of mergeByBrightness. They are
+      // the required colors at the start, midpoint, and end of each solar
+      // transition for every relative moon transition that can affect it.
+      final navyToUp60 = Color.lerp(SolarBody.nightNavy, up, 0.6)!;
+      final upToNavy40 = Color.lerp(up, SolarBody.nightNavy, 0.4)!;
+
+      final duskCases = <({
+        String name,
+        List<Arc> lunarArcs,
+        List<Color> expected,
+      })>[
+        (
+          name: 'moon absent',
+          lunarArcs: const <Arc>[],
+          expected: const [
+            SolarBody.dayBlue,
+            SolarBody.dawnDusk,
+            SolarBody.nightNavy,
+          ],
+        ),
+        (
+          name: 'moon already up and remains up',
+          lunarArcs: moonUp(
+            duskStart.subtract(const Duration(hours: 2)),
+            duskEnd.add(const Duration(hours: 2)),
+          ),
+          expected: [SolarBody.dayBlue, SolarBody.dawnDusk, up],
+        ),
+        (
+          name: 'moon rises at sunset and remains up',
+          lunarArcs: moonUp(duskStart, duskEnd.add(const Duration(hours: 2))),
+          expected: [SolarBody.dayBlue, SolarBody.dawnDusk, up],
+        ),
+        (
+          name: 'moon rises halfway through dusk',
+          lunarArcs: moonUp(duskMid, duskEnd.add(const Duration(hours: 2))),
+          expected: [SolarBody.dayBlue, SolarBody.dawnDusk, navyToUp60],
+        ),
+        (
+          name: 'moon sets exactly when dusk ends',
+          lunarArcs: moonUp(
+            duskStart.subtract(const Duration(hours: 2)),
+            duskEnd,
+          ),
+          expected: const [
+            SolarBody.dayBlue,
+            SolarBody.dawnDusk,
+            SolarBody.nightNavy,
+          ],
+        ),
+        (
+          name: 'moon sets shortly after dusk ends',
+          lunarArcs: moonUp(
+            duskStart.subtract(const Duration(hours: 2)),
+            duskEnd.add(const Duration(minutes: 15)),
+          ),
+          expected: [
+            SolarBody.dayBlue,
+            SolarBody.dawnDusk,
+            upToNavy40,
+          ],
+        ),
+      ];
+
+      final dawnCases = <({
+        String name,
+        List<Arc> lunarArcs,
+        List<Color> expected,
+      })>[
+        (
+          name: 'moon absent',
+          lunarArcs: const <Arc>[],
+          expected: const [
+            SolarBody.nightNavy,
+            SolarBody.dawnDusk,
+            SolarBody.dayBlue,
+          ],
+        ),
+        (
+          name: 'moon already up and remains up',
+          lunarArcs: moonUp(
+            dawnStart.subtract(const Duration(hours: 2)),
+            dawnEnd.add(const Duration(hours: 2)),
+          ),
+          expected: [up, SolarBody.dawnDusk, SolarBody.dayBlue],
+        ),
+        (
+          name: 'moon rises shortly before dawn starts',
+          lunarArcs: moonUp(
+            dawnStart.subtract(const Duration(minutes: 15)),
+            dawnEnd.add(const Duration(hours: 2)),
+          ),
+          expected: [navyToUp60, SolarBody.dawnDusk, SolarBody.dayBlue],
+        ),
+        (
+          name: 'moon rises exactly when dawn starts',
+          lunarArcs: moonUp(dawnStart, dawnEnd.add(const Duration(hours: 2))),
+          expected: const [
+            SolarBody.nightNavy,
+            SolarBody.dawnDusk,
+            SolarBody.dayBlue,
+          ],
+        ),
+        (
+          name: 'moon sets halfway through dawn',
+          lunarArcs: moonUp(
+            dawnStart.subtract(const Duration(hours: 2)),
+            dawnMid,
+          ),
+          expected: [upToNavy40, SolarBody.dawnDusk, SolarBody.dayBlue],
+        ),
+        (
+          name: 'moon sets exactly at sunrise',
+          lunarArcs: moonUp(
+            dawnStart.subtract(const Duration(hours: 2)),
+            dawnEnd,
+          ),
+          expected: [up, SolarBody.dawnDusk, SolarBody.dayBlue],
+        ),
+      ];
+
+      for (final scenario in duskCases) {
+        test('dusk: ${scenario.name}', () {
+          final merged = AstronomicalBackgroundLayer.mergeByBrightness(
+              solarArcs, scenario.lunarArcs);
+          final actual = [
+            colorAt(duskStart, merged),
+            colorAt(duskMid, merged),
+            colorAt(duskEnd, merged),
+          ];
+          for (var i = 0; i < scenario.expected.length; i++) {
+            expect(actual[i], approximatelyColor(scenario.expected[i]),
+                reason: '${scenario.name}, dusk boundary $i');
+          }
+        });
+      }
+
+      for (final scenario in dawnCases) {
+        test('dawn: ${scenario.name}', () {
+          final merged = AstronomicalBackgroundLayer.mergeByBrightness(
+              solarArcs, scenario.lunarArcs);
+          final actual = [
+            colorAt(dawnStart, merged),
+            colorAt(dawnMid, merged),
+            colorAt(dawnEnd, merged),
+          ];
+          for (var i = 0; i < scenario.expected.length; i++) {
+            expect(actual[i], approximatelyColor(scenario.expected[i]),
+                reason: '${scenario.name}, dawn boundary $i');
+          }
+        });
+      }
+    });
+
     test('pure daytime with the moon also up: solar wins outright', () {
       final solarArcs = SolarBody(astroData: astro).getArcs(
           windowStart.subtract(const Duration(days: 1)),

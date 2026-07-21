@@ -1,5 +1,21 @@
 # Oracle Context
 
+## Makefile analyzer-root contract (2026-07-21)
+- Always analyze `app/lib` and `app/test`; include `app/integration_test` only when the directory
+  exists. Apply consistently to analyze, lint-style, and win-test's analyzer step.
+- `integration_test/timeline_strip_test.dart` was intentionally deleted after being found main-less
+  and unused since Sprint 4; stale hard-coded Makefile references now abort before useful analysis.
+- Detailed citations: `Makefile_Analyze_Scope_Summary_2026-07-21T17-22.md`.
+
+## Astro lunar-day sunset evidence trace (2026-07-21)
+- Intended when moon is already up through sunset: solar dusk must resolve into illumination-scaled
+  lunar `upColor`, not solar `nightNavy`/black. Historical May 22 harness asserted amber->up through
+  dusk; chat recorded lunar upColor winning over nightNavy at boundaries.
+- Commit `6b09cd9` removed that exact scenario while adopting pointwise brightness compositing. The
+  replacement covers moonrise exactly at sunset and derives expectations from the implementation,
+  but does not independently assert an already-up moon's dusk endpoint.
+- Detailed citations: `Lunar_Day_Sunset_Expected_Behavior_Summary_2026-07-21T16-55.md`.
+
 ## Window-architecture SoT map (post-convergence, 2026-06-21)
 The window subsystem converged this sprint (DEC-009). Authoritative now:
 - **Current arch** → `docs/ARCH.md` §6 "Unified Window-State Machine" (StripController → applyState).

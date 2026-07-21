@@ -1,5 +1,19 @@
 # Next Steps
 
+## Immediate handoff — Makefile analyzer scope
+1. Trin: verify `make analyze` and `make lint-style` always pass `lib test` and conditionally append
+   `integration_test` only if the directory exists.
+2. Verify `win-test` uses the same analyzer-root rule so the Windows helper does not drift.
+3. If `app/integration_test` is recreated later, confirm it automatically returns to analysis.
+
+## Immediate handoff — lunar-day sunset bug
+1. Trin: use `Lunar_Day_Sunset_Expected_Behavior_Summary_2026-07-21T16-55.md` as the evidence-backed
+   answer: expected target is lunar `upColor`, and the former exact harness was removed in `6b09cd9`.
+2. If a fix is authorized, restore an independent regression assertion for a moon that rose before
+   sunset and remains up past civil twilight end; assert the dusk endpoint is lunar `upColor`.
+3. Preserve the distinction between solar-only dusk (ends at `nightNavy`) and moon-up dusk (ends at
+   illumination-scaled lunar shade).
+
 ## Done in the 2026-06-21 groom (pass 1 + 2)
 ARCH §6 rewritten + DEC-009 + EXPANSION_CONTROLLER superseded + ARCH v0.8; CHAT.md deduped/archived
 (1476→761); WINDOW_* plans → `docs/sprints/window-convergence-2026-06/`; scratch logs removed; 25 en-dash

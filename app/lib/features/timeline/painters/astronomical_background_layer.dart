@@ -180,17 +180,17 @@ class AstronomicalBackgroundLayer implements TimelineLayer {
       final lunarAtMid = _colorAt(mid, lunarArcs);
       if (solarAtMid == null && lunarAtMid == null) continue;
 
-      final useSolar = lunarAtMid == null ||
-          (solarAtMid != null &&
-              solarAtMid.computeLuminance() >= lunarAtMid.computeLuminance());
-      final winner = useSolar ? solarArcs : lunarArcs;
-      final winnerMid = useSolar ? solarAtMid! : lunarAtMid;
-
       result.add(Arc(
         startTime: segStart,
         endTime: segEnd,
-        startColor: _colorAt(segStart, winner) ?? winnerMid,
-        endColor: _colorAt(segEnd, winner) ?? winnerMid,
+        startColor: _brighterColor(
+          _colorAt(segStart, solarArcs),
+          _colorAt(segStart, lunarArcs),
+        )!,
+        endColor: _brighterColor(
+          _colorAt(segEnd, solarArcs),
+          _colorAt(segEnd, lunarArcs),
+        )!,
       ));
     }
     return result;
@@ -208,6 +208,12 @@ class AstronomicalBackgroundLayer implements TimelineLayer {
       }
     }
     return null;
+  }
+
+  static Color? _brighterColor(Color? solar, Color? lunar) {
+    if (solar == null) return lunar;
+    if (lunar == null) return solar;
+    return solar.computeLuminance() >= lunar.computeLuminance() ? solar : lunar;
   }
 
   void _paintStars(Canvas canvas, Size size) {

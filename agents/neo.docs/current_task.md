@@ -1,4 +1,23 @@
-# Neo Current Task — 2026-07-09 (most current; 07-08 and 07-01 sections below)
+# Neo Current Task — 2026-07-21
+
+## STATUS: Makefile lint scope after integration harness deletion — FIXED
+- Shared analyzer source-root selection now always includes `lib test` and
+  conditionally adds `integration_test` only when its directory exists.
+- Applied to `analyze`, `lint-style`, and `win-test` analyzer entry points.
+- `make lint-style V=-vv` passed with no analyzer issues.
+- Handed to Trin for the full quality gate; no Neo work remains.
+- Summary: `Makefile_Conditional_Analyze_Scope_Summary_2026-07-21T17-24.md`.
+
+## STATUS: lunar-day sunset transition regression — FIXED, handed to Trin
+- Trin supplied an independently specified 12-row dusk/dawn matrix, red in 3
+  dusk landing-color cases.
+- Production fix resolves brightness independently at segment start and end;
+  expected matrix values were not changed.
+- Focused astronomical background test passed 26/26 after `make format`.
+- Full QA remains with Trin. No Neo implementation work remains.
+- Summary: `Lunar_Transition_Merge_Fix_Summary_2026-07-21T17-10.md`.
+
+# Neo Current Task — 2026-07-09 (historical; 07-08 and 07-01 sections below)
 
 ## STATUS (2026-07-09 #2): hide-after-display-reapply strand bug — FIXED, tests added. DONE.
 - Repro (Drew): open Settings, re-select the Display setting (even the SAME display), press Hide

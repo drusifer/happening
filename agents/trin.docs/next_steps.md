@@ -1,4 +1,34 @@
-# Trin Next Steps — 2026-07-08
+# Trin Next Steps — 2026-07-21
+
+## Lunar transition + Make lint workstreams CLOSED
+QA approved. Focused 26/26, composite lint clean, full suite 507 passed / 5 skipped. No rerun or
+follow-up is owed unless the project files change again. Ready for user review/commit.
+
+---
+
+## Lint-gate repair pending from Neo
+On handback, inspect the Makefile diff, run composite `make lint`, then run the full test suite once.
+The lunar focused suite already passed 26/26; lint-metrics and lint-format already passed and must
+not be run separately again unless code changes touch their scope.
+
+---
+
+## Lunar transition matrix RED — waiting for Neo implementation
+Resume by reviewing Neo's compositor change, then run the focused astronomical background test.
+Do not alter the 12-row expected-color matrix to accommodate implementation behavior. If focused
+tests pass, run format/analyze and one full regression suite because product code will have changed.
+
+---
+
+## Lunar-day sunset diagnosis DONE — awaiting user decision on implementation
+No QA work remains for the diagnosis. If asked to fix, Neo should first restore an independent
+regression test for a moon that rose before sunset and remains up after civil twilight, asserting
+that the merged gradient transitions to `LunarBody.upColor` without reaching `nightNavy`. Trin
+then verifies only the touched gradient tests and relevant quality gates.
+
+---
+
+# Trin Next Steps — 2026-07-08 (prior)
 
 ## Astro Background Luminance-Merge Fix UAT DONE — no follow-up owed by Trin
 Gate approved, suite 494/494 green (see current_task.md / AstroBackground_UAT_2026-07-08.md).

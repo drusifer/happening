@@ -1,5 +1,24 @@
 # Trin Context — 2026-06-11 (see 2026-07-08 UPDATE for latest)
 
+## 2026-07-21 UPDATE — Lunar-Day Sunset Regression Diagnosis
+- Commit `6b09cd9` removed the exact moon-already-up-at-sunset regression assertion while replacing
+  dusk/dawn bridging with `mergeByBrightness`.
+- `mergeByBrightness` chooses one source at each segment midpoint and uses it at both endpoints;
+  it does not insert a breakpoint where solar/lunar luminance crosses within the segment. This can
+  carry the solar dusk arc to `nightNavy` before lunar glow takes over.
+- The replacement twilight test covers moonrise exactly at sunset, while the multi-date sweep ends
+  before sunset. Neither independently verifies the already-up-at-sunset landing color.
+- Expected behavior, confirmed by Oracle: dusk lands on illumination-scaled `LunarBody.upColor`,
+  never `nightNavy`, while the moon remains above the horizon.
+- Full diagnosis: `trin.docs/Lunar_Day_Sunset_Regression_Summary_2026-07-21T16-55.md`.
+- Follow-up matrix now covers 12 explicit dusk/dawn boundary combinations. Before the fix, three
+  dusk-end rows fail with `nightNavy`; see
+  `trin.docs/Lunar_Transition_Matrix_Test_Summary_2026-07-21T17-09.md`.
+- Final fix chooses brightness independently at segment endpoints. Matrix is 12/12 green, focused
+  file 26/26, composite lint clean, and full suite 507 passed / 5 skipped.
+- Makefile analyzer scope now always uses `lib test` and conditionally adds `integration_test` if
+  the directory exists, shared across analyze/lint-style/win-test.
+
 ## 2026-07-08 UPDATE — Astro Background Luminance-Merge Fix UAT
 - Full report: `trin.docs/AstroBackground_UAT_2026-07-08.md`. Gate APPROVED.
 - `make lint`'s `lint-metrics` step still fails project-wide on a pre-existing empty-block in
