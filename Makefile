@@ -39,7 +39,7 @@ help: ## Show available make targets
 
 $(FLUTTER):
 ifeq ($(OS),Windows_NT)
-	@powershell -Command "if (-not (Test-Path '$(FLUTTER)')) { Write-Host '==> Flutter SDK not found — cloning stable into .flutter/flutter ...'; mkdir -p .flutter; git clone https://github.com/flutter/flutter.git --branch stable --depth 1 .flutter/flutter; Write-Host '✓ flutter SDK cloned' }"
+	@powershell -Command "if (-not (Test-Path '$(FLUTTER)')) { Write-Host '==> Flutter SDK not found — cloning stable into .flutter/flutter ...'; if (-not (Test-Path '.flutter')) { New-Item -ItemType Directory .flutter }; git clone https://github.com/flutter/flutter.git --branch stable --depth 1 .flutter/flutter; Write-Host '✓ flutter SDK cloned' }"
 else ifeq ($(UNAME_OS),Darwin)
 	./scripts/setup-macos.sh
 else
