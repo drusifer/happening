@@ -1,27 +1,15 @@
-# Task Board — Timestrip Hide/Show Sprint (F-31)
-**Updated**: 2026-06-11 | **Owner**: @Neo | **QA**: @Trin | **Arch**: @Morpheus | **UX**: @Smith
+# Task Board — Audio Countdown Timer Sprint (F-32)
+**Updated**: 2026-09-30 | **Owner**: @Neo | **QA**: @Trin | **Arch**: @Morpheus | **UX**: @Smith
 
 ---
 
 ## Sprint Goal
-Ship F-31 Timestrip Hide/Show: a ← hide button collapses the strip to a mini countdown+show widget
-at top-left; → button or countdown tap restores the full strip. Linux strut and Windows AppBar
-released on hide, re-acquired on show. Always starts fully visible.
+Add audio to the countdown timer using 1980s Asteroid B1 & B2 WAV files (`beat1.wav`, `beat2.wav`).
+Start playing alternating beats at 1 minute remaining ($T \le 60\text{s}$), slowly ramping up the rhythm and volume towards zero ("nudge, not startle").
 
 ## Source Artifacts
-All sprint artifacts moved to `docs/sprints/F-31/`:
-- Product stories: `docs/sprints/F-31/f31_timestrip_hide_stories.md`
-- UX Gate 1: `docs/sprints/F-31/f31_gate1_review_2026-06-11.md`
-- Architecture: `docs/sprints/F-31/F31_HIDE_SHOW_ARCH_2026-06-11.md`
-- UX Gate 2: `docs/sprints/F-31/f31_gate2_review_2026-06-11.md`
-- Sprint plan: `docs/sprints/F-31/f31_sprint_plan_2026-06-11.md`
-- Previous board (F-30 archive): `docs/sprints/F-31/f30_task_archive_2026-06-11.md`
-- Code review: `docs/sprints/F-31/f31_code_review_2026-06-11.md`
-
-## Out of Scope
-System tray / full hide. Keyboard shortcut (future sprint). Countdown format changes.
-Multi-monitor variants (F-30 handles display selection). The terms "collapse"/"expand" in any
-F-31 code identifier or user-facing label.
+- Stories & Architecture: `docs/sprints/F-32/F32_AUDIO_COUNTDOWN_STORIES_ARCH.md`
+- Smith UX Gate Review: `docs/sprints/F-32/gate1_gate2_review_2026-09-30.md`
 
 ---
 
@@ -29,140 +17,64 @@ F-31 code identifier or user-facing label.
 
 | Phase | Status | Tasks | Owner |
 |-------|--------|-------|-------|
-| A — WindowService Hooks | ✅ DONE | F31-A1, F31-A2 | Neo + Trin |
-| B — Strip UI | ✅ DONE | F31-B1, F31-B2 | Neo + Trin |
-| C — UAT + Docs | 🔄 IN PROGRESS | F31-C1 ✅, F31-C2 🔄, F31-C3 ✅ | Trin + Smith + Oracle |
-
-Dependency: A → B → C (strictly sequential; each gate requires the previous to be green).
+| A — Audio Assets & Package Setup | ✅ COMPLETED | F32-A1, F32-A2 | Neo + Trin |
+| B — Audio Service & Ramping Engine | ✅ COMPLETED | F32-B1, F32-B2 | Neo + Trin |
+| C — Strip Integration & UAT | ✅ COMPLETED | F32-C1, F32-C2 | Trin + Smith |
 
 ---
 
-## Phase A — WindowService Hooks
-**Gate**: `make test` green; new tests pass; no UI changes yet
+## Phase A — Audio Assets & Package Setup
+**Gate**: Assets copied to `app/assets/audio/`, `audioplayers` registered in `pubspec.yaml`, `make test` green.
 
-### F31-A1: WindowService public API + protected hooks  ☐ TODO
-- **Goal**: Add to `WindowService` (`app/lib/core/window/window_service.dart`):
-  - Protected hooks: `onHideStrip()`, `onShowStrip()` (no-ops in base)
-  - Public wrappers (called by `_TimelineStripState`):
-    - `prepareToHide()` → calls `onHideStrip()`
-    - `completeShow()` → calls `onShowStrip()`
-    - `resizeToMiniStrip(double fontSizePx)` → `wm.setSize(Size(getMiniWidth(fontSizePx), getCollapsedHeight()))`
-    - `resizeToFullStrip()` → `wm.setSize(Size(_screenWidth, getCollapsedHeight()))`
-    - `getMiniWidth(double fontSizePx)` → `fontSizePx * 6.0 + 12.0 + 8.0 + 24.0 + 16.0`
-  - Note: `wm` and `onHide/onShow` are `@protected`; public wrappers are the only surface
-    `_TimelineStripState` touches.
-- **Files**: `app/lib/core/window/window_service.dart`
-- **Tests**: public wrappers delegate to hooks; `getMiniWidth` formula for 12/14/16px sizes;
-  `resizeToMiniStrip` calls `wm.setSize` with correct dimensions
-
-### F31-A2: Linux + Windows hook overrides  ☐ TODO
-- **Goal**: Override hooks in platform subclasses:
-  - `LinuxWindowService.onHideStrip()` → `_linuxDock.undock()` (only if `windowMode == reserved`)
-  - `LinuxWindowService.onShowStrip()` → `_reserveLinuxStrut()`
-  - `WindowsWindowService.onHideStrip()` → `_disposeAppBar()` (only if `_enableWindowsAppBar`)
-  - `WindowsWindowService.onShowStrip()` → `_registerAppBar()` (only if enabled + mode reserved)
-  - macOS inherits base no-op (AC-F31-5-3)
-- **Files**: `linux_window_service.dart`, `windows_window_service.dart`
-- **Tests**: mock LinuxDockWindowManager — verify undock called on hide, dock on show;
-  verify no-op when `windowMode != reserved`; idempotent rapid toggle (AC-F31-4-4)
-
----
-
-## Phase B — Strip UI
-**Gate**: `make test` green; manual: strip hides/shows with animation; countdown live while hidden
-
-### F31-B1: State machine + hide/show methods  ☐ TODO
-- **Goal**: Add to `_TimelineStripState`:
-  - `bool _isHidden = false`
-  - `bool _preHideSentToBack = false`
-  - `AnimationController _hideAnim` (300ms, ease-in-out, value=1.0)
-  - Add `SingleTickerProviderStateMixin` to `_TimelineStripState`
-  - `Future<void> _hideStrip()` — save STB state, restoreToFront if needed,
-    call `onHideStrip()`, close settings if open, `setState(_isHidden=true)`,
-    `_hideAnim.reverse()`, then `wm.setSize(miniSize)`
-  - `Future<void> _showStrip()` — `wm.setSize(fullSize)`, `setState(_isHidden=false, hover/settings reset)`,
-    `EC.send(collapsed)`, `_hideAnim.forward()`, call `onShowStrip()`, restore STB if needed
-- **Files**: `app/lib/features/timeline/timeline_strip.dart`
-- **Tests**: `_isHidden` starts false; hide/show cycle toggles correctly; settings closed on
-  hide if open; STB saved + restored; countdown StreamBuilder remains wired while hidden;
-  cycle repeatable ≥ 3 times (AC-F31-3-5)
-- **Smith Note D**: `_buildCountdownPositioned` returns `Positioned` — extract
-  `_buildCountdownContent(...)` as a standalone helper and call it directly in the mini widget
-  (the helper already exists at `timeline_strip.dart:768`)
-
-### F31-B2: Hide button + mini widget  ☐ TODO
+### F32-A1: Copy assets and update pubspec.yaml  ✅ DONE
 - **Goal**:
-  - Add `_HideButton` widget (← arrow, `minWidth/minHeight: 24`, satisfies AC-F31-1-5)
-  - Position at `left: 0` in `_buildLayout` Stack (before existing toolbar at `left: 8`)
-  - Add `_buildMiniWidget()` branch in `_buildLayout`: when `_isHidden || _hideAnim.value < 1.0`,
-    render mini path — `MouseRegion(cursor: click)` wrapping countdown content + `_ShowButton`
-  - Show button (→ arrow) calls `_showStrip()` (AC-F31-3-1)
-  - Countdown tap calls `_showStrip()` (AC-F31-3-2)
-  - `MouseRegion(cursor: SystemMouseCursors.click)` on whole mini widget (Smith Note A)
-  - Pointer stays at `left: 0` during animation (top-left anchor, AC-F31-2-4)
+  - Copy `beat1.wav` and `beat2.wav` into `app/assets/audio/`.
+  - Add `assets/audio/` to `flutter.assets` section in `app/pubspec.yaml`.
+  - Add `audioplayers: ^6.1.0` dependency to `app/pubspec.yaml`.
+- **Files**: `beat1.wav`, `beat2.wav`, `app/assets/audio/`, `app/pubspec.yaml`
+- **Tests**: `flutter pub get` succeeds, assets present in build output.
+
+### F32-A2: AppSettings audio toggle  ✅ DONE
+- **Goal**:
+  - Add `bool enableAudioCountdown = true` setting to `AppSettings`.
+  - Add toggle switch in Settings UI.
+- **Files**: `app/lib/core/settings/settings_service.dart`, `app/lib/features/timeline/settings_panel.dart`
+- **Tests**: setting persists, toggle updates state.
+
+---
+
+## Phase B — Audio Service & Ramping Engine
+**Gate**: Unit tests pass for `CountdownAudioService` volume/rhythm curves and beat alternating logic.
+
+### F32-B1: CountdownAudioService implementation  ✅ DONE
+- **Goal**:
+  - Create `CountdownAudioService` in `app/lib/core/audio/countdown_audio_service.dart`.
+  - Implement beat alternation (`beat1.wav` / `beat2.wav`).
+  - Implement volume ramp formula ($0.15 \to 1.0$) and interval acceleration formula ($1.5\text{s} \to 0.12\text{s}$).
+  - Implement `start(remainingSeconds)`, `update(remainingSeconds)`, and `stop()`.
+- **Files**: `app/lib/core/audio/countdown_audio_service.dart`
+- **Tests**: unit tests for volume formula, interval calculation, sequence alternation, and start/stop behavior.
+
+### F32-B2: Timeline Strip integration  ✅ DONE
+- **Goal**:
+  - Wire `CountdownAudioService` into `_TimelineStripState` / countdown tick listener.
+  - Trigger audio update on 1s tick when $T \le 60\text{s}$.
+  - Stop audio when $T = 0$, countdown canceled, or strip hidden/closed.
 - **Files**: `app/lib/features/timeline/timeline_strip.dart`
-- **Tests**: hide button present when not hidden; mini widget present when hidden; show button
-  tap triggers show; countdown visible and correct in hidden state; touch target ≥ 24×24
-  (Smith Note B)
-- **Smith Note E**: Test the hide-end OS window snap on Windows — if double-animation visible,
-  move `wm.setSize(miniSize)` before `_hideAnim.reverse()` instead of after
-- **Smith Note F**: Validate mini width formula vs "23 h 59 min" — if clipped, add 16px buffer
+- **Tests**: integration test checking service calls during countdown ticks.
 
 ---
 
-## Phase C — UAT + Docs
-**Gate**: Smith approves UAT; Oracle records docs
+## Phase C — Strip Integration & UAT
+**Gate**: Trin UAT pass, Smith UX pass, all tests green.
 
-### F31-C1: Manual UAT  ☐ TODO (Trin)
-- **Matrix**:
-  - Linux X11: hide → strut released (maximized window expands); show → strut re-acquired
-  - Linux Wayland: same
-  - Windows: hide → AppBar released; show → AppBar re-acquired
-  - macOS: hide/show no strut side effects (AC-F31-5-3)
-  - All platforms: countdown live while hidden; ← then → cycle repeatable ≥ 5 times;
-    always starts visible on fresh launch (AC-F31-3-6)
+### F32-C1: UAT & Edge Cases  ✅ DONE (Trin)
+- Verify audio starts smoothly at 60s, ramps up without stutter, stops at 0s.
+- Verify opt-out setting silences audio immediately.
 
-### F31-C2: Smith UX pass  ☐ TODO
-- Hide button touch target ≥ 24×24px at minimum strip height (AC-F31-1-5 + Note B)
-- Pointer cursor on mini widget hover (Note A)
-- Animation ≤ 300ms with ease-in-out (AC-F31-1-3)
-- Mini widget anchored top-left (AC-F31-2-4)
-- Send-to-back state restored after show (D4)
-- No "collapse"/"expand" in any user-visible label
+### F32-C2: Smith UX Verification  ✅ DONE (Smith)
+- Verify "nudge, not startle" audio feel on actual audio output.
 
-### F31-C3: Oracle docs + PRD update  ☐ TODO
-- PRD F-31 row → SHIPPED
-- LESSONS.md: record z-order save/restore pattern for future hide/show features
-- DECISIONS.md: record D2 (Flutter-only animation) rationale
+### F32-C3: Tap-to-Mute Countdown Audio  ✅ DONE (Neo + Trin + Smith)
+- Tap on `CountdownDisplay` silences audio countdown for current meeting target until next meeting start.
 
----
-
-## Risks & Watch-list
-
-| Risk | Trigger | Action |
-|------|---------|--------|
-| Windows snap double-animation | F31-C1 Windows UAT | Move setSize before animation (Smith Note E) |
-| Mini width clips countdown text | F31-B2 integration test | Add 16px buffer to getMiniWidth formula |
-| wm.setSize not accessible from _TimelineStripState | Phase B implementation | Expose via WindowService.resizeForHide() wrapper |
-| STB restore timing (focus steal) | Phase B testing | Ensure restoreToFront+sendToBack don't steal focus |
-
----
-
-## Parallel / Carry-Over Work
-
-- **F-28 Phase C** (Trin UAT + Morpheus review): still pending; can run parallel with F-31 Phase A
-- **F-30 C3/F1/F2**: hardware-blocked on Drew's machine (no action until hardware available)
-- **F-30 F3**: Oracle docs — can write post-hardware-verify
-- **macOS ASWebAuthenticationSession** (Apple review compliance, not a PRD feature) — small 3-phase sprint.
-  Plan: `docs/sprints/macos-aswebauth-oauth/sprint_plan_2026-07-01.md`. **All 3 phases DONE 2026-07-01**
-  (Drew greenlit via `*bloop impl`): Phase A spike resolved by evidence already in the codebase (no second
-  Google client needed); Phase B implemented (macOS now uses `flutter_web_auth_2`/`ASWebAuthenticationSession`,
-  AC-6 cancel handled); Phase C UAT gate APPROVED by Trin, final review APPROVED by Morpheus (below).
-  **Uncommitted** — awaiting Drew's review/commit. 3 non-blocking follow-ups flagged, see
-  `docs/sprints/macos-aswebauth-oauth/macos_aswebauth_phase_c_uat_2026-07-01.md` and Morpheus's review doc.
-  Recommended next: Oracle records the architecture decision in DECISIONS.md (per Morpheus's original
-  research doc) once Drew reviews.
-
----
-
-*Sprint plan by Mouse — 2026-06-11. Morpheus to review plan vs. architecture.*

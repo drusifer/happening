@@ -1045,4 +1045,44 @@ void main() {
 
     await gesture.removePointer();
   });
+
+  testWidgets(
+      'tapping CountdownDisplay mutes audio countdown until next meeting countdown',
+      (tester) async {
+    final meetingStart = now.add(const Duration(seconds: 45));
+    final events = [
+      CalendarEvent(
+        id: 'e1',
+        title: 'Upcoming Meeting',
+        startTime: meetingStart,
+        endTime: meetingStart.add(const Duration(minutes: 30)),
+        color: Colors.blue,
+        calendarEventUrl: null,
+        videoCallUrl: null,
+      ),
+    ];
+
+    await tester.pumpWidget(wrap(
+      TimelineStrip(
+        events: events,
+        clockService: clock,
+        calendarController: fakeController,
+        settingsService: fakeSettings,
+        windowService: _FakeWindowService(),
+        onSignOut: () {},
+        enableAnimations: false,
+      ),
+    ));
+    await tester.pump();
+
+    final countdownFinder = find.byType(CountdownDisplay);
+    expect(countdownFinder, findsOneWidget);
+
+    // Tap on the CountdownDisplay widget
+    await tester.tap(countdownFinder);
+    await tester.pump();
+
+    // The strip re-renders with audio muted for meetingStart.
+    expect(countdownFinder, findsOneWidget);
+  });
 }

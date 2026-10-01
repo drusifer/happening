@@ -3,19 +3,20 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i7;
+import 'dart:async' as _i6;
 import 'dart:ui' as _i2;
 
-import 'package:flutter/material.dart' as _i9;
-import 'package:flutter/services.dart' as _i3;
+import 'package:flutter/material.dart' as _i8;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i10;
-import 'package:screen_retriever/screen_retriever.dart' as _i4;
-import 'package:window_manager/src/resize_edge.dart' as _i12;
-import 'package:window_manager/src/title_bar_style.dart' as _i11;
-import 'package:window_manager/src/window_listener.dart' as _i6;
-import 'package:window_manager/src/window_manager.dart' as _i5;
-import 'package:window_manager/src/window_options.dart' as _i8;
+import 'package:mockito/src/dummies.dart' as _i9;
+import 'package:screen_retriever/src/screen_retriever.dart' as _i12;
+import 'package:screen_retriever_platform_interface/screen_retriever_platform_interface.dart'
+    as _i3;
+import 'package:window_manager/src/resize_edge.dart' as _i11;
+import 'package:window_manager/src/title_bar_style.dart' as _i10;
+import 'package:window_manager/src/window_listener.dart' as _i5;
+import 'package:window_manager/src/window_manager.dart' as _i4;
+import 'package:window_manager/src/window_options.dart' as _i7;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -62,18 +63,8 @@ class _FakeOffset_2 extends _i1.SmartFake implements _i2.Offset {
         );
 }
 
-class _FakeMethodChannel_3 extends _i1.SmartFake implements _i3.MethodChannel {
-  _FakeMethodChannel_3(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
-}
-
-class _FakeDisplay_4 extends _i1.SmartFake implements _i4.Display {
-  _FakeDisplay_4(
+class _FakeDisplay_3 extends _i1.SmartFake implements _i3.Display {
+  _FakeDisplay_3(
     Object parent,
     Invocation parentInvocation,
   ) : super(
@@ -85,13 +76,13 @@ class _FakeDisplay_4 extends _i1.SmartFake implements _i4.Display {
 /// A class which mocks [WindowManager].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockWindowManager extends _i1.Mock implements _i5.WindowManager {
+class MockWindowManager extends _i1.Mock implements _i4.WindowManager {
   @override
-  List<_i6.WindowListener> get listeners => (super.noSuchMethod(
+  List<_i5.WindowListener> get listeners => (super.noSuchMethod(
         Invocation.getter(#listeners),
-        returnValue: <_i6.WindowListener>[],
-        returnValueForMissingStub: <_i6.WindowListener>[],
-      ) as List<_i6.WindowListener>);
+        returnValue: <_i5.WindowListener>[],
+        returnValueForMissingStub: <_i5.WindowListener>[],
+      ) as List<_i5.WindowListener>);
 
   @override
   bool get hasListeners => (super.noSuchMethod(
@@ -101,7 +92,7 @@ class MockWindowManager extends _i1.Mock implements _i5.WindowManager {
       ) as bool);
 
   @override
-  void addListener(_i6.WindowListener? listener) => super.noSuchMethod(
+  void addListener(_i5.WindowListener? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -110,7 +101,7 @@ class MockWindowManager extends _i1.Mock implements _i5.WindowManager {
       );
 
   @override
-  void removeListener(_i6.WindowListener? listener) => super.noSuchMethod(
+  void removeListener(_i5.WindowListener? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],
@@ -129,28 +120,38 @@ class MockWindowManager extends _i1.Mock implements _i5.WindowManager {
       ) as double);
 
   @override
-  _i7.Future<void> ensureInitialized() => (super.noSuchMethod(
+  _i6.Future<void> ensureInitialized() => (super.noSuchMethod(
         Invocation.method(
           #ensureInitialized,
           [],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> setAsFrameless() => (super.noSuchMethod(
+  _i6.Future<int> getId() => (super.noSuchMethod(
+        Invocation.method(
+          #getId,
+          [],
+        ),
+        returnValue: _i6.Future<int>.value(0),
+        returnValueForMissingStub: _i6.Future<int>.value(0),
+      ) as _i6.Future<int>);
+
+  @override
+  _i6.Future<void> setAsFrameless() => (super.noSuchMethod(
         Invocation.method(
           #setAsFrameless,
           [],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> waitUntilReadyToShow([
-    _i8.WindowOptions? options,
+  _i6.Future<void> waitUntilReadyToShow([
+    _i7.WindowOptions? options,
     _i2.VoidCallback? callback,
   ]) =>
       (super.noSuchMethod(
@@ -161,215 +162,215 @@ class MockWindowManager extends _i1.Mock implements _i5.WindowManager {
             callback,
           ],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> destroy() => (super.noSuchMethod(
+  _i6.Future<void> destroy() => (super.noSuchMethod(
         Invocation.method(
           #destroy,
           [],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> close() => (super.noSuchMethod(
+  _i6.Future<void> close() => (super.noSuchMethod(
         Invocation.method(
           #close,
           [],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<bool> isPreventClose() => (super.noSuchMethod(
+  _i6.Future<bool> isPreventClose() => (super.noSuchMethod(
         Invocation.method(
           #isPreventClose,
           [],
         ),
-        returnValue: _i7.Future<bool>.value(false),
-        returnValueForMissingStub: _i7.Future<bool>.value(false),
-      ) as _i7.Future<bool>);
+        returnValue: _i6.Future<bool>.value(false),
+        returnValueForMissingStub: _i6.Future<bool>.value(false),
+      ) as _i6.Future<bool>);
 
   @override
-  _i7.Future<void> setPreventClose(bool? isPreventClose) => (super.noSuchMethod(
+  _i6.Future<void> setPreventClose(bool? isPreventClose) => (super.noSuchMethod(
         Invocation.method(
           #setPreventClose,
           [isPreventClose],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> focus() => (super.noSuchMethod(
+  _i6.Future<void> focus() => (super.noSuchMethod(
         Invocation.method(
           #focus,
           [],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> blur() => (super.noSuchMethod(
+  _i6.Future<void> blur() => (super.noSuchMethod(
         Invocation.method(
           #blur,
           [],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<bool> isFocused() => (super.noSuchMethod(
+  _i6.Future<bool> isFocused() => (super.noSuchMethod(
         Invocation.method(
           #isFocused,
           [],
         ),
-        returnValue: _i7.Future<bool>.value(false),
-        returnValueForMissingStub: _i7.Future<bool>.value(false),
-      ) as _i7.Future<bool>);
+        returnValue: _i6.Future<bool>.value(false),
+        returnValueForMissingStub: _i6.Future<bool>.value(false),
+      ) as _i6.Future<bool>);
 
   @override
-  _i7.Future<void> show({bool? inactive = false}) => (super.noSuchMethod(
+  _i6.Future<void> show({bool? inactive = false}) => (super.noSuchMethod(
         Invocation.method(
           #show,
           [],
           {#inactive: inactive},
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> hide() => (super.noSuchMethod(
+  _i6.Future<void> hide() => (super.noSuchMethod(
         Invocation.method(
           #hide,
           [],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<bool> isVisible() => (super.noSuchMethod(
+  _i6.Future<bool> isVisible() => (super.noSuchMethod(
         Invocation.method(
           #isVisible,
           [],
         ),
-        returnValue: _i7.Future<bool>.value(false),
-        returnValueForMissingStub: _i7.Future<bool>.value(false),
-      ) as _i7.Future<bool>);
+        returnValue: _i6.Future<bool>.value(false),
+        returnValueForMissingStub: _i6.Future<bool>.value(false),
+      ) as _i6.Future<bool>);
 
   @override
-  _i7.Future<bool> isMaximized() => (super.noSuchMethod(
+  _i6.Future<bool> isMaximized() => (super.noSuchMethod(
         Invocation.method(
           #isMaximized,
           [],
         ),
-        returnValue: _i7.Future<bool>.value(false),
-        returnValueForMissingStub: _i7.Future<bool>.value(false),
-      ) as _i7.Future<bool>);
+        returnValue: _i6.Future<bool>.value(false),
+        returnValueForMissingStub: _i6.Future<bool>.value(false),
+      ) as _i6.Future<bool>);
 
   @override
-  _i7.Future<void> maximize({bool? vertically = false}) => (super.noSuchMethod(
+  _i6.Future<void> maximize({bool? vertically = false}) => (super.noSuchMethod(
         Invocation.method(
           #maximize,
           [],
           {#vertically: vertically},
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> unmaximize() => (super.noSuchMethod(
+  _i6.Future<void> unmaximize() => (super.noSuchMethod(
         Invocation.method(
           #unmaximize,
           [],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<bool> isMinimized() => (super.noSuchMethod(
+  _i6.Future<bool> isMinimized() => (super.noSuchMethod(
         Invocation.method(
           #isMinimized,
           [],
         ),
-        returnValue: _i7.Future<bool>.value(false),
-        returnValueForMissingStub: _i7.Future<bool>.value(false),
-      ) as _i7.Future<bool>);
+        returnValue: _i6.Future<bool>.value(false),
+        returnValueForMissingStub: _i6.Future<bool>.value(false),
+      ) as _i6.Future<bool>);
 
   @override
-  _i7.Future<void> minimize() => (super.noSuchMethod(
+  _i6.Future<void> minimize() => (super.noSuchMethod(
         Invocation.method(
           #minimize,
           [],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> restore() => (super.noSuchMethod(
+  _i6.Future<void> restore() => (super.noSuchMethod(
         Invocation.method(
           #restore,
           [],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<bool> isFullScreen() => (super.noSuchMethod(
+  _i6.Future<bool> isFullScreen() => (super.noSuchMethod(
         Invocation.method(
           #isFullScreen,
           [],
         ),
-        returnValue: _i7.Future<bool>.value(false),
-        returnValueForMissingStub: _i7.Future<bool>.value(false),
-      ) as _i7.Future<bool>);
+        returnValue: _i6.Future<bool>.value(false),
+        returnValueForMissingStub: _i6.Future<bool>.value(false),
+      ) as _i6.Future<bool>);
 
   @override
-  _i7.Future<void> setFullScreen(bool? isFullScreen) => (super.noSuchMethod(
+  _i6.Future<void> setFullScreen(bool? isFullScreen) => (super.noSuchMethod(
         Invocation.method(
           #setFullScreen,
           [isFullScreen],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<bool> isDockable() => (super.noSuchMethod(
+  _i6.Future<bool> isDockable() => (super.noSuchMethod(
         Invocation.method(
           #isDockable,
           [],
         ),
-        returnValue: _i7.Future<bool>.value(false),
-        returnValueForMissingStub: _i7.Future<bool>.value(false),
-      ) as _i7.Future<bool>);
+        returnValue: _i6.Future<bool>.value(false),
+        returnValueForMissingStub: _i6.Future<bool>.value(false),
+      ) as _i6.Future<bool>);
 
   @override
-  _i7.Future<_i5.DockSide?> isDocked() => (super.noSuchMethod(
+  _i6.Future<_i4.DockSide?> isDocked() => (super.noSuchMethod(
         Invocation.method(
           #isDocked,
           [],
         ),
-        returnValue: _i7.Future<_i5.DockSide?>.value(),
-        returnValueForMissingStub: _i7.Future<_i5.DockSide?>.value(),
-      ) as _i7.Future<_i5.DockSide?>);
+        returnValue: _i6.Future<_i4.DockSide?>.value(),
+        returnValueForMissingStub: _i6.Future<_i4.DockSide?>.value(),
+      ) as _i6.Future<_i4.DockSide?>);
 
   @override
-  _i7.Future<void> dock({
-    required _i5.DockSide? side,
+  _i6.Future<void> dock({
+    required _i4.DockSide? side,
     required int? width,
   }) =>
       (super.noSuchMethod(
@@ -381,44 +382,44 @@ class MockWindowManager extends _i1.Mock implements _i5.WindowManager {
             #width: width,
           },
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<bool> undock() => (super.noSuchMethod(
+  _i6.Future<bool> undock() => (super.noSuchMethod(
         Invocation.method(
           #undock,
           [],
         ),
-        returnValue: _i7.Future<bool>.value(false),
-        returnValueForMissingStub: _i7.Future<bool>.value(false),
-      ) as _i7.Future<bool>);
+        returnValue: _i6.Future<bool>.value(false),
+        returnValueForMissingStub: _i6.Future<bool>.value(false),
+      ) as _i6.Future<bool>);
 
   @override
-  _i7.Future<void> setAspectRatio(double? aspectRatio) => (super.noSuchMethod(
+  _i6.Future<void> setAspectRatio(double? aspectRatio) => (super.noSuchMethod(
         Invocation.method(
           #setAspectRatio,
           [aspectRatio],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> setBackgroundColor(_i2.Color? backgroundColor) =>
+  _i6.Future<void> setBackgroundColor(_i2.Color? backgroundColor) =>
       (super.noSuchMethod(
         Invocation.method(
           #setBackgroundColor,
           [backgroundColor],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> setAlignment(
-    _i9.Alignment? alignment, {
+  _i6.Future<void> setAlignment(
+    _i8.Alignment? alignment, {
     bool? animate = false,
   }) =>
       (super.noSuchMethod(
@@ -427,45 +428,45 @@ class MockWindowManager extends _i1.Mock implements _i5.WindowManager {
           [alignment],
           {#animate: animate},
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> center({bool? animate = false}) => (super.noSuchMethod(
+  _i6.Future<void> center({bool? animate = false}) => (super.noSuchMethod(
         Invocation.method(
           #center,
           [],
           {#animate: animate},
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<_i2.Rect> getBounds() => (super.noSuchMethod(
+  _i6.Future<_i2.Rect> getBounds() => (super.noSuchMethod(
         Invocation.method(
           #getBounds,
           [],
         ),
-        returnValue: _i7.Future<_i2.Rect>.value(_FakeRect_0(
+        returnValue: _i6.Future<_i2.Rect>.value(_FakeRect_0(
           this,
           Invocation.method(
             #getBounds,
             [],
           ),
         )),
-        returnValueForMissingStub: _i7.Future<_i2.Rect>.value(_FakeRect_0(
+        returnValueForMissingStub: _i6.Future<_i2.Rect>.value(_FakeRect_0(
           this,
           Invocation.method(
             #getBounds,
             [],
           ),
         )),
-      ) as _i7.Future<_i2.Rect>);
+      ) as _i6.Future<_i2.Rect>);
 
   @override
-  _i7.Future<void> setBounds(
+  _i6.Future<void> setBounds(
     _i2.Rect? bounds, {
     _i2.Offset? position,
     _i2.Size? size,
@@ -481,34 +482,34 @@ class MockWindowManager extends _i1.Mock implements _i5.WindowManager {
             #animate: animate,
           },
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<_i2.Size> getSize() => (super.noSuchMethod(
+  _i6.Future<_i2.Size> getSize() => (super.noSuchMethod(
         Invocation.method(
           #getSize,
           [],
         ),
-        returnValue: _i7.Future<_i2.Size>.value(_FakeSize_1(
+        returnValue: _i6.Future<_i2.Size>.value(_FakeSize_1(
           this,
           Invocation.method(
             #getSize,
             [],
           ),
         )),
-        returnValueForMissingStub: _i7.Future<_i2.Size>.value(_FakeSize_1(
+        returnValueForMissingStub: _i6.Future<_i2.Size>.value(_FakeSize_1(
           this,
           Invocation.method(
             #getSize,
             [],
           ),
         )),
-      ) as _i7.Future<_i2.Size>);
+      ) as _i6.Future<_i2.Size>);
 
   @override
-  _i7.Future<void> setSize(
+  _i6.Future<void> setSize(
     _i2.Size? size, {
     bool? animate = false,
   }) =>
@@ -518,34 +519,34 @@ class MockWindowManager extends _i1.Mock implements _i5.WindowManager {
           [size],
           {#animate: animate},
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<_i2.Offset> getPosition() => (super.noSuchMethod(
+  _i6.Future<_i2.Offset> getPosition() => (super.noSuchMethod(
         Invocation.method(
           #getPosition,
           [],
         ),
-        returnValue: _i7.Future<_i2.Offset>.value(_FakeOffset_2(
+        returnValue: _i6.Future<_i2.Offset>.value(_FakeOffset_2(
           this,
           Invocation.method(
             #getPosition,
             [],
           ),
         )),
-        returnValueForMissingStub: _i7.Future<_i2.Offset>.value(_FakeOffset_2(
+        returnValueForMissingStub: _i6.Future<_i2.Offset>.value(_FakeOffset_2(
           this,
           Invocation.method(
             #getPosition,
             [],
           ),
         )),
-      ) as _i7.Future<_i2.Offset>);
+      ) as _i6.Future<_i2.Offset>);
 
   @override
-  _i7.Future<void> setPosition(
+  _i6.Future<void> setPosition(
     _i2.Offset? position, {
     bool? animate = false,
   }) =>
@@ -555,178 +556,178 @@ class MockWindowManager extends _i1.Mock implements _i5.WindowManager {
           [position],
           {#animate: animate},
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> setMinimumSize(_i2.Size? size) => (super.noSuchMethod(
+  _i6.Future<void> setMinimumSize(_i2.Size? size) => (super.noSuchMethod(
         Invocation.method(
           #setMinimumSize,
           [size],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> setMaximumSize(_i2.Size? size) => (super.noSuchMethod(
+  _i6.Future<void> setMaximumSize(_i2.Size? size) => (super.noSuchMethod(
         Invocation.method(
           #setMaximumSize,
           [size],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<bool> isResizable() => (super.noSuchMethod(
+  _i6.Future<bool> isResizable() => (super.noSuchMethod(
         Invocation.method(
           #isResizable,
           [],
         ),
-        returnValue: _i7.Future<bool>.value(false),
-        returnValueForMissingStub: _i7.Future<bool>.value(false),
-      ) as _i7.Future<bool>);
+        returnValue: _i6.Future<bool>.value(false),
+        returnValueForMissingStub: _i6.Future<bool>.value(false),
+      ) as _i6.Future<bool>);
 
   @override
-  _i7.Future<void> setResizable(bool? isResizable) => (super.noSuchMethod(
+  _i6.Future<void> setResizable(bool? isResizable) => (super.noSuchMethod(
         Invocation.method(
           #setResizable,
           [isResizable],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<bool> isMovable() => (super.noSuchMethod(
+  _i6.Future<bool> isMovable() => (super.noSuchMethod(
         Invocation.method(
           #isMovable,
           [],
         ),
-        returnValue: _i7.Future<bool>.value(false),
-        returnValueForMissingStub: _i7.Future<bool>.value(false),
-      ) as _i7.Future<bool>);
+        returnValue: _i6.Future<bool>.value(false),
+        returnValueForMissingStub: _i6.Future<bool>.value(false),
+      ) as _i6.Future<bool>);
 
   @override
-  _i7.Future<void> setMovable(bool? isMovable) => (super.noSuchMethod(
+  _i6.Future<void> setMovable(bool? isMovable) => (super.noSuchMethod(
         Invocation.method(
           #setMovable,
           [isMovable],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<bool> isMinimizable() => (super.noSuchMethod(
+  _i6.Future<bool> isMinimizable() => (super.noSuchMethod(
         Invocation.method(
           #isMinimizable,
           [],
         ),
-        returnValue: _i7.Future<bool>.value(false),
-        returnValueForMissingStub: _i7.Future<bool>.value(false),
-      ) as _i7.Future<bool>);
+        returnValue: _i6.Future<bool>.value(false),
+        returnValueForMissingStub: _i6.Future<bool>.value(false),
+      ) as _i6.Future<bool>);
 
   @override
-  _i7.Future<void> setMinimizable(bool? isMinimizable) => (super.noSuchMethod(
+  _i6.Future<void> setMinimizable(bool? isMinimizable) => (super.noSuchMethod(
         Invocation.method(
           #setMinimizable,
           [isMinimizable],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<bool> isClosable() => (super.noSuchMethod(
+  _i6.Future<bool> isClosable() => (super.noSuchMethod(
         Invocation.method(
           #isClosable,
           [],
         ),
-        returnValue: _i7.Future<bool>.value(false),
-        returnValueForMissingStub: _i7.Future<bool>.value(false),
-      ) as _i7.Future<bool>);
+        returnValue: _i6.Future<bool>.value(false),
+        returnValueForMissingStub: _i6.Future<bool>.value(false),
+      ) as _i6.Future<bool>);
 
   @override
-  _i7.Future<bool> isMaximizable() => (super.noSuchMethod(
+  _i6.Future<bool> isMaximizable() => (super.noSuchMethod(
         Invocation.method(
           #isMaximizable,
           [],
         ),
-        returnValue: _i7.Future<bool>.value(false),
-        returnValueForMissingStub: _i7.Future<bool>.value(false),
-      ) as _i7.Future<bool>);
+        returnValue: _i6.Future<bool>.value(false),
+        returnValueForMissingStub: _i6.Future<bool>.value(false),
+      ) as _i6.Future<bool>);
 
   @override
-  _i7.Future<void> setMaximizable(bool? isMaximizable) => (super.noSuchMethod(
+  _i6.Future<void> setMaximizable(bool? isMaximizable) => (super.noSuchMethod(
         Invocation.method(
           #setMaximizable,
           [isMaximizable],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> setClosable(bool? isClosable) => (super.noSuchMethod(
+  _i6.Future<void> setClosable(bool? isClosable) => (super.noSuchMethod(
         Invocation.method(
           #setClosable,
           [isClosable],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<bool> isAlwaysOnTop() => (super.noSuchMethod(
+  _i6.Future<bool> isAlwaysOnTop() => (super.noSuchMethod(
         Invocation.method(
           #isAlwaysOnTop,
           [],
         ),
-        returnValue: _i7.Future<bool>.value(false),
-        returnValueForMissingStub: _i7.Future<bool>.value(false),
-      ) as _i7.Future<bool>);
+        returnValue: _i6.Future<bool>.value(false),
+        returnValueForMissingStub: _i6.Future<bool>.value(false),
+      ) as _i6.Future<bool>);
 
   @override
-  _i7.Future<void> setAlwaysOnTop(bool? isAlwaysOnTop) => (super.noSuchMethod(
+  _i6.Future<void> setAlwaysOnTop(bool? isAlwaysOnTop) => (super.noSuchMethod(
         Invocation.method(
           #setAlwaysOnTop,
           [isAlwaysOnTop],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<bool> isAlwaysOnBottom() => (super.noSuchMethod(
+  _i6.Future<bool> isAlwaysOnBottom() => (super.noSuchMethod(
         Invocation.method(
           #isAlwaysOnBottom,
           [],
         ),
-        returnValue: _i7.Future<bool>.value(false),
-        returnValueForMissingStub: _i7.Future<bool>.value(false),
-      ) as _i7.Future<bool>);
+        returnValue: _i6.Future<bool>.value(false),
+        returnValueForMissingStub: _i6.Future<bool>.value(false),
+      ) as _i6.Future<bool>);
 
   @override
-  _i7.Future<void> setAlwaysOnBottom(bool? isAlwaysOnBottom) =>
+  _i6.Future<void> setAlwaysOnBottom(bool? isAlwaysOnBottom) =>
       (super.noSuchMethod(
         Invocation.method(
           #setAlwaysOnBottom,
           [isAlwaysOnBottom],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<String> getTitle() => (super.noSuchMethod(
+  _i6.Future<String> getTitle() => (super.noSuchMethod(
         Invocation.method(
           #getTitle,
           [],
         ),
-        returnValue: _i7.Future<String>.value(_i10.dummyValue<String>(
+        returnValue: _i6.Future<String>.value(_i9.dummyValue<String>(
           this,
           Invocation.method(
             #getTitle,
@@ -734,28 +735,28 @@ class MockWindowManager extends _i1.Mock implements _i5.WindowManager {
           ),
         )),
         returnValueForMissingStub:
-            _i7.Future<String>.value(_i10.dummyValue<String>(
+            _i6.Future<String>.value(_i9.dummyValue<String>(
           this,
           Invocation.method(
             #getTitle,
             [],
           ),
         )),
-      ) as _i7.Future<String>);
+      ) as _i6.Future<String>);
 
   @override
-  _i7.Future<void> setTitle(String? title) => (super.noSuchMethod(
+  _i6.Future<void> setTitle(String? title) => (super.noSuchMethod(
         Invocation.method(
           #setTitle,
           [title],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> setTitleBarStyle(
-    _i11.TitleBarStyle? titleBarStyle, {
+  _i6.Future<void> setTitleBarStyle(
+    _i10.TitleBarStyle? titleBarStyle, {
     bool? windowButtonVisibility = true,
   }) =>
       (super.noSuchMethod(
@@ -764,72 +765,72 @@ class MockWindowManager extends _i1.Mock implements _i5.WindowManager {
           [titleBarStyle],
           {#windowButtonVisibility: windowButtonVisibility},
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<int> getTitleBarHeight() => (super.noSuchMethod(
+  _i6.Future<int> getTitleBarHeight() => (super.noSuchMethod(
         Invocation.method(
           #getTitleBarHeight,
           [],
         ),
-        returnValue: _i7.Future<int>.value(0),
-        returnValueForMissingStub: _i7.Future<int>.value(0),
-      ) as _i7.Future<int>);
+        returnValue: _i6.Future<int>.value(0),
+        returnValueForMissingStub: _i6.Future<int>.value(0),
+      ) as _i6.Future<int>);
 
   @override
-  _i7.Future<bool> isSkipTaskbar() => (super.noSuchMethod(
+  _i6.Future<bool> isSkipTaskbar() => (super.noSuchMethod(
         Invocation.method(
           #isSkipTaskbar,
           [],
         ),
-        returnValue: _i7.Future<bool>.value(false),
-        returnValueForMissingStub: _i7.Future<bool>.value(false),
-      ) as _i7.Future<bool>);
+        returnValue: _i6.Future<bool>.value(false),
+        returnValueForMissingStub: _i6.Future<bool>.value(false),
+      ) as _i6.Future<bool>);
 
   @override
-  _i7.Future<void> setSkipTaskbar(bool? isSkipTaskbar) => (super.noSuchMethod(
+  _i6.Future<void> setSkipTaskbar(bool? isSkipTaskbar) => (super.noSuchMethod(
         Invocation.method(
           #setSkipTaskbar,
           [isSkipTaskbar],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> setProgressBar(double? progress) => (super.noSuchMethod(
+  _i6.Future<void> setProgressBar(double? progress) => (super.noSuchMethod(
         Invocation.method(
           #setProgressBar,
           [progress],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> setIcon(String? iconPath) => (super.noSuchMethod(
+  _i6.Future<void> setIcon(String? iconPath) => (super.noSuchMethod(
         Invocation.method(
           #setIcon,
           [iconPath],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<bool> isVisibleOnAllWorkspaces() => (super.noSuchMethod(
+  _i6.Future<bool> isVisibleOnAllWorkspaces() => (super.noSuchMethod(
         Invocation.method(
           #isVisibleOnAllWorkspaces,
           [],
         ),
-        returnValue: _i7.Future<bool>.value(false),
-        returnValueForMissingStub: _i7.Future<bool>.value(false),
-      ) as _i7.Future<bool>);
+        returnValue: _i6.Future<bool>.value(false),
+        returnValueForMissingStub: _i6.Future<bool>.value(false),
+      ) as _i6.Future<bool>);
 
   @override
-  _i7.Future<void> setVisibleOnAllWorkspaces(
+  _i6.Future<void> setVisibleOnAllWorkspaces(
     bool? visible, {
     bool? visibleOnFullScreen,
   }) =>
@@ -839,73 +840,73 @@ class MockWindowManager extends _i1.Mock implements _i5.WindowManager {
           [visible],
           {#visibleOnFullScreen: visibleOnFullScreen},
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> setBadgeLabel([String? label]) => (super.noSuchMethod(
+  _i6.Future<void> setBadgeLabel([String? label]) => (super.noSuchMethod(
         Invocation.method(
           #setBadgeLabel,
           [label],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<bool> hasShadow() => (super.noSuchMethod(
+  _i6.Future<bool> hasShadow() => (super.noSuchMethod(
         Invocation.method(
           #hasShadow,
           [],
         ),
-        returnValue: _i7.Future<bool>.value(false),
-        returnValueForMissingStub: _i7.Future<bool>.value(false),
-      ) as _i7.Future<bool>);
+        returnValue: _i6.Future<bool>.value(false),
+        returnValueForMissingStub: _i6.Future<bool>.value(false),
+      ) as _i6.Future<bool>);
 
   @override
-  _i7.Future<void> setHasShadow(bool? hasShadow) => (super.noSuchMethod(
+  _i6.Future<void> setHasShadow(bool? hasShadow) => (super.noSuchMethod(
         Invocation.method(
           #setHasShadow,
           [hasShadow],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<double> getOpacity() => (super.noSuchMethod(
+  _i6.Future<double> getOpacity() => (super.noSuchMethod(
         Invocation.method(
           #getOpacity,
           [],
         ),
-        returnValue: _i7.Future<double>.value(0.0),
-        returnValueForMissingStub: _i7.Future<double>.value(0.0),
-      ) as _i7.Future<double>);
+        returnValue: _i6.Future<double>.value(0.0),
+        returnValueForMissingStub: _i6.Future<double>.value(0.0),
+      ) as _i6.Future<double>);
 
   @override
-  _i7.Future<void> setOpacity(double? opacity) => (super.noSuchMethod(
+  _i6.Future<void> setOpacity(double? opacity) => (super.noSuchMethod(
         Invocation.method(
           #setOpacity,
           [opacity],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> setBrightness(_i2.Brightness? brightness) =>
+  _i6.Future<void> setBrightness(_i2.Brightness? brightness) =>
       (super.noSuchMethod(
         Invocation.method(
           #setBrightness,
           [brightness],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> setIgnoreMouseEvents(
+  _i6.Future<void> setIgnoreMouseEvents(
     bool? ignore, {
     bool? forward = false,
   }) =>
@@ -915,86 +916,66 @@ class MockWindowManager extends _i1.Mock implements _i5.WindowManager {
           [ignore],
           {#forward: forward},
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> popUpWindowMenu() => (super.noSuchMethod(
+  _i6.Future<void> popUpWindowMenu() => (super.noSuchMethod(
         Invocation.method(
           #popUpWindowMenu,
           [],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> startDragging() => (super.noSuchMethod(
+  _i6.Future<void> startDragging() => (super.noSuchMethod(
         Invocation.method(
           #startDragging,
           [],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<void> startResizing(_i12.ResizeEdge? resizeEdge) =>
+  _i6.Future<void> startResizing(_i11.ResizeEdge? resizeEdge) =>
       (super.noSuchMethod(
         Invocation.method(
           #startResizing,
           [resizeEdge],
         ),
-        returnValue: _i7.Future<void>.value(),
-        returnValueForMissingStub: _i7.Future<void>.value(),
-      ) as _i7.Future<void>);
+        returnValue: _i6.Future<void>.value(),
+        returnValueForMissingStub: _i6.Future<void>.value(),
+      ) as _i6.Future<void>);
 
   @override
-  _i7.Future<bool> grabKeyboard() => (super.noSuchMethod(
+  _i6.Future<bool> grabKeyboard() => (super.noSuchMethod(
         Invocation.method(
           #grabKeyboard,
           [],
         ),
-        returnValue: _i7.Future<bool>.value(false),
-        returnValueForMissingStub: _i7.Future<bool>.value(false),
-      ) as _i7.Future<bool>);
+        returnValue: _i6.Future<bool>.value(false),
+        returnValueForMissingStub: _i6.Future<bool>.value(false),
+      ) as _i6.Future<bool>);
 
   @override
-  _i7.Future<bool> ungrabKeyboard() => (super.noSuchMethod(
+  _i6.Future<bool> ungrabKeyboard() => (super.noSuchMethod(
         Invocation.method(
           #ungrabKeyboard,
           [],
         ),
-        returnValue: _i7.Future<bool>.value(false),
-        returnValueForMissingStub: _i7.Future<bool>.value(false),
-      ) as _i7.Future<bool>);
+        returnValue: _i6.Future<bool>.value(false),
+        returnValueForMissingStub: _i6.Future<bool>.value(false),
+      ) as _i6.Future<bool>);
 }
 
 /// A class which mocks [ScreenRetriever].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockScreenRetriever extends _i1.Mock implements _i4.ScreenRetriever {
-  @override
-  double get devicePixelRatio => (super.noSuchMethod(
-        Invocation.getter(#devicePixelRatio),
-        returnValue: 0.0,
-        returnValueForMissingStub: 0.0,
-      ) as double);
-
-  @override
-  _i3.MethodChannel get channel => (super.noSuchMethod(
-        Invocation.getter(#channel),
-        returnValue: _FakeMethodChannel_3(
-          this,
-          Invocation.getter(#channel),
-        ),
-        returnValueForMissingStub: _FakeMethodChannel_3(
-          this,
-          Invocation.getter(#channel),
-        ),
-      ) as _i3.MethodChannel);
-
+class MockScreenRetriever extends _i1.Mock implements _i12.ScreenRetriever {
   @override
   bool get hasListeners => (super.noSuchMethod(
         Invocation.getter(#hasListeners),
@@ -1003,7 +984,7 @@ class MockScreenRetriever extends _i1.Mock implements _i4.ScreenRetriever {
       ) as bool);
 
   @override
-  void addListener(_i4.ScreenListener? listener) => super.noSuchMethod(
+  void addListener(_i3.ScreenListener? listener) => super.noSuchMethod(
         Invocation.method(
           #addListener,
           [listener],
@@ -1012,7 +993,7 @@ class MockScreenRetriever extends _i1.Mock implements _i4.ScreenRetriever {
       );
 
   @override
-  void removeListener(_i4.ScreenListener? listener) => super.noSuchMethod(
+  void removeListener(_i3.ScreenListener? listener) => super.noSuchMethod(
         Invocation.method(
           #removeListener,
           [listener],
@@ -1021,57 +1002,57 @@ class MockScreenRetriever extends _i1.Mock implements _i4.ScreenRetriever {
       );
 
   @override
-  _i7.Future<_i2.Offset> getCursorScreenPoint() => (super.noSuchMethod(
+  _i6.Future<_i2.Offset> getCursorScreenPoint() => (super.noSuchMethod(
         Invocation.method(
           #getCursorScreenPoint,
           [],
         ),
-        returnValue: _i7.Future<_i2.Offset>.value(_FakeOffset_2(
+        returnValue: _i6.Future<_i2.Offset>.value(_FakeOffset_2(
           this,
           Invocation.method(
             #getCursorScreenPoint,
             [],
           ),
         )),
-        returnValueForMissingStub: _i7.Future<_i2.Offset>.value(_FakeOffset_2(
+        returnValueForMissingStub: _i6.Future<_i2.Offset>.value(_FakeOffset_2(
           this,
           Invocation.method(
             #getCursorScreenPoint,
             [],
           ),
         )),
-      ) as _i7.Future<_i2.Offset>);
+      ) as _i6.Future<_i2.Offset>);
 
   @override
-  _i7.Future<_i4.Display> getPrimaryDisplay() => (super.noSuchMethod(
+  _i6.Future<_i3.Display> getPrimaryDisplay() => (super.noSuchMethod(
         Invocation.method(
           #getPrimaryDisplay,
           [],
         ),
-        returnValue: _i7.Future<_i4.Display>.value(_FakeDisplay_4(
+        returnValue: _i6.Future<_i3.Display>.value(_FakeDisplay_3(
           this,
           Invocation.method(
             #getPrimaryDisplay,
             [],
           ),
         )),
-        returnValueForMissingStub: _i7.Future<_i4.Display>.value(_FakeDisplay_4(
+        returnValueForMissingStub: _i6.Future<_i3.Display>.value(_FakeDisplay_3(
           this,
           Invocation.method(
             #getPrimaryDisplay,
             [],
           ),
         )),
-      ) as _i7.Future<_i4.Display>);
+      ) as _i6.Future<_i3.Display>);
 
   @override
-  _i7.Future<List<_i4.Display>> getAllDisplays() => (super.noSuchMethod(
+  _i6.Future<List<_i3.Display>> getAllDisplays() => (super.noSuchMethod(
         Invocation.method(
           #getAllDisplays,
           [],
         ),
-        returnValue: _i7.Future<List<_i4.Display>>.value(<_i4.Display>[]),
+        returnValue: _i6.Future<List<_i3.Display>>.value(<_i3.Display>[]),
         returnValueForMissingStub:
-            _i7.Future<List<_i4.Display>>.value(<_i4.Display>[]),
-      ) as _i7.Future<List<_i4.Display>>);
+            _i6.Future<List<_i3.Display>>.value(<_i3.Display>[]),
+      ) as _i6.Future<List<_i3.Display>>);
 }

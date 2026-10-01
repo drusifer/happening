@@ -3,7 +3,9 @@
 VERSION   := $(shell powershell -Command "(Get-Content app/assets/version.txt).Trim()")
 ARCH      := x64
 UNAME_OS  := Windows_NT
-PYTHON    := python
+PYTHON    := "C:/Program Files/Inkscape/bin/python.exe"
+FLUTTER   ?= flutter
+DART      ?= dart
 
 # Windows PowerShell help command implementation
 HELP_COMMAND = $(PYTHON) agents/tools/print_help.py targets

@@ -242,6 +242,30 @@ class _SettingsPanelState extends State<SettingsPanel> {
                 .update(settings.copyWith(timeWindowHours: val)),
             labelBuilder: (v) => '${v}h',
           ),
+          const SizedBox(height: 10),
+          _SectionHeader(
+              theme: theme, title: 'Audio Countdown', fontSize: baseSize * 0.7),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Text(
+                'Asteroid Beats',
+                style: TextStyle(
+                  color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
+                  fontSize: baseSize * 0.65,
+                ),
+              ),
+              const Spacer(),
+              Transform.scale(
+                scale: 0.8,
+                child: Switch(
+                  value: settings.enableAudioCountdown,
+                  onChanged: (val) => widget.settingsService
+                      .update(settings.copyWith(enableAudioCountdown: val)),
+                ),
+              ),
+            ],
+          ),
           const Spacer(),
           Row(
             children: [

@@ -15,6 +15,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:happening/core/astro/astro_data_service.dart';
+import 'package:happening/core/audio/countdown_audio_service.dart';
 import 'package:happening/core/display/display_service.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/time/clock_service.dart';
@@ -73,6 +74,7 @@ class TimelineStrip extends StatefulWidget {
     required this.windowService,
     this.displayService,
     this.calendarController,
+    this.audioService,
     this.onSignIn,
     this.onCancelSignIn,
     this.isLoading = false,
@@ -84,6 +86,7 @@ class TimelineStrip extends StatefulWidget {
   final ClockService clockService;
   final CalendarController? calendarController;
   final SettingsService settingsService;
+  final CountdownAudioService? audioService;
   final VoidCallback onSignOut;
   final WindowService windowService;
   final DisplayService? displayService;
@@ -115,6 +118,7 @@ class _TimelineStripState extends State<TimelineStrip>
   final _flashNotifier = ValueNotifier<double>(0.0);
   Timer? _flashTimer;
   late final AstroDataService _astroDataService;
+  late final CountdownAudioService _audioService;
   CalendarEvent? _hoveredEvent;
   AstroHit? _astroHit;
   bool _isHoveringStrip = false;
@@ -167,6 +171,8 @@ class _TimelineStripState extends State<TimelineStrip>
         AstroDataService(settingsService: widget.settingsService);
     _astroDataService.addListener(_onAstroDataChanged);
     _astroDataService.initialize();
+
+    _audioService = widget.audioService ?? CountdownAudioService();
 
     WidgetsBinding.instance.addObserver(this);
     _updateHeights();
@@ -228,6 +234,9 @@ class _TimelineStripState extends State<TimelineStrip>
 
   @override
   void dispose() {
+    if (widget.audioService == null) {
+      _audioService.dispose();
+    }
     _hideAnim.dispose();
     _stripController.dispose();
     _focusController.isSentToBackNotifier.removeListener(_onSentToBackChanged);
@@ -303,6 +312,7 @@ class _TimelineStripState extends State<TimelineStrip>
 
   bool _isHidden = false;
   bool _preHideSentToBack = false;
+  DateTime? _mutedMeetingStartTime;
   late AnimationController _hideAnim;
 
   TimelineLayout? _layout;
@@ -501,6 +511,7 @@ class _TimelineStripState extends State<TimelineStrip>
   Future<void> _hideStrip() async {
     _log.info(
         'TimelineStrip: hiding strip (preHideSentToBack=$_preHideSentToBack, settingsOpen=$_isSettingsOpen, hoveredEvent=$_hoveredEvent)');
+    _audioService.stop();
     _preHideSentToBack = _focusController.isSentToBack;
     if (_preHideSentToBack) {
       _log.fine(
@@ -864,20 +875,47 @@ class _TimelineStripState extends State<TimelineStrip>
                                 Duration.zero)
                             : Duration.zero;
                         _updateAnimationTimer(countdown);
+                        final isTargetingMeetingStart =
+                            (tickActive == null) || (tickNextOverlap != null);
+                        final isMutedForCurrentTarget = isTargetingMeetingStart &&
+                            _mutedMeetingStartTime != null &&
+                            _mutedMeetingStartTime == tickTarget;
+                        _audioService.updateRemainingSeconds(
+                          countdown.inSeconds,
+                          enabled: settings.enableAudioCountdown &&
+                              isTargetingMeetingStart &&
+                              !isMutedForCurrentTarget,
+                        );
                         return ValueListenableBuilder<double>(
                           valueListenable: _flashNotifier,
                           builder: (context, flashValue, _) {
                             final countdownColor = _resolveCountdownColor(
                                 countdown, tickBaseColor, flashValue);
-                            return _buildCountdownContent(_CountdownContentSpec(
-                              countdown: countdown,
-                              mode: tickMode,
-                              color: countdownColor,
-                              flashValue: flashValue,
-                              fontSize: settings.fontSizePx * 1.5,
-                              stripBg: stripBg,
-                              alignment: Alignment.centerRight,
-                            ));
+                            return GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onTap: () {
+                                if (tickTarget != null &&
+                                    isTargetingMeetingStart) {
+                                  setState(() {
+                                    _mutedMeetingStartTime = tickTarget;
+                                  });
+                                  _audioService.stop();
+                                }
+                                unawaited(_showStrip());
+                              },
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.click,
+                                child: _buildCountdownContent(_CountdownContentSpec(
+                                  countdown: countdown,
+                                  mode: tickMode,
+                                  color: countdownColor,
+                                  flashValue: flashValue,
+                                  fontSize: settings.fontSizePx * 1.5,
+                                  stripBg: stripBg,
+                                  alignment: Alignment.centerRight,
+                                )),
+                              ),
+                            );
                           },
                         );
                       },
@@ -997,6 +1035,17 @@ class _TimelineStripState extends State<TimelineStrip>
               ? layout.countdownTo(tickTarget, tickNow)
               : Duration.zero;
           _updateAnimationTimer(countdown);
+          final isTargetingMeetingStart =
+              (tickActive == null) || (tickNextOverlap != null);
+          final isMutedForCurrentTarget = isTargetingMeetingStart &&
+              _mutedMeetingStartTime != null &&
+              _mutedMeetingStartTime == tickTarget;
+          _audioService.updateRemainingSeconds(
+            countdown.inSeconds,
+            enabled: settings.enableAudioCountdown &&
+                isTargetingMeetingStart &&
+                !isMutedForCurrentTarget,
+          );
 
           return ValueListenableBuilder<double>(
             valueListenable: _flashNotifier,
@@ -1004,14 +1053,28 @@ class _TimelineStripState extends State<TimelineStrip>
               final countdownColor =
                   _resolveCountdownColor(countdown, tickBaseColor, flashValue);
               return Center(
-                child: _buildCountdownContent(_CountdownContentSpec(
-                  countdown: countdown,
-                  mode: tickMode,
-                  color: countdownColor,
-                  flashValue: flashValue,
-                  fontSize: settings.fontSizePx,
-                  stripBg: stripBg,
-                )),
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    if (tickTarget != null && isTargetingMeetingStart) {
+                      setState(() {
+                        _mutedMeetingStartTime = tickTarget;
+                      });
+                      _audioService.stop();
+                    }
+                  },
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: _buildCountdownContent(_CountdownContentSpec(
+                      countdown: countdown,
+                      mode: tickMode,
+                      color: countdownColor,
+                      flashValue: flashValue,
+                      fontSize: settings.fontSizePx,
+                      stripBg: stripBg,
+                    )),
+                  ),
+                ),
               );
             },
           );
@@ -1152,13 +1215,17 @@ class _TimelineStripState extends State<TimelineStrip>
         top: _collapsedHeight,
         left: 8,
         bottom: 8,
-        child: SettingsPanel(
-          settingsService: widget.settingsService,
-          calendarController: widget.calendarController!,
-          onSignOut: widget.onSignOut,
-          platformOverride: _targetPlatform,
-          displayService: widget.displayService,
-          displaySectionKey: _displaySectionKey,
+        child: Semantics(
+          container: true,
+          label: 'Settings Panel',
+          child: SettingsPanel(
+            settingsService: widget.settingsService,
+            calendarController: widget.calendarController!,
+            onSignOut: widget.onSignOut,
+            platformOverride: _targetPlatform,
+            displayService: widget.displayService,
+            displaySectionKey: _displaySectionKey,
+          ),
         ),
       ),
     ];
