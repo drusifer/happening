@@ -1,7 +1,7 @@
-// Countdown audio service for playing alternating 1980s Asteroids B1/B2 beats and bangLarge explosion.
+// Countdown audio service for playing alternating 1980s Asteroids B1/B2 beats, fire.wav startup, and bangLarge explosion.
 //
 // TLDR:
-// Overview: Plays alternating beat1.wav and beat2.wav when countdown <= 60s, and bangLarge.wav at 0s.
+// Overview: Plays fire.wav on startup, alternating beat1.wav and beat2.wav when countdown <= 60s, and bangLarge.wav at 0s.
 // Problem: Need subtle time awareness cue ("nudge, not startle") with clean polyphonic sound layering.
 // Solution: Uses an 8-player round-robin AudioPlayer pool so fast beats overlap smoothly without clipping, ending with bangLarge.wav at 0s.
 // Breaking Changes: No.
@@ -30,7 +30,7 @@ class CountdownAudioMath {
   }
 }
 
-/// Service that schedules alternating B1 / B2 audio beats during countdown and plays bangLarge at 0s.
+/// Service that schedules alternating B1 / B2 audio beats during countdown, fire.wav on startup, and bangLarge at 0s.
 class CountdownAudioService {
   CountdownAudioService({
     List<AudioPlayer>? playerPool,
@@ -48,21 +48,38 @@ class CountdownAudioService {
   int _remainingSeconds = 60;
   bool _isPlaying = false;
   bool _hasPlayedBang = false;
+  bool _hasPlayedStartup = false;
   int _nextBeatIndex = 0; // 0 for beat1, 1 for beat2
 
   static const String assetBeat1 = 'audio/beat1.wav';
   static const String assetBeat2 = 'audio/beat2.wav';
   static const String assetBang = 'audio/bangLarge.wav';
+  static const String assetFire = 'audio/fire.wav';
 
   bool get isPlaying => _isPlaying;
   bool get hasPlayedBang => _hasPlayedBang;
+  bool get hasPlayedStartup => _hasPlayedStartup;
   int get remainingSeconds => _remainingSeconds;
   int get nextBeatIndex => _nextBeatIndex;
 
   AudioPlayer _getNextPlayer() {
+    if (_playerPool.isEmpty) return AudioPlayer();
     final p = _playerPool[_poolIndex];
     _poolIndex = (_poolIndex + 1) % _playerPool.length;
     return p;
+  }
+
+  /// Play the startup sound (fire.wav) once when app starts.
+  Future<void> playStartupSound({bool enabled = true}) async {
+    if (!enabled || _hasPlayedStartup) return;
+    _hasPlayedStartup = true;
+    try {
+      final player = _getNextPlayer();
+      await player.setVolume(0.8);
+      await player.play(AssetSource(assetFire));
+    } catch (e) {
+      debugPrint('CountdownAudioService startup error: $e');
+    }
   }
 
   /// Update the remaining countdown duration and enabled state.
@@ -73,7 +90,7 @@ class CountdownAudioService {
     }
 
     if (seconds <= 0) {
-      if (_isPlaying || !_hasPlayedBang) {
+      if (_isPlaying) {
         unawaited(_playBang());
       }
       stop();

@@ -173,6 +173,9 @@ class _TimelineStripState extends State<TimelineStrip>
     _astroDataService.initialize();
 
     _audioService = widget.audioService ?? CountdownAudioService();
+    unawaited(_audioService.playStartupSound(
+      enabled: widget.settingsService.current.enableAudioCountdown,
+    ));
 
     WidgetsBinding.instance.addObserver(this);
     _updateHeights();
