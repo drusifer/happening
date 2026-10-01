@@ -847,8 +847,8 @@ class _TimelineStripState extends State<TimelineStrip>
                             ? (widget.events
                                     .where((e) =>
                                         e.startTime.isAfter(tickNow) &&
-                                        e.startTime
-                                            .isBefore(tickActive.endTime))
+                                        !e.startTime
+                                            .isAfter(tickActive.endTime))
                                     .toList()
                                   ..sort((a, b) =>
                                       a.startTime.compareTo(b.startTime)))
@@ -878,8 +878,9 @@ class _TimelineStripState extends State<TimelineStrip>
                                 Duration.zero)
                             : Duration.zero;
                         _updateAnimationTimer(countdown);
-                        final isTargetingMeetingStart =
-                            (tickActive == null) || (tickNextOverlap != null);
+                        final isTargetingMeetingStart = tickTarget != null &&
+                            widget.events.any(
+                                (e) => e.startTime.isAtSameMomentAs(tickTarget));
                         final isMutedForCurrentTarget = isTargetingMeetingStart &&
                             _mutedMeetingStartTime != null &&
                             _mutedMeetingStartTime == tickTarget;
@@ -1010,7 +1011,7 @@ class _TimelineStripState extends State<TimelineStrip>
               ? (widget.events
                       .where((e) =>
                           e.startTime.isAfter(tickNow) &&
-                          e.startTime.isBefore(tickActive.endTime))
+                          !e.startTime.isAfter(tickActive.endTime))
                       .toList()
                     ..sort((a, b) => a.startTime.compareTo(b.startTime)))
                   .firstOrNull
@@ -1038,8 +1039,9 @@ class _TimelineStripState extends State<TimelineStrip>
               ? layout.countdownTo(tickTarget, tickNow)
               : Duration.zero;
           _updateAnimationTimer(countdown);
-          final isTargetingMeetingStart =
-              (tickActive == null) || (tickNextOverlap != null);
+          final isTargetingMeetingStart = tickTarget != null &&
+              widget.events.any(
+                  (e) => e.startTime.isAtSameMomentAs(tickTarget));
           final isMutedForCurrentTarget = isTargetingMeetingStart &&
               _mutedMeetingStartTime != null &&
               _mutedMeetingStartTime == tickTarget;

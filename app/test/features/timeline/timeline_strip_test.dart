@@ -1085,4 +1085,59 @@ void main() {
     // The strip re-renders with audio muted for meetingStart.
     expect(countdownFinder, findsOneWidget);
   });
+
+  testWidgets('enables audio countdown for back-to-back meeting start',
+      (tester) async {
+    final fakeAudio = _FakeAudioService();
+
+    // Meeting A is active (ends in 45s)
+    // Meeting B is back-to-back (starts at Meeting A end time)
+    final meetingA = CalendarEvent(
+      id: 'e1',
+      title: 'Meeting A',
+      startTime: now.subtract(const Duration(minutes: 59, seconds: 15)),
+      endTime: now.add(const Duration(seconds: 45)),
+      color: Colors.blue,
+      calendarEventUrl: null,
+      videoCallUrl: null,
+    );
+    final meetingB = CalendarEvent(
+      id: 'e2',
+      title: 'Meeting B',
+      startTime: now.add(const Duration(seconds: 45)),
+      endTime: now.add(const Duration(hours: 1, seconds: 45)),
+      color: Colors.green,
+      calendarEventUrl: null,
+      videoCallUrl: null,
+    );
+
+    await tester.pumpWidget(wrap(
+      TimelineStrip(
+        events: [meetingA, meetingB],
+        clockService: clock,
+        calendarController: fakeController,
+        settingsService: fakeSettings,
+        audioService: fakeAudio,
+        windowService: _FakeWindowService(),
+        onSignOut: () {},
+        enableAnimations: false,
+      ),
+    ));
+    await tester.pump();
+
+    expect(fakeAudio.lastRemainingSeconds, equals(45));
+    expect(fakeAudio.lastEnabled, isTrue,
+        reason: 'Audio countdown must be enabled for back-to-back meeting B start');
+  });
+}
+
+class _FakeAudioService extends CountdownAudioService {
+  int? lastRemainingSeconds;
+  bool? lastEnabled;
+
+  @override
+  void updateRemainingSeconds(int seconds, {bool enabled = true}) {
+    lastRemainingSeconds = seconds;
+    lastEnabled = enabled;
+  }
 }
