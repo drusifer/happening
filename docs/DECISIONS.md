@@ -304,3 +304,25 @@ Windows relocate the AppBar window into the work area.
 - Validated on Windows: every hide/show/expand/collapse cycle holds `(0,0)` through delayed
   GEO probes. See LESSONS L-005/L-006 and [ARCH.md §6](ARCH.md#6-window-strategy).
 - `docs/EXPANSION_CONTROLLER.md` is superseded (banner added).
+
+## DEC-010: F-32 Audio Countdown & Polyphonic Sound Engine
+**Date**: 2026-10-01
+**Status**: Decided
+**Authors**: Morpheus (Arch), Neo (SWE), Cypher (PM)
+
+### Context
+Users requested subtle audio cues as an upcoming meeting start approaches ("nudge, not startle"), with startup sound feedback and tap-to-mute control.
+
+### Decision
+1. **Polyphonic Audio Pool**: Implement `CountdownAudioService` using an 8-player round-robin `AudioPlayer` pool to layer fast alternating 1980s Asteroid B1/B2 beats cleanly without audio clipping or truncation.
+2. **Startup & Bang Explosion Guard**:
+   - `playStartupSound()` plays `audio/fire.wav` once upon app launch when audio countdown is enabled.
+   - `_playBang()` (`audio/bangLarge.wav`) is strictly guarded by `if (_isPlaying)`, playing only when an active countdown completes ($T \le 0\text{s}$), preventing launch explosions.
+3. **Meeting Start Target Detection**: Audio countdown is enabled if and only if `tickTarget` matches the start time of an upcoming meeting (`widget.events.any((e) => e.startTime.isAtSameMomentAs(tickTarget))`), including back-to-back meetings.
+4. **Tap-to-Mute**: Tapping the countdown display widget sets `_mutedMeetingStartTime` to `tickTarget`, silencing audio beats until the target shifts to the next meeting start.
+
+### Consequences
+- Countdown audio activates predictably for all upcoming meeting starts (including back-to-back events).
+- Startup sound provides soft audio feedback; launch explosion is eliminated.
+- Users can tap to mute current meeting countdown while preserving future meeting alerts.
+

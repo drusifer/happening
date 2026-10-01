@@ -122,6 +122,9 @@ Click the **Gear** icon to open the Settings Panel:
     ![Dark Theme](docs/Screen%20Shots/Dark%20Theme.png)
 - **Time Window**: Control how many hours of your day are visible (8h, 12h, or 24h).
 - **Audio Countdown**: Toggle retro Asteroid B1/B2 heartbeat audio alerting for countdowns under 1 minute ($T \le 60\text{s}$).
+  - **Startup Sound**: Plays `audio/fire.wav` once upon launch when audio countdown is enabled.
+  - **Tempo & Volume Ramping**: Accelerates beat frequency (1.5s interval down to 0.12s) and ramps volume (0.15 to 1.0) as meeting start approaches, ending with `bangLarge.wav` at $T=0\text{s}$.
+  - **Tap-to-Mute**: Tap the countdown display on the strip to mute audio beats for the current upcoming meeting start. Audio automatically un-mutes for the next meeting.
 - **Multi-Calendar**: Toggle visibility for all your synced Google Calendars.
 - **Font Size**: Adjust the UI scale. The strip height adapts automatically.
 - **Logout**: The **LOGOUT** button inside the settings panel signs you out and clears your calendar selection (ready for a different account).
