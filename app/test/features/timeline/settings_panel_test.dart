@@ -51,6 +51,7 @@ class _FakeSettingsService extends SettingsService {
 // ── Helper ────────────────────────────────────────────────────────────────────
 
 Widget _wrap(Widget child) => MaterialApp(
+      theme: ThemeData(splashFactory: InkRipple.splashFactory),
       home: Scaffold(body: Align(alignment: Alignment.topRight, child: child)),
     );
 

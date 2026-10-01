@@ -69,9 +69,16 @@ class CountdownDisplay extends StatelessWidget {
 
   static String _format(Duration d) {
     if (d <= Duration.zero) return 'now';
-    if (d.inHours > 0) return '${d.inHours} h ${d.inMinutes.remainder(60)} min';
-    if (d.inMinutes > 0) return '${d.inMinutes} min';
-    return '${d.inSeconds}s';
+    if (d.inSeconds < 60) return '${d.inSeconds}s';
+
+    final totalMinutes = (d.inSeconds / 60.0).ceil();
+    final hours = totalMinutes ~/ 60;
+    final minutes = totalMinutes % 60;
+
+    if (hours > 0) {
+      return minutes > 0 ? '$hours h $minutes min' : '$hours h';
+    }
+    return '$minutes min';
   }
 
   static Color _color(Duration d, CountdownMode mode, ThemeData theme) {
@@ -80,7 +87,8 @@ class CountdownDisplay extends StatelessWidget {
       return isDark ? const Color(0xFFFFC107) : Colors.orange[800]!;
     }
     if (d <= Duration.zero) return Colors.redAccent;
-    if (d.inMinutes < 5) return isDark ? Colors.orange : Colors.orange[900]!;
+    final totalMinutes = (d.inSeconds / 60.0).ceil();
+    if (totalMinutes < 5) return isDark ? Colors.orange : Colors.orange[900]!;
     return theme.textTheme.bodyMedium?.color ??
         (isDark ? Colors.white70 : Colors.black87);
   }

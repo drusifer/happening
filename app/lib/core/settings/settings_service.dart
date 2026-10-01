@@ -67,6 +67,7 @@ class AppSettings {
     this.selectedCalendarIds = const [],
     this.windowMode = WindowMode.reserved,
     this.idleTimelineOpacity = 1.0,
+    this.enableAudioCountdown = true,
     this.astroSettings = const AstroSettings(),
     this.chosenDisplay,
   });
@@ -77,6 +78,7 @@ class AppSettings {
   final List<String> selectedCalendarIds;
   final WindowMode windowMode;
   final double idleTimelineOpacity;
+  final bool enableAudioCountdown;
   final AstroSettings astroSettings;
   final PersistedDisplayChoice? chosenDisplay;
 
@@ -90,6 +92,7 @@ class AppSettings {
     List<String>? selectedCalendarIds,
     WindowMode? windowMode,
     double? idleTimelineOpacity,
+    bool? enableAudioCountdown,
     AstroSettings? astroSettings,
     PersistedDisplayChoice? chosenDisplay,
     bool clearChosenDisplay = false,
@@ -101,6 +104,7 @@ class AppSettings {
       selectedCalendarIds: selectedCalendarIds ?? this.selectedCalendarIds,
       windowMode: windowMode ?? this.windowMode,
       idleTimelineOpacity: idleTimelineOpacity ?? this.idleTimelineOpacity,
+      enableAudioCountdown: enableAudioCountdown ?? this.enableAudioCountdown,
       astroSettings: astroSettings ?? this.astroSettings,
       chosenDisplay:
           clearChosenDisplay ? null : (chosenDisplay ?? this.chosenDisplay),
@@ -114,6 +118,7 @@ class AppSettings {
         'selectedCalendarIds': selectedCalendarIds,
         'windowMode': windowMode.name,
         'idleTimelineOpacity': idleTimelineOpacity,
+        'enableAudioCountdown': enableAudioCountdown,
         'astroSettings': astroSettings.toJson(),
         if (chosenDisplay != null) 'chosenDisplay': chosenDisplay!.toJson(),
       };
@@ -135,6 +140,8 @@ class AppSettings {
         idleTimelineOpacity: _clampIdleTimelineOpacity(
           (json['idleTimelineOpacity'] as num? ?? 1.0).toDouble(),
         ),
+        enableAudioCountdown:
+            json['enableAudioCountdown'] as bool? ?? true,
         astroSettings: json['astroSettings'] is Map<String, dynamic>
             ? AstroSettings.fromJson(
                 json['astroSettings'] as Map<String, dynamic>)

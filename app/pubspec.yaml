@@ -23,6 +23,7 @@ dependencies:
   logging: any
   apsl_sun_calc: ^0.0.4
   flutter_web_auth_2: ^5.0.3
+  audioplayers: ^6.1.0
 
 dev_dependencies:
   flutter_test:
@@ -67,3 +68,4 @@ flutter:
   assets:
     - assets/data/cities.csv
     - assets/version.txt
+    - assets/audio/

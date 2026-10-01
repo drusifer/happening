@@ -33,13 +33,16 @@ When executing `*judge <target>`, the loop evaluates the specified target (e.g.,
 ```
 Trin *qa judge <target>
 ```
-- Trin compiles or executes a set of representative test cases or usage scenarios for the specified `<target>`.
-- Trin captures the session history, commands run, output size, and writes a trace report to `agents/trin.docs/judge_<target>_trace.log` (or similar).
+- **Required tool — `bobp make judge-trace [DATE=YYYY-MM-DD] [FORMAT=html|md]`**: this runs `agents/tools/trace_annotate.py`, which parses the **real Claude Code JSONL session transcripts** (`~/.claude/projects/<slug>/*.jsonl`) for the given date and programmatically flags anti-patterns (`AP-SKILL-RELOAD`, `AP-MAKE-BYPASS`, `AP-RAW-VENV`, `AP-MAKE-PIPE`, `AP-VIA-GREP`, `AP-VIA-READ`, `AP-DUP-READ`) via `agents/tools/trace_rules.json`. This is ground truth — actual tool-call events, not a prose summary. Output defaults to `agents/trin.docs/judge_tool_trace.{html,md}`.
+- **Do not hand-reconstruct a trace from `agents/CHAT.md` instead.** CHAT.md only contains what personas chose to summarize about their own work — it cannot show tool-call-level behavior (redundant invocations, piping, raw venv calls, via-bypasses) and produces a systematically over-optimistic trace. `bobp make judge-trace` is the only source of truth for tool/skill-use judging; CHAT.md and persona `state.md` files remain the source of truth for *process/protocol* adherence (chain sequencing, gate compliance, handoffs) — the two are complementary, not interchangeable.
+- **Manual review is still required after running the tool**: read the raw flags before scoring — the rule regexes are heuristics and can both over-flag (e.g. a `make <target> | tail` where the invocation wasn't actually via `bobp make`, so there's no build.out capture to be redundant with) and under-flag. Note any flag you're overriding and why in the trace report, per-flag, not as a blanket dismissal.
+- Trin writes the analysis (raw counts + manual-review verdict per flag type + any additional scenario coverage the tool can't see) to `agents/trin.docs/judge_<target>_trace.md`.
 - **Trin's constraints**: Ensure that the target is exercised in realistic conditions representing typical developer/agent workflow.
+- **Live vs. completed sessions**: `bobp make judge-trace` scores the JSONL transcript as it exists *right now*. If the `*judge` loop is run inside the same live session it's evaluating, every subsequent step of the loop (reading the trace, editing files, re-running the tool) appends more tool calls to that same transcript — the call/flag counts will keep growing across iterations, and a fresh Smith TES score at each iteration is not comparing like-for-like. Prefer running `*judge` on a session that has already ended. If run mid-session anyway, treat iteration 1's score as the baseline for defect-finding only, verify specific fixes by checking whether the specific previously-flagged entries are now absent (not by chasing a fresh 90+ on an ever-growing trace), and defer a real numeric re-score to the next `*judge` invocation on a completed session.
 
 ### Handoff:
 ```bash
-make chat MSG="[target] run complete. @Smith *user feedback judge <target>" PERSONA="Trin" CMD="qa handoff" TO="Smith"
+bobp chat "[target] run complete. @Smith *user feedback judge <target>" --persona Trin --cmd "qa handoff" --to Smith
 ```
 
 ---
@@ -72,17 +75,17 @@ Smith *user feedback judge <target>
 
 ### Handoff (Bugs Found or TES < 90 with code/script issues):
 ```bash
-make chat MSG="Score: [TES]. Bugs cataloged in bugs.md. @Neo *swe fix judge <target>" PERSONA="Smith" CMD="user feedback" TO="Neo"
+bobp chat "Score: [TES]. Bugs cataloged in bugs.md. @Neo *swe fix judge <target>" --persona Smith --cmd "user feedback" --to Neo
 ```
 
 ### Handoff (No Bugs but TES < 90 with usage/query/prompt issues):
 ```bash
-make chat MSG="Score: [TES]. Sub-optimal patterns. @Bob *prompt update judge <target>" PERSONA="Smith" CMD="user feedback" TO="Bob"
+bobp chat "Score: [TES]. Sub-optimal patterns. @Bob *prompt update judge <target>" --persona Smith --cmd "user feedback" --to Bob
 ```
 
 ### Handoff (TES >= 90 & No Bugs):
 ```bash
-make chat MSG="Optimal score [TES] reached! No bugs. @Trin *qa done" PERSONA="Smith" CMD="user feedback" TO="Trin"
+bobp chat "Optimal score [TES] reached! No bugs. @Trin *qa done" --persona Smith --cmd "user feedback" --to Trin
 ```
 
 ---
@@ -93,11 +96,11 @@ Neo *swe fix judge <target>
 ```
 - Neo resolves the bugs or structural issues cataloged in `agents/smith.docs/bugs.md` (or target bug file).
 - Neo ensures any scripts, Makefiles, or codebase modules behave correctly.
-- Neo runs the project tests (`make test`) to ensure a completely green baseline.
+- Neo runs the project tests (`bobp make test`) to ensure a completely green baseline.
 
 ### Handoff:
 ```bash
-make chat MSG="Bugs resolved and test suite verified green. @Bob *prompt update judge <target>" PERSONA="Neo" CMD="swe handoff" TO="Bob"
+bobp chat "Bugs resolved and test suite verified green. @Bob *prompt update judge <target>" --persona Neo --cmd "swe handoff" --to Bob
 ```
 
 ---
@@ -113,7 +116,7 @@ Bob *prompt update judge <target>
 
 ### Handoff:
 ```bash
-make chat MSG="Agent prompts and target skill updated. @Trin *qa verify judge <target>" PERSONA="Bob" CMD="prompt update" TO="Trin"
+bobp chat "Agent prompts and target skill updated. @Trin *qa verify judge <target>" --persona Bob --cmd "prompt update" --to Trin
 ```
 
 ---
@@ -124,14 +127,15 @@ Trin *qa verify judge <target>
 ```
 - Trin re-executes the target scenarios/actions using the updated skills and prompts.
 - Generates a new session trace report.
+- **If verifying inside the same live session** (see the live-vs-completed note in Step 1): confirm the specific previously-cataloged bug entries are gone from the new trace and that no real detections were lost — do not require a fresh TES >= 90 on the now-larger trace before closing the loop.
 - **Handoff to Smith for Re-scoring (Looping)**: Hand off to Smith to re-evaluate the new session trace. The loop continues (**Trin -> Smith -> [Neo ->] Bob -> Trin**) until Smith issues a `TES >= 90` verdict (or after 5 consecutive iterations without score improvement).
 
 ### Handoff (Trigger Next Scoring Iteration):
 ```bash
-make chat MSG="New run complete and trace generated. @Smith *user feedback judge <target>" PERSONA="Trin" CMD="qa verify" TO="Smith"
+bobp chat "New run complete and trace generated. @Smith *user feedback judge <target>" --persona Trin --cmd "qa verify" --to Smith
 ```
 
 ### Handoff (Loop Complete - TES >= 90):
 ```bash
-make chat MSG="Verification complete. Optimal score reached and loop closed successfully." PERSONA="Trin" CMD="qa done" TO="all"
+bobp chat "Verification complete. Optimal score reached and loop closed successfully." --persona Trin --cmd "qa done" --to all
 ```

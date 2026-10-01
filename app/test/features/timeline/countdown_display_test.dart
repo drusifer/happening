@@ -16,6 +16,13 @@ void main() {
       expect(find.text('38 min'), findsOneWidget);
     });
 
+    testWidgets('rounds up remaining minutes so 1m 59s shows 2 min', (tester) async {
+      await tester.pumpWidget(wrap(
+        const CountdownDisplay(remaining: Duration(minutes: 1, seconds: 59)),
+      ));
+      expect(find.text('2 min'), findsOneWidget);
+    });
+
     testWidgets('shows hours and minutes when >= 1 hour', (tester) async {
       await tester.pumpWidget(wrap(
         const CountdownDisplay(remaining: Duration(hours: 1, minutes: 12)),

@@ -1,3 +1,15 @@
+# Neo Current Task — 2026-10-01
+
+## STATUS: Tap-to-Mute Audio Countdown — FIXED, tested, handed to Trin
+- Added `_mutedMeetingStartTime` tracking in `_TimelineStripState`.
+- Clicking `CountdownDisplay` silences audio countdown immediately and keeps it muted for that meeting target.
+- Automatically resets and resumes audio when the target meeting start shifts to the next event.
+- Wrapped `CountdownDisplay` with `GestureDetector(onTap: ...)` and `MouseRegion(cursor: SystemMouseCursors.click)`.
+- Restores full strip when tapped in mini mode (`AC-F31-3-2` preserved).
+- Widget test added in `timeline_strip_test.dart`.
+- Analyzer 0 issues; 519 unit/widget/integration tests green.
+- Summary: `TapToMute_AudioCountdown_Summary_2026-10-01.md`.
+
 # Neo Current Task — 2026-07-21
 
 ## STATUS: Makefile lint scope after integration harness deletion — FIXED

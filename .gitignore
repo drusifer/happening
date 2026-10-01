@@ -140,3 +140,6 @@ app.*.symbols
 
 app/pubspec.yaml~
 app/.pubspec.yaml.un~
+
+# Bob Protocol / via — machine-local config and index, not portable
+.mcp.json

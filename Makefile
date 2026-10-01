@@ -1,11 +1,7 @@
 .DEFAULT_GOAL := help
 
-# ── Bob Protocol Configuration ───────────────────────────────────────────────
-# Detect if this file is being run directly as Makefile.bob
-_IS_BOB_ENTRY := $(filter %Makefile.bob,$(firstword $(MAKEFILE_LIST)))
-
-FLUTTER      := flutter
-DART         := dart
+FLUTTER      ?= flutter
+DART         ?= dart
 APP_DIR      := app
 PROXY_DIR    := proxy
 DIST_DIR     := dist
@@ -27,10 +23,6 @@ else
   PYTHON     := python3
 endif
 
-# Universal help commands utilizing the Python print_help utility
-HELP_COMMAND = $(PYTHON) agents/tools/print_help.py targets
-HELP_PROJECT_TARGETS = $(PYTHON) agents/tools/print_help.py project "$(MKF_TARGETS)"
-
 LLVM_BIN     := /usr/lib/llvm-22/bin
 PUB_STAMP    := $(APP_DIR)/.dart_tool/package_config.json
 ANALYZE_DIRS := lib test
@@ -38,12 +30,12 @@ ifneq ($(wildcard $(APP_DIR)/integration_test),)
   ANALYZE_DIRS += integration_test
 endif
 
-ifdef MKF_ACTIVE
-
-# ── Re-invocation Layer ──────────────────────────────────────────────────────
-# Included by mkf.py to run the actual target.
-
 # ── Happening Project Targets ────────────────────────────────────────────────
+
+.PHONY: help
+help: ## Show available make targets
+	@echo "Available make targets:"
+	@$(PYTHON) -c "import re; [print(f'  \033[36m{m[1]:<25}\033[0m {m[2]}') for l in open('Makefile') for m in [re.match(r'^([a-zA-Z0-9_-]+):.*?##\s*(.*)$$', l)] if m]"
 
 $(FLUTTER):
 ifeq ($(OS),Windows_NT)
@@ -55,7 +47,7 @@ else
 endif
 
 .PHONY: setup install-hooks
-setup: install-hooks fetch-cities
+setup: install-hooks fetch-cities ## Set up project dependencies and git hooks
 ifeq ($(UNAME_OS),Darwin)
 	./scripts/setup-macos.sh
 else ifeq ($(OS),Windows_NT)
@@ -68,7 +60,7 @@ endif
 $(PUB_STAMP): $(FLUTTER) $(APP_DIR)/pubspec.yaml $(APP_DIR)/pubspec.lock
 	cd $(APP_DIR) && $(FLUTTER) pub get
 
-install-hooks:
+install-hooks: ## Install Git pre-commit hooks
 ifeq ($(OS),Windows_NT)
 	@powershell -Command "Copy-Item -Force scripts/pre-commit .git/hooks/pre-commit"
 	@echo "Git hooks installed."
@@ -79,69 +71,67 @@ else
 endif
 
 .PHONY: run run-linux run-macos run-windows
-run:
+run: ## Run application (specify platform via run-linux, run-macos, or run-windows)
 	@echo "Please specify a platform: make run-linux, run-macos, or run-windows"
 
-run-linux: $(PUB_STAMP)
+run-linux: $(PUB_STAMP) ## Run Flutter app on Linux
 	cd $(APP_DIR) && PATH="$(LLVM_BIN):$$PATH" GDK_BACKEND=x11 $(FLUTTER) run -d linux
 
-run-macos: $(PUB_STAMP)
+run-macos: $(PUB_STAMP) ## Run Flutter app on macOS
 	cd $(APP_DIR) && $(FLUTTER) run -d macos
 
-run-windows: $(PUB_STAMP)
+run-windows: $(PUB_STAMP) ## Run Flutter app on Windows
 	@powershell -Command "if (Test-Path $(APP_DIR)/windows/flutter/ephemeral) { Remove-Item -Recurse -Force $(APP_DIR)/windows/flutter/ephemeral }"
 	cd $(APP_DIR) && $(FLUTTER) run -d windows
 
 .PHONY: test update-goldens test-watch win-test
-test: $(PUB_STAMP)
+test: $(PUB_STAMP) ## Run test suite with coverage
 	cd $(APP_DIR) && $(FLUTTER) test --coverage $(FILE) $(ARGS)
 
-# Windows-friendly check: analyze (no bash `ulimit`, which breaks Windows make)
-# then run tests. Scope with FILE=test/core/window/ and pass extra flags via ARGS.
-win-test: $(PUB_STAMP)
+win-test: $(PUB_STAMP) ## Run static analysis and unit tests (Windows compatible)
 	cd $(APP_DIR) && $(FLUTTER) analyze $(ANALYZE_DIRS)
 	cd $(APP_DIR) && $(FLUTTER) test $(FILE) $(ARGS)
 
-update-goldens: $(PUB_STAMP)
+update-goldens: $(PUB_STAMP) ## Update golden test images
 	cd $(APP_DIR) && $(FLUTTER) test --update-goldens test/goldens/
 
-test-watch: $(PUB_STAMP)
+test-watch: $(PUB_STAMP) ## Run tests in watch mode
 	cd $(APP_DIR) && $(FLUTTER) test --coverage --watch $(FILE) $(ARGS)
 
 .PHONY: integration-test integration-test-linux integration-test-macos integration-test-windows
-integration-test:
+integration-test: ## Run integration tests (specify platform)
 	@echo "Please specify a platform: make integration-test-linux, integration-test-macos, or integration-test-windows"
 
-integration-test-linux: $(PUB_STAMP)
+integration-test-linux: $(PUB_STAMP) ## Run integration tests on Linux
 	cd $(APP_DIR) && PATH="$(FLUTTER_SDK)\bin:$(LLVM_BIN):$$PATH" GDK_BACKEND=x11 XAUTHORITY=$$(ls /run/user/$$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1) $(FLUTTER) test integration_test/ -d linux
 
-integration-test-macos: $(PUB_STAMP)
+integration-test-macos: $(PUB_STAMP) ## Run integration tests on macOS
 	cd $(APP_DIR) && $(FLUTTER) test integration_test/ -d macos
 
-integration-test-windows: $(PUB_STAMP)
+integration-test-windows: $(PUB_STAMP) ## Run integration tests on Windows
 	cd $(APP_DIR) && $(FLUTTER) test integration_test/ -d windows
 
 .PHONY: build-linux build-macos build-windows
-build-linux: $(PUB_STAMP)
+build-linux: $(PUB_STAMP) ## Build Linux release bundle
 	cd $(APP_DIR) && PATH="$(FLUTTER_SDK)\bin:$(LLVM_BIN):$$PATH" $(FLUTTER) build linux --release
 
-build-macos: $(PUB_STAMP)
+build-macos: $(PUB_STAMP) ## Build macOS release bundle
 	cd $(APP_DIR) && $(FLUTTER) build macos --release
 
-build-windows: $(PUB_STAMP)
+build-windows: $(PUB_STAMP) ## Build Windows release bundle
 	cd $(APP_DIR) && $(FLUTTER) build windows --release
 
 .PHONY: dist dist-linux dist-macos dist-macos-appstore dist-windows dist-windows-msix dist-proxy-linux
-dist: dist-linux
+dist: dist-linux ## Build distribution artifact (default Linux)
 	@echo "Done. Artifacts in $(DIST_DIR)/"
 
-dist-linux: build-linux
+dist-linux: build-linux ## Create Linux tarball package
 	@mkdir -p $(DIST_DIR)
 	tar -czf $(DIST_DIR)/happening-$(VERSION)-linux-$(ARCH).tar.gz \
 	    -C $(APP_DIR)/build/linux/$(ARCH)/release bundle
 	@echo "Linux package: $(DIST_DIR)/happening-$(VERSION)-linux-$(ARCH).tar.gz"
 
-dist-macos: build-macos
+dist-macos: build-macos ## Create macOS DMG package
 	@mkdir -p $(DIST_DIR)
 	$(eval DMG := $(DIST_DIR)/happening-$(VERSION)-macos-$(ARCH).dmg)
 	hdiutil create -volname "Happening $(VERSION)" \
@@ -150,7 +140,7 @@ dist-macos: build-macos
 	    $(DMG)
 	@echo "macOS package: $(DMG)"
 
-dist-macos-appstore: $(PUB_STAMP)
+dist-macos-appstore: $(PUB_STAMP) ## Export and submit macOS App Store build
 	@test -n "$(ASC_API_KEY_ID)"    || (echo "Error: ASC_API_KEY_ID not set";    exit 1)
 	@test -n "$(ASC_API_ISSUER_ID)" || (echo "Error: ASC_API_ISSUER_ID not set"; exit 1)
 	@test -n "$(ASC_API_KEY_PATH)"  || (echo "Error: ASC_API_KEY_PATH not set";  exit 1)
@@ -167,44 +157,44 @@ dist-macos-appstore: $(PUB_STAMP)
 	    -authenticationKeyPath "$(ASC_API_KEY_PATH)"
 	@echo "macOS v$(VERSION) submitted to App Store Connect"
 
-dist-windows: build-windows
+dist-windows: build-windows ## Create Windows ZIP package
 	@cmd /c if not exist $(DIST_DIR) mkdir $(DIST_DIR)
 	cd $(APP_DIR)/build/windows/x64/runner && zip -r $(CURDIR)/$(DIST_DIR)/happening-$(VERSION)-windows-x64.zip Release
 	@echo "Windows package: $(DIST_DIR)/happening-$(VERSION)-windows-x64.zip"
 
-dist-windows-msix: build-windows
+dist-windows-msix: build-windows ## Create Windows MSIX Store installer
 	@cmd /c if not exist $(DIST_DIR) mkdir $(DIST_DIR)
 	cd $(APP_DIR) && $(DART) run msix:create
 	@powershell -Command "Copy-Item -Path '$(APP_DIR)/build/windows/x64/runner/Release/happening.msix' -Destination '$(DIST_DIR)/happening-$(VERSION)-windows-x64.msix' -Force"
 	@echo "Windows MSIX package: $(DIST_DIR)/happening-$(VERSION)-windows-x64.msix"
 
-dist-proxy-linux: proxy-setup
+dist-proxy-linux: proxy-setup ## Build Linux standalone proxy executable
 	@mkdir -p $(DIST_DIR)
 	$(DART) compile exe $(PROXY_DIR)/bin/server.dart \
 	    -o $(DIST_DIR)/happening-proxy-$(VERSION)-linux-$(ARCH)
 	@echo "Proxy binary: $(DIST_DIR)/happening-proxy-$(VERSION)-linux-$(ARCH)"
 
 .PHONY: format analyze lint lint-style lint-metrics lint-format
-format: $(PUB_STAMP)
+format: $(PUB_STAMP) ## Format Dart codebase
 	cd $(APP_DIR) && $(DART) format lib/ test/
 
-analyze: $(PUB_STAMP)
+analyze: $(PUB_STAMP) ## Run Dart analyze across project
 ifeq ($(OS),Windows_NT)
 	cd $(APP_DIR) && $(FLUTTER) analyze $(ANALYZE_DIRS)
 else
 	cd $(APP_DIR) && ulimit -n 31706 && $(FLUTTER) analyze $(ANALYZE_DIRS)
 endif
 
-lint: lint-style lint-metrics lint-format
+lint: lint-style lint-metrics lint-format ## Run all lint checks (style, metrics, format)
 
-lint-style: $(PUB_STAMP)
+lint-style: $(PUB_STAMP) ## Run analyzer style check
 	cd $(APP_DIR) && $(FLUTTER) analyze --fatal-warnings $(ANALYZE_DIRS)
 
-lint-metrics: $(PUB_STAMP)
-	cd $(APP_DIR) && $(DART) run dart_code_linter:metrics check-unused-files lib
+lint-metrics: $(PUB_STAMP) ## Run code metrics checks
+	cd $(APP_DIR) && $(DART) run dart_code_linter:metrics check-unusedfiles lib
 	cd $(APP_DIR) && $(DART) run dart_code_linter:metrics analyze lib --fatal-style --fatal-performance --fatal-warnings
 
-lint-format: $(PUB_STAMP)
+lint-format: $(PUB_STAMP) ## Check code formatting compliance
 	cd $(APP_DIR) && $(DART) format --output=none --set-exit-if-changed lib/ test/
 
 PROXY_IMAGE  := localhost/happening-proxy
@@ -212,10 +202,10 @@ PROXY_BIN    := $(DIST_DIR)/happening-proxy-$(VERSION)-linux-$(ARCH)
 PROXY_TAR    := $(DIST_DIR)/happening-proxy-$(VERSION).tar
 
 .PHONY: proxy proxy-setup export-proxy-image
-proxy-setup: $(DART)
+proxy-setup: $(DART) ## Install proxy Dart dependencies
 	cd $(PROXY_DIR) && $(DART) pub get
 
-proxy: proxy-setup
+proxy: proxy-setup ## Run OAuth proxy server locally
 	@test -n "$$GOOGLE_CLIENT_SECRET" || \
 		(echo "Error: GOOGLE_CLIENT_SECRET is not set. Run: export GOOGLE_CLIENT_SECRET=<secret>"; exit 1)
 	cd $(PROXY_DIR) && $(DART) run bin/server.dart
@@ -232,14 +222,7 @@ export-proxy-image: dist-proxy-linux ## Compile proxy + build container image + 
 fetch-cities: ## Download GeoNames cities15000 and generate app/assets/data/cities.csv
 	@$(PYTHON) agents/tools/fetch_cities.py
 
-.PHONY: clean
-clean:
-	cd $(APP_DIR) && $(FLUTTER) clean
-
-# ── Bob Protocol Targets ─────────────────────────────────────────────────────
-
-.PHONY: tldr via_index install_bob update_bob pull_bob clean_bob diff_bob sync-version set-version test-tools
-
+.PHONY: sync-version set-version test-tools tldr clean
 sync-version: ## Synchronize build configurations based on app/assets/version.txt
 	@$(PYTHON) agents/tools/sync_version.py
 
@@ -249,214 +232,8 @@ set-version: ## Set a new version number and sync all files (usage: make set-ver
 test-tools: ## Run agents/tools Python unit tests
 	@$(PYTHON) -m unittest discover -s agents/tools -p "test_*.py" -v
 
-tldr: ## Show TL;DR summaries from all project files (quick orientation for agents)
+tldr: ## Show TL;DR summaries from all project files (quick orientation)
 	@rg --no-heading "TL;DR:" --glob "*.md" -N | sed 's|^\./||' | sort
 
-via_index: ## Build the via index required by the via MCP server
-	@via index "$(CURDIR)"
-
-install_bob: ## Copy agents into a project and set up skill links (usage: make install_bob TARGET=/path/to/project)
-	@[ -n "$(TARGET)" ] || { echo "Usage: make install_bob TARGET=/path/to/project"; exit 1; }
-	@[ -d "$(TARGET)" ] || { echo "Error: $(TARGET) does not exist"; exit 1; }
-	@echo "Installing BobProtocol into $(TARGET)..."
-	@rsync -a \
-		--exclude='*.docs/context.md' \
-		--exclude='*.docs/current_task.md' \
-		--exclude='*.docs/next_steps.md' \
-		--exclude='CHAT.md' \
-		agents/ $(TARGET)/agents/
-	@echo "Initialising agent state files..."
-	@for dir in $(TARGET)/agents/*.docs; do \
-		cp agents/templates/_template_context.md    $$dir/context.md; \
-		cp agents/templates/_template_current_task.md $$dir/current_task.md; \
-		cp agents/templates/_template_next_steps.md $$dir/next_steps.md; \
-	done
-	@cp agents/templates/_template_CHAT.md $(TARGET)/agents/CHAT.md
-	@echo "Installing Makefile into $(TARGET)..."
-	@if [ -f "$(TARGET)/Makefile" ]; then \
-		if grep -q "MKF_ACTIVE" "$(TARGET)/Makefile"; then \
-			cp Makefile "$(TARGET)/Makefile" && echo "  Updated: Makefile (bob-managed)"; \
-		else \
-			cp Makefile "$(TARGET)/Makefile.bob" && echo "  Installed: Makefile.bob"; \
-			if ! grep -q "include Makefile.bob" "$(TARGET)/Makefile"; then \
-				echo "include Makefile.bob" | cat - "$(TARGET)/Makefile" > "$(TARGET)/Makefile.tmp" && mv "$(TARGET)/Makefile.tmp" "$(TARGET)/Makefile"; \
-				echo "  Modified: Makefile (included Makefile.bob at top)"; \
-			fi; \
-		fi; \
-	else \
-		cp Makefile "$(TARGET)/Makefile" && echo "  Installed: Makefile (bob-managed)"; \
-	fi
-	@echo "Setting up Claude skill links..."
-	@python $(TARGET)/agents/tools/setup_agent_links.py
-	@echo ""
-	@echo "Done. BobProtocol installed in $(TARGET)"
-	@echo "Run 'make tldr' inside $(TARGET) to verify."
-
-update_bob: ## Update bob-protocol personas, skills, tools, and templates in a target project (usage: make update_bob TARGET=/path/to/project)
-	@[ -n "$(TARGET)" ] || { echo "Usage: make update_bob TARGET=/path/to/project"; exit 1; }
-	@[ -d "$(TARGET)" ] || { echo "Error: $(TARGET) does not exist"; exit 1; }
-	@echo "Updating BobProtocol in $(TARGET)..."
-	@rsync -a agents/skills/ $(TARGET)/agents/skills/
-	@rsync -a agents/tools/  $(TARGET)/agents/tools/
-	@rsync -a agents/templates/ $(TARGET)/agents/templates/
-	@for f in agents/*.docs/SKILL.md; do \
-		rsync -a "$$f" "$(TARGET)/$$f"; \
-	done
-	@echo "Ensuring agent state files are initialised..."
-	@for dir in $(TARGET)/agents/*.docs; do \
-		[ -f $$dir/context.md ]      || cp agents/templates/_template_context.md      $$dir/context.md; \
-		[ -f $$dir/current_task.md ] || cp agents/templates/_template_current_task.md $$dir/current_task.md; \
-		[ -f $$dir/next_steps.md ]   || cp agents/templates/_template_next_steps.md   $$dir/next_steps.md; \
-	done
-	@[ -f $(TARGET)/agents/CHAT.md ] || cp agents/templates/_template_CHAT.md $(TARGET)/agents/CHAT.md
-	@echo "Updating Makefile in $(TARGET)..."
-	@if [ -f "$(TARGET)/Makefile" ]; then \
-		if grep -q "MKF_ACTIVE" "$(TARGET)/Makefile"; then \
-			cp Makefile "$(TARGET)/Makefile" && echo "  Updated: Makefile (bob-managed)"; \
-		else \
-			cp Makefile "$(TARGET)/Makefile.bob" && echo "  Updated: Makefile.bob"; \
-			if ! grep -q "include Makefile.bob" "$(TARGET)/Makefile"; then \
-				echo "include Makefile.bob" | cat - "$(TARGET)/Makefile" > "$(TARGET)/Makefile.tmp" && mv "$(TARGET)/Makefile.tmp" "$(TARGET)/Makefile"; \
-				echo "  Modified: Makefile (included Makefile.bob at top)"; \
-			fi; \
-		fi; \
-	else \
-		cp Makefile "$(TARGET)/Makefile" && echo "  Updated: Makefile (bob-managed)"; \
-	fi
-	@echo "Updating Claude skill links..."
-	@python $(TARGET)/agents/tools/setup_agent_links.py
-	@echo ""
-	@echo "Done. BobProtocol updated in $(TARGET)"
-
-pull_bob: ## Pull bob-protocol personas, skills, tools, and templates from another project (usage: make pull_bob SRC=/path/to/project)
-	@[ -n "$(SRC)" ] || { echo "Usage: make pull_bob SRC=/path/to/project"; exit 1; }
-	@[ -d "$(SRC)" ] || { echo "Error: $(SRC) does not exist"; exit 1; }
-	@echo "Pulling BobProtocol updates from $(SRC)..."
-	@rsync -a --existing $(SRC)/agents/skills/    agents/skills/
-	@rsync -a --existing $(SRC)/agents/tools/     agents/tools/
-	@rsync -a --existing $(SRC)/agents/templates/ agents/templates/
-	@for f in agents/*.docs/SKILL.md; do \
-		[ -f "$(SRC)/$$f" ] && rsync -a "$(SRC)/$$f" "$$f" || true; \
-	done
-	@echo ""
-	@echo "Done. BobProtocol pulled from $(SRC)"
-
-clean_bob: ## Remove generated symlinks and reset agent memory/state files
-	@echo "Removing generated symlinks..."
-	@python agents/tools/teardown_agent_links.py --keep-mcp
-	@echo "Resetting agent state files to templates..."
-	@for dir in agents/*.docs; do \
-		cp agents/templates/_template_context.md    $$dir/context.md; \
-		cp agents/templates/_template_current_task.md $$dir/current_task.md; \
-		cp agents/templates/_template_next_steps.md $$dir/next_steps.md; \
-	done
-	@cp agents/templates/_template_CHAT.md agents/CHAT.md
-	@echo "Done. Environment cleaned and state reset."
-
-diff_bob: ## Compare bob-protocol personas, skills, tools, and templates with a target project (usage: make diff_bob TARGET=/path/to/project)
-	@[ -n "$(TARGET)" ] || { echo "Usage: make diff_bob TARGET=/path/to/project"; exit 1; }
-	@[ -d "$(TARGET)" ] || { echo "Error: $(TARGET) does not exist"; exit 1; }
-	@echo "Diffing BobProtocol: $(CURDIR) vs $(TARGET)"
-	@echo ""
-	@for dir in agents/skills agents/tools agents/templates; do \
-		if [ -d "$(TARGET)/$$dir" ]; then \
-			diff -rq "$$dir" "$(TARGET)/$$dir"; \
-		else \
-			echo "Only in this project: $$dir/"; \
-		fi; \
-	done || true
-	@for f in agents/*.docs/SKILL.md; do \
-		tgt="$(TARGET)/$$f"; \
-		if [ -f "$$tgt" ]; then \
-			diff -q "$$f" "$$tgt" || true; \
-		else \
-			echo "Only in this project: $$f"; \
-		fi; \
-	done
-	@echo ""
-	@echo "Done."
-
-else
-
-# ── Interception layer ───────────────────────────────────────────────────────
-# All targets except help, chat, install_bob, update_bob, pull_bob, and clean_bob route through mkf (agents/tools/mkf.py).
-# mkf captures output to build/build.out, posts status to CHAT.md,
-# and prints the last 10 lines on exit.
-#
-# Verbosity (set V=):
-#   make tldr              silent  — exit code only, full log in build/build.out
-#   make tldr V=-v         stderr to terminal
-#   make tldr V=-vv        stderr + filtered failures to terminal
-#   make tldr V=-vvv       stderr + full stdout to terminal
-
-.PHONY: help chat install_bob update_bob pull_bob clean_bob diff_bob sync-version set-version test-tools
-.PHONY: setup install-hooks run run-linux run-macos run-windows
-.PHONY: test update-goldens test-watch integration-test integration-test-linux integration-test-macos integration-test-windows
-.PHONY: build-linux build-macos build-windows dist dist-linux dist-macos dist-macos-appstore dist-windows dist-windows-msix dist-proxy-linux
-.PHONY: format analyze lint lint-style lint-metrics lint-format proxy proxy-setup export-proxy-image clean tldr via_index fetch-cities
-
-MKF_TARGETS := setup install-hooks run run-linux run-macos run-windows \
-	test win-test update-goldens test-watch integration-test integration-test-linux integration-test-macos integration-test-windows \
-	build-linux build-macos build-windows dist dist-linux dist-macos dist-macos-appstore dist-windows dist-windows-msix dist-proxy-linux \
-	format analyze lint lint-style lint-metrics lint-format proxy proxy-setup export-proxy-image clean tldr via_index \
-	fetch-cities sync-version set-version test-tools
-
-install_bob: ## Copy agents into a project and set up skill links (usage: make install_bob TARGET=/path/to/project)
-	@$(MAKE) MKF_ACTIVE=1 install_bob TARGET="$(TARGET)"
-
-update_bob: ## Update agents and skills in a project, preserving state (usage: make update_bob TARGET=/path/to/project)
-	@$(MAKE) MKF_ACTIVE=1 update_bob TARGET="$(TARGET)"
-
-pull_bob: ## Pull updates from another project using BobProtocol, preserving local state (usage: make pull_bob SRC=/path/to/project)
-	@$(MAKE) MKF_ACTIVE=1 pull_bob SRC="$(SRC)"
-
-clean_bob: ## Remove generated symlinks and reset agent memory/state files
-	@$(MAKE) MKF_ACTIVE=1 clean_bob
-
-diff_bob: ## Compare bob-protocol files with a target project, excluding state files (usage: make diff_bob TARGET=/path/to/project)
-	@$(MAKE) MKF_ACTIVE=1 diff_bob TARGET="$(TARGET)"
-
-help: ## Show available make targets
-	@echo ""
-	@echo "  Build output filter (mkf) is active. All targets route through agents/tools/mkf.py."
-	@echo "  Full log: build/build.out   Status posted to: agents/CHAT.md"
-	@echo ""
-	@echo "  Verbosity: append V=-v | V=-vv | V=-vvv to any target"
-	@echo "    (none)   silent — exit code only"
-	@echo "    -v       stderr to terminal"
-	@echo "    -vv      stderr + failures/errors to terminal"
-	@echo "    -vvv     stderr + full stdout to terminal"
-	@echo ""
-	@echo "  Examples:"
-	@echo "    make pull_bob          # silent, log → build/build.out"
-	@echo "    make update_bob V=-vvv # full output"
-	@echo ""
-	@echo "  Targets:"
-	@$(HELP_COMMAND)
-	@echo ""
-	@echo "  Project targets:"
-	@$(HELP_PROJECT_TARGETS)
-	@echo ""
-
-chat: ## Post a message to CHAT.md (usage: make chat MSG="<msg>" [PERSONA="<name>"] [CMD="<cmd>"] [TO="<recipient>"])
-	@python agents/tools/chat.py "$(MSG)" \
-		$(if $(PERSONA),--persona "$(PERSONA)") \
-		$(if $(CMD),--cmd "$(CMD)") \
-		$(if $(TO),--to "$(TO)")
-
-$(MKF_TARGETS):
-	@$(PYTHON) agents/tools/mkf.py $(V) $@ \
-		$(if $(FILE),FILE=$(FILE)) \
-		$(if $(ARGS),ARGS=$(ARGS))
-
-# Interception logic: 
-# If we are the entry point (direct make call), intercept everything.
-# If we are included, we only provide targets, unless specified.
-ifeq ($(MKF_ACTIVE),)
-ifdef _IS_BOB_ENTRY
-%:
-	@$(PYTHON) agents/tools/mkf.py $(V) $@
-endif
-endif
-
-endif
+clean: ## Clean Flutter build artifacts
+	cd $(APP_DIR) && $(FLUTTER) clean

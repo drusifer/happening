@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:happening/core/audio/countdown_audio_service.dart';
 import 'package:happening/core/display/display_info.dart';
 import 'package:happening/core/display/display_service.dart';
 import 'package:happening/core/settings/settings_service.dart';
@@ -76,6 +77,16 @@ class _MockCalendarService extends Mock implements CalendarService {
   Future<List<CalendarEvent>> fetchEvents(String calendarId) async => [];
 }
 
+class _FakeAudioService extends CountdownAudioService {
+  _FakeAudioService() : super(playerPool: []);
+  @override
+  void updateRemainingSeconds(int seconds, {bool enabled = true}) {}
+  @override
+  void stop() {}
+  @override
+  void dispose() {}
+}
+
 void main() {
   final now = DateTime(2026, 2, 27, 10, 0);
   final clock = _FakeClock(now);
@@ -109,6 +120,7 @@ void main() {
             calendarController: calendar,
             settingsService: settings,
             windowService: _FakeWindowService(),
+            audioService: _FakeAudioService(),
             onSignOut: () {},
             enableAnimations: false, // crucial for golden tests
           ),
@@ -157,6 +169,7 @@ void main() {
             calendarController: calendar,
             settingsService: settings,
             windowService: _FakeWindowService(),
+            audioService: _FakeAudioService(),
             onSignOut: () {},
             enableAnimations: false, // crucial for golden tests
           ),
