@@ -69,7 +69,10 @@ void main() {
       screenRetriever: MockScreenRetriever(),
       displayService: displayService,
     );
-    controller = StripController(windowService: windowService);
+    controller = StripController(
+      windowService: windowService,
+      hoverCollapseDelay: const Duration(milliseconds: 30),
+    );
   });
 
   tearDown(() => controller.dispose());
@@ -141,5 +144,104 @@ void main() {
 
     expect(windowService.applied, [StripState.expandedShown]);
     expect(controller.state, StripState.expandedShown);
+  });
+
+  test('collapse/expand/collapseFromHover are ignored while hidden', () async {
+    await controller.hide();
+    windowService.applied.clear();
+
+    await controller.collapse();
+    await controller.expand();
+    await controller.collapseFromHover();
+
+    expect(windowService.applied, isEmpty);
+    expect(controller.state, StripState.hidden);
+
+    await controller.show();
+    expect(controller.state, StripState.collapsedShown);
+  });
+
+  test('collapse/expand/collapseFromHover are ignored while hidden', () async {
+    await controller.hide();
+    windowService.applied.clear();
+
+    await controller.collapse();
+    await controller.expand();
+    await controller.collapseFromHover();
+
+    expect(windowService.applied, isEmpty);
+    expect(controller.state, StripState.hidden);
+
+    await controller.show();
+    expect(controller.state, StripState.collapsedShown);
+  });
+
+  test('collapse/expand/collapseFromHover are ignored while hidden', () async {
+    await controller.hide();
+    windowService.applied.clear();
+
+    await controller.collapse();
+    await controller.expand();
+    await controller.collapseFromHover();
+
+    expect(windowService.applied, isEmpty);
+    expect(controller.state, StripState.hidden);
+
+    await controller.show();
+    expect(controller.state, StripState.collapsedShown);
+  });
+
+  group('collapseFromHover', () {
+    test('defers the expanded → collapsed resize by the grace period',
+        () async {
+      await controller.expand();
+      windowService.applied.clear();
+
+      final done = controller.collapseFromHover();
+      await Future.delayed(const Duration(milliseconds: 10));
+      expect(windowService.applied, isEmpty);
+
+      await done;
+      expect(windowService.applied, [StripState.collapsedShown]);
+      expect(controller.state, StripState.collapsedShown);
+    });
+
+    test('re-expanding within the grace period cancels the collapse', () async {
+      await controller.expand();
+      windowService.applied.clear();
+
+      final done = controller.collapseFromHover();
+      await controller.expand();
+      await done; // superseded → completes without applying
+      await Future.delayed(const Duration(milliseconds: 50));
+
+      expect(windowService.applied, isEmpty);
+      expect(controller.state, StripState.expandedShown);
+    });
+
+    test('repeated hover calls do not restart the grace period', () async {
+      await controller.expand();
+      windowService.applied.clear();
+
+      final first = controller.collapseFromHover();
+      await Future.delayed(const Duration(milliseconds: 20));
+      final second = controller.collapseFromHover();
+      await Future.wait([first, second]);
+
+      expect(windowService.applied, [StripState.collapsedShown]);
+    });
+
+    test('explicit collapse() stays immediate and cancels a pending one',
+        () async {
+      await controller.expand();
+      windowService.applied.clear();
+
+      final hover = controller.collapseFromHover();
+      await controller.collapse();
+      await hover;
+      await Future.delayed(const Duration(milliseconds: 50));
+
+      expect(windowService.applied, [StripState.collapsedShown]);
+    });
   });
 }

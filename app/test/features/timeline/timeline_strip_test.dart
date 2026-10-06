@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:happening/core/audio/countdown_audio_service.dart';
 import 'package:happening/core/display/display_info.dart';
 import 'package:happening/core/display/display_service.dart';
 import 'package:happening/core/settings/settings_service.dart';
@@ -1132,6 +1133,9 @@ void main() {
 }
 
 class _FakeAudioService extends CountdownAudioService {
+  // Empty pool: no real AudioPlayers (platform channels) in widget tests.
+  _FakeAudioService() : super(playerPool: const []);
+
   int? lastRemainingSeconds;
   bool? lastEnabled;
 

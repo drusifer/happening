@@ -10,6 +10,7 @@ import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/window/interaction_strategy/window_interaction_strategy.dart';
 import 'package:happening/core/window/linux_dock_window_manager.dart';
 import 'package:happening/core/window/linux_window_service.dart';
+import 'package:happening/core/window/strip_controller.dart';
 import 'package:happening/core/window/strip_state.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:mockito/annotations.dart';
@@ -140,6 +141,7 @@ void main() {
         displayService: displayService,
         interactionStrategy: fakeInteractionStrategy,
       );
+      addTearDown(StripController(windowService: service).dispose);
 
       // Default mock behavior for initialization
       when(mockSR.getPrimaryDisplay()).thenAnswer((_) async => const Display(
@@ -253,6 +255,33 @@ void main() {
           predicate<Size>((s) => s.width == 0, 'zero-width min size'))));
       verifyNever(mockWM.setMaximumSize(argThat(
           predicate<Size>((s) => s.width == 0, 'zero-width max size'))));
+    });
+
+    // Regression: macOS top-of-screen clicks blocked while hidden. A display
+    // change re-applied collapsedShown, inflating the mini pill to full width.
+    test('_onDisplayChanged while hidden keeps the mini-pill width', () async {
+      await service.initialize(initialFontSizePx: kDefaultFontSizePx);
+      final controller = StripController(windowService: service);
+      addTearDown(controller.dispose);
+      await controller.hide();
+      final miniWidth = service.getMiniWidth(kDefaultFontSizePx);
+
+      when(mockWM.getDevicePixelRatio()).thenReturn(2.0);
+      clearInteractions(mockWM);
+      events.fire();
+      await Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
+      service.didChangeMetrics();
+      await Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
+
+      final sizes = verify(mockWM.setSize(captureAny,
+              animate: anyNamed('animate')))
+          .captured
+          .cast<Size>();
+      expect(sizes, isNotEmpty);
+      expect(sizes.every((s) => s.width == miniWidth), isTrue,
+          reason: 'hidden window must stay mini-pill width, got $sizes');
     });
 
     // Concurrent _onDisplayChanged serialisation guard
@@ -554,12 +583,16 @@ void main() {
     });
 
     group('Linux strut (F-28)', () {
-      LinuxWindowService linuxService() => LinuxWindowService(
-            windowManager: mockWM,
-            screenRetriever: mockSR,
-            displayService: displayService,
-            linuxDockWindowManager: fakeLinuxDock,
-          );
+      LinuxWindowService linuxService() {
+        final svc = LinuxWindowService(
+          windowManager: mockWM,
+          screenRetriever: mockSR,
+          displayService: displayService,
+          linuxDockWindowManager: fakeLinuxDock,
+        );
+        addTearDown(StripController(windowService: svc).dispose);
+        return svc;
+      }
 
       test('initialize reserved mode calls dock with physical pixel height',
           () async {
@@ -651,12 +684,16 @@ void main() {
     });
 
     group('F-31 Linux hide/show (converged onto applyState)', () {
-      LinuxWindowService linuxService() => LinuxWindowService(
-            windowManager: mockWM,
-            screenRetriever: mockSR,
-            displayService: displayService,
-            linuxDockWindowManager: fakeLinuxDock,
-          );
+      LinuxWindowService linuxService() {
+        final svc = LinuxWindowService(
+          windowManager: mockWM,
+          screenRetriever: mockSR,
+          displayService: displayService,
+          linuxDockWindowManager: fakeLinuxDock,
+        );
+        addTearDown(StripController(windowService: svc).dispose);
+        return svc;
+      }
 
       test('hideStrip undocks the strut when mode is reserved', () async {
         final svc = linuxService();

@@ -56,7 +56,6 @@ class WindowService with WidgetsBindingObserver {
   WindowMode _windowMode = WindowMode.reserved;
 
   bool _displayChangeInProgress = false;
-  bool _isExpanded = false;
 
   double _dpr = 1.0;
   double _screenWidth = 0;
@@ -82,7 +81,6 @@ class WindowService with WidgetsBindingObserver {
   double toLogicalWidth(double reportedWidth, double dpr) => reportedWidth;
 
   @protected
-  bool get isExpanded => _isExpanded;
 
   @protected
   DisplayInfo? get activeDisplay => _activeDisplay;
@@ -112,7 +110,7 @@ class WindowService with WidgetsBindingObserver {
 
     await _strategy.moveToDisplay(nextActive);
     await reRegisterReservation();
-    await _reapplyCurrentState();
+    await reapplyCurrentState();
   }
 
   /// Call once, before [runApp], to set up the window.
@@ -214,8 +212,8 @@ class WindowService with WidgetsBindingObserver {
     if (_fontSizePx == fontSizePx) return;
     _fontSizePx = fontSizePx;
     _log.fine(
-        'WindowService.updateHeights: fontSizePx=$fontSizePx isExpanded=$_isExpanded');
-    await _reapplyCurrentState();
+        'WindowService.updateHeights: fontSizePx=$fontSizePx');
+    await reapplyCurrentState();
     _log.fine('WindowService.updateHeights: reapply complete');
   }
 
@@ -235,9 +233,6 @@ class WindowService with WidgetsBindingObserver {
   /// from multiple unsynchronised paths.
   Future<void> applyState(StripState state) async {
     final size = _sizeFor(state);
-    // Keep the legacy expansion flag in sync while callers migrate onto
-    // StripState; reservation logic still reads isExpanded.
-    _isExpanded = state.isExpanded;
     // Reserve FIRST, then place the window. On Windows ABM_SETPOS can move the
     // AppBar window and reports the reserved band top, so geometry must be
     // applied AFTER reservation, at the origin it returns — otherwise the strip
@@ -420,8 +415,7 @@ class WindowService with WidgetsBindingObserver {
 
     _log.fine('WindowService._onDisplayChangedInner: dpr=$_dpr→$newDpr '
         'width=$_screenWidth→$newWidth activeChanged=$activeChanged '
-        '(${previousActiveId ?? "—"}→${nextActiveId ?? "—"}) '
-        'isExpanded=$_isExpanded');
+        '(${previousActiveId ?? "—"}→${nextActiveId ?? "—"}) ');
 
     if (newWidth <= 0) {
       _log.fine(
@@ -449,8 +443,8 @@ class WindowService with WidgetsBindingObserver {
     await onDisplayChangedExtra();
 
     _log.fine(
-        'WindowService._onDisplayChangedInner: triggering resize isExpanded=$_isExpanded');
-    await _reapplyCurrentState();
+        'WindowService._onDisplayChangedInner: triggering resize');
+    await reapplyCurrentState();
   }
 
   Future<double> _readActiveDisplayWidth() async {
@@ -466,20 +460,33 @@ class WindowService with WidgetsBindingObserver {
     return display.size.width;
   }
 
-  /// Re-applies the current logical state's geometry through the single applier
-  /// (reserve → size at the reserved origin). Used by the paths that change the
-  /// computed geometry without changing the logical state — font-size change,
-  /// display change, reassert. Mirror of `StripController.reapply()`; replaces
-  /// the old `_doExpand`/`_doCollapse` (which resized in place without
-  /// re-pinning to the reserved origin).
-  Future<void> _reapplyCurrentState() async {
-    final state =
-        _isExpanded ? StripState.expandedShown : StripState.collapsedShown;
+  /// Set by `StripController`, the sole owner of the logical [StripState].
+  /// Display, font and reassert paths change computed geometry without knowing
+  /// the state, so they ask the owner to re-apply it. Null only before a
+  /// controller exists; the first `applyState` has not run yet either.
+  Future<void> Function()? reapplyHandler;
+
+  /// The one way to re-apply geometry after something other than a state
+  /// transition changed it (display, DPI, font size, reservation re-announce).
+  @protected
+  Future<void> reapplyCurrentState() async {
+    final handler = reapplyHandler;
+    if (handler == null) {
+      _log.warning('reapplyCurrentState: no StripController attached, skipping');
+      return;
+    }
+    await handler();
+  }
+
+  /// Re-applies [state]'s geometry through the single applier (reserve → size
+  /// at the reserved origin) and runs [afterReapplyState]. Called by
+  /// `StripController` for a same-state (forced) re-apply.
+  Future<void> reapplyState(StripState state) async {
     await applyState(state);
     await afterReapplyState(state);
   }
 
-  /// Hook invoked right after [_reapplyCurrentState]'s [applyState], for
+  /// Hook invoked right after [reapplyCurrentState]'s [applyState], for
   /// platforms that must re-present/re-pin so an asynchronous OS relocation
   /// cannot strand the window after the geometry settles. On Windows a DPI
   /// change triggers a late (~150ms) Win32 re-evaluation that drops the AppBar

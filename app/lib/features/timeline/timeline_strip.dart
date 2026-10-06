@@ -402,7 +402,7 @@ class _TimelineStripState extends State<TimelineStrip>
     }
     unawaited(state == ExpansionState.expanded
         ? _stripController.expand()
-        : _stripController.collapse());
+        : _stripController.collapseFromHover());
 
     final newAstroHit =
         _computeAstroHit(layout, mouseX, mouseY, isOverStripZone);
@@ -514,7 +514,6 @@ class _TimelineStripState extends State<TimelineStrip>
   Future<void> _hideStrip() async {
     _log.info(
         'TimelineStrip: hiding strip (preHideSentToBack=$_preHideSentToBack, settingsOpen=$_isSettingsOpen, hoveredEvent=$_hoveredEvent)');
-    _audioService.stop();
     _preHideSentToBack = _focusController.isSentToBack;
     if (_preHideSentToBack) {
       _log.fine(
