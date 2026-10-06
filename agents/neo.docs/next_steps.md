@@ -1,3 +1,16 @@
+# Neo Next Steps — 2026-10-02
+
+## macOS Impeller resize crash
+- Trin: manual macOS UAT — hover wobble at strip edge (no crash, no flicker),
+  strip still transparent under Skia, settings close still collapses instantly.
+- DONE: `timeline_strip_test.dart` load failure (missing import).
+- Still open: F-32 files fail `lint-format`; 2 goldens fail on macOS
+  (hover_card_alignment, timeline_strip_mini_widget — likely regenerated on a
+  different platform in bca28c8). Drew to decide: regenerate on macOS
+  (`--update-goldens`) or regenerate on the platform CI uses.
+- When a Flutter stable ships #192522: drop `FLTEnableImpeller=false` from
+  `app/macos/Runner/Info.plist` and retest. Keep the hover grace period.
+
 # Neo Next Steps — 2026-07-21
 
 ## Makefile lint scope

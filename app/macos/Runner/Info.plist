@@ -41,5 +41,9 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<!-- Impeller segfaults on the raster thread (Canvas::SetupRenderPass) when
+	     the strip window resizes collapsed<->expanded; use Skia until fixed. -->
+	<key>FLTEnableImpeller</key>
+	<false/>
 </dict>
 </plist>

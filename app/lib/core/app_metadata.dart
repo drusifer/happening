@@ -9,5 +9,5 @@
 //
 // ---------------------------------------------------------------------------
 
-const String appVersion = '1.5.4';
+const String appVersion = '1.6.0';
 const String appAboutUrl = 'https://gs.works/happening';

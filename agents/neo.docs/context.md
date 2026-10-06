@@ -1,3 +1,15 @@
+# Neo Context — 2026-10-02 UPDATE
+
+## macOS Impeller resize crash (Flutter 3.47.5)
+- Raster-thread SIGSEGV in `impeller::Canvas::SetupRenderPass` after rapid
+  window resizes is an engine bug (flutter/flutter#192522; dup #192829/#185394).
+  Crash reports land in `~/Library/Logs/DiagnosticReports/happening-*.ips`.
+- Mitigations: `FLTEnableImpeller=false` in macOS Info.plist, and
+  `StripController.collapseFromHover()` (250ms grace) for hover collapses only.
+  Explicit `collapse()` stays immediate — keep it that way for settings/lifecycle.
+- `make lint-format` is check-only (`--output=none`); don't `dart format` whole
+  files you only touched one line of — unrelated F-32 code is unformatted.
+
 # Neo Context — 2026-07-21
 
 ## 2026-07-21 UPDATE — Makefile analyzer roots are availability-aware
