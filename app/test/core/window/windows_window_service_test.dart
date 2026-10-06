@@ -4,6 +4,7 @@ import 'package:happening/core/display/display_id.dart';
 import 'package:happening/core/display/display_info.dart';
 import 'package:happening/core/display/display_service.dart';
 import 'package:happening/core/settings/settings_service.dart';
+import 'package:happening/core/window/strip_controller.dart';
 import 'package:happening/core/window/strip_state.dart';
 import 'package:happening/core/window/windows_app_bar.dart';
 import 'package:happening/core/window/windows_window_service.dart';
@@ -152,12 +153,16 @@ void main() {
   late FakeWindowsAppBar appBar;
   late FakeWin32Desktop desktop;
 
-  WindowsWindowService makeService() => WindowsWindowService(
-        windowManager: mockWM,
-        screenRetriever: mockSR,
-        displayService: displayService,
-        appBar: appBar,
-      );
+  WindowsWindowService makeService() {
+    final service = WindowsWindowService(
+      windowManager: mockWM,
+      screenRetriever: mockSR,
+      displayService: displayService,
+      appBar: appBar,
+    );
+    addTearDown(StripController(windowService: service).dispose);
+    return service;
+  }
 
   setUp(() async {
     mockWM = MockWindowManager();
@@ -455,8 +460,8 @@ void main() {
       await service.reassertAppBar();
 
       // Same unified flow as init: drop the bar (re-broadcast), re-register,
-      // reserve, then position AFTER reserving.
-      expect(appBar.calls, ['dispose', 'register', 'reserve']);
+      // reserve, then position AFTER reserving, then present (same as show).
+      expect(appBar.calls, ['dispose', 'register', 'reserve', 'present']);
       verify(mockWM.setPosition(const Offset(0, 100))).called(1);
     });
   });

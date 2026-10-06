@@ -1192,3 +1192,63 @@ make: *** [Makefile:93: win-test] Error 1
 
 
 
+
+---
+[<small>2026-10-02 13:38:59</small>] [**Neo**]->[**Trin**] *swe handoff*:
+ macOS crash on hover expand/collapse fixed (mitigated). Root cause is Flutter engine bug flutter/flutter#192522 (Impeller null deref in Canvas::SetupRenderPass on A→B→A window resizes). Disabled Impeller on macOS (Info.plist FLTEnableImpeller=false) and added StripController.collapseFromHover() with a 250ms grace period so hover wobble no longer flaps the window size. 11/11 strip_controller tests green, analyzer clean on touched files. Pre-existing: timeline_strip_test.dart fails to load (extends_non_class on _FakeAudioService) and F-32 files fail lint-format. Summary: agents/neo.docs/macOS_Impeller_Resize_Crash_Summary_2026-10-02T13-38.md. @Trin *qa uat macOS hover wobble + Skia transparency
+
+---
+[<small>2026-10-02 13:45:00</small>] [**Cypher**]->[**all**] *pm queue*:
+ Queued F-33 Countdown Swing for the next *bloop plan (not started). In the final ~10s big/shaking countdown phase, the countdown swings fast back and forth across the full strip width; stops at meeting start; mouse-over stops it and returns it to its regular position. Logged in docs/PRD.md (V2 table) and agents/cypher.docs/next_steps.md with 4 open questions. @Cypher *pm stories F-33 when Drew kicks off the loop.
+
+---
+[<small>2026-10-02 13:43:15</small>] [**Neo**]->[**Trin**] *swe handoff*:
+ Fixed timeline_strip_test.dart load error: missing CountdownAudioService import for _FakeAudioService; fake now uses an empty player pool (no platform AudioPlayers). File 28/28 green, analyzer clean. Full suite: only 2 pre-existing golden failures (hover_card_alignment 5.81%, timeline_strip_mini_widget 1.75%) — same with my changes stashed; goldens last regenerated in bca28c8. @Trin *qa verify; golden regeneration needs Drew's call on reference platform.
+
+---
+[<small>2026-10-02 13:56:56</small>] [**User**]->[**all**] *request*:
+ *bob-protocol init
+
+---
+[<small>2026-10-02 13:56:57</small>] [**Bob**]->[**all**] *prompt init*:
+ BOB protocol initialized on macOS. Agent links in sync (0 new). bobp + via not installed on this Mac -> using agents/tools/chat.py and grep fallbacks. Open handoffs: Neo->Trin (Impeller crash mitigation + FakeAudioService fix, needs macOS UAT); 2 pre-existing golden failures await Drew's platform call; F-33 Countdown Swing queued for *bloop plan. Why: cold-start reconciliation before resuming work.
+
+---
+[<small>2026-10-02 13:57:02</small>] [**User**]->[**all**] *request*:
+ *bloop countdown swing
+
+---
+[<small>2026-10-02 13:59:21</small>] [**Cypher**]->[**Smith**] *pm handoff*:
+ F-33 stories+arch written (Tier 2 combined doc): docs/sprints/F-33/F33_COUNTDOWN_SWING_STORIES_ARCH.md. 10s threshold, 700ms eased sweep, meeting-start only, hover snaps back, OQ defaults set. Why: fast-track keeps a small UI polish to one gate. @Smith *user review
+
+---
+[<small>2026-10-02 13:59:21</small>] [**Smith**]->[**Mouse**] *user approve*:
+ APPROVED w/ required AC-9: honour OS reduce-motion (enableAnimations is test-only; users had no motion opt-out — vestibular risk). Review: docs/sprints/F-33/F33_SMITH_GATE_2026-10-02.md. Smith re-engages at impl Phase C. @Mouse *sm plan
+
+---
+[<small>2026-10-02 13:59:21</small>] [**Mouse**]->[**Morpheus**] *sm handoff*:
+ task.md rewritten for F-33: A (CountdownSwing pure logic), B (anim driver + swing layout), C (UAT). F-32 board archived. Why: small phases keep Neo/Trin loops short. @Morpheus *lead review sprint plan
+
+---
+[<small>2026-10-02 13:59:21</small>] [**Morpheus**]->[**all**] *lead approve*:
+ Sprint plan APPROVED. Added binding rule: never start/stop _swingAnim inside build; choose layout from CountdownSwing.isActive, defer controller via addPostFrameCallback (setState-during-build risk). Planning loop complete; awaiting Drew for *bloop *impl. @Neo *swe impl F33-A1
+
+---
+[<small>2026-10-06 19:28:19</small>] [**Neo**]->[**all**] *swe init*:
+ Neo online. Loaded CHAT + state. Pending: F-33 Countdown Swing, F33-A1 CountdownSwing pure logic (TDD). via MCP down (not on PATH) -> grep fallback. Awaiting go for *impl F33-A1.
+
+---
+[<small>2026-10-06 19:31:00</small>] [**Neo**]->[**Trin**] *swe fix*:
+ macOS hidden click-block FIXED: _reapplyCurrentState re-applied collapsedShown after display/font callbacks while hidden -> full-width transparent window ate top-screen clicks. Now reuses last applied StripState + regression test. Window suite 89 green. @Trin *qa verify on Mac
+
+---
+[<small>2026-10-06 19:37:04</small>] [**Neo**]->[**Trin**] *swe fix*:
+ Hidden click-block fix redone: removed WindowService._isExpanded/isExpanded and fallback guessing. StripController is sole owner of StripState; display/font/reassert all go via reapplyCurrentState -> controller. Full suite green except 2 known macOS goldens; analyzer clean. @Trin *qa verify on Mac
+
+---
+[<small>2026-10-06 19:52:19</small>] [**Trin**]->[**Morpheus**] *qa handoff*:
+ UAT PASS: core+features tests green, analyzer clean, Drew's macOS run (out.txt): hidden window stayed 205x55 in all GEO probes, no un-hide except explicit show. 2 known macOS goldens still fail (pre-existing). @Morpheus *lead review hidden-click fix
+
+---
+[<small>2026-10-06 19:52:19</small>] [**Morpheus**]->[**all**] *lead approve*:
+ Review APPROVED: one re-apply path via StripController, guard at _request choke point, legacy _isExpanded removed, no duplicate state. Fix loop complete. Open: Impeller UAT, golden platform call, then F-33 @Neo *swe impl F33-A1.

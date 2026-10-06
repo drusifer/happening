@@ -162,7 +162,7 @@ class WindowsWindowService extends WindowService {
   // NOTE: no onDisplayChangedExtra override. A display/DPI change is just
   // another transition, so it converges onto the single applier like every
   // other one: WindowService._onDisplayChangedInner updates dpr/width/display,
-  // then calls _reapplyCurrentState() → applyState, whose applyReservation
+  // then calls reapplyCurrentState() → applyState, whose applyReservation
   // re-reserves the band (at the now-correct logical-derived _bandWidthPx) and
   // returns the origin to pin to. The old override pre-reserved + setPosition
   // here as well, double-reserving the band — at a DPI change that second
@@ -189,7 +189,7 @@ class WindowsWindowService extends WindowService {
   /// Re-broadcasts the work-area reservation (e.g. when the strip overlaps
   /// other windows) through the SAME flow as everything else: drop the AppBar
   /// (ABM_REMOVE forces Windows to re-announce the work area), then re-apply the
-  /// collapsed state via [applyState] — which re-registers (ABM_NEW), reserves,
+  /// current state via [reapplyCurrentState] — which re-registers (ABM_NEW), reserves,
   /// and positions in the correct reserve-then-position order. No bespoke
   /// performResize/setPosition sequence that can drift from init/hide/show.
   @override
@@ -198,8 +198,8 @@ class WindowsWindowService extends WindowService {
       await super.reassertAppBar();
       return;
     }
-    _log.fine('reassertAppBar: dispose + applyState(collapsedShown)');
+    _log.fine('reassertAppBar: dispose + reapplyCurrentState');
     _appBar.dispose(); // ABM_REMOVE → re-broadcast work area
-    await applyState(StripState.collapsedShown);
+    await reapplyCurrentState();
   }
 }
