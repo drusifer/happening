@@ -1,3 +1,20 @@
+# Morpheus Agent State — Sprint F-33 (Countdown Swing)
+
+## Context
+- Arch in `docs/sprints/F-33/F33_COUNTDOWN_SWING_STORIES_ARCH.md` §2: pure `CountdownSwing` (gate + alignmentX), `_swingAnim`
+  (TickerProviderStateMixin), full-width Positioned→RepaintBoundary→Align when active.
+- Scale alignment == swing alignment keeps 3x glyph on-screen without measuring.
+- Build-phase rule: layout branch from `isActive`; controller start/stop via
+  addPostFrameCallback (avoid setState-during-build). No window resize involved.
+
+## Current Task
+**Status:** Done — sprint plan in task.md reviewed and APPROVED.
+
+## Next Steps
+- `*lead review` Phase A/B code when Trin hands off during `*impl`.
+
+---
+
 # Morpheus Agent State — Sprint F-32 (Audio Countdown Timer)
 
 ## Context

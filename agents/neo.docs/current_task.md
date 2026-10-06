@@ -1,3 +1,23 @@
+# Neo Current Task — 2026-10-02
+
+## STATUS: macOS Impeller resize crash — MITIGATED, handed to Trin
+- Root cause is a Flutter engine bug (flutter/flutter#192522, unmerged): A→B→A
+  window resizes → wrong-size back buffer → null deref in Impeller
+  `Canvas::SetupRenderPass`. Not fixable from app code.
+- `Info.plist`: `FLTEnableImpeller=false` (Skia fallback).
+- `StripController.collapseFromHover()` with 250ms `hoverCollapseDelay`, wired
+  into `TimelineStrip._handleMouse`; cancels on any other transition.
+- 11/11 strip_controller tests green; analyzer clean on touched files.
+- Summary: `macOS_Impeller_Resize_Crash_Summary_2026-10-02T13-38.md`.
+
+## STATUS: timeline_strip_test.dart load failure — FIXED
+- Missing `import 'package:happening/core/audio/countdown_audio_service.dart'`
+  made `_FakeAudioService extends CountdownAudioService` an extends_non_class.
+- Fake now calls `super(playerPool: const [])` so no real AudioPlayers are made.
+- File: 28/28 green. Full suite: only 2 golden failures remain (pre-existing,
+  identical with my changes stashed): hover_card_alignment.png (5.81%) and
+  timeline_strip_mini_widget.png (1.75%), last regenerated in F-32 commit bca28c8.
+
 # Neo Current Task — 2026-10-01
 
 ## STATUS: Tap-to-Mute Audio Countdown — FIXED, tested, handed to Trin

@@ -106,6 +106,8 @@ A **narrow, persistent, horizontal bar** anchored to the top of the screen (all 
 | F-30 | **Multi-Monitor Support** | User can choose which display the strip lives on (single strip, single chosen display). Per-monitor DPI respected. Survives monitor hot-plug: falls back to primary on disconnect, auto-returns when reconnected. F-28 strut reservation generalized to chosen Linux display. One-strip-per-monitor and cursor-follow are explicitly out of scope. See `agents/cypher.docs/f30_multi_monitor_stories.md`. |
 | F-31 | **Timestrip Hide / Show** ✅ SHIPPED | ← button on the far-left edge hides the strip, leaving only a mini countdown + → button anchored top-left. Tapping → or the countdown restores the full strip. Linux strut and Windows AppBar reservations are released on hide and re-acquired on show. 300ms Flutter animation; OS window resizes once per transition. See `docs/sprints/F-31/` for sprint artifacts. |
 
+| F-33 | **Countdown Swing (Final 10s)** 📋 PLANNED | During the last ~10s before a meeting starts (the existing big + shaking + color-change countdown phase), the countdown also swings fast horizontally back and forth across the full strip width. Stops when the meeting starts. Mouse-over on the strip immediately stops the swing and returns the countdown to its regular position. |
+
 ### V3 (Nice to Have)
 
 | ID | Feature | Description |

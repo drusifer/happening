@@ -1,3 +1,18 @@
+# Next Steps — 2026-10-02
+
+## F-33 Countdown Swing — QUEUED for *bloop plan (not started)
+Drew's request (verbatim intent): in the last ~10s before a meeting, while the
+countdown is big + shaking + color-changing, make it swing back and forth across
+the WHOLE strip width to grab attention. Fast. Stops once the meeting starts.
+If the mouse is over the strip, stop and return to its regular position.
+- Tier: likely Tier 2 (UI polish on existing F-32-era countdown phase).
+- Open questions to raise when picked up:
+  - OQ-F33-1: Resume swinging when mouse leaves the strip before T=0?
+  - OQ-F33-2: Mini/hidden (F-31) mode — swing within the pill or not at all?
+  - OQ-F33-3: Respect a reduce-motion setting / tie to audio tap-to-mute?
+  - OQ-F33-4: Expanded state (hover card) — mouse-over already stops it, confirm.
+- Next: `@Cypher *pm` stories+arch with Morpheus → `@Smith *user review` → `@Mouse *sm plan`.
+
 # Next Steps — 2026-07-01
 
 ## macOS ASWebAuth compliance sprint (fast-tracked, *bloop *plan)
