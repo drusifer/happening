@@ -152,6 +152,7 @@ dist-macos-appstore: $(PUB_STAMP) ## Export and submit macOS App Store build
 	xcodebuild -exportArchive \
 	    -archivePath $(APP_DIR)/build/macos/Runner.xcarchive \
 	    -exportOptionsPlist $(APP_DIR)/macos/ExportOptions-AppStore.plist \
+	    -allowProvisioningUpdates \
 	    -authenticationKeyID "$(ASC_API_KEY_ID)" \
 	    -authenticationKeyIssuerID "$(ASC_API_ISSUER_ID)" \
 	    -authenticationKeyPath "$(ASC_API_KEY_PATH)"
