@@ -275,10 +275,10 @@ void main() {
       await Future.delayed(Duration.zero);
       await Future.delayed(Duration.zero);
 
-      final sizes = verify(mockWM.setSize(captureAny,
-              animate: anyNamed('animate')))
-          .captured
-          .cast<Size>();
+      final sizes =
+          verify(mockWM.setSize(captureAny, animate: anyNamed('animate')))
+              .captured
+              .cast<Size>();
       expect(sizes, isNotEmpty);
       expect(sizes.every((s) => s.width == miniWidth), isTrue,
           reason: 'hidden window must stay mini-pill width, got $sizes');
@@ -662,6 +662,68 @@ void main() {
         // Should re-dock with dpr=2.0: collapsedHeight=55 * 2 = 110
         expect(fakeLinuxDock.calls, contains('dock'));
         expect(fakeLinuxDock.lastDockHeight, 110);
+      });
+
+      DisplayInfo belowPanel(double workAreaTop) => DisplayInfo(
+            id: const DisplayId('0'),
+            osName: 'eDP-1',
+            size: const Size(1728, 1080),
+            workAreaOrigin: Offset(0, workAreaTop),
+            workAreaSize: Size(1728, 1080 - workAreaTop),
+            scaleFactor: 2.0,
+            isPrimary: true,
+          );
+
+      test('strut reaches the strip bottom when a panel sits above it',
+          () async {
+        // GNOME top bar: work area starts at y=32, strip is 55 tall, dpr 2.
+        probe.setDisplays([belowPanel(32)]);
+        events.fire();
+        await Future.delayed(Duration.zero);
+        await Future.delayed(Duration.zero);
+        await Future.delayed(Duration.zero);
+        when(mockWM.getDevicePixelRatio()).thenReturn(2.0);
+
+        final svc = linuxService();
+        await svc.initialize(
+          initialFontSizePx: kDefaultFontSizePx,
+          initialWindowMode: WindowMode.reserved,
+        );
+        await svc.applyState(StripState.collapsedShown);
+
+        // (32 + 55) * 2 — measured from the screen top, not the strip top.
+        expect(fakeLinuxDock.lastDockHeight, 174);
+        verify(mockWM.setPosition(const Offset(0, 32))).called(greaterThan(0));
+      });
+
+      test('own strut in a refreshed work area does not walk the strip down',
+          () async {
+        probe.setDisplays([belowPanel(32)]);
+        events.fire();
+        await Future.delayed(Duration.zero);
+        await Future.delayed(Duration.zero);
+        await Future.delayed(Duration.zero);
+        when(mockWM.getDevicePixelRatio()).thenReturn(2.0);
+
+        final svc = linuxService();
+        await svc.initialize(
+          initialFontSizePx: kDefaultFontSizePx,
+          initialWindowMode: WindowMode.reserved,
+        );
+        await svc.applyState(StripState.collapsedShown);
+
+        // The WM now reports the work area below our strut: 174px / 2 = 87.
+        probe.setDisplays([belowPanel(87)]);
+        events.fire();
+        await Future.delayed(Duration.zero);
+        await Future.delayed(Duration.zero);
+        await Future.delayed(Duration.zero);
+        clearInteractions(mockWM);
+        await svc.applyState(StripState.collapsedShown);
+
+        expect(fakeLinuxDock.lastDockHeight, 174);
+        verify(mockWM.setPosition(const Offset(0, 32))).called(greaterThan(0));
+        verifyNever(mockWM.setPosition(const Offset(0, 87)));
       });
 
       test('reassertAppBar repositions window and re-docks', () async {

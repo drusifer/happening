@@ -326,3 +326,41 @@ Users requested subtle audio cues as an upcoming meeting start approaches ("nudg
 - Startup sound provides soft audio feedback; launch explosion is eliminated.
 - Users can tap to mute current meeting countdown while preserving future meeting alerts.
 
+
+---
+
+## DEC-011: Linux Send-to-Back sets the X11 `BELOW` state via `xdotool` (not native code)
+**Date**: 2026-10-10 (first implemented 2026-05-15, commit `d6eb9c7`; reworked 2026-10-10)
+**Status**: Decided
+**Authors**: Drew (decision), Neo (rework), Oracle (record)
+
+### Context
+F-27 shipped Send-to-Back as `setAlwaysOnTop(false)` + `blur()` because `window_manager` has no
+`lower()`. On Linux that was not enough. Drew tried lowering the window from native code and ran
+into problems under Wayland (specifics unrecorded), then added an `xdotool getactivewindow` +
+`python3`/ctypes `XLowerWindow` helper inside `BaseWindowInteractionStrategy`.
+
+On 2026-10-10 that helper was found not to work on GNOME (Fedora 44, GNOME Shell 50.5,
+Wayland + XWayland): the strip is a `_NET_WM_WINDOW_TYPE_DOCK` window, Mutter keeps docks in a
+layer above normal windows, and `XLowerWindow` only restacks within a layer. The helper also
+segfaulted on 64-bit heaps (it passed the `Display*` back as a 32-bit int). A watched test showed
+that a dock carrying `_NET_WM_STATE_BELOW` is moved to the bottom layer.
+
+### Decision
+Linux has its own `LinuxWindowInteractionStrategy` (extends the reserved strategy):
+- `sendToBack()`: `xdotool getactivewindow` (before blur, while the strip has focus) → base
+  `setAlwaysOnTop(false)` + `blur()` → `xdotool windowstate --add BELOW <wid>`.
+- `restoreToFront()`: `xdotool windowstate --remove BELOW <wid>` → base `setAlwaysOnTop(true)`.
+
+The `python3` `XLowerWindow` helper was removed. The base strategy runs no external process.
+Failures are logged at `warning`; the strip then falls back to the plain base behaviour.
+
+### Consequences
+- **`xdotool` is a runtime dependency on Linux** (`scripts/setup.sh` checks it). `python3` no longer is.
+- Packaged builds must ship or declare it. The snap and the Flatpak manifest
+  (`flatpak/works.gs.happening.yml`) do not currently bundle `xdotool`.
+- Verified on GNOME/Mutter only. `_NET_WM_STATE_BELOW` is standard EWMH, but other window
+  managers are untested.
+- **Do not replace this with a native lower (e.g. `gdk_window_lower` in the runner plugin)
+  without Drew's sign-off.** It was tried and abandoned.
+- Supersedes the "zero platform-specific code" wording in ARCH.md §6 and AOQ-8 / AOQ-11.

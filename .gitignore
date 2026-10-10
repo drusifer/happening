@@ -141,5 +141,8 @@ app.*.symbols
 app/pubspec.yaml~
 app/.pubspec.yaml.un~
 
-# Bob Protocol / via — machine-local config and index, not portable
+# Bob Protocol / via â€” machine-local config and index, not portable
 .mcp.json
+
+# Flatpak build state (make dist-flatpak)
+/build/

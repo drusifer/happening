@@ -10,8 +10,8 @@ dependencies:
   flutter:
     sdk: flutter
 
-  window_manager: any
-  screen_retriever: any
+  window_manager: ^0.5.2
+  screen_retriever: ^0.2.2
   googleapis: any
   googleapis_auth: any
   url_launcher: any

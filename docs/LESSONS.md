@@ -649,3 +649,31 @@ Store the server as `_pendingServer` (instance field on `GoogleAuthService`). Ex
 
 ### References
 - **Files:** `app/lib/features/auth/auth_service.dart`, `app/lib/app.dart`, `app/lib/features/timeline/timeline_strip.dart`, `app/lib/features/timeline/painters/sign_in_layer.dart`
+
+---
+
+## Send-to-Back on Linux silently did nothing — undeclared runtime tool (2026-10-09)
+
+### Context
+On a fresh Fedora Silverblue toolbox the Send-to-Back button stopped lowering the strip. No error was shown.
+
+### The Issue
+`sendToBack()` shelled out to `xdotool` and `python3` (see DEC-011). `xdotool` was not installed.
+The `Process.run` exception is caught and logged at `fine`, so the lower step was skipped invisibly.
+Nothing — `setup.sh`, the README, the packaging manifests — listed `xdotool` as a dependency, and the
+reason for using it over native code lived only in Drew's memory. Neo began rewriting it natively,
+repeating an approach that had already failed under Wayland.
+
+### The Solution
+Declared the dependency: `scripts/setup.sh` now checks `xdotool`. Recorded the decision as DEC-011.
+Installing it exposed two further faults (a ctypes pointer segfault, and `XLowerWindow` being unable
+to move a dock window out of Mutter's dock layer); the fix was the `BELOW` state — see DEC-011.
+
+### The Rule
+**A tool the app shells out to is a dependency: declare it where setup and packaging will see it.**
+And before replacing a workaround that looks odd, ask Oracle why it exists — if there is no record,
+ask Drew and write the answer down before touching the code.
+
+### References
+- **Files:** `app/lib/core/window/interaction_strategy/base_window_interaction_strategy.dart`, `scripts/setup.sh`
+- **Decision:** DEC-011

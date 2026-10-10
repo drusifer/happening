@@ -110,6 +110,7 @@ Baraki Barak|AF|33.96744|68.9492
 Bamyan|AF|34.82156|67.82734
 Balkh|AF|36.75635|66.8972
 Baharak|AF|37.00254|70.90664
+Bagram|AF|34.96694|69.265
 Baghlan|AF|36.13068|68.70829
 Art Khwajah|AF|37.08571|69.47958
 Asmar|AF|35.03333|71.35809
@@ -261,6 +262,7 @@ Humbe|AO|-16.6864|14.90317
 Huambo|AO|-12.77611|15.73917
 Ganda|AO|-13.01592|14.63502
 Gabela|AO|-10.85147|14.37993
+Ecunna|AO|-12.67889|15.50556
 Dombe Grande|AO|-12.95167|13.1025
 Cuemba|AO|-12.15|18.08333
 Cubal do Lumbo|AO|-12.31261|14.1265
@@ -278,6 +280,7 @@ Cambundi Catembo|AO|-10.07531|17.55058
 Camacupa|AO|-12.01667|17.48333
 Caluquembe|AO|-13.86667|14.43333
 Calulo|AO|-10.00055|14.89519
+Cahama|AO|-16.28556|14.30962
 Caala|AO|-12.8525|15.56056
 Bocoio|AO|-12.47017|14.13688
 Benguela|AO|-12.57674|13.40268
@@ -312,17 +315,22 @@ Villa Lugano|AR|-34.67907|-58.47263
 Villaguay|AR|-31.86767|-59.02701
 Villa Gesell|AR|-37.26394|-56.97304
 Villa de Mayo|AR|-34.5108|-58.68059
+Valentin Alsina|AR|-34.67137|-58.40904
 Tristan Suarez|AR|-34.88982|-58.56761
 Tortuguitas|AR|-34.47513|-58.75367
 Tigre|AR|-34.42603|-58.57962
 Tandil|AR|-37.3287|-59.1369
+Sarandi|AR|-34.68161|-58.34639
+San Vicente|AR|-35.0249|-58.42409
 San Vicente|AR|-26.61667|-54.13333
 Santo Tome|AR|-28.55104|-56.04125
 Santos Lugares|AR|-34.60306|-58.54074
 Santa Teresita|AR|-36.54059|-56.69294
 Santa Elena|AR|-30.94432|-59.78832
+Santa Clara del Mar|AR|-37.83438|-57.50749
 San Pedro|AR|-33.67918|-59.66633
 San Pedro|AR|-26.6218|-54.10902
+San Miguel del Monte|AR|-35.43922|-58.80741
 San Luis del Palmar|AR|-27.50766|-58.55625
 San Lorenzo|AR|-28.13442|-58.76685
 San Justo|AR|-34.68107|-58.56379
@@ -334,38 +342,50 @@ Saladillo|AR|-35.63884|-59.77938
 Saladas|AR|-28.25504|-58.62386
 Retiro|AR|-34.58333|-58.38333
 Resistencia|AR|-27.46363|-58.98665
+Remedios de Escalada de San Martin|AR|-34.72589|-58.39663
 Reconquista|AR|-29.15|-59.65
 Quilmes|AR|-34.72065|-58.25454
 Puerto Rico|AR|-26.8089|-55.02147
 Puerto Iguazu|AR|-25.59912|-54.57355
 Puerto Esperanza|AR|-26.02267|-54.61356
-Puerto Eldorado|AR|-26.40843|-54.69463
 Posadas|AR|-27.39184|-55.92379
 Pontevedra|AR|-34.74947|-58.70158
 Pirane|AR|-25.73271|-59.10989
 Pinamar|AR|-37.11108|-56.86523
 Pilar|AR|-34.45867|-58.91398
 Paso de los Libres|AR|-29.71251|-57.08771
+Palermo|AR|-34.58856|-58.43053
 Obera|AR|-27.48683|-55.11994
 Nogoya|AR|-32.39375|-59.78955
 Necochea|AR|-38.5545|-58.73961
+Navarro|AR|-35.00587|-59.27828
 Muniz|AR|-34.55622|-58.70739
 Moron|AR|-34.65118|-58.62205
+Monte Chingolo|AR|-34.7296|-58.35421
 Monte Caseros|AR|-30.2518|-57.63537
 Montecarlo|AR|-26.56849|-54.7579
+Miramar|AR|-38.27161|-57.8389
 Merlo|AR|-34.66536|-58.72744
 Mercedes|AR|-34.65072|-59.43143
 Mercedes|AR|-29.18416|-58.07519
 Haedo|AR|-34.64239|-58.59212
+Mar del Tuyu|AR|-36.57429|-56.6939
 Mar del Plata|AR|-38.00042|-57.5562
 Mar de Ajo|AR|-36.72881|-56.68265
+Magdalena|AR|-35.07997|-57.51368
 Lujan|AR|-34.5664|-59.11478
 Los Polvorines|AR|-34.50316|-58.70596
 Lomas de Zamora|AR|-34.7574|-58.40279
+Lobos|AR|-35.18537|-59.09788
+Leandro N. Alem|AR|-27.60376|-55.32365
+Las Flores|AR|-36.01427|-59.09986
 La Plata|AR|-34.92126|-57.95442
 La Paz|AR|-30.74179|-59.64517
+Lanus|AR|-34.70757|-58.39132
+Laferrere|AR|-34.75049|-58.58464
 Jardin America|AR|-27.04346|-55.22698
 Ituzaingo|AR|-27.58504|-56.68707
+Isidro Casanova|AR|-34.7|-58.58745
 Hurlingham|AR|-34.5904|-58.62904
 Gualeguaychu|AR|-33.00777|-58.51836
 Gualeguay|AR|-33.14091|-59.31257
@@ -374,14 +394,17 @@ Gobernador Virasora|AR|-28.05|-56.03333
 General Pacheco|AR|-34.45256|-58.64312
 General Juan Madariaga|AR|-37.00196|-57.13584
 General Jose de San Martin|AR|-26.53643|-59.34138
+General Belgrano|AR|-35.76842|-58.49444
 Garupa|AR|-27.48315|-55.82924
 Formosa|AR|-26.18489|-58.17313
 Fontana|AR|-27.42039|-59.03731
 Federal|AR|-30.95619|-58.7797
 Ezeiza|AR|-34.8544|-58.52474
 Esquina|AR|-30.01476|-59.5289
+Ensenada|AR|-34.86074|-57.91238
 El Soberbio|AR|-27.29662|-54.19811
 El Palomar|AR|-34.61771|-58.60153
+Eldorado|AR|-26.40453|-54.61847
 Don Torcuato|AR|-34.49459|-58.62729
 Dolores|AR|-36.31539|-57.67546
 Curuzu Cuatia|AR|-29.79145|-58.0499
@@ -393,19 +416,26 @@ Colegiales|AR|-34.57365|-58.44924
 Chascomus|AR|-35.57681|-58.01215
 Chajari|AR|-30.75482|-57.98196
 Castelar|AR|-34.65142|-58.64074
+Carmen de Areco|AR|-34.3766|-59.82272
+Canuelas|AR|-35.05379|-58.76205
 Campana|AR|-34.16327|-58.95919
+Burzaco|AR|-34.82584|-58.39502
 Buenos Aires|AR|-34.61315|-58.37723
+Coronel Brandsen|AR|-35.16799|-58.23742
 Boedo|AR|-34.63333|-58.41667
+Berisso|AR|-34.8715|-57.88328
 Berazategui|AR|-34.76531|-58.21278
+Benito Juarez|AR|-37.67188|-59.80653
 Bella Vista|AR|-34.5651|-58.69034
 Belgrano|AR|-34.5627|-58.45829
 Barranqueras|AR|-27.48132|-58.93925
 Barracas|AR|-34.64966|-58.38341
+Baradero|AR|-33.81199|-59.50467
+Banfield|AR|-34.74563|-58.39365
 Balcarce|AR|-37.84638|-58.25549
 Azul|AR|-36.77803|-59.85848
 Ayacucho|AR|-37.15276|-58.48838
 Avellaneda|AR|-29.11761|-59.65834
-Aristobulo del Valle|AR|-27.09571|-54.89344
 Apostoles|AR|-27.91421|-55.75355
 Zapala|AR|-38.90056|-70.06674
 Yerba Buena|AR|-26.81298|-65.29543
@@ -414,6 +444,7 @@ Villa Paula de Sarmiento|AR|-31.4933|-68.53838
 Villa Nueva|AR|-32.43289|-63.24811
 Villa Maria|AR|-32.40751|-63.24016
 Villa Dolores|AR|-31.94504|-65.19025
+Villa del Rosario|AR|-31.55416|-63.53562
 Villa Constitucion|AR|-33.22795|-60.32994
 Villa Carlos Paz|AR|-31.4183|-64.49008
 Villa Angela|AR|-27.57679|-60.71114
@@ -425,10 +456,14 @@ Venado Tuerto|AR|-33.74585|-61.96711
 Veinticinco de Mayo|AR|-35.43247|-60.17156
 Ushuaia|AR|-54.81084|-68.31591
 Unquillo|AR|-31.23717|-64.31176
+Tupungato|AR|-33.36926|-69.14781
+Tunuyan|AR|-33.58125|-69.01537
 Tres Isletas|AR|-26.34067|-60.43207
 Tres Arroyos|AR|-38.37694|-60.27563
 Trenque Lauquen|AR|-35.97334|-62.73275
 Trelew|AR|-43.24895|-65.30505
+Tostado|AR|-29.23269|-61.76869
+Toay|AR|-36.6739|-64.37979
 Termas de Rio Hondo|AR|-27.49362|-64.85972
 Tartagal|AR|-22.51682|-63.8056
 Tafi Viejo|AR|-26.7333|-65.26146
@@ -436,6 +471,8 @@ Sunchales|AR|-30.94478|-61.5597
 Santo Tome|AR|-31.66274|-60.7653
 Santiago del Estero|AR|-27.80047|-64.26285
 Santa Rosa|AR|-36.61617|-64.28991
+Santa Rosa|AR|-23.39432|-64.42509
+Santa Maria|AR|-26.69456|-66.04805
 Santa Lucia|AR|-31.54055|-68.49794
 Santa Fe|AR|-31.64881|-60.70868
 San Salvador de Jujuy|AR|-24.1928|-65.29342
@@ -446,11 +483,13 @@ San Nicolas de los Arroyos|AR|-33.33425|-60.2108
 San Miguel de Tucuman|AR|-26.81601|-65.21051
 San Martin de los Andes|AR|-40.15789|-71.35337
 San Martin|AR|-33.08338|-68.47312
+Villa General San Martin|AR|-31.43963|-68.5205
 San Luis|AR|-33.2914|-66.32467
+San Lorenzo|AR|-24.73623|-65.48727
 San Justo|AR|-30.78991|-60.59276
 San Juan|AR|-31.53726|-68.52568
-San Jose de Jachal|AR|-30.24162|-68.74662
 San Jorge|AR|-31.89706|-61.85993
+San Isidro|AR|-28.45775|-65.72498
 San Francisco|AR|-31.42497|-62.08404
 Catamarca|AR|-28.46957|-65.78524
 San Carlos de Bolivar|AR|-36.23071|-61.1157
@@ -458,7 +497,12 @@ San Antonio Oeste|AR|-40.73193|-64.94769
 Salto|AR|-34.29175|-60.2545
 Salta|AR|-24.80645|-65.41999
 Rufino|AR|-34.26237|-62.71128
+Rosario de Lerma|AR|-24.98583|-65.5784
+Rosario de la Frontera|AR|-25.79856|-64.97386
 Rosario|AR|-32.94682|-60.63932
+Rojas|AR|-34.19774|-60.7337
+Rodeo del Medio|AR|-32.99487|-68.68597
+Rivadavia|AR|-33.19097|-68.4622
 Rio Tercero|AR|-32.17675|-64.11295
 Rio Segundo|AR|-31.6501|-63.91165
 Rio Grande|AR|-53.78773|-67.70975
@@ -467,16 +511,23 @@ Rio Cuarto|AR|-33.13044|-64.35272
 Rio Colorado|AR|-38.99081|-64.09574
 Rio Ceballos|AR|-31.1697|-64.3175
 Rawson|AR|-43.30031|-65.10564
+Ramallo|AR|-33.48508|-60.00629
 Rafaela|AR|-31.25285|-61.49078
 Quitilipi|AR|-26.8708|-60.21537
 Punta Alta|AR|-38.8805|-62.07503
 Puerto Madryn|AR|-42.76848|-65.03827
+Puerto Deseado|AR|-47.75131|-65.89674
 Profesor Salvador Mazza|AR|-22.04897|-63.69075
 Presidencia Roque Saenz Pena|AR|-26.79095|-60.44132
 Pocito|AR|-31.68333|-68.58333
 Plottier|AR|-38.96667|-68.23333
+Pilar|AR|-31.68129|-63.8824
+Piguee|AR|-37.60255|-62.40836
+Pico Truncado|AR|-46.79942|-67.95785
+Pichanal|AR|-23.31644|-64.21826
 Pergamino|AR|-33.89101|-60.57462
 Perez|AR|-32.99835|-60.76791
+Perdriel|AR|-33.0749|-68.8884
 Pehuajo|AR|-35.81081|-61.89897
 Parana|AR|-31.73271|-60.52897
 Palpala|AR|-24.25798|-65.21358
@@ -485,11 +536,15 @@ Nueve de Julio|AR|-35.44394|-60.88463
 Neuquen|AR|-38.95078|-68.0592
 Morteros|AR|-30.71066|-62.00714
 Monteros|AR|-27.16825|-65.49892
+San Jose de Metan|AR|-25.49711|-64.97106
 Mendoza|AR|-32.88946|-68.84582
 Marcos Juarez|AR|-32.6978|-62.10672
+Malarguee|AR|-35.47791|-69.58521
 Machagai|AR|-26.92617|-60.04852
 Lincoln|AR|-34.86819|-61.52929
 Libertador General San Martin|AR|-23.81305|-64.79353
+Las Varillas|AR|-31.8704|-62.71968
+Las Heras|AR|-46.54131|-68.93227
 Las Brenas|AR|-27.08819|-61.08217
 La Rioja|AR|-29.41328|-66.85637
 La Falda|AR|-31.09321|-64.48448
@@ -501,10 +556,14 @@ Jesus Maria|AR|-30.98153|-64.09424
 Granadero Baigorria|AR|-32.85683|-60.71754
 Gobernador Galvez|AR|-33.03016|-60.64045
 General Villegas|AR|-35.03264|-63.01484
+Los Toldos|AR|-34.99997|-61.03874
 General Roca|AR|-39.03333|-67.58333
 General Pinedo|AR|-27.32534|-61.28101
 General Pico|AR|-35.6593|-63.75787
+General Gueemes|AR|-24.67445|-65.0466
 General Mosconi|AR|-22.59617|-63.811
+General Alvear|AR|-34.97747|-67.69618
+General Acha|AR|-37.37821|-64.60422
 Galvez|AR|-32.02957|-61.22097
 Firmat|AR|-33.45937|-61.4832
 Famailla|AR|-27.05452|-65.40189
@@ -512,6 +571,7 @@ Esquel|AR|-42.91147|-71.31947
 Esperanza|AR|-31.44957|-60.93153
 Embarcacion|AR|-23.21003|-64.09965
 Embalse|AR|-32.20681|-64.40064
+El Calafate|AR|-50.34075|-72.27682
 El Bolson|AR|-41.96051|-71.53336
 Diamante|AR|-32.0671|-60.64267
 Dean Funes|AR|-30.42498|-64.35274
@@ -520,9 +580,12 @@ Cruz del Eje|AR|-30.72644|-64.80387
 Crespo|AR|-32.03077|-60.30619
 Cosquin|AR|-31.24525|-64.46574
 Coronel Suarez|AR|-37.45859|-61.93294
+Coronel Pringles|AR|-37.98567|-61.3504
 Coronda|AR|-31.97365|-60.91935
 Cordoba|AR|-31.40648|-64.18853
 Comodoro Rivadavia|AR|-45.86256|-67.494
+Colonia Caroya|AR|-31.02202|-64.06172
+Colon|AR|-33.89713|-61.09942
 Cipolletti|AR|-38.93392|-67.99032
 Cinco Saltos|AR|-38.82225|-68.06293
 Chivilcoy|AR|-34.8969|-60.01909
@@ -530,18 +593,23 @@ Chimbas|AR|-31.49313|-68.53263
 Chilecito|AR|-29.16163|-67.49934
 Charata|AR|-27.21787|-61.18738
 Chacabuco|AR|-34.64203|-60.47124
+San Jose de los Cerrillos|AR|-24.89715|-65.48445
 Centenario|AR|-38.82955|-68.1318
 Caucete|AR|-31.6515|-68.28216
 Catriel|AR|-37.87552|-67.79451
 Juan Jose Castelli|AR|-25.9466|-60.62008
 Casilda|AR|-33.04459|-61.16423
 Carmen de Patagones|AR|-40.80255|-62.98349
+Carlos Casares|AR|-35.62247|-61.3655
 Carcarana|AR|-32.85704|-61.15114
 Capitan Bermudez|AR|-32.82262|-60.71852
 Canada de Gomez|AR|-32.82033|-61.39513
 Caleta Olivia|AR|-46.44785|-67.52274
+Cafayate|AR|-26.07286|-65.97766
+Bragado|AR|-35.11557|-60.48965
 Bell Ville|AR|-32.63021|-62.68883
 Bella Vista|AR|-27.03424|-65.30196
+Belen|AR|-27.64953|-67.02632
 Bahia Blanca|AR|-38.7176|-62.26545
 Arroyo Seco|AR|-33.15365|-60.51168
 Arroyito|AR|-31.41917|-63.05084
@@ -556,13 +624,18 @@ Aguilares|AR|-27.4315|-65.61465
 Balvanera|AR|-34.61032|-58.39766
 Villa Santa Rita|AR|-34.61082|-58.481
 Villa Mercedes|AR|-33.67571|-65.45783
+Avellaneda|AR|-34.66018|-58.36744
 San Miguel|AR|-34.54335|-58.71229
 San Carlos de Bariloche|AR|-41.14557|-71.30822
+Moreno|AR|-34.63401|-58.79138
 Adrogue|AR|-34.80041|-58.38384
 La Union|AR|-34.87558|-58.54192
 Ingeniero Pablo Nogues|AR|-34.47775|-58.70652
 Villa Sarmiento|AR|-34.63364|-58.57047
+San Vicente|AR|-26.99627|-54.47697
 Jose C. Paz|AR|-34.51541|-58.76813
+Ciudad de Las Heras|AR|-32.85094|-68.83602
+Rawson|AR|-31.58189|-68.54211
 Pago Pago|AS|-14.27806|-170.7025
 Doebling|AT|48.25|16.33333
 Wolfsberg|AT|46.84056|14.84417
@@ -605,12 +678,14 @@ Fuenfhaus|AT|48.19596|16.3183
 Floridsdorf|AT|48.25|16.4
 Feldkirch|AT|47.23645|9.59734
 Essling|AT|48.21289|16.52442
+Eisenzicken|AT|47.27603|16.25908
 Eggenberg|AT|47.07|15.39871
 Dornbirn|AT|47.41427|9.74195
 Bregenz|AT|47.50311|9.7471
 Bludenz|AT|47.15476|9.82255
 Baden|AT|48.00543|16.23264
 Aspern|AT|48.21806|16.48306
+Ansfelden|AT|48.20969|14.29004
 Amstetten|AT|48.1229|14.87206
 Favoriten|AT|48.16116|16.38233
 Donaustadt|AT|48.2333|16.46002
@@ -628,6 +703,7 @@ Neubau|AT|48.20172|16.34715
 Josefstadt|AT|48.21243|16.34549
 Alsergrund|AT|48.22321|16.35506
 Brigittenau|AT|48.24275|16.37551
+Whyalla|AU|-33.03268|137.56483
 Scarborough|AU|-31.89578|115.76431
 Rockingham|AU|-32.27682|115.72978
 Port Hedland|AU|-20.31215|118.61059
@@ -663,7 +739,7 @@ Wangaratta|AU|-36.35846|146.32056
 Wallan|AU|-37.41625|144.97859
 Wahroonga|AU|-33.71816|151.11561
 Upper Coomera|AU|-27.87683|153.28572
-Tuggeranong Administrative District|AU|-35.41647|149.06954
+Tuggeranong|AU|-35.41647|149.06954
 Truganina|AU|-37.81667|144.75
 Traralgon|AU|-38.19528|146.5415
 Townsville|AU|-19.26639|146.80569
@@ -855,6 +931,7 @@ Palmerston|AU|-12.48602|130.9833
 Hervey Bay|AU|-25.28762|152.76936
 Blue Mountains|AU|-33.71331|150.33065
 Sydney Central Business District|AU|-33.86482|151.20773
+Karratha|AU|-20.73765|116.84629
 Kingsford|AU|-33.92399|151.22749
 Springfield Lakes|AU|-27.66757|152.92488
 Bracken Ridge|AU|-27.3171|153.03097
@@ -940,37 +1017,39 @@ Melbourne City Centre|AU|-37.81501|144.96657
 Adelaide city centre|AU|-34.92873|138.60334
 Wollongong city centre|AU|-34.4279|150.89268
 Tanki Leendert|AW|12.53914|-70.02004
-San Nicolas|AW|12.43624|-69.90713
+Santa Cruz|AW|12.50953|-69.98094
 Oranjestad|AW|12.52398|-70.02703
 Noord|AW|12.56596|-70.03198
 Mariehamn|AX|60.09726|19.93481
 Ahmadbayli|AZ|39.88074|48.39158
-Susa|AZ|39.76006|46.74989
+Shusha|AZ|39.76006|46.74989
 Salyan|AZ|39.59621|48.98479
 Saatli|AZ|39.93214|48.36892
+Nehram|AZ|39.11597|45.46168
 Neftcala|AZ|39.3768|49.247
 Naxcivan|AZ|39.20889|45.41222
 Lerik|AZ|38.77388|48.41497
 Lankaran|AZ|38.75428|48.85062
 Imishli|AZ|39.87095|48.05995
-Fizuli|AZ|39.60094|47.14529
+Fuzuli|AZ|39.60094|47.14529
 Jalilabad|AZ|39.20963|48.49186
 Pushkino|AZ|39.45833|48.545
 Beylagan|AZ|39.77556|47.61861
 Astara|AZ|38.45598|48.87498
 Sirvan|AZ|39.93778|48.929
-Agdam|AZ|39.99096|46.92736
+Aghdam|AZ|39.99096|46.92736
 Zaqatala|AZ|41.6316|46.64479
 Zabrat|AZ|40.47746|49.94174
 Yevlakh|AZ|40.61832|47.15014
 Goygol|AZ|40.58584|46.3189
 Xacmaz|AZ|41.46426|48.80565
 Ujar|AZ|40.51902|47.65423
-Tovuz|AZ|40.99249|45.62838
-Terter|AZ|40.34201|46.93161
-Sumqayit|AZ|40.58972|49.66861
+Tartar|AZ|40.34201|46.93161
+Sumgayit|AZ|40.58972|49.66861
+Siyazan|AZ|41.07811|49.11564
 Qaracuxur|AZ|40.39667|49.97361
-Shamkhor|AZ|40.82975|46.0178
+Saray|AZ|40.53299|49.71681
+Shamkhir|AZ|40.82975|46.0178
 Shamakhi|AZ|40.63141|48.64137
 Sheki|AZ|41.19194|47.17056
 Sabuncu|AZ|40.4425|49.94806
@@ -978,19 +1057,23 @@ Sabirabad|AZ|40.00869|48.47701
 Qusar|AZ|41.4275|48.4302
 Quba|AZ|41.36108|48.51341
 Haciqabul|AZ|40.03874|48.94286
-Qazax|AZ|41.09246|45.36561
-Haci Zeynalabdin|AZ|40.62333|49.55861
+Gazakh|AZ|41.09246|45.36561
+Haji Zeynalabdin|AZ|40.62333|49.55861
 Mingachevir|AZ|40.76422|47.06227
 Mastaga|AZ|40.52983|50.00616
 Mardakan|AZ|40.49182|50.14292
 Lokbatan|AZ|40.3256|49.73376
 Kyurdarmir|AZ|40.34257|48.15649
+Govlar|AZ|40.94595|45.73175
+Gobu|AZ|40.40472|49.71306
 Khirdalan|AZ|40.44808|49.75502
 Ismayilli|AZ|40.78485|48.15141
 Yeni Suraxani|AZ|40.43026|50.03598
 Goeycay|AZ|40.65055|47.74219
 Hovsan|AZ|40.37444|50.08528
+Hokmali|AZ|40.43111|49.73722
 Ganja|AZ|40.68157|46.36134
+Jorat|AZ|40.57176|49.70509
 Divichibazar|AZ|41.20117|48.98712
 Buzovna|AZ|40.51903|50.11438
 Biny Selo|AZ|40.45076|50.08686
@@ -1000,8 +1083,9 @@ Baku|AZ|40.37767|49.89201
 Amirdzhan|AZ|40.42639|49.98361
 Aghsu|AZ|40.57028|48.40087
 Agdas|AZ|40.64699|47.4738
-Agdzhabedy|AZ|40.05015|47.45937
+Aghjabadi|AZ|40.05015|47.45937
 Bakixanov|AZ|40.41894|49.96693
+Mehdiabad|AZ|40.49691|49.8517
 Zenica|BA|44.20169|17.90397
 Visoko|BA|43.98889|18.17806
 Velika Kladusa|BA|45.18497|15.80579
@@ -1157,11 +1241,13 @@ Patuakhali|BD|22.36833|90.3458
 Dhanmondi|BD|23.74|90.385
 Pallabi|BD|23.825|90.37
 Azimpur|BD|23.7298|90.3854
+Demra|BD|23.71|90.482
 Paotana Hat|BD|25.66473|89.5026
 Karnaphuli|BD|22.69056|92.23472
 Bhanga|BD|23.39194|89.98389
 Paltan|BD|23.73625|90.41426
 Mirpur Model Thana|BD|23.80931|90.36093
+Gulshan|BD|23.78971|90.41043
 Motijheel|BD|23.72772|90.41919
 Zwijndrecht|BE|51.21979|4.32664
 Zwevegem|BE|50.81268|3.33848
@@ -1379,7 +1465,7 @@ Ath|BE|50.62937|3.77801
 Assebroek|BE|51.19367|3.2623
 Asse|BE|50.91011|4.19836
 Arlon|BE|49.68333|5.81667
-Antwerpen|BE|51.22047|4.40026
+Antwerp|BE|51.22047|4.40026
 Ans|BE|50.6623|5.52029
 Anderlecht|BE|50.83619|4.31454
 Andenne|BE|50.48941|5.09513
@@ -1607,7 +1693,6 @@ Kpozoun|BJ|7.22868|2.21317
 Gustavia|BL|17.89618|-62.84978
 Hamilton|BM|32.2949|-64.78303
 Tutong|BN|4.80278|114.64917
-Seria|BN|4.60637|114.32476
 Kuala Belait|BN|4.58361|114.2312
 Liang|BN|4.67747|114.49587
 Serasa|BN|5.01761|115.05798
@@ -1688,6 +1773,7 @@ Tupanatinga|BR|-8.75333|-37.33972
 Tuntum|BR|-5.25806|-44.64889
 Tucurui|BR|-3.76585|-49.67923
 Tucuma|BR|-0.15491|-50.0615
+Triunfo|BR|-7.83806|-38.10167
 Trindade|BR|-7.76194|-40.26778
 Trairi|BR|-3.27778|-39.26889
 Traipu|BR|-9.97056|-37.00333
@@ -1706,6 +1792,7 @@ Teresina|BR|-5.08917|-42.80194
 Tejucuoca|BR|-3.98889|-39.58056
 Taua|BR|-6.00306|-40.29278
 Sao Joao dos Inhamuns|BR|-6|-40.28333
+Tartarugalzinho|BR|1.50556|-50.91194
 Taquaritinga do Norte|BR|-7.90306|-36.04417
 Taquarana|BR|-9.645|-36.49722
 Tamboril|BR|-4.83222|-40.32056
@@ -1719,6 +1806,7 @@ Sume|BR|-7.67167|-36.88
 Sousa|BR|-6.75917|-38.22806
 Soure|BR|-0.71667|-48.52333
 Solonopole|BR|-5.73333|-39.0075
+Soledade|BR|-7.05722|-36.36278
 Solanea|BR|-6.75459|-35.66449
 Sobral|BR|-3.68611|-40.34972
 Sobradinho|BR|-9.47184|-40.80155
@@ -1727,7 +1815,6 @@ Sertania|BR|-8.07361|-37.26444
 Serrita|BR|-7.93333|-39.29583
 Serra Talhada|BR|-7.99194|-38.29833
 Senador Pompeu|BR|-5.58806|-39.37167
-Senador Jose Porfirio|BR|-2.59083|-51.95417
 Satuba|BR|-9.56333|-35.82444
 Sape|BR|-7.09639|-35.23278
 Sao Vicente Ferrer|BR|-7.59111|-35.49139
@@ -1787,6 +1874,7 @@ Santa Maria do Para|BR|-1.35028|-47.57556
 Santa Maria das Barreiras|BR|-8.87167|-49.71278
 Santa Maria da Boa Vista|BR|-8.80778|-39.82556
 Santa Luzia|BR|-7.64265|-47.21738
+Santa Luzia|BR|-6.87222|-36.91861
 Santa Isabel do Para|BR|-1.29861|-48.16056
 Santa Ines|BR|-3.66667|-45.38
 Santa Helena|BR|-2.23111|-45.3
@@ -1818,6 +1906,7 @@ Quixada|BR|-4.97139|-39.01528
 Quipapa|BR|-8.82778|-36.01167
 Queimadas|BR|-7.35833|-35.89833
 Princesa Isabel|BR|-7.73667|-37.99333
+Primeira Cruz|BR|-2.51|-43.43833
 Presidente Dutra|BR|-5.29|-44.49
 Prainha|BR|-1.8|-53.48
 Santana|BR|-0.03816|-51.17476
@@ -1901,6 +1990,7 @@ Oeiras|BR|-7.02528|-42.13111
 Ocara|BR|-4.49083|-38.59667
 Obidos|BR|-1.9175|-55.51806
 Novo Oriente|BR|-5.53444|-40.77417
+Nova Timboteua|BR|-1.20778|-47.3925
 Nova Russas|BR|-4.70667|-40.56306
 Nova Olinda do Norte|BR|-3.89174|-59.09542
 Nova Olinda|BR|-7.09167|-39.68056
@@ -1997,7 +2087,6 @@ Jaguaribe|BR|-5.89056|-38.62194
 Jaguaretama|BR|-5.61278|-38.76694
 Jacunda|BR|-4.44696|-49.11556
 Jacareacanga|BR|-6.22222|-57.75278
-Jaboatao|BR|-8.18028|-35.00139
 Itupiranga|BR|-5.13472|-49.32667
 Itatira|BR|-4.52889|-39.62222
 Itarema|BR|-2.92028|-39.915
@@ -2022,6 +2111,7 @@ Ipueiras|BR|-4.54167|-40.71889
 Ipubi|BR|-7.65194|-40.14889
 Ipu|BR|-4.32222|-40.71083
 Ipojuca|BR|-8.39889|-35.06389
+Inhuma|BR|-6.66833|-41.70778
 Inhapi|BR|-9.22139|-37.74861
 Inga|BR|-7.28083|-35.60444
 Independencia|BR|-5.39639|-40.30861
@@ -2056,7 +2146,6 @@ Gloria do Goita|BR|-8.00167|-35.29278
 Gloria|BR|-9.33806|-38.25472
 Garanhuns|BR|-8.88202|-36.50216
 Gameleira|BR|-8.58444|-35.38667
-Frecheirinha|BR|-3.76|-40.81639
 Fortuna|BR|-5.73333|-44.15833
 Fortim|BR|-4.45194|-37.79722
 Fortaleza|BR|-3.71722|-38.54306
@@ -2097,6 +2186,7 @@ Craibas|BR|-9.61806|-36.76806
 Quiterianopolis|BR|-5.84426|-40.70195
 Correntes|BR|-9.12889|-36.33028
 Coroata|BR|-4.13|-44.12417
+Coremas|BR|-7.01444|-37.94583
 Coreau|BR|-3.55097|-40.65724
 Condado|BR|-7.58583|-35.10583
 Conceicao do Araguaia|BR|-8.26441|-49.26982
@@ -2117,6 +2207,7 @@ Caucaia|BR|-3.73611|-38.65306
 Catole do Rocha|BR|-6.34389|-37.74667
 Campo Alegre de Lourdes|BR|-9.51729|-43.01026
 Catende|BR|-8.66667|-35.71667
+Catarina|BR|-6.13083|-39.8775
 Castelo do Piaui|BR|-5.32222|-41.5525
 Castanhal|BR|-1.29389|-47.92639
 Cascavel|BR|-4.13306|-38.24194
@@ -2181,6 +2272,7 @@ Braganca|BR|-1.05361|-46.76556
 Borba|BR|-4.39143|-59.58864
 Boqueirao|BR|-7.48179|-36.13222
 Bonito|BR|-8.47028|-35.72861
+Bonito|BR|-1.3625|-47.30583
 Bom Jesus|BR|-9.07444|-44.35861
 Bom Jardim|BR|-7.79583|-35.58722
 Bom Conselho|BR|-9.16972|-36.67972
@@ -2209,6 +2301,7 @@ Barreira|BR|-4.28694|-38.64306
 Barras|BR|-4.24444|-42.29444
 Barra do Corda|BR|-5.50556|-45.24333
 Barra de Santo Antonio|BR|-9.40472|-35.50722
+Barra de Santa Rosa|BR|-6.71972|-36.06056
 Barcarena|BR|-1.50583|-48.62583
 Barbalha|BR|-7.31111|-39.30417
 Barauna|BR|-5.08|-37.61667
@@ -2247,6 +2340,7 @@ Sao Joao do Rio do Peixe|BR|-6.72917|-38.44889
 Ananindeua|BR|-1.36556|-48.37222
 Anajatuba|BR|-3.26444|-44.61972
 Anajas|BR|-0.98667|-49.94
+Anadia|BR|-9.68444|-36.30417
 Amontada|BR|-3.36167|-39.83167
 Amarante do Maranhao|BR|-5.56667|-46.74222
 Amarante|BR|-6.24316|-42.84544
@@ -2327,6 +2421,7 @@ Uniao da Vitoria|BR|-26.23|-51.08639
 Unai|BR|-16.3575|-46.90611
 Una|BR|-15.29333|-39.07528
 Umuarama|BR|-23.76639|-53.325
+Umburanas|BR|-10.73278|-41.32639
 Umbauba|BR|-11.38333|-37.65778
 Uberlandia|BR|-18.91861|-48.27722
 Uberaba|BR|-19.74833|-47.93194
@@ -2369,6 +2464,7 @@ Tijucas|BR|-27.24139|-48.63361
 Tiete|BR|-23.10194|-47.71472
 Tibagi|BR|-24.50944|-50.41361
 Teutonia|BR|-29.44806|-51.80639
+Terra Rica|BR|-22.72643|-52.6202
 Terra Preta|BR|-22.63333|-47.05
 Terra Boa|BR|-23.76806|-52.44417
 Teresopolis|BR|-22.4167|-42.97822
@@ -2392,6 +2488,7 @@ Tanhacu|BR|-14.02139|-41.24806
 Tangua|BR|-22.73028|-42.71417
 Tanabi|BR|-20.62639|-49.64917
 Tambau|BR|-21.705|-47.27444
+Tamarana|BR|-23.72333|-51.09722
 Taiobeiras|BR|-15.80778|-42.23306
 Taio|BR|-27.11639|-49.99806
 Taboao da Serra|BR|-23.62611|-46.79167
@@ -2422,6 +2519,7 @@ Serrana|BR|-21.21139|-47.59556
 Serra|BR|-20.12861|-40.30778
 Seropedica|BR|-22.74389|-43.7075
 Serafina Correa|BR|-28.71167|-51.935
+Sepetiba|BR|-22.97931|-43.69794
 Senhor do Bonfim|BR|-10.46139|-40.18944
 Senges|BR|-24.11335|-49.46315
 Senador Canedo|BR|-16.70806|-49.09306
@@ -2489,6 +2587,7 @@ Sao Jeronimo|BR|-29.95917|-51.72222
 Sao Gotardo|BR|-19.31111|-46.04889
 Sao Goncalo dos Campos|BR|-12.43394|-38.95057
 Sao Goncalo do Sapucai|BR|-21.89222|-45.59528
+Sao Goncalo|BR|-22.82694|-43.05389
 Sao Gabriel|BR|-30.33639|-54.32
 Sao Gabriel da Palha|BR|-19.01809|-40.5373
 Sao Francisco do Sul|BR|-26.24333|-48.63806
@@ -2582,6 +2681,7 @@ Rio Negrinho|BR|-26.25444|-49.51833
 Rio Grande da Serra|BR|-23.74417|-46.39833
 Rio Grande|BR|-32.035|-52.09861
 Rio do Sul|BR|-27.21417|-49.64306
+Rio do Antonio|BR|-14.41139|-42.07556
 Rio de Janeiro|BR|-22.90642|-43.18223
 Rio das Pedras|BR|-22.84333|-47.60611
 Rio das Ostras|BR|-22.52694|-41.945
@@ -2592,6 +2692,7 @@ Rio Brilhante|BR|-21.80194|-54.54639
 Rio Branco do Sul|BR|-25.19|-49.31417
 Rio Bonito|BR|-22.70861|-42.60972
 Rio Bananal|BR|-19.265|-40.33333
+Rio Azul|BR|-25.73278|-50.79639
 Ribeiropolis|BR|-10.53944|-37.41667
 Ribeirao Preto|BR|-21.1775|-47.81028
 Ribeirao Pires|BR|-23.71056|-46.41333
@@ -2650,7 +2751,6 @@ Porteirinha|BR|-15.74333|-43.02833
 Portao|BR|-29.70167|-51.24194
 Porciuncula|BR|-20.96278|-42.04083
 Porangatu|BR|-13.44083|-49.14861
-Ponto Novo|BR|-10.86278|-40.13361
 Pontes e Lacerda|BR|-15.22611|-59.33528
 Ponte Nova|BR|-20.41639|-42.90861
 Ponta Pora|BR|-22.53611|-55.72556
@@ -2699,6 +2799,7 @@ Pinhalzinho|BR|-22.77944|-46.59056
 Espirito Santo do Pinhal|BR|-22.19591|-46.74884
 Pindobacu|BR|-10.74167|-40.36083
 Pindamonhangaba|BR|-22.92389|-45.46167
+Pindai|BR|-14.4925|-42.68722
 Pilar do Sul|BR|-23.81306|-47.71639
 Piedade|BR|-23.71194|-47.42778
 Balneario Picarras|BR|-26.76389|-48.67167
@@ -2810,7 +2911,6 @@ Nossa Senhora do Socorro|BR|-10.855|-37.12611
 Freguesia do O|BR|-23.49877|-46.69983
 Nossa Senhora das Dores|BR|-10.49167|-37.19333
 Nossa Senhora da Gloria|BR|-10.21833|-37.42028
-Nordestina|BR|-10.8225|-39.42694
 Nobres|BR|-14.72028|-56.3275
 Niteroi|BR|-22.88333|-43.10361
 Niquelandia|BR|-14.47389|-48.45972
@@ -2834,6 +2934,7 @@ Muriae|BR|-21.13056|-42.36639
 Muniz Freire|BR|-20.46417|-41.41306
 Mundo Novo|BR|-11.85889|-40.4725
 Mucuri|BR|-18.08639|-39.55083
+Mozarlandia|BR|-14.74472|-50.57056
 Morro do Chapeu|BR|-11.54852|-41.15804
 Morro da Fumaca|BR|-28.65083|-49.21
 Morro Agudo|BR|-20.73139|-48.05778
@@ -2886,7 +2987,6 @@ Mata de Sao Joao|BR|-12.53028|-38.29917
 Massaranduba|BR|-26.61056|-49.00833
 Maruim|BR|-10.7375|-37.08167
 Martinopolis|BR|-22.14583|-51.17083
-Marmeleiro|BR|-26.14944|-53.02611
 Maringa|BR|-23.42528|-51.93861
 Marilia|BR|-22.21389|-49.94583
 Marica|BR|-22.91944|-42.81861
@@ -2956,6 +3056,7 @@ Laje|BR|-13.18222|-39.425
 Laguna|BR|-28.4825|-48.78083
 Lagoa Vermelha|BR|-28.20861|-51.52583
 Lagoa Santa|BR|-19.63006|-43.9009
+Lagoa Real|BR|-14.03472|-42.14222
 Lagoa Formosa|BR|-18.77861|-46.4075
 Lagoa da Prata|BR|-20.0225|-45.54361
 Presidente Dutra|BR|-11.2951|-41.98605
@@ -2999,7 +3100,6 @@ Jaguariaiva|BR|-24.24423|-49.70932
 Jaguarari|BR|-10.26389|-40.19583
 Jaguarao|BR|-32.56611|-53.37583
 Jaguaquara|BR|-13.53056|-39.97083
-Jaguapita|BR|-23.11278|-51.53194
 Jacutinga|BR|-22.28556|-46.61222
 Jacupiranga|BR|-24.6925|-48.00222
 Jacobina|BR|-11.18143|-40.51372
@@ -3066,11 +3166,11 @@ Itamaraju|BR|-17.03917|-39.53111
 Itajuipe|BR|-14.67806|-39.375
 Itajuba|BR|-22.42556|-45.45278
 Itajobi|BR|-21.31806|-49.05444
-Itagiba|BR|-14.28361|-39.84278
 Itajai|BR|-26.90778|-48.66194
 Itaiopolis|BR|-26.33639|-49.90639
 Itai|BR|-23.41778|-49.09056
 Itaguai|BR|-22.85222|-43.77528
+Itaete|BR|-12.98639|-40.9725
 Itacare|BR|-14.2789|-38.99584
 Itacarambi|BR|-15.10222|-44.09194
 Itabuna|BR|-14.78556|-39.28028
@@ -3126,14 +3226,15 @@ Ibotirama|BR|-12.18528|-43.22056
 Ibiuna|BR|-23.65639|-47.2225
 Ibitita|BR|-11.54722|-41.9775
 Ibitinga|BR|-21.75778|-48.82889
+Ibitiara|BR|-12.65222|-42.21778
 Ibiruba|BR|-28.6275|-53.08972
 Ibirite|BR|-20.02194|-44.05889
-Ibirataia|BR|-14.06694|-39.64056
 Ibirapitanga|BR|-14.16417|-39.37361
 Ibirama|BR|-27.05694|-49.51778
 Ibipora|BR|-23.26917|-51.04806
 Santa Rita de Cassia|BR|-11.00861|-44.51944
 Ibipeba|BR|-11.64083|-42.01111
+Ibicui|BR|-14.84167|-39.98667
 Ibicoara|BR|-13.41316|-41.28572
 Ibicarai|BR|-14.865|-39.5875
 Ibia|BR|-19.47833|-46.53889
@@ -3162,7 +3263,6 @@ Guaramirim|BR|-26.47306|-49.00278
 Guara|BR|-20.42833|-47.82417
 Guara|BR|-15.80976|-47.97202
 Guapore|BR|-28.84556|-51.89028
-Guapo|BR|-16.83056|-49.53194
 Guapimirim|BR|-22.53722|-42.98194
 Guapiara|BR|-24.185|-48.53278
 Guapiacu|BR|-20.795|-49.22028
@@ -3174,6 +3274,7 @@ Engenheiro Coelho|BR|-22.49123|-47.21182
 Guaianases|BR|-23.54333|-46.41083
 Guacui|BR|-20.77556|-41.67944
 Gravatai|BR|-29.94218|-50.99278
+Gramado|BR|-29.37861|-50.87389
 Governador Valadares|BR|-18.85111|-41.94944
 Goioere|BR|-24.18472|-53.0275
 Goiatuba|BR|-18.0125|-49.35472
@@ -3193,6 +3294,7 @@ Gama|BR|-16.02511|-48.07121
 Sao Gabriel|BR|-11.22871|-41.87649
 Fundao|BR|-19.93408|-40.40473
 Frutal|BR|-20.02472|-48.94056
+Freguesia|BR|-22.78955|-43.17206
 Frederico Westphalen|BR|-27.35917|-53.39444
 Franco da Rocha|BR|-23.32167|-46.72694
 Francisco Sa|BR|-16.47583|-43.48833
@@ -3245,6 +3347,7 @@ Dracena|BR|-21.4825|-51.53278
 Dourados|BR|-22.22111|-54.80556
 Dom Pedrito|BR|-30.98278|-54.67306
 Domingos Martins|BR|-20.36333|-40.65917
+Dom Feliciano|BR|-30.70417|-52.1075
 Dois Vizinhos|BR|-25.73361|-53.05722
 Dois Irmaos|BR|-29.58028|-51.08528
 Dois Corregos|BR|-22.36611|-48.38028
@@ -3356,13 +3459,13 @@ Casimiro de Abreu|BR|-22.48056|-42.20417
 Cascavel|BR|-24.95583|-53.45528
 Casa Branca|BR|-21.77389|-47.08639
 Carmopolis de Minas|BR|-20.54139|-44.635
+Carmopolis|BR|-10.64806|-36.98889
 Carmo do Rio Claro|BR|-20.97194|-46.11889
 Carmo do Paranaiba|BR|-19.00083|-46.31611
 Carmo do Cajuru|BR|-20.18417|-44.77111
 Carmo|BR|-21.93361|-42.60861
 Carlos Chagas|BR|-17.70306|-40.76639
 Carlos Barbosa|BR|-29.2975|-51.50361
-Carlopolis|BR|-23.425|-49.72083
 Carira|BR|-10.36083|-37.70111
 Carinhanha|BR|-14.30472|-43.765
 Cariacica|BR|-20.26389|-40.42
@@ -3372,6 +3475,7 @@ Caarapo|BR|-22.63417|-54.82222
 Carapicuiba|BR|-23.52272|-46.835
 Carangola|BR|-20.73306|-42.02944
 Carandai|BR|-20.95361|-43.80639
+Carambei|BR|-24.9526|-50.1159
 Carai|BR|-17.18889|-41.69472
 Caraguatatuba|BR|-23.62028|-45.41306
 Capivari|BR|-22.995|-47.50778
@@ -3391,7 +3495,6 @@ Canoas|BR|-29.91778|-51.18361
 Cangucu|BR|-31.395|-52.67556
 Canela|BR|-29.35622|-50.81357
 Candido Mota|BR|-22.74639|-50.38694
-Candido de Abreu|BR|-24.56694|-51.33333
 Candelaria|BR|-29.66917|-52.78889
 Candeias|BR|-12.66778|-38.55056
 Canavieiras|BR|-15.675|-38.94722
@@ -3417,7 +3520,6 @@ Campo Belo|BR|-20.89722|-45.27722
 Campina Verde|BR|-19.53791|-49.48813
 Campinas|BR|-22.90556|-47.06083
 Campina Grande do Sul|BR|-25.30556|-49.05528
-Campina da Lagoa|BR|-24.59167|-52.79889
 Campestre|BR|-21.71111|-46.24639
 Campanha|BR|-21.83611|-45.40056
 Cambui|BR|-22.61222|-46.0575
@@ -3465,6 +3567,7 @@ Buritirama|BR|-10.70778|-43.63056
 Buritama|BR|-21.06611|-50.14722
 Buri|BR|-23.7975|-48.59278
 Boquim|BR|-11.14694|-37.62056
+Buerarema|BR|-14.95944|-39.29972
 Brusque|BR|-27.09795|-48.91281
 Brumado|BR|-14.20361|-41.66528
 Brumadinho|BR|-20.14333|-44.19972
@@ -3507,6 +3610,7 @@ Belo Horizonte|BR|-19.92083|-43.93778
 Belo Campo|BR|-15.03833|-41.25972
 Belmonte|BR|-15.86126|-38.87982
 Belford Roxo|BR|-22.76417|-43.39944
+Bela Vista do Paraiso|BR|-22.99667|-51.19056
 Bela Vista de Goias|BR|-16.97278|-48.95333
 Bela Vista|BR|-22.10809|-56.53253
 Bebedouro|BR|-20.94944|-48.47917
@@ -3626,16 +3730,21 @@ Agua Rasa|BR|-20.43333|-45.16667
 Aguai|BR|-22.05944|-46.97861
 Agua Clara|BR|-20.44806|-52.87806
 Afonso Claudio|BR|-20.07417|-41.12389
+Adustina|BR|-10.53333|-38.1
 Adamantina|BR|-21.68528|-51.0725
+Acajutiba|BR|-11.66222|-38.01722
 Abelardo Luz|BR|-26.56472|-52.32833
 Abaete|BR|-19.16|-45.44583
+Cordovil|BR|-22.82528|-43.30396
 Leblon|BR|-22.98444|-43.22315
+Botafogo|BR|-22.95092|-43.18232
+Copacabana|BR|-22.96898|-43.18563
 Guaiba|BR|-30.11389|-51.325
 Comodoro|BR|-13.66306|-59.78583
 Palmas|BR|-10.16745|-48.32766
+Acari|BR|-22.8246|-43.34137
 Bombinhas|BR|-27.1518|-48.48941
 Pontal do Parana|BR|-25.67361|-48.51111
-Lagoa da Confusao|BR|-10.79361|-49.62361
 Paraiso do Tocantins|BR|-10.17611|-48.86667
 Universidade Rural|BR|-22.76639|-43.69139
 Uarini|BR|-2.99|-65.10833
@@ -3649,6 +3758,7 @@ Sena Madureira|BR|-9.06341|-68.67245
 Sao Paulo de Olivenca|BR|-3.37833|-68.8725
 Sao Gabriel da Cachoeira|BR|-0.1181|-67.08527
 Santo Antonio do Ica|BR|-3.10222|-67.93972
+Santa Isabel do Rio Negro|BR|-0.41389|-65.01917
 Rio Branco|BR|-9.97472|-67.81
 Porto Velho|BR|-8.76194|-63.90389
 Porto Acre|BR|-9.58833|-67.5325
@@ -3660,6 +3770,8 @@ Mancio Lima|BR|-7.61417|-72.89583
 Manaus|BR|-3.10194|-60.025
 Manacapuru|BR|-3.29972|-60.62056
 Labrea|BR|-7.26435|-64.79638
+Jurua|BR|-3.48111|-66.06889
+Guajara|BR|-7.54583|-72.58361
 Ipixuna|BR|-7.05056|-71.69472
 Humaita|BR|-7.51651|-63.03105
 Fonte Boa|BR|-2.51389|-66.09167
@@ -3746,6 +3858,7 @@ Concordia do Para|BR|-2.00167|-47.94972
 Confresa|BR|-10.64389|-51.56889
 Coronel Joao Sa|BR|-10.28417|-37.92639
 Costa Rica|BR|-18.54389|-53.12917
+Cumaru do Norte|BR|-7.825|-50.77278
 Curionopolis|BR|-6.10167|-49.59806
 Dom Eliseu|BR|-4.285|-47.505
 Dormentes|BR|-8.44722|-40.77111
@@ -3771,7 +3884,6 @@ Itabela|BR|-16.575|-39.55333
 Itaim Paulista|BR|-23.50308|-46.38566
 Itaobim|BR|-16.56167|-41.50333
 Itaquirai|BR|-23.47444|-54.185
-Itatim|BR|-12.71194|-39.69806
 Itinga do Maranhao|BR|-4.44972|-47.52556
 Jaboatao dos Guararapes|BR|-8.11278|-35.01472
 Jaiba|BR|-15.33833|-43.67444
@@ -3785,17 +3897,20 @@ Lauro de Freitas|BR|-12.89444|-38.32722
 Machadinho d'Oeste|BR|-9.44389|-61.98139
 Mae do Rio|BR|-2.04639|-47.55056
 Maraa|BR|-1.85302|-65.57426
+Maranhaozinho|BR|-2.24313|-45.85714
 Mario Campos|BR|-20.05639|-44.18833
 Marituba|BR|-1.35528|-48.34194
 Matoes do Norte|BR|-3.63222|-44.55583
 Matupa|BR|-10.16931|-54.93439
 Medicilandia|BR|-3.44611|-52.88889
 Minacu|BR|-13.53306|-48.22
+Monte Negro|BR|-10.29444|-63.32528
 Mucajai|BR|2.43986|-60.91146
 Mojui dos Campos|BR|-2.68333|-54.64278
 Nova Alvorada do Sul|BR|-21.46583|-54.38389
 Nova Andradina|BR|-22.23333|-53.34306
 Nova Esperanca do Piria|BR|-2.26778|-46.9675
+Nova Ipixuna|BR|-4.92111|-49.07694
 Nova Mamore|BR|-10.40194|-65.32667
 Nova Mutum|BR|-13.82889|-56.08222
 Novo Gama|BR|-16.05917|-48.03944
@@ -3808,6 +3923,7 @@ Paco do Lumiar|BR|-2.53222|-44.1075
 Palmeirandia|BR|-2.64528|-44.895
 Paranatinga|BR|-14.43167|-54.05111
 Parauapebas|BR|-6.0675|-49.90222
+Pedra Branca do Amapari|BR|0.77806|-51.94361
 Pedra Preta|BR|-16.62306|-54.47389
 Pedro Canario|BR|-18.03028|-40.15056
 Pedro do Rosario|BR|-2.97236|-45.35126
@@ -3859,6 +3975,7 @@ Sorriso|BR|-12.54528|-55.71139
 Souto Soares|BR|-12.08861|-41.63778
 Tailandia|BR|-2.94722|-48.95306
 Tangara da Serra|BR|-14.61944|-57.48583
+Teixeira de Freitas|BR|-17.535|-39.74194
 Trairao|BR|-4.57444|-55.94361
 Tres Marias|BR|-18.20639|-45.24167
 Trizidela do Vale|BR|-4.57194|-44.62083
@@ -4071,7 +4188,6 @@ Lida|BY|53.88333|25.29972
 Krychaw|BY|53.71924|31.71356
 Kalodzishchy|BY|53.944|27.7823
 Kobryn|BY|52.21173|24.3563
-Klimovichi|BY|53.60492|31.95632
 Kalinkovichi|BY|52.1323|29.3257
 Ivatsevichi|BY|52.70793|25.33509
 Ivanovo|BY|52.14724|25.53198
@@ -4085,11 +4201,12 @@ Bykhov|BY|53.52131|30.23078
 Byaroza|BY|52.53129|24.9782
 Brest|BY|52.10894|23.71749
 Barysaw|BY|54.2279|28.505
-Baranovichi|BY|53.13253|26.00774
-Bobruysk|BY|53.14636|29.20552
+Baranovichi|BY|53.13255|26.00775
+Bobruysk|BY|53.14676|29.20548
 Oshmyany|BY|54.41815|25.93734
 Fanipol|BY|53.74998|27.33338
 San Pedro|BZ|17.91598|-87.9659
+San Ignacio|BZ|17.1588|-89.0696
 Orange Walk|BZ|18.08124|-88.56328
 Belmopan|BZ|17.25376|-88.76401
 Belize City|BZ|17.49952|-88.19756
@@ -4123,6 +4240,7 @@ Brampton|CA|43.68341|-79.76633
 Brandon|CA|49.84692|-99.95306
 Brant|CA|43.1334|-80.34967
 Brantford|CA|43.1334|-80.26636
+Bridlewood|CA|45.28522|-75.8569
 Brighouse-City Centre|CA|49.16667|-123.13333
 Broadmoor|CA|49.15|-123.13333
 Brocklehurst|CA|50.70825|-120.41337
@@ -4165,7 +4283,7 @@ Courtenay|CA|49.68657|-124.9936
 Coventry Hills|CA|51.16869|-114.05903
 Cranbrook|CA|49.49991|-115.76879
 Dartmouth|CA|44.67134|-63.57719
-Delta|CA|49.14399|-122.9068
+Delta|CA|49.08917|-123.05322
 Deux-Montagnes|CA|45.53455|-73.90168
 Dieppe|CA|46.07844|-64.68735
 Dollard-Des Ormeaux|CA|45.49452|-73.82419
@@ -4243,7 +4361,7 @@ Lloydminster|CA|53.27237|-110.02256
 London|CA|42.98339|-81.23304
 Longueuil|CA|45.5152|-73.46818
 Lower Lonsdale|CA|49.31406|-123.0725
-Lutes Mountain|CA|46.13544|-64.90504
+Lutes Mountain|CA|46.146|-64.908
 Magog|CA|45.26678|-72.14909
 Maillardville|CA|49.23839|-122.86676
 Malvern|CA|43.80938|-79.22344
@@ -4311,7 +4429,7 @@ Port Moody|CA|49.28124|-122.82457
 Prince Albert|CA|53.20008|-105.76772
 Prince Edward|CA|44.00012|-77.24946
 Prince George|CA|53.9166|-122.75301
-Quinte West|CA|44.18342|-77.56618
+Quinte West|CA|44.10742|-77.57035
 Quispamsis|CA|45.42135|-65.95127
 Red Deer|CA|52.26682|-113.802
 Regina|CA|50.45008|-104.6178
@@ -4387,6 +4505,7 @@ Templeton-Est|CA|45.49389|-75.58833
 Terrace|CA|54.51634|-128.60345
 Terrebonne|CA|45.70004|-73.64732
 The Beaches|CA|43.67372|-79.29539
+Thornhill|CA|43.815|-79.4242
 Thorold|CA|43.11682|-79.19958
 Thunder Bay|CA|48.38202|-89.25018
 Tillsonburg|CA|42.85986|-80.72617
@@ -4443,6 +4562,7 @@ Aylmer|CA|45.4002|-75.80644
 L'Ancienne-Lorette|CA|46.79392|-71.35191
 Edmundston|CA|47.3737|-68.32512
 Saint-Georges|CA|46.11353|-70.66526
+La Baie|CA|48.33982|-70.88928
 Hull|CA|45.42761|-75.71056
 Buckingham|CA|45.58563|-75.4208
 Thetford-Mines|CA|46.09371|-71.30539
@@ -4474,7 +4594,7 @@ Willowdale|CA|43.76672|-79.39909
 Lower Sackville|CA|44.77599|-63.67865
 La Haute-Saint-Charles|CA|46.89028|-71.37222
 Neufchatel-Est-Lebourgneuf|CA|46.85436|-71.34191
-Downtown Vancouver|CA|49.27784|-123.12794
+Downtown Vancouver|CA|49.28277|-123.11935
 Chinatown|CA|49.27997|-123.10556
 Fallingbrook|CA|45.47558|-75.48401
 Lake Country|CA|50.0088|-119.39672
@@ -4597,6 +4717,11 @@ Arcola East|CA|50.43308|-104.53601
 Dewdney East|CA|50.45428|-104.54671
 Fredericton Northside|CA|45.97594|-66.64117
 Clayton Park West|CA|44.65759|-63.66887
+Fort Garry South|CA|49.79225|-97.16359
+St. James-Assiniboia East|CA|49.88986|-97.22653
+Centre City|CA|51.04512|-114.07431
+Sainte-Foy-Sillery-Cap-Rouge|CA|46.75756|-71.3491
+Cap-Rouge|CA|46.74804|-71.3524
 West Island|CC|-12.15681|96.82251
 Yangambi|CD|0.76755|24.43973
 Watsa|CD|3.03716|29.53551
@@ -4744,6 +4869,7 @@ Batangafo|CF|7.30082|18.2833
 Baoro|CF|5.66667|15.96667
 Bangui|CF|4.36122|18.55496
 Baboua|CF|5.79565|14.82799
+Abba|CF|5.33354|15.15199
 Sibiti|CG|-3.68192|13.34985
 Pointe-Noire|CG|-4.77609|11.86352
 Owando|CG|-0.48193|15.89988
@@ -4817,7 +4943,7 @@ Zuerich (Kreis 10) / Hoengg|CH|47.40313|8.4971
 Herisau|CH|47.38615|9.27916
 Grenchen|CH|47.1921|7.39586
 Gossau|CH|47.41551|9.25482
-Geneve|CH|46.20222|6.14569
+Geneva|CH|46.20222|6.14569
 Fribourg|CH|46.80237|7.15128
 Frauenfeld|CH|47.55776|8.89893
 Emmen|CH|47.07819|8.27331
@@ -5058,7 +5184,6 @@ Valdivia|CL|-39.81422|-73.24589
 Traiguen|CL|-38.2496|-72.67027
 Tome|CL|-36.61756|-72.95593
 Tocopilla|CL|-22.09198|-70.19792
-Tiltil|CL|-33.0831|-70.92924
 Teodoro Schmidt|CL|-38.99442|-73.08927
 Temuco|CL|-38.73628|-72.59738
 Talcahuano|CL|-36.72494|-73.11684
@@ -5068,9 +5193,7 @@ San Vicente de Tagua Tagua|CL|-34.43859|-71.07751
 San Vicente|CL|-34.43333|-71.08333
 Santiago|CL|-33.45694|-70.64827
 Santa Cruz|CL|-34.63881|-71.36576
-San Jose de Maipo|CL|-33.63912|-70.35318
 San Javier|CL|-35.5952|-71.72924
-San Francisco de Mostazal|CL|-33.98219|-70.7104
 San Felipe|CL|-32.74976|-70.72584
 San Esteban|CL|-32.79871|-70.5807
 San Clemente|CL|-35.53777|-71.487
@@ -5098,8 +5221,8 @@ Puerto Aysen|CL|-45.40303|-72.69184
 Puente Alto|CL|-33.61169|-70.57577
 Pucon|CL|-39.28223|-71.95427
 Pozo Almonte|CL|-20.25585|-69.7863
+Placilla|CL|-33.1144|-71.56806
 Pitrufquen|CL|-38.98635|-72.63721
-Pirque|CL|-33.63638|-70.57361
 Penco|CL|-36.74075|-72.99528
 Penalolen|CL|-33.46836|-70.53411
 Penaflor|CL|-33.60627|-70.87649
@@ -5113,7 +5236,6 @@ Ovalle|CL|-30.60106|-71.19901
 Osorno|CL|-40.57395|-73.13348
 Nunoa|CL|-33.44735|-70.58279
 Nueva Imperial|CL|-38.74451|-72.95025
-Nancagua|CL|-34.65187|-71.19724
 Nacimiento|CL|-37.50253|-72.67307
 Mulchen|CL|-37.71893|-72.24099
 Molina|CL|-35.11428|-71.28232
@@ -5140,15 +5262,20 @@ Lampa|CL|-33.2863|-70.87561
 La Ligua|CL|-32.45242|-71.23106
 La Cruz|CL|-32.82748|-71.22634
 La Calera|CL|-32.78676|-71.19795
+Labranza|CL|-38.76523|-72.75296
 Iquique|CL|-20.21326|-70.15027
 Illapel|CL|-31.63349|-71.16967
+Hualpen|CL|-36.78908|-73.10165
 Hacienda La Calera|CL|-32.78333|-71.21667
 Hualqui|CL|-36.97266|-72.93559
 Graneros|CL|-34.06863|-70.72747
+Frutillar|CL|-41.12162|-73.0581
 Freire|CL|-38.95252|-72.62653
+El Quisco|CL|-33.39772|-71.69388
 El Monte|CL|-33.67969|-70.98482
 Curico|CL|-34.98279|-71.23943
 Curanilahue|CL|-37.47793|-73.34495
+Curacavi|CL|-33.39762|-71.12708
 Cunco|CL|-38.93181|-72.03151
 Coronel|CL|-37.03386|-73.14019
 Coquimbo|CL|-29.95332|-71.33947
@@ -5330,6 +5457,7 @@ Houqiao|CN|25.32356|98.27802
 Gujangbagh|CN|37.10927|79.93433
 Yushu|CN|33.00118|97.00893
 Gudong|CN|25.34165|98.48297
+Gengqing|CN|31.81668|98.5806
 Elixku|CN|38.70917|77.37056
 Deqen|CN|29.96178|90.71875
 Dagze|CN|29.67329|91.34531
@@ -5342,6 +5470,8 @@ Layka|CN|37.07694|79.73167
 Saybag|CN|37.14972|79.65833
 Arix|CN|36.75541|81.60765
 Xambabazar|CN|36.88639|81.50972
+Yuli|CN|41.33699|86.25663
+Yanqi|CN|42.06321|86.57185
 Xinyuan|CN|43.42649|83.24959
 Wujiaqu|CN|44.16279|87.52174
 Wensu|CN|41.27548|80.23612
@@ -5352,13 +5482,16 @@ Tacheng|CN|46.74535|82.95847
 Shihezi|CN|44.3023|86.03694
 Sandaohezi|CN|44.32597|85.62009
 Chapchal|CN|43.83555|81.14758
+Luntai|CN|41.77953|84.27049
 Xincheng|CN|41.71497|82.93249
 Korla|CN|41.76055|86.15231
 Qarasu|CN|44.20276|80.41639
 Karamay|CN|45.58473|84.88724
 Jelilyuezi|CN|43.9749|81.53555
 Ghulja|CN|43.91515|81.32151
+Tewulike|CN|42.25857|86.8573
 Hoxtolgay|CN|46.51872|86.00214
+Hejing|CN|42.31069|86.39103
 Hami|CN|42.83393|93.50601
 Fuyun|CN|46.9919|89.52115
 Emin|CN|46.52582|83.63418
@@ -5367,6 +5500,7 @@ Dure|CN|46.51188|88.53389
 Dunhuang|CN|40.16667|94.68333
 Changji|CN|44.00782|87.30461
 Burqin|CN|47.70283|86.86375
+Bohu|CN|41.97875|86.63179
 Beitun|CN|47.35249|87.82053
 Baijiantan|CN|45.69298|85.13942
 Ala'er|CN|40.54184|81.26566
@@ -5426,7 +5560,7 @@ Zhuyang|CN|29.06423|105.94487
 Zhuxi|CN|29.53614|105.66685
 Zhutuo|CN|29.0184|105.84877
 Zhuoshui|CN|29.30309|108.7702
-Zhumadian|CN|32.97944|114.02944
+Zhumadian|CN|32.98385|114.02586
 Zhujing|CN|30.901|121.15966
 Zhujiajiao|CN|31.10757|121.05696
 Zhuji|CN|29.71877|120.24233
@@ -5496,7 +5630,7 @@ Yunshan|CN|34.76063|105.79252
 Yunnanyi|CN|25.4245|100.689
 Yunmeng Chengguanzhen|CN|31.06251|113.76545
 Yunmen|CN|30.08274|106.32376
-Jinghong|CN|22.00265|100.7697
+Yunjinghong|CN|22.01479|100.79843
 Yunjin|CN|29.0818|105.64329
 Pizhou|CN|34.31139|117.95028
 Yunfu|CN|22.92787|112.03809
@@ -5506,6 +5640,7 @@ Yulin|CN|22.6305|110.14686
 Wulingyuan|CN|29.34936|110.54407
 Yujia|CN|30.8115|107.95377
 Yuexi|CN|30.91127|108.15926
+Yuepu|CN|31.42694|121.42139
 Yudong|CN|29.385|106.51944
 Yuci|CN|37.68028|112.73194
 Yucheng|CN|34.92889|116.46528
@@ -5569,6 +5704,7 @@ Yangpu|CN|31.26193|121.51904
 Yangliuqing|CN|39.1375|116.99972
 Yangjiaying|CN|39.48055|111.69301
 Yanghe|CN|38.27852|106.24776
+Yanghang|CN|31.37022|121.43742
 Yanggu|CN|36.11056|115.77528
 Yangcun|CN|39.36389|117.06028
 Yancheng|CN|33.3575|120.1573
@@ -5608,6 +5744,7 @@ Xinxiang|CN|35.19033|113.80151
 Xintian|CN|30.69866|108.40193
 Xintai|CN|35.90056|117.75194
 Xinshi|CN|31.04704|113.14098
+Xinqiao|CN|31.065|121.3075
 Xinmin|CN|30.90343|109.46682
 Xinmiao|CN|29.65528|107.04988
 Xinji|CN|37.92595|115.21907
@@ -5692,6 +5829,7 @@ Wugang|CN|26.7279|110.63198
 Wudong|CN|30.2099|107.34127
 Wuda|CN|39.49944|106.71167
 Wucheng|CN|29.60077|118.17495
+Wuchang|CN|30.54314|114.30068
 Wenzhou|CN|27.99942|120.66682
 Wenxian Chengguanzhen|CN|32.94712|104.68139
 Wenshang|CN|35.7275|116.49611
@@ -5775,6 +5913,7 @@ Suizhou|CN|31.71111|113.36306
 Suixi|CN|33.89067|116.77473
 Suicheng|CN|33.8963|117.93307
 Suining|CN|30.50802|105.57332
+Songnan|CN|31.35043|121.48218
 Songjiang|CN|31.03443|121.22326
 Songgang|CN|22.77866|113.8454
 Songcheng|CN|26.88194|120.00111
@@ -5871,7 +6010,7 @@ Xiaodu|CN|29.96207|105.88678
 Sanhe|CN|39.98049|117.06887
 Sangzhe|CN|29.27837|108.39822
 Changsha|CN|22.38124|112.68492
-Runing|CN|33.00111|114.35417
+Runan|CN|33.00016|114.34587
 Rui'an|CN|27.77605|120.65859
 Tongren|CN|35.51483|102.016
 Ronglong|CN|29.43589|105.44865
@@ -6003,6 +6142,7 @@ Minggang|CN|32.45861|114.04861
 Mingcun|CN|36.75361|119.64083
 Micheng|CN|25.34294|100.48725
 Miaoyu|CN|30.86868|109.64614
+Miaohang|CN|31.32466|121.43953
 Mianyang|CN|31.46784|104.68168
 Mianyang|CN|33.15703|106.69445
 Mentougou|CN|39.93819|116.09307
@@ -6037,9 +6177,11 @@ Luoqi|CN|29.72235|106.93206
 Luoping|CN|31.20659|110.08679
 Luomen|CN|34.75417|105.02472
 Luolong|CN|28.80557|104.89906
+Luojing|CN|31.4782|121.33907
 Luojiang|CN|31.30497|104.50484
 Luohuang|CN|29.34662|106.43514
 Luohe|CN|33.57424|114.03261
+Luodian|CN|31.41556|121.33444
 Luocheng|CN|29.38481|104.02862
 Lulou|CN|34.71667|116.76667
 Lucheng|CN|31.23357|117.28057
@@ -6167,7 +6309,7 @@ Jinshi|CN|29.60487|111.87012
 Jinsha|CN|32.08982|121.07355
 Jinqiao|CN|31.27092|121.59331
 Jinjiang|CN|28.40051|116.89983
-Jinjiang|CN|19.72878|110.00851
+Jinjiang|CN|19.73782|110.00928
 Jinji|CN|23.22806|110.82611
 Jining|CN|35.405|116.58139
 Jinhua|CN|29.10678|119.64421
@@ -6248,7 +6390,7 @@ Huangji|CN|34.43333|116.98333
 Huanghua|CN|35.88917|119.45778
 Huanggang|CN|23.67704|116.99961
 Daxing|CN|39.74025|116.32693
-Dingcheng|CN|32.12722|115.03944
+Huangchuan|CN|32.13902|115.04286
 Xingyi|CN|25.09617|104.90639
 Huaiyuan Chengguanzhen|CN|32.95893|117.16566
 Huainan|CN|32.62639|116.99694
@@ -6322,6 +6464,7 @@ Guiren|CN|33.66972|118.18889
 Guiping|CN|23.39483|110.07434
 Guilin|CN|25.28022|110.29639
 Guigang|CN|23.11603|109.59472
+Gucun|CN|31.34933|121.39341
 Gucheng Chengguanzhen|CN|32.26604|111.63476
 Guanzhuang|CN|36.26333|119.19389
 Guanyin|CN|29.09926|104.39416
@@ -6440,7 +6583,7 @@ Danjiangkou|CN|32.54278|111.50861
 Gushu|CN|31.56055|118.48147
 Dangjiang|CN|21.65|109.11667
 Tanchang Chengguanzhen|CN|34.04462|104.39464
-Xincheng|CN|33.63333|115.18333
+Dancheng|CN|33.64412|115.18164
 Damiao|CN|34.26411|117.36379
 Dalu|CN|29.72984|106.2177
 Daliang|CN|22.84067|113.2503
@@ -6450,6 +6593,7 @@ Dajin|CN|31.50955|108.44579
 Dahuangshan|CN|34.29341|117.34436
 Daguan|CN|29.255|106.97694
 Dafengdong|CN|26.71194|107.81139
+Dachang|CN|31.30873|121.41526
 Dachang|CN|31.26861|109.8021
 Shuren|CN|29.98661|107.73923
 Da'an|CN|29.3831|106.01476
@@ -6637,6 +6781,7 @@ Yongping|CN|34.28994|105.27225
 Zhongshan|CN|34.93806|105.8775
 Shima|CN|28.98773|105.92441
 Banan|CN|29.37861|106.54
+Nanhai|CN|23.02193|113.14278
 Dianbu|CN|36.70167|120.35111
 Yunshan|CN|36.82417|120.22611
 Nantou|CN|22.72171|113.29261
@@ -6709,6 +6854,7 @@ Xingcheng|CN|40.61667|120.71667
 Xilin Hot|CN|43.96667|116.03333
 Xifeng|CN|42.73722|124.72222
 Xiaoshi|CN|41.29711|124.12092
+Wudan|CN|42.93444|119.02389
 Wuchang|CN|44.92754|127.16039
 Wangqing|CN|43.31077|129.76334
 Hepingjie|CN|42.05972|126.91583
@@ -6768,6 +6914,7 @@ Longjiang|CN|47.33601|123.196
 Longfeng|CN|46.53168|125.1038
 Liuhe|CN|42.28473|125.74544
 Lishu|CN|43.30727|124.33371
+Linxi|CN|43.51667|118.03333
 Linkou|CN|45.2762|130.27332
 Linjiang|CN|41.80694|126.90778
 Lingyuan|CN|41.24|119.40111
@@ -6792,6 +6939,7 @@ Jining|CN|41.0275|113.10583
 Jilin|CN|43.84652|126.5608
 Jidong|CN|45.256|131.11637
 Jiaohe|CN|43.72133|127.33473
+Ji'an|CN|41.12818|126.19455
 Jiamusi|CN|46.79711|130.31118
 Jalai Nur|CN|49.45|117.7
 Jiagedaqi|CN|50.41667|124.11667
@@ -6838,6 +6986,7 @@ Erdaojiang|CN|41.77639|126.03194
 Dunhua|CN|43.36954|128.22861
 Dongning|CN|44.08436|131.11841
 Dongling|CN|41.81444|123.57583
+Donghe|CN|40.56611|110.01972
 Dongfeng|CN|42.67387|125.52885
 Didao|CN|45.34725|130.83693
 Dehui|CN|44.53674|125.69427
@@ -6880,6 +7029,8 @@ Oroqen Zizhiqi|CN|50.56667|123.71667
 Aihui|CN|49.97946|127.48119
 Acheng|CN|45.54558|126.95191
 Songlingcun|CN|40.29394|118.27143
+Hondlon|CN|40.64833|109.79389
+Qingshan|CN|40.66306|109.88167
 Shigang|CN|31.13611|109.36432
 Doilungdeqen|CN|29.65505|90.99177
 E'zhou|CN|30.39607|114.88655
@@ -6939,13 +7090,16 @@ Hualin|CN|34.82559|104.75198
 Hezhou|CN|24.40357|111.56675
 Zhu Cheng City|CN|35.99502|119.40259
 Xingqiao|CN|30.39943|120.25171
+Gaojing|CN|31.32225|121.4751
 Changzheng|CN|31.23913|121.36779
 Xiayang|CN|31.14967|121.11588
 Shangri-La|CN|27.82511|99.70779
 Maqin County|CN|34.47442|100.24496
+Wenquan|CN|47.1756|119.94809
 Tongyangdao|CN|41.77031|109.96987
 Xilinhot|CN|43.93889|116.07021
 Lhoka|CN|29.24301|91.77239
+Huajing|CN|31.122|121.44925
 Huangpu|CN|31.2378|121.4781
 Xili|CN|22.58809|113.94786
 Ulanqab|CN|40.993|113.133
@@ -7161,6 +7315,8 @@ Lianyungang|CN|34.59845|119.21556
 Rugao|CN|32.37035|120.57649
 Jinzhong|CN|37.68403|112.75471
 Baoji|CN|34.36775|107.23705
+Puxi|CN|31.24414|121.46592
+Sino-Singapore Tianjin Eco-city|CN|39.15314|117.78352
 Qipan|CN|34.24469|118.22113
 Huocheng|CN|44.05305|80.87173
 Longnan|CN|33.39791|104.91703
@@ -7373,9 +7529,9 @@ Fengxiang|CN|30.85841|121.46779
 Chongming|CN|31.61852|121.69621
 Panlongcheng Jingji Kaifaqu|CN|30.69306|114.27074
 Zipaquira|CO|5.02208|-74.00481
-Zarzal|CO|4.39462|-76.0715
+Zarzal|CO|4.3958|-76.07113
 Zaragoza|CO|7.48971|-74.86919
-Yumbo|CO|3.58234|-76.49146
+Yumbo|CO|3.58236|-76.49147
 Yopal|CO|5.33573|-72.3939
 Yondo|CO|7.00621|-73.90972
 Yarumal|CO|6.96321|-75.41738
@@ -7384,7 +7540,7 @@ Villavicencio|CO|4.13238|-73.62564
 Villa del Rosario|CO|7.83389|-72.47417
 Villanueva|CO|10.60768|-72.97901
 Villanueva|CO|5.28333|-71.96667
-Villamaria|CO|5.04565|-75.51474
+Villamaria|CO|5.04509|-75.51249
 Velez|CO|6.01335|-73.67352
 Valledupar|CO|10.46538|-73.2531
 Urrao|CO|6.31696|-76.1342
@@ -7394,7 +7550,7 @@ Turbaco|CO|10.32944|-75.41137
 Tuquerres|CO|1.08647|-77.61858
 Tunja|CO|5.54481|-73.35756
 Tumaco|CO|1.79112|-78.79275
-Tulua|CO|4.08466|-76.19536
+Tulua|CO|4.08484|-76.19548
 Tolu Viejo|CO|9.45082|-75.43864
 Santiago de Tolu|CO|9.52392|-75.58139
 Tocancipa|CO|4.96531|-73.91301
@@ -7403,8 +7559,8 @@ Tierralta|CO|8.17361|-76.05917
 Tauramena|CO|5.01789|-72.74675
 Tarqui|CO|2.11248|-75.82419
 Tame|CO|6.46065|-71.73618
-Tado|CO|5.26598|-76.56487
-Supia|CO|5.45303|-75.65072
+Tado|CO|5.26353|-76.56174
+Supia|CO|5.45182|-75.65107
 Sucre|CO|8.81136|-74.72084
 Suarez|CO|2.95395|-76.69644
 Sonson|CO|5.71062|-75.31069
@@ -7418,15 +7574,15 @@ San Luis de Since|CO|9.24391|-75.14675
 Simiti|CO|7.9579|-73.9436
 Silvania|CO|4.40367|-74.3867
 Sibate|CO|4.49154|-74.25957
-Sevilla|CO|4.26425|-75.93085
+Sevilla|CO|4.26548|-75.93151
 Segovia|CO|7.07993|-74.6989
 San Vicente|CO|6.28535|-75.33385
 Santuario|CO|6.13833|-75.26417
 Santo Tomas|CO|10.75773|-74.75451
 Santa Rosa de Osos|CO|6.64738|-75.46031
-Santa Rosa de Cabal|CO|4.86806|-75.62139
+Santa Rosa de Cabal|CO|4.86889|-75.62195
 Santa Rosa|CO|10.44472|-75.36972
-Santander de Quilichao|CO|3.00945|-76.48494
+Santander de Quilichao|CO|3.00975|-76.48499
 Santa Marta|CO|11.23855|-74.19427
 Santa Lucia|CO|10.3242|-74.96017
 San Pedro de Uraba|CO|8.27515|-76.37641
@@ -7455,24 +7611,24 @@ Sabaneta|CO|6.15153|-75.61657
 Sabanalarga|CO|10.63072|-74.92214
 Sabanagrande|CO|10.79115|-74.76059
 Sabana de Torres|CO|7.3915|-73.49574
-Rovira|CO|4.23922|-75.23996
-Roldanillo|CO|4.41256|-76.15457
+Rovira|CO|4.23921|-75.24021
+Roldanillo|CO|4.41369|-76.15259
 Rivera|CO|2.77717|-75.25642
-Riosucio|CO|5.42164|-75.70318
+Riosucio|CO|5.42126|-75.70271
 Rionegro|CO|6.15515|-75.37371
 Riohacha|CO|11.54444|-72.90722
 Rioblanco|CO|3.52973|-75.64525
 Retiro|CO|6.05861|-75.50306
 Restrepo|CO|4.25833|-73.56142
 Repelon|CO|10.4952|-75.12448
-Quinchia|CO|5.33957|-75.73018
-Quimbaya|CO|4.62306|-75.76278
+Quinchia|CO|5.33948|-75.72956
+Quimbaya|CO|4.62406|-75.7627
 Quibdo|CO|5.69188|-76.65835
 Purificacion|CO|3.85871|-74.93129
 Pupiales|CO|0.87136|-77.64027
 Puerto Wilches|CO|7.34828|-73.89601
 Puerto Triunfo|CO|5.87259|-74.6405
-Puerto Tejada|CO|3.23114|-76.41668
+Puerto Tejada|CO|3.23229|-76.41784
 Puerto Santander|CO|8.36361|-72.4063
 Puerto Salgar|CO|5.46304|-74.65436
 Puerto Rico|CO|1.90999|-75.15931
@@ -7484,13 +7640,13 @@ Puerto Boyaca|CO|5.976|-74.58516
 Puerto Berrio|CO|6.49156|-74.40326
 Puerto Asis|CO|0.50514|-76.49571
 Puebloviejo|CO|10.99376|-74.28439
-Pradera|CO|3.42111|-76.24472
+Pradera|CO|3.41974|-76.24187
 Popayan|CO|2.43823|-76.61316
 Ponedera|CO|10.64297|-74.75393
 Polonuevo|CO|10.77697|-74.85344
 Planeta Rica|CO|8.4115|-75.58508
 Planadas|CO|3.19698|-75.64506
-Pizarro|CO|4.95334|-77.36598
+Pizarro|CO|4.95499|-77.36409
 Pivijay|CO|10.46167|-74.61621
 Pitalito|CO|1.85371|-76.05071
 Pinillos|CO|8.91925|-74.46771
@@ -7501,7 +7657,7 @@ Payande|CO|4.2975|-75.09667
 Patia|CO|2.06895|-77.05273
 Pasto|CO|1.21456|-77.27846
 Pamplona|CO|7.37565|-72.64795
-Palmira|CO|3.53944|-76.30361
+Palmira|CO|3.53479|-76.29774
 Palmar de Varela|CO|10.74055|-74.75443
 Pailitas|CO|8.95671|-73.62378
 Belalcazar|CO|2.64644|-75.97269
@@ -7510,23 +7666,23 @@ Pacho|CO|5.13278|-74.15977
 Ocana|CO|8.23773|-73.35604
 Nueva Granada|CO|9.80168|-74.39304
 Neiva|CO|2.93001|-75.27973
-Neira|CO|5.1665|-75.52001
+Neira|CO|5.16648|-75.5199
 Nechi|CO|8.09419|-74.77573
 Natagaima|CO|3.62057|-75.09415
 Mosquera|CO|4.70592|-74.23021
 Morales|CO|8.27621|-73.86803
 Monteria|CO|8.75081|-75.87823
-Montenegro|CO|4.56639|-75.75111
+Montenegro|CO|4.56594|-75.7499
 Montelibano|CO|7.97917|-75.4202
 Moniquira|CO|5.87638|-73.57284
 Mompos|CO|9.24194|-74.42667
 Momil|CO|9.23767|-75.67489
 Mocoa|CO|1.15284|-76.65208
 Mitu|CO|1.25744|-70.23551
-Miranda|CO|3.25283|-76.22924
+Miranda|CO|3.24987|-76.22807
 Melgar|CO|4.20475|-74.64075
 Medellin|CO|6.245|-75.57151
-Marsella|CO|4.93722|-75.73778
+Marsella|CO|4.93697|-75.73793
 San Sebastian de Mariquita|CO|5.19889|-74.89295
 Marinilla|CO|6.17358|-75.33621
 Maria la Baja|CO|9.9832|-75.30155
@@ -7545,11 +7701,11 @@ Lorica|CO|9.23648|-75.8135
 Libano|CO|4.9218|-75.06232
 Leticia|CO|-4.21079|-69.93944
 Lerida|CO|4.86242|-74.90977
-La Virginia|CO|4.89972|-75.8825
+La Virginia|CO|4.90006|-75.88278
 La Union|CO|5.97431|-75.36195
-La Union|CO|4.53282|-76.10318
+La Union|CO|4.53314|-76.10337
 La Union|CO|1.6045|-77.13152
-La Tebaida|CO|4.45265|-75.78746
+La Tebaida|CO|4.45242|-75.7869
 La Plata|CO|2.39341|-75.89232
 La Mesa|CO|5.26667|-73.91667
 La Jagua de Ibirico|CO|9.56228|-73.33405
@@ -7557,7 +7713,7 @@ La Estrella|CO|6.15769|-75.64317
 La Dorada|CO|5.44783|-74.66311
 La Ceja|CO|6.03131|-75.43333
 Juan de Acosta|CO|10.8293|-75.03346
-Jamundi|CO|3.26074|-76.53499
+Jamundi|CO|3.26177|-76.54021
 Ituango|CO|7.17117|-75.76404
 Itaguei|CO|6.18461|-75.59913
 Ipiales|CO|0.82501|-77.63966
@@ -7568,7 +7724,7 @@ Guamo|CO|4.03078|-74.9701
 Guamal|CO|9.14334|-74.22384
 Guaduas|CO|5.06692|-74.59499
 Guadalupe|CO|2.0248|-75.75589
-Guacari|CO|3.76383|-76.33292
+Guacari|CO|3.76388|-76.33201
 Granada|CO|3.54625|-73.70687
 Giron|CO|7.0682|-73.16981
 Girardot City|CO|4.30079|-74.80754
@@ -7583,7 +7739,7 @@ Frontino|CO|6.77133|-76.13324
 Fresno|CO|5.15264|-75.03624
 Fonseca|CO|10.88606|-72.8487
 Floridablanca|CO|7.06222|-73.08644
-Florida|CO|3.3223|-76.2348
+Florida|CO|3.32401|-76.23436
 Florencia|CO|1.61549|-75.60412
 Flandes|CO|4.29005|-74.81612
 Facatativa|CO|4.81367|-74.35453
@@ -7594,13 +7750,13 @@ El Reten|CO|10.61135|-74.26824
 El Doncello|CO|1.67817|-75.28466
 El Copey|CO|10.15031|-73.9614
 El Charco|CO|2.48075|-78.10972
-El Cerrito|CO|3.68549|-76.31372
+El Cerrito|CO|3.68532|-76.31203
 El Carmen de Bolivar|CO|9.7174|-75.12023
 El Carmen de Chucuri|CO|6.69736|-73.51117
 El Banco|CO|9.00114|-73.97581
 El Bagre|CO|7.60347|-74.80951
 Duitama|CO|5.8245|-73.03408
-Dosquebradas|CO|4.83916|-75.66727
+Dosquebradas|CO|4.83659|-75.66926
 Darien|CO|3.93135|-76.48481
 Dabeiba|CO|7.00017|-76.26915
 Curumani|CO|9.19992|-73.54274
@@ -7612,7 +7768,7 @@ Corozal|CO|9.31847|-75.2933
 Corinto|CO|3.17301|-76.26275
 Copacabana|CO|6.34633|-75.50888
 Concordia|CO|6.04639|-75.90705
-Circasia|CO|4.61889|-75.63583
+Circasia|CO|4.61905|-75.63584
 Cimitarra|CO|6.31419|-73.94968
 Cienaga de Oro|CO|8.87443|-75.62028
 Cienaga|CO|11.00703|-74.24765
@@ -7620,35 +7776,35 @@ Chivolo|CO|10.02502|-74.62279
 Chiriguana|CO|9.36238|-73.60313
 Chiquinquira|CO|5.61637|-73.81748
 Chinu|CO|9.10569|-75.39812
-Chinchina|CO|4.9825|-75.60361
+Chinchina|CO|4.9832|-75.60488
 Chimichagua|CO|9.25778|-73.81228
 Chigorodo|CO|7.66638|-76.68106
 Chia|CO|4.85876|-74.05866
-Chaparral|CO|3.72315|-75.48316
+Chaparral|CO|3.72412|-75.48386
 Cerete|CO|8.88479|-75.79052
 Caucasia|CO|7.98654|-75.19349
-Cartago|CO|4.74639|-75.91167
+Cartago|CO|4.7454|-75.91247
 Cartagena|CO|10.39817|-75.49328
 Carmen de Viboral|CO|6.08236|-75.33509
 Candelaria|CO|10.45912|-74.8797
-Candelaria|CO|3.40671|-76.34819
+Candelaria|CO|3.40807|-76.34804
 Campo de la Cruz|CO|10.37808|-74.88356
 Campoalegre|CO|2.68489|-75.32311
 Cali|CO|3.43054|-76.5199
 Caldas|CO|6.09106|-75.63569
-Calarca|CO|4.52949|-75.64091
+Calarca|CO|4.52863|-75.64024
 Cajica|CO|4.91857|-74.02799
-Caicedonia|CO|4.3324|-75.82665
-Guadalajara de Buga|CO|3.90089|-76.29783
+Caicedonia|CO|4.33267|-75.8265
+Guadalajara de Buga|CO|3.901|-76.29826
 Buesaco|CO|1.38364|-77.15622
-Buenaventura|CO|3.8801|-77.03116
+Buenaventura|CO|3.87962|-77.03105
 Buenaventura|CO|3.58333|-77
 Bucaramanga|CO|7.125|-73.11895
 Bosconia|CO|9.97106|-73.88817
 Bogota|CO|4.60971|-74.08175
 Betulia|CO|6.11284|-75.98378
 Bello|CO|6.33732|-75.55795
-Belen de Umbria|CO|5.20087|-75.86865
+Belen de Umbria|CO|5.20199|-75.86753
 Becerril|CO|9.70413|-73.2793
 Barranquilla|CO|10.96854|-74.78132
 Barrancas|CO|10.95672|-72.79456
@@ -7667,8 +7823,8 @@ Aracataca|CO|10.59181|-74.18983
 Apartado|CO|7.88299|-76.62587
 Santa Fe de Antioquia|CO|6.55687|-75.82806
 Anserma|CO|5.33278|-75.79111
-Andes|CO|5.6561|-75.87877
-Andalucia|CO|4.17061|-76.16641
+Andes|CO|5.65576|-75.87959
+Andalucia|CO|4.16983|-76.16716
 Anaime|CO|4.39639|-75.445
 Albania|CO|11.16099|-72.59238
 Aguazul|CO|5.17282|-72.54706
@@ -7732,143 +7888,143 @@ Calle Blancos|CR|9.9453|-84.0669
 Aserri|CR|9.86142|-84.09266
 Alajuela|CR|10.01723|-84.21275
 San Vicente de Moravia|CR|9.96164|-84.0488
-Yara|CU|20.27465|-76.95132
-Yaguajay|CU|22.32691|-79.23567
+Yara|CU|20.27417|-76.95227
+Yaguajay|CU|22.32693|-79.23687
 Vinales|CU|22.61892|-83.70694
 Vibora Park|CU|23.08105|-82.35448
-Vertientes|CU|21.25817|-78.14979
-Venezuela|CU|21.73748|-78.79336
+Vertientes|CU|21.25892|-78.14932
+Venezuela|CU|21.73792|-78.79331
 Vedado del Cotorro|CU|23.05|-82.25
 Vedado|CU|23.13767|-82.39339
 Varadero|CU|23.15678|-81.24441
-San German|CU|20.60009|-76.13364
-Union de Reyes|CU|22.79505|-81.53617
-Trinidad|CU|21.80224|-79.98467
+San German|CU|20.59971|-76.1347
+Union de Reyes|CU|22.79528|-81.53685
+Trinidad|CU|21.79956|-79.98349
 Sibanicu|CU|21.23631|-77.52561
-Santo Domingo|CU|22.58677|-80.24261
+Santo Domingo|CU|22.5867|-80.24259
 Santiago de las Vegas|CU|22.97|-82.38694
 Santiago de Cuba|CU|20.02287|-75.82171
-Santa Cruz del Sur|CU|20.71633|-77.99816
+Santa Cruz del Sur|CU|20.71549|-77.99551
 Santa Cruz del Norte|CU|23.15356|-81.92262
 Santa Clara|CU|22.40711|-79.96581
 San Miguel del Padron|CU|23.09544|-82.32669
-San Luis|CU|20.18809|-75.85031
+San Luis|CU|20.18813|-75.8503
 San Jose de las Lajas|CU|22.96121|-82.15151
 Sancti Spiritus|CU|21.93429|-79.4398
 San Cristobal|CU|22.71658|-83.05647
-San Antonio de los Banos|CU|22.89018|-82.50099
-Sagua la Grande|CU|22.80667|-80.07556
-Sagua de Tanamo|CU|20.58269|-75.24116
-Rodas|CU|22.34184|-80.55596
+San Antonio de los Banos|CU|22.889|-82.5059
+Sagua la Grande|CU|22.80599|-80.0742
+Sagua de Tanamo|CU|20.5828|-75.24119
+Rodas|CU|22.34185|-80.5558
 Rio Guayabal de Yateras|CU|20.36667|-75.01667
-Rio Cauto|CU|20.55971|-76.91673
-Remedios|CU|22.49502|-79.54548
-Regla|CU|23.125|-82.33194
+Rio Cauto|CU|20.55981|-76.91665
+Remedios|CU|22.49493|-79.54536
+Regla|CU|23.12576|-82.33058
 Ranchuelo|CU|22.37266|-80.15046
-Puerto Padre|CU|21.19517|-76.60358
-Primero de Enero|CU|21.94501|-78.4313
-Placetas|CU|22.31184|-79.6544
+Puerto Padre|CU|21.19594|-76.60351
+Primero de Enero|CU|21.9455|-78.42853
+Placetas|CU|22.31377|-79.65384
 Pinar del Rio|CU|22.41649|-83.69657
 Pilon|CU|19.90553|-77.32152
-Perico|CU|22.76987|-81.0183
-Pedro Betancourt|CU|22.72709|-81.28963
-Palmira|CU|22.24126|-80.3911
-Palma Soriano|CU|20.2113|-75.99362
-Nuevitas|CU|21.54585|-77.26504
+Perico|CU|22.76889|-81.01845
+Pedro Betancourt|CU|22.72778|-81.28872
+Palmira|CU|22.24217|-80.39164
+Palma Soriano|CU|20.21149|-75.99438
+Nuevitas|CU|21.54446|-77.26489
 Nueva Gerona|CU|21.88759|-82.80662
-Niquero|CU|20.04698|-77.58089
+Niquero|CU|20.04592|-77.58042
 Naranjito|CU|23.07939|-82.3769
-Moron|CU|22.10774|-78.62667
+Moron|CU|22.10881|-78.62685
 Moa|CU|20.65776|-74.95075
-Minas de Matahambre|CU|22.58691|-83.94551
-Minas|CU|21.48802|-77.61033
-Media Luna|CU|20.14298|-77.43532
+Minas de Matahambre|CU|22.58692|-83.94567
+Minas|CU|21.48764|-77.6094
+Media Luna|CU|20.14211|-77.43594
 Matanzas|CU|23.04388|-81.58284
-Mariel|CU|22.98931|-82.75376
-Marianao|CU|23.07385|-82.4189
-Manzanillo|CU|20.34173|-77.12126
+Mariel|CU|22.98976|-82.75422
+Marianao|CU|23.07387|-82.42969
+Manzanillo|CU|20.3424|-77.11928
 Mantilla|CU|23.06794|-82.34143
 Manicaragua|CU|22.15021|-79.97867
 Maisi|CU|20.24673|-74.15181
-Madruga|CU|22.91|-81.85639
-Los Palacios|CU|22.58882|-83.24671
-Limonar|CU|22.95035|-81.41059
+Madruga|CU|22.90977|-81.85663
+Los Palacios|CU|22.58756|-83.24757
+Limonar|CU|22.95002|-81.41113
 Vibora|CU|23.09387|-82.37191
 Las Tunas|CU|20.96135|-76.95192
-La Sierpe|CU|21.77241|-79.26832
-La Salud|CU|22.87199|-82.42328
-Lajas|CU|22.41479|-80.2931
+La Sierpe|CU|21.77166|-79.26775
+La Salud|CU|22.87369|-82.41989
+Lajas|CU|22.41436|-80.29363
 Havana|CU|23.13302|-82.38304
-Jovellanos|CU|22.80375|-81.19127
+Jovellanos|CU|22.80454|-81.19177
 Jobabo|CU|20.96917|-76.29944
-Jobabo|CU|20.90748|-77.28194
-Jiguani|CU|20.36785|-76.42741
-Jesus Menendez|CU|21.16139|-76.47919
-Jatibonico|CU|21.94333|-79.16906
-Jaruco|CU|23.04419|-82.00919
-Jagueey Grande|CU|22.52694|-81.12861
+Jobabo|CU|20.90981|-77.28454
+Jiguani|CU|20.36839|-76.42905
+Jesus Menendez|CU|21.16153|-76.4777
+Jatibonico|CU|21.94332|-79.16745
+Jaruco|CU|23.044|-82.00919
+Jagueey Grande|CU|22.52629|-81.12855
 Holguin|CU|20.88722|-76.26306
-Guisa|CU|20.25494|-76.5393
-Gueira de Melena|CU|22.79613|-82.50667
-Gueines|CU|22.83727|-82.02641
+Guisa|CU|20.25606|-76.53914
+Gueira de Melena|CU|22.79688|-82.50651
+Gueines|CU|22.83837|-82.02673
 Guantanamo|CU|20.14444|-75.20917
-Guane|CU|22.20179|-84.08484
-Guanajay|CU|22.92616|-82.68687
+Guane|CU|22.20397|-84.0885
+Guanajay|CU|22.92615|-82.68686
 Guanabacoa|CU|23.12518|-82.30067
-Guaimaro|CU|21.05222|-77.3499
-Gibara|CU|21.10988|-76.13145
+Guaimaro|CU|21.05383|-77.3494
+Gibara|CU|21.10982|-76.13031
 Fontanar|CU|23.02389|-82.408
-Fomento|CU|22.10475|-79.72141
-Florida|CU|21.52536|-78.22579
-Florencia|CU|22.1461|-78.97328
-Esmeralda|CU|21.85139|-78.11725
-Encrucijada|CU|22.61802|-79.86603
+Fomento|CU|22.10349|-79.71984
+Florida|CU|21.5264|-78.22553
+Florencia|CU|22.14594|-78.97221
+Esmeralda|CU|21.85207|-78.11694
+Encrucijada|CU|22.61775|-79.86495
 Cumanayagua|CU|22.15247|-80.20354
 Cueto|CU|20.64855|-75.92967
-Cruces|CU|22.34203|-80.27021
-Corralillo|CU|22.98212|-80.58556
-Contramaestre|CU|20.29879|-76.24511
-Consolacion del Sur|CU|22.50419|-83.51442
-Condado|CU|21.8767|-79.84014
-Colon|CU|22.72064|-80.90492
-Colombia|CU|20.98812|-77.42598
+Cruces|CU|22.34282|-80.27082
+Corralillo|CU|22.98213|-80.58532
+Contramaestre|CU|20.29884|-76.24499
+Consolacion del Sur|CU|22.50545|-83.51309
+Condado|CU|21.87596|-79.84008
+Colon|CU|22.72108|-80.90368
+Colombia|CU|20.98553|-77.42555
 Cojimar|CU|23.16481|-82.30116
 Ciro Redondo|CU|22.01921|-78.70365
 Cifuentes|CU|22.6493|-80.04935
 Cienfuegos|CU|22.14681|-80.4481
 Ciego de Avila|CU|21.8422|-78.76034
-Chambas|CU|22.19534|-78.9123
-Cerro|CU|23.10809|-82.3866
-Cauto Cristo|CU|20.55709|-76.4727
-Cardenas|CU|23.03661|-81.20596
-Campechuela|CU|20.23329|-77.2799
+Chambas|CU|22.19265|-78.91414
+Cerro|CU|23.10789|-82.38356
+Cauto Cristo|CU|20.55711|-76.47273
+Cardenas|CU|23.03632|-81.20602
+Campechuela|CU|20.23272|-77.27949
 Camajuani|CU|22.48333|-79.75
 Camagueey|CU|21.38083|-77.91694
 Calimete|CU|22.5342|-80.91105
-Caibarien|CU|22.51996|-79.46599
-Cacocum|CU|20.73775|-76.32574
-Cabaiguan|CU|22.07874|-79.49726
-Bejucal|CU|22.92861|-82.38861
+Caibarien|CU|22.51992|-79.46601
+Cacocum|CU|20.73682|-76.32622
+Cabaiguan|CU|22.0784|-79.49626
+Bejucal|CU|22.92832|-82.38875
 Bayamo|CU|20.37368|-76.64272
-Bauta|CU|22.98226|-82.54719
-Bartolome Maso|CU|20.16635|-76.94291
+Bauta|CU|22.9821|-82.54764
+Bartolome Maso|CU|20.16657|-76.94395
 Baragua|CU|21.68216|-78.62567
-Baracoa|CU|20.34711|-74.49624
-Banes|CU|20.96116|-75.722
+Baracoa|CU|20.34801|-74.49714
+Banes|CU|20.96134|-75.72306
 Balcon de la Lisa|CU|23.05346|-82.4476
-Bahia Honda|CU|22.90332|-83.15994
+Bahia Honda|CU|22.90333|-83.15994
 Artemisa|CU|22.81366|-82.75814
 Arroyo Naranjo|CU|23.03811|-82.37703
-Amancio|CU|20.81914|-77.57958
-Alquizar|CU|22.80517|-82.58392
+Amancio|CU|20.82876|-77.5786
+Alquizar|CU|22.80474|-82.58381
 Almendares|CU|23.11012|-82.42322
 Alamar|CU|23.15794|-82.27837
 Aguada de Pasajeros|CU|22.3852|-80.84792
-Abreus|CU|22.27797|-80.56931
+Abreus|CU|22.27776|-80.5689
 Ciudad Camilo Cienfuegos|CU|23.16076|-82.32798
-Centro Habana|CU|23.13833|-82.36417
+Centro Habana|CU|23.13488|-82.36893
 La Habana Vieja|CU|23.13028|-82.35306
-Jimaguayu|CU|21.24224|-77.82625
+Jimaguayu|CU|21.24194|-77.82574
 Boyeros|CU|23.0072|-82.4017
 Diez de Octubre|CU|23.0881|-82.3597
 Plaza de la Revolucion|CU|23.11936|-82.39197
@@ -7908,7 +8064,6 @@ Vyskov|CZ|49.27747|16.99897
 Vsetin|CZ|49.33871|17.99619
 Vrsovice|CZ|50.06732|14.46026
 Valasske Mezirici|CZ|49.47181|17.97113
-Usti nad Orlici|CZ|49.97387|16.39361
 Usti nad Labem|CZ|50.6607|14.03227
 Uhersky Brod|CZ|49.02513|17.64715
 Uherske Hradiste|CZ|49.06975|17.45969
@@ -7932,7 +8087,7 @@ Ricany|CZ|49.99168|14.65427
 Repy|CZ|50.07064|14.30051
 Rakovnik|CZ|50.1037|13.7334
 Prostejov|CZ|49.47188|17.11184
-Prosek|CZ|50.11525|14.50685
+Prosek|CZ|50.119|14.499
 Pribram|CZ|49.68988|14.01043
 Prerov|CZ|49.45511|17.4509
 Prague|CZ|50.08804|14.42076
@@ -7947,6 +8102,7 @@ Ostrava|CZ|49.83465|18.28204
 Orlova|CZ|49.84527|18.43011
 Opava|CZ|49.93866|17.90257
 Olomouc|CZ|49.59552|17.25175
+Nymburk|CZ|50.18605|15.04167
 Nusle|CZ|50.06458|14.4399
 Novy Jicin|CZ|49.59438|18.01028
 Nove Mesto|CZ|50.07829|14.42089
@@ -8004,10 +8160,8 @@ Chodov|CZ|50.03669|14.50444
 Cheb|CZ|50.07963|12.37392
 Cesky Tesin|CZ|49.74613|18.62613
 Ceske Budejovice|CZ|48.97447|14.47434
-Ceska Trebova|CZ|49.90436|16.44413
 Ceska Lipa|CZ|50.68551|14.53764
 Bystrc|CZ|49.22645|16.5303
-Bruntal|CZ|49.98844|17.4647
 Brno|CZ|49.19522|16.60796
 Breclav|CZ|48.75897|16.88203
 Branik|CZ|50.03498|14.41518
@@ -8033,11 +8187,11 @@ Wurzen|DE|51.3707|12.73939
 Wuerzburg|DE|49.79391|9.95121
 Wuerselen|DE|50.81809|6.1347
 Wuppertal|DE|51.25627|7.14816
-Wunstorf|DE|52.42377|9.43585
+Wunstorf|DE|52.42409|9.43783
 Wuelfrath|DE|51.28195|7.03821
 Woerth am Rhein|DE|49.04888|8.25959
 Worms|DE|49.63278|8.35916
-Wolfsburg|DE|52.42452|10.7815
+Wolfsburg|DE|52.4236|10.77597
 Wolfratshausen|DE|47.91289|11.42166
 Wolfenbuettel|DE|52.16442|10.54095
 Wolfen|DE|51.66122|12.26873
@@ -8136,7 +8290,7 @@ Verl|DE|51.88333|8.51667
 Verden|DE|52.92334|9.23804
 Velbert|DE|51.33537|7.04348
 Vegesack|DE|53.17923|8.62228
-Vechta|DE|52.72632|8.28598
+Vechta|DE|52.73064|8.28968
 Vechelde|DE|52.26038|10.36491
 Vaterstetten|DE|48.10537|11.76825
 Varel|DE|53.39693|8.13621
@@ -8183,7 +8337,7 @@ Straelen|DE|51.4419|6.26639
 Stolberg|DE|50.77368|6.22595
 Stockelsdorf|DE|53.8922|10.64713
 Stockach|DE|47.85105|9.0091
-Stendal|DE|52.6069|11.85867
+Stendal|DE|52.60578|11.86091
 Stellingen|DE|53.5922|9.9287
 Steinhagen|DE|52|8.4
 Steinfurt|DE|52.15045|7.33664
@@ -8224,7 +8378,7 @@ Selb|DE|50.17058|12.13054
 Sehnde|DE|52.31394|9.9682
 Seevetal|DE|53.4|9.96667
 Seesen|DE|51.89095|10.17847
-Seelze|DE|52.39635|9.59727
+Seelze|DE|52.39535|9.59469
 Schwetzingen|DE|49.38217|8.5823
 Schwerte|DE|51.44387|7.5675
 Schwerin|DE|53.62937|11.41316
@@ -8318,7 +8472,7 @@ Ratekau|DE|53.94646|10.7312
 Rastede|DE|53.24508|8.19718
 Rastatt|DE|48.85851|8.20965
 Rahlstedt|DE|53.60194|10.15667
-Rahden|DE|52.43367|8.61263
+Rahden|DE|52.43425|8.61266
 Radolfzell|DE|47.74194|8.97098
 Radevormwald|DE|51.20219|7.36027
 Radebeul|DE|51.10654|13.66047
@@ -8364,7 +8518,7 @@ Osnabrueck|DE|52.27264|8.0498
 Osdorf|DE|53.57982|9.85826
 Oschersleben|DE|52.03039|11.22898
 Oschatz|DE|51.30001|13.10984
-Oranienburg|DE|52.75577|13.24197
+Oranienburg|DE|52.748|13.25194
 Opladen|DE|51.06863|7.00387
 Olsberg|DE|51.35613|8.48899
 Olpe|DE|51.02899|7.85139
@@ -8399,7 +8553,7 @@ Nordenham|DE|53.50098|8.48965
 Norden|DE|53.59549|7.20615
 Nippes|DE|50.96545|6.95314
 Niendorf|DE|53.61769|9.95032
-Nienburg|DE|52.6461|9.22086
+Nienburg|DE|52.64437|9.21658
 Niederschoenhausen|DE|52.58483|13.40272
 Niederkruchten|DE|51.2|6.21667
 Niederkassel|DE|50.81503|7.03777
@@ -8514,10 +8668,11 @@ Losheim|DE|49.5099|6.74549
 Loschwitz|DE|51.05386|13.81393
 Loerrach|DE|47.61497|7.66457
 Lohr am Main|DE|49.98922|9.57223
-Lohne|DE|52.66625|8.2375
+Lohne|DE|52.66561|8.23826
 Loehne|DE|52.18848|8.6922
 Lohmar|DE|50.83868|7.21399
 Loebtau|DE|51.04358|13.69444
+Lobeda|DE|50.89562|11.60191
 Loebau|DE|51.09954|14.66738
 Lippstadt|DE|51.67369|8.34482
 Lingen|DE|52.52269|7.32555
@@ -8551,7 +8706,7 @@ Laupheim|DE|48.22786|9.87874
 Lauf an der Pegnitz|DE|49.51386|11.28247
 Lauchhammer|DE|51.48813|13.76623
 Lankwitz|DE|52.43623|13.3459
-Langenhagen|DE|52.44758|9.73741
+Langenhagen|DE|52.44219|9.73651
 Langenfeld|DE|51.10821|6.94831
 Langendreer|DE|51.46023|7.32584
 Langen|DE|53.60554|8.59509
@@ -8661,7 +8816,7 @@ Holzwickede|DE|51.5|7.63333
 Holzminden|DE|51.82798|9.4455
 Holzkirchen|DE|47.87663|11.70181
 Hohenstein-Ernstthal|DE|50.80064|12.71287
-Hohen Neuendorf|DE|52.67631|13.27775
+Hohen Neuendorf|DE|52.67737|13.27887
 Hofheim am Taunus|DE|50.09019|8.4493
 Hofgeismar|DE|51.49607|9.385
 Hof|DE|50.31297|11.91261
@@ -8770,7 +8925,7 @@ Glauchau|DE|50.81987|12.54493
 Gladbeck|DE|51.57077|6.98593
 Ginsheim-Gustavsburg|DE|49.9711|8.34532
 Gilching|DE|48.10755|11.2936
-Gifhorn|DE|52.47774|10.5511
+Gifhorn|DE|52.47944|10.55223
 Giessen|DE|50.58727|8.67554
 Giengen an der Brenz|DE|48.62219|10.24312
 Gevelsberg|DE|51.31971|7.3392
@@ -8793,7 +8948,7 @@ Geesthacht|DE|53.4366|10.37339
 Gauting|DE|48.06919|11.37703
 Garmisch-Partenkirchen|DE|47.49209|11.09576
 Garching|DE|48.24896|11.65101
-Garbsen|DE|52.41371|9.5899
+Garbsen|DE|52.41961|9.6033
 Ganderkesee|DE|53.03616|8.54514
 Gaggenau|DE|48.8|8.33333
 Fuessen|DE|47.57143|10.70171
@@ -8840,7 +8995,7 @@ Euskirchen|DE|50.66057|6.78722
 Ettlingen|DE|48.94094|8.40763
 Esslingen|DE|48.73961|9.30473
 Essen|DE|51.45657|7.01228
-Espelkamp|DE|52.38251|8.62127
+Espelkamp|DE|52.38141|8.62303
 Eschweiler|DE|50.81854|6.27184
 Eschwege|DE|51.18386|10.05329
 Eschborn|DE|50.14328|8.57111
@@ -8905,7 +9060,7 @@ Dillingen an der Donau|DE|48.58153|10.49527
 Dillingen|DE|49.35557|6.72781
 Dillenburg|DE|50.74114|8.28699
 Dietzenbach|DE|50.00976|8.77783
-Diepholz|DE|52.60783|8.37005
+Diepholz|DE|52.60695|8.37027
 Dieburg|DE|49.89738|8.84613
 Deutz|DE|50.93463|6.97495
 Detmold|DE|51.93855|8.87318
@@ -9108,7 +9263,7 @@ Rodgau|DE|50.02627|8.88588
 Gropiusstadt|DE|52.42686|13.46053
 Seeheim-Jugenheim|DE|49.765|8.65194
 Bonn Hardtberg|DE|50.704|7.054
-Charlottenburg-Nord|DE|52.53048|13.29371
+Charlottenburg-Nord|DE|52.533|13.295
 Mitte|DE|52.52003|13.40489
 Rheinstetten|DE|48.9685|8.30704
 Suedstadt|DE|52.35967|9.7508
@@ -9164,7 +9319,9 @@ Djibouti|DJ|11.58901|43.14503
 Dikhil|DJ|11.10454|42.36971
 Arta|DJ|11.52639|42.85194
 Ali Sabih|DJ|11.15583|42.7125
+Balbala|DJ|11.56194|43.10666
 Vordingborg|DK|55.00801|11.91057
+Virum|DK|55.79488|12.45103
 Viby|DK|56.12259|10.15145
 Viborg|DK|56.45319|9.40201
 Vejle|DK|55.70927|9.5357
@@ -9196,6 +9353,7 @@ Koge|DK|55.45802|12.18214
 Copenhagen|DK|55.67594|12.56553
 Kolding|DK|55.4904|9.47216
 Klinteby Frihed|DK|55.19705|11.59603
+Karlebo|DK|55.91928|12.40999
 Kalundborg|DK|55.67954|11.08864
 Ishoj|DK|55.61543|12.35182
 Hvidovre|DK|55.64297|12.47708
@@ -9208,6 +9366,7 @@ Hillerod|DK|55.92791|12.30081
 Herning|DK|56.13615|8.97662
 Helsingor|DK|56.03606|12.6136
 Hedensted|DK|55.77043|9.7011
+Hedehusene|DK|55.64951|12.19827
 Haderslev|DK|55.24943|9.48771
 Greve|DK|55.58333|12.3
 Glostrup|DK|55.6666|12.40377
@@ -9261,6 +9420,7 @@ Las Matas de Farfan|DO|18.87309|-71.51656
 La Romana|DO|18.42332|-68.96635
 Jarabacoa|DO|19.11683|-70.63595
 Hato Mayor del Rey|DO|18.76575|-69.25579
+Guayacanes|DO|18.42495|-69.4576
 Esperanza|DO|19.58469|-70.98489
 Dajabon|DO|19.54811|-71.70821
 Cristo Rey|DO|18.5|-69.93333
@@ -9485,6 +9645,7 @@ Bou Ismail|DZ|36.64262|2.69007
 Bouira|DZ|36.37489|3.902
 Bouinan|DZ|36.53167|2.99194
 Bou Hanifia el Hamamat|DZ|35.31473|-0.05037
+Bou Hadjar|DZ|36.50373|8.1074
 Bougara|DZ|36.54178|3.081
 Bougaa|DZ|36.33293|5.08843
 Boufarik|DZ|36.57413|2.91214
@@ -9646,11 +9807,18 @@ Ambato|EC|-1.24908|-78.61675
 Viljandi|EE|58.36319|25.59159
 Tartu|EE|58.38062|26.72509
 Tallinn|EE|59.43696|24.75353
+Pirita|EE|59.469|24.838
 Paernu|EE|58.38588|24.49711
 Nomme|EE|59.37757|24.68587
 Narva|EE|59.37722|28.19028
 Maardu|EE|59.46529|24.98215
+Lasnamaee|EE|59.4336|24.86017
 Kohtla-Jaerve|EE|59.39861|27.27306
+Mustamaee|EE|59.40482|24.68119
+Kesklinn|EE|59.4355|24.75748
+Haabersti|EE|59.42334|24.64654
+Kristiine|EE|59.415|24.70915
+Pohja-Tallinn|EE|59.44901|24.69812
 Zefta|EG|30.7142|31.24425
 Zaafarana|EG|29.11007|32.66012
 Tukh|EG|30.35487|31.20105
@@ -9737,6 +9905,7 @@ Jarajus|EG|25.87198|32.75585
 Itay al Barud|EG|30.88697|30.66724
 Itsa|EG|29.2376|30.78944
 Esna|EG|25.29336|32.55402
+Ihnasya al Madinah|EG|29.0895|30.94319
 Ihnasiyah|EG|29.09285|31.02043
 Idku|EG|31.3073|30.2981
 Edfu|EG|24.97916|32.87722
@@ -9863,6 +10032,7 @@ Hala'ib|EG|22.22273|36.64679
 An Nubariyah|EG|30.6687|30.07391
 Awlad Saqr|EG|30.93055|31.69864
 Bi'r al 'Abd|EG|31.01887|33.0098
+Al-Manakh|EG|31.26786|32.28464
 Badr|EG|30.136|31.715
 Ar Riyad|EG|31.24193|30.94504
 Az Zarqa|EG|31.20864|31.63528
@@ -9879,6 +10049,7 @@ New Cairo|EG|30.03|31.47
 El Shorouk|EG|30.13806|31.61556
 Al Qahirah al Jadidah|EG|30.04214|31.44446
 At Tarif|EG|25.73826|32.63684
+Bur Fu'ad|EG|31.24408|32.31955
 Al-'Ubur|EG|30.22886|31.48149
 Al-Kharijah|EG|25.25|30.55
 Al-Minya al-Jadidah|EG|28.08639|30.81464
@@ -9887,6 +10058,8 @@ Ar-Rawdah|EG|31.32336|31.76122
 Ash-Shaykh Zayid|EG|30.02|31
 Yusuf as-Siddiq|EG|29.385|30.557
 New Bani Sewif City|EG|29.03556|31.11792
+Ad-Dawahy|EG|31.24408|32.27731
+Az-Zuhur|EG|31.26504|32.26405
 El Marsa|EH|27.09611|-13.41583
 Laayoune|EH|27.1418|-13.18797
 Boujdour|EH|26.13073|-14.48513
@@ -9897,6 +10070,7 @@ Himora|ER|14.30427|36.60601
 Barentu|ER|15.10582|37.59067
 Asmara|ER|15.33805|38.93184
 Assab|ER|13.00917|42.73944
+Af'abet|ER|16.18834|38.68729
 Mendefera|ER|14.88722|38.81528
 Zubia|ES|37.11906|-3.584
 Zafra|ES|38.42539|-6.41734
@@ -10078,6 +10252,7 @@ Felanitx|ES|39.4696|3.14831
 Estepona|ES|36.42764|-5.14589
 El Viso del Alcor|ES|37.39106|-5.71993
 El Puerto de Santa Maria|ES|36.59389|-6.23298
+El Palmar|ES|37.93939|-1.16095
 El Grao|ES|39.97358|0.01284
 El Ejido|ES|36.77629|-2.81456
 Elda|ES|38.47783|-0.79157
@@ -10485,7 +10660,7 @@ Cuatro Caminos|ES|40.44682|-3.70347
 El Viso|ES|40.44626|-3.68411
 Poble Sec|ES|41.37452|2.16326
 Hostafrancs|ES|41.37694|2.14306
-La Bordeta|ES|41.37397|2.14377
+La Bordeta|ES|41.369|2.137
 La Bonanova|ES|41.40585|2.13243
 Las Tres Torres|ES|41.39989|2.12931
 el Poblenou|ES|41.40392|2.20413
@@ -10942,7 +11117,6 @@ Jakobstad|FI|63.67486|22.70256
 Imatra|FI|61.17185|28.75242
 Iisalmi|FI|63.55915|27.19067
 Hyvinge|FI|60.63333|24.86667
-Hollola|FI|61.05|25.43333
 Hollola|FI|61|25.5
 Hervanta|FI|61.44792|23.85301
 Herttoniemi|FI|60.19471|25.03535
@@ -11429,7 +11603,7 @@ Elancourt|FR|48.78421|1.9552
 Ecully|FR|45.77437|4.77758
 Echirolles|FR|45.14603|5.71441
 Eaubonne|FR|48.99712|2.28249
-Dunkerque|FR|51.0344|2.37681
+Dunkirk|FR|51.0344|2.37681
 Dreux|FR|48.73649|1.36566
 Draveil|FR|48.68466|2.41418
 Drancy|FR|48.92578|2.44533
@@ -11810,6 +11984,7 @@ Stirling|GB|56.11903|-3.93682
 Stevenage|GB|51.90224|-0.20256
 Stepney|GB|51.5175|-0.04292
 Staveley|GB|53.26667|-1.35
+Stapleford|GB|52.91667|-1.26667
 Stanford-le-Hope|GB|51.52274|0.43422
 Stamford|GB|52.65|-0.48333
 Stalybridge|GB|53.48414|-2.05908
@@ -12018,6 +12193,7 @@ Macclesfield|GB|53.26023|-2.12564
 Luton|GB|51.87967|-0.41748
 Lowestoft|GB|52.47523|1.75167
 Louth|GB|53.36664|-0.00438
+Loughton|GB|52.43333|-2.56667
 Loughborough|GB|52.76667|-1.2
 Longton|GB|52.98333|-2.13333
 Longfield|GB|51.3969|0.30212
@@ -12679,11 +12855,11 @@ Ahwiaa|GH|6.90306|-1.65199
 Gibraltar|GI|36.14474|-5.35257
 Nuuk|GL|64.18347|-51.72157
 Welingara|GM|13.40361|-16.67361
-Tanji|GM|13.34889|-16.79083
+Tanji|GM|13.34972|-16.7891
 Sukuta|GM|13.41033|-16.70815
 Soma|GM|13.43333|-15.53333
 Serekunda|GM|13.43833|-16.67806
-Sanyang|GM|13.26667|-16.76056
+Sanyang|GM|13.26752|-16.76022
 Sanchaba|GM|13.42222|-16.70972
 Nema Kunku|GM|13.25|-15.88333
 Manjai Kunda|GM|13.44528|-16.70278
@@ -12701,7 +12877,7 @@ Faji Kunda|GM|13.41778|-16.66667
 Dippa Kunda|GM|13.44028|-16.68694
 Busumbala|GM|13.33917|-16.6875
 Bununka Kunda|GM|13.42722|-16.68528
-Brufut|GM|13.38417|-16.75139
+Brufut|GM|13.38885|-16.75005
 Brikama|GM|13.27136|-16.64944
 Banjul|GM|13.45274|-16.57803
 Bakoti|GM|13.43|-16.69833
@@ -12771,6 +12947,8 @@ Baie-Mahault|GP|16.26738|-61.58543
 Ebebiyin|GQ|2.15218|11.33013
 Malabo|GQ|3.75578|8.78166
 Bata|GQ|1.86391|9.76582
+Anisoc|GQ|1.8658|10.76892
+Aconibe|GQ|1.29683|10.93691
 Ciudad de la Paz|GQ|1.5925|10.82361
 Voula|GR|37.84221|23.77651
 Volos|GR|39.36923|22.94769
@@ -12847,7 +13025,7 @@ Acharnes|GR|38.08333|23.73333
 Aigio|GR|38.24861|22.08194
 Aigaleo|GR|37.98333|23.68333
 Agrinio|GR|38.62139|21.40778
-Rodos|GR|36.43556|28.22199
+Rhodes|GR|36.43556|28.22199
 Giannitsa|GR|40.79194|22.4075
 Xanthi|GR|41.13488|24.888
 Veroia|GR|40.52437|22.20242
@@ -12863,9 +13041,12 @@ Panorama|GR|40.58779|23.0315
 Orestiada|GR|41.50306|26.52972
 Oraiokastro|GR|40.73083|22.91722
 Naousa|GR|40.62944|22.06806
+Lagkadas|GR|40.75|23.06667
 Kozani|GR|40.29931|21.78984
 Komotini|GR|41.11758|25.40587
 Kilkis|GR|40.99302|22.87433
+Chortiatis|GR|40.60954|23.10014
+Chalkidona|GR|40.73184|22.59992
 Kavala|GR|40.93959|24.40687
 Katerini|GR|40.26956|22.50608
 Kalamaria|GR|40.5825|22.95028
@@ -12997,9 +13178,20 @@ Hagatna|GU|13.47567|144.74886
 Mangilao Village|GU|13.44761|144.80109
 Tamuning|GU|13.48754|144.78143
 Xitole|GW|11.73333|-14.81667
+Reino de Bandim|GW|11.85|-15.6
+Reino de Antula|GW|11.9|-15.58333
+Quelele|GW|11.86667|-15.63333
+Plaque|GW|11.88333|-15.61667
 Gabu|GW|12.28|-14.22222
+Contumo|GW|11.85|-15.61667
 Bissau|GW|11.86357|-15.59767
 Bafata|GW|12.16583|-14.66167
+Bairro Militar|GW|11.8746|-15.6158
+Belem|GW|11.85336|-15.60297
+Luanda|GW|11.8787|-15.60047
+Missira|GW|11.86145|-15.60679
+Sintra-Nema|GW|11.86236|-15.59736
+Santa-Luzia|GW|11.88798|-15.59003
 New Amsterdam|GY|6.24924|-57.51578
 Linden|GY|6.00815|-58.30724
 Georgetown|GY|6.80448|-58.15527
@@ -13146,28 +13338,69 @@ Kowloon City Centre|HK|22.32979|114.18889
 Kowloon West End|HK|22.32848|114.18514
 Puerto Cortez|HN|15.82562|-87.92968
 Yoro|HN|15.13824|-87.12838
+Yorito|HN|15.06667|-87.28333
+Yamaranguila|HN|14.28333|-88.24199
 Villanueva|HN|15.31476|-87.99383
+Villa de San Antonio|HN|14.32594|-87.61351
+Victoria|HN|14.93761|-87.39354
 Tocoa|HN|15.68333|-86
+Teupasenti|HN|14.21667|-86.7
 Tela|HN|15.77425|-87.46731
 Tegucigalpa|HN|14.0818|-87.20681
+Sulaco|HN|14.91667|-87.26667
+Sonaguera|HN|15.63333|-86.33333
 Siguatepeque|HN|14.59691|-87.83102
+Saba|HN|15.46667|-86.25
 Santa Rosa de Copan|HN|14.77388|-88.7756
+Santa Rita|HN|15.2|-87.88333
+Santa Cruz de Yojoa|HN|14.98086|-87.89091
 Santa Barbara|HN|14.92217|-88.23756
 San Pedro Sula|HN|15.50585|-88.02588
+San Pedro de Copan|HN|14.61667|-88.86667
+San Luis|HN|15.12692|-88.43931
 San Lorenzo|HN|13.42417|-87.44722
+San Juan de Flores|HN|14.26667|-87.03333
+San Jose de Colinas|HN|15.04101|-88.30186
+San Francisco de Yojoa|HN|15.01442|-87.9716
+San Antonio de Cortes|HN|15.11611|-88.04074
+Sabanagrande|HN|13.80778|-87.25917
+Quimistan|HN|15.34752|-88.4052
 Potrerillos|HN|15.23008|-87.96386
+Omoa|HN|15.77603|-88.03833
 Olanchito|HN|15.48131|-86.57415
+Moroceli|HN|14.11667|-86.86667
+Marcovia|HN|13.28806|-87.30972
+Macuelizo|HN|15.31276|-88.54113
+Lepaera|HN|14.77876|-88.5902
 La Paz|HN|14.32124|-87.67589
+Langue|HN|13.62083|-87.6525
 La Lima|HN|15.43333|-87.91667
+La Iguala|HN|14.61667|-88.46667
 La Ceiba|HN|15.75971|-86.78221
 Juticalpa|HN|14.66438|-86.22246
+Iriona|HN|15.96777|-85.09323
+Gualaco|HN|15.02521|-86.07076
+Esquias|HN|14.74392|-87.3712
+Erandique|HN|14.23787|-88.46447
+El Rosario|HN|14.57909|-87.72677
 El Progreso|HN|15.4|-87.8
 El Paraiso|HN|13.86667|-86.55
+El Negrito|HN|15.31667|-87.7
+Dulce Nombre de Culmi|HN|15.1|-85.53333
 Danli|HN|14.03333|-86.58333
+Cucuyagua|HN|14.64777|-88.87385
+Corquin|HN|14.56667|-88.86667
 Comayagua|HN|14.45577|-87.63968
+Colomoncagua|HN|13.95|-88.28333
 Cofradia|HN|15.4|-88.15
 Ciudad Choluteca|HN|13.30569|-87.17882
 Choloma|HN|15.61444|-87.95302
+Catacamas|HN|14.85114|-85.89412
+Belen Gualcho|HN|14.48333|-88.8
+Azacualpa|HN|14.71218|-88.0901
+Atima|HN|14.93253|-88.48965
+Arizona|HN|15.63333|-87.31667
+La Ceiba|HN|15.76667|-86.83333
 Zapresic|HR|45.85639|15.80778
 Zagreb|HR|45.81444|15.97798
 Zadar|HR|44.11578|15.22514
@@ -13216,12 +13449,14 @@ Grand Gosier|HT|18.18543|-71.9182
 Grangwav|HT|18.4259|-72.76995
 Gonaives|HT|19.44755|-72.68928
 Fond Parisien|HT|18.50547|-71.98122
+Dessalines|HT|19.26177|-72.51611
 Desarmes|HT|18.99345|-72.39058
 Delmas|HT|18.54478|-72.30036
 Croix-des-Bouquets|HT|18.57677|-72.22625
 Les Cayes|HT|18.19199|-73.74948
 Cap-Haitien|HT|19.75938|-72.19815
 Arcahaie|HT|18.77019|-72.51226
+Cite Soleil|HT|18.58028|-72.33806
 Ti Port-de-Paix|HT|19.93333|-72.83333
 Carrefour|HT|18.53333|-72.4
 Ujszeged|HU|46.24754|20.16571
@@ -13290,7 +13525,7 @@ Pecs|HU|46.07617|18.22814
 Papa|HU|47.33004|17.4674
 Paks|HU|46.6221|18.85569
 Oroszlany|HU|47.48671|18.31225
-Obuda|HU|47.55|19.03333
+Obuda|HU|47.538|19.039
 Naphegy|HU|47.48841|19.0254
 Nagykoroes|HU|47.03419|19.77857
 Nagykanizsa|HU|46.45347|16.99104
@@ -13333,6 +13568,7 @@ Budapest|HU|47.49835|19.04045
 Budaors|HU|47.46181|18.95845
 Budafok|HU|47.42393|19.03635
 Buda|HU|47.5|19.03333
+Bekasmegyer|HU|47.60037|19.04255
 Baja|HU|46.18299|18.95307
 Angyalfoeld|HU|47.54765|19.07973
 Ajka|HU|47.10196|17.55892
@@ -13362,6 +13598,8 @@ Csepel-Csillagtelep|HU|47.40918|19.05944
 Koezepso-Ferencvaros|HU|47.47305|19.07971
 Ohegy|HU|47.47803|19.1479
 Ujlipotvaros|HU|47.51606|19.05279
+Alsorakos|HU|47.52791|19.12287
+Kaposztasmegyer|HU|47.58877|19.11585
 Tongging|ID|2.8985|98.5231
 Teluk Nibung|ID|3.001|99.8164
 Teluk Dalam|ID|0.5729|97.8034
@@ -13382,6 +13620,7 @@ Percut|ID|3.6253|98.864
 Perbaungan|ID|3.5679|98.956
 Pematangsiantar|ID|2.9595|99.0687
 Paropo|ID|2.8663|98.5211
+Pangururan|ID|2.6081|98.6961
 Pangkalan Brandan|ID|4.0238|98.2782
 Padangsidempuan|ID|1.37952|99.27146
 Meulaboh|ID|4.14402|96.12664
@@ -13430,6 +13669,7 @@ Trucuk|ID|-7.71833|110.65889
 Trenggalek|ID|-8.0764|111.70641
 Tondano|ID|1.3054|124.91261
 Tomohon|ID|1.31678|124.80379
+Toli-Toli|ID|1.04018|120.81764
 Tobelo|ID|1.72837|128.00948
 Tiom|ID|-3.92361|138.45472
 Timika|ID|-4.61407|136.67679
@@ -13629,6 +13869,7 @@ Kroya|ID|-7.63306|109.24611
 Krian|ID|-7.4104|112.5792
 Kresek|ID|-6.13139|106.37972
 Kraksaan|ID|-7.75845|113.39624
+Kotamobagu|ID|0.74194|124.31208
 Kotabumi|ID|-4.82505|104.8817
 Klungkung|ID|-8.53333|115.4
 Klaten|ID|-7.70583|110.60639
@@ -13751,6 +13992,7 @@ Banyuwangi|ID|-8.2325|114.35755
 Banyumas|ID|-7.51417|109.29417
 Bantul|ID|-7.88806|110.32889
 Banjarmasin|ID|-3.31987|114.59075
+Banjarbaru|ID|-3.4406|114.8365
 Banjaran|ID|-7.04528|107.58778
 Banjar|ID|-8.19|114.9675
 Banjar|ID|-7.1955|107.4313
@@ -13772,6 +14014,7 @@ Amuntai|ID|-2.41773|115.24941
 Ambon|ID|-3.69583|128.18333
 Ambarawa|ID|-7.26333|110.3975
 Amahai|ID|-3.33984|128.91975
+Airmadidi|ID|1.42804|124.97774
 Agats|ID|-5.54505|138.13522
 Adiwerna|ID|-6.9375|109.1325
 Padalarang|ID|-6.83778|107.47278
@@ -13804,17 +14047,21 @@ Masohi|ID|-3.29833|128.96882
 Amlapura city|ID|-8.44869|115.60621
 Kota Sambas|ID|1.36259|109.30093
 Dalung|ID|-8.62553|115.17042
+Nusantara|ID|-0.97306|116.70861
 Wexford|IE|52.33417|-6.4575
 Waterford|IE|52.25833|-7.11194
+Tullamore|IE|53.27389|-7.48889
 Tralee|IE|52.27042|-9.70264
 Tallaght|IE|53.2859|-6.37344
 Swords|IE|53.45972|-6.21806
 Sligo|IE|54.26969|-8.46943
 Rathfarnham|IE|53.30056|-6.28278
+Portlaoise|IE|53.03441|-7.29979
 Droichead Nua|IE|53.18194|-6.79667
 Navan|IE|53.65278|-6.68139
 Naas|IE|53.21583|-6.66694
 An Muileann gCearr|IE|53.52466|-7.3385
+Maynooth|IE|53.385|-6.59361
 Malahide|IE|53.45083|-6.15444
 Lucan|IE|53.35736|-6.44859
 Limerick|IE|52.66472|-8.62306
@@ -13841,6 +14088,7 @@ Ballincollig|IE|51.88333|-8.58333
 Balbriggan|IE|53.60846|-6.1831
 Athlone|IE|53.42278|-7.93722
 Sandyford|IE|53.2747|-6.2253
+Templeogue|IE|53.29528|-6.30889
 Donaghmede|IE|53.39845|-6.16179
 South Dublin|IE|53.29026|-6.34151
 Jerusalem|IL|31.76904|35.21633
@@ -13863,11 +14111,11 @@ Tamra|IL|32.85301|35.1987
 Shefar'am|IL|32.80583|35.16895
 Sderot|IL|31.525|34.59693
 Sakhnin|IL|32.86506|35.29771
-Rosh Ha'Ayin|IL|32.09556|34.95664
+Rosh Ha'Ayin|IL|32.09547|34.95444
 Rishon LeTsiyyon|IL|31.97102|34.78939
 Rehovot|IL|31.89421|34.81199
 Ramla|IL|31.92624|34.8635
-Ramat HaSharon|IL|32.14613|34.8394
+Ramat HaSharon|IL|32.1459|34.83859
 Ramat Gan|IL|32.08227|34.81065
 Ra'anana|IL|32.1836|34.87386
 Qiryat Yam|IL|32.84966|35.06973
@@ -13880,33 +14128,33 @@ Kiryat Gat|IL|31.60998|34.76422
 Qiryat Bialik|IL|32.8275|35.08583
 Qiryat Ata|IL|32.81149|35.11323
 Qalansuwa|IL|32.28493|34.98106
-Petah Tiqva|IL|32.08707|34.88747
+Petah Tiqva|IL|32.0888|34.88666
 Pardes Hanna Karkur|IL|32.47408|34.97781
 Or Yehuda|IL|32.02923|34.85788
 Or Akiva|IL|32.5064|34.92087
 Ofaqim|IL|31.3141|34.62025
 Netivot|IL|31.42305|34.58911
-Netanya|IL|32.33291|34.85992
+Netanya|IL|32.33294|34.85917
 Ness Ziona|IL|31.92933|34.79868
 Nesher|IL|32.76622|35.04425
 Nazerat 'Illit|IL|32.70816|35.32469
 Nazareth|IL|32.70087|35.29719
 Nahariyya|IL|33.00892|35.09814
-Migdal Ha'Emeq|IL|32.67597|35.23986
+Migdal Ha'Emeq|IL|32.67788|35.24158
 MevasseretTsiyyon|IL|31.80186|35.15072
 Majd el Kurum|IL|32.92094|35.25438
 Maghar|IL|32.88888|35.40831
 Lod|IL|31.9467|34.8903
-KfarYona|IL|32.31669|34.93507
+KfarYona|IL|32.31517|34.9357
 Kfar Saba|IL|32.175|34.90694
 Karmi'el|IL|32.90951|35.29768
-Kafr Qasim|IL|32.11406|34.97624
+Kafr Qasim|IL|32.11443|34.9756
 Kafr Qari'|IL|32.50527|35.05215
 Kafr Manda|IL|32.81095|35.26071
 Kafr Kanna|IL|32.7466|35.34242
 Judeida Makr|IL|32.9282|35.15705
 Holon|IL|32.01034|34.77918
-Hod HaSharon|IL|32.15934|34.8932
+Hod HaSharon|IL|32.15912|34.89277
 Herzliya|IL|32.16627|34.82536
 Haifa|IL|32.81303|34.99928
 Hadera|IL|32.44192|34.9039
@@ -13917,18 +14165,18 @@ Gan Yavne|IL|31.78737|34.70659
 Ganei Tikva|IL|32.05971|34.8732
 Et Tira|IL|32.2341|34.95023
 Et Taiyiba|IL|32.26616|35.00893
-Er Reina|IL|32.72339|35.31622
+Ar Rayna|IL|32.7222|35.3156
 Eilat|IL|29.55805|34.94821
 Dimona|IL|31.07079|35.03269
 Daliyat al Karmel|IL|32.69383|35.04686
 Binyamina-Giv`at `Ada|IL|32.52305|34.94487
 Bet Shemesh|IL|31.73072|34.99293
-Bet She'an|IL|32.49728|35.49632
+Bet She'an|IL|32.49658|35.4965
 Bnei Brak|IL|32.08074|34.8338
 Be'er Ya'aqov|IL|31.93864|34.83749
 Beersheba|IL|31.25181|34.7913
 Bat Yam|IL|32.02379|34.75185
-Baqa el Gharbiya|IL|32.41806|35.04312
+Baqa el Gharbiya|IL|32.42061|35.04266
 Ashkelon|IL|31.66926|34.57149
 Ashdod|IL|31.79213|34.64966
 `Ara-`Ar`ara|IL|32.49565|35.09261
@@ -13944,7 +14192,7 @@ Tel Sheva'|IL|31.24864|34.86007
 Hura|IL|31.30084|34.93606
 Kuseifa|IL|31.24535|35.0931
 Shoham|IL|31.99866|34.94559
-El'ad|IL|32.04984|34.95382
+El'ad|IL|32.05108|34.95704
 Yehud-Monosson|IL|32.0284|34.8796
 Kadima Zoran|IL|32.27782|34.9194
 Kiryat Ono|IL|32.06124|34.85618
@@ -15027,7 +15275,7 @@ Mukerian|IN|31.95394|75.61716
 Muhammadabad|IN|27.30895|79.43252
 Muhammadabad|IN|26.03404|83.38114
 Muhammadabad|IN|25.61907|83.75576
-Mughal Sarai|IN|25.28307|83.11968
+Pandit Deen Dayal Upadhyaya Nagar|IN|25.28307|83.11968
 Mudkhed|IN|19.15657|77.50304
 Mudhol|IN|16.33354|75.28305
 Mudgal|IN|16.01191|76.44203
@@ -15829,7 +16077,6 @@ Govardhan|IN|27.49658|77.46263
 Gotan|IN|26.65551|73.7371
 Gormi|IN|26.60029|78.51188
 Gorantla|IN|13.98411|77.77224
-Gorakhpur|IN|29.44768|75.67206
 Gorakhpur|IN|26.76628|83.36889
 Gorai|IN|19.25|72.78333
 Gobichettipalayam|IN|11.45496|77.4422
@@ -15870,6 +16117,7 @@ Gairtganj|IN|23.41022|78.22082
 Gevrai|IN|19.26372|75.75007
 Gaya|IN|24.79686|85.00385
 Gauripur|IN|26.08334|89.96118
+Gauriganj|IN|26.20809|81.69294
 Gauribidanur|IN|13.61072|77.51738
 Gaurela|IN|22.75449|81.90107
 Guwahati|IN|26.1844|91.7458
@@ -16845,6 +17093,7 @@ Shella|IN|25.17861|91.63952
 Hanumana|IN|24.77888|82.096
 Mirganj|IN|26.37345|84.33489
 Sultanganj|IN|25.23831|86.73559
+Modinagar|IN|28.83059|77.57295
 Bagru|IN|26.81067|75.54702
 Nimach|IN|24.45949|74.86625
 Kamatgi|IN|16.07786|75.81321
@@ -17023,6 +17272,7 @@ Ugrakheri|IN|29.378|77.00934
 Tikri Kalan|IN|28.68355|76.97007
 Nangli Sakrawat|IN|28.62169|76.9923
 Tirora|IN|21.40409|79.92617
+Jajmau|IN|26.4304|80.4095
 Kumbalam|IN|9.9063|76.31127
 Aroor|IN|9.8694|76.30498
 Kadakkavoor|IN|8.67921|76.76714
@@ -17726,6 +17976,8 @@ Taranagar|IN|23.96877|91.37081
 Madhuban|IN|23.78152|91.28579
 Dukli|IN|23.7984|91.29642
 Charipara|IN|23.80914|91.24805
+Kanpur Cantonment|IN|26.45942|80.37514
+Nani Daman|IN|20.41431|72.83236
 Zaxo|IQ|37.14871|42.68591
 Umm Qasr|IQ|30.0362|47.91951
 Tuz Khurmatu|IQ|34.88808|44.63256
@@ -17743,6 +17995,7 @@ Saddat al Hindiyah|IQ|32.71557|44.27857
 Ruwandiz|IQ|36.6114|44.52194
 Ranyah|IQ|36.25511|44.88239
 Al Qa'im|IQ|34.39251|40.98945
+Habhab|IQ|33.78406|44.50659
 Al-Hamdaniya|IQ|36.27093|43.37758
 Qal'at Sukkar|IQ|31.8632|46.07321
 Qal'at Salih|IQ|31.52802|47.29362
@@ -17759,6 +18012,7 @@ Hit|IQ|33.63664|42.82768
 Harir|IQ|36.55111|44.35258
 Halabja|IQ|35.17778|45.98611
 Hadithah|IQ|34.13661|42.37727
+Xebat|IQ|36.27798|43.67065
 Soran|IQ|36.65558|44.54217
 Dihok|IQ|36.86608|42.9879
 Jamjamal|IQ|35.53356|44.8343
@@ -17814,7 +18068,8 @@ Al 'Amarah|IQ|31.83561|47.14483
 Ad Dujayl|IQ|33.84667|44.23444
 Al Diwaniyah|IQ|31.99289|44.92552
 Abu Ghurayb|IQ|33.30563|44.18477
-Al Basrah al Qadimah|IQ|30.50316|47.81507
+Derbendixan|IQ|35.11207|45.68663
+Abu Gharaq|IQ|32.52711|44.34397
 'Akra|IQ|36.73359|43.88038
 Khasnahzan|IQ|36.2009|44.14235
 Khalifan|IQ|36.6087|44.4048
@@ -17823,13 +18078,16 @@ Sinjar|IQ|36.3209|41.87656
 'Anah|IQ|34.36857|41.98194
 Al-'Alam|IQ|34.70896|43.6951
 Sadr City|IQ|33.3889|44.4583
+Dereluk Devera Niheliya|IQ|37.05598|43.65188
 Simele|IQ|36.85833|42.8501
 Shurash|IQ|35.51562|44.84266
 Abu al-Kahsib|IQ|30.4431|47.87802
+Sheladiz|IQ|37.0326|43.77616
+Shahrak-e Qods|IR|35.75936|51.37601
 Lavasan|IR|35.82159|51.64444
 Alvand|IR|36.1893|50.0643
 Zir Ab|IR|36.1797|52.97348
-Azadshahr|IR|34.79049|48.57011
+Bostanabad|IR|37.84633|46.83542
 Nurabad|IR|34.0734|47.9725
 Javanrud|IR|34.8067|46.4913
 Istgah-e Rah Ahan-e Garmsar|IR|35.23455|52.30942
@@ -17843,13 +18101,15 @@ Hadishahr|IR|38.8479|45.6623
 Gomishan|IR|37.0718|54.07654
 Khorramdarreh|IR|36.20777|49.19527
 Padegan-e Manjil|IR|36.7415|49.4161
+Malekabad|IR|35.8164|50.8228
 Kamalshahr|IR|35.86187|50.87424
 Shahrak-e Mohandesi-ye Zera'i|IR|35.772|50.956
+Chaharbagh|IR|35.8389|50.8481
 'Eyn-e Do|IR|31.3456|48.60063
 Ab Pakhsh|IR|29.35862|51.07423
 Kavar|IR|29.20505|52.69043
 Shahrak-e Taleqani|IR|30.835|50.19873
-Abadeh|IR|28.8349|53.1726
+Abadeh|IR|28.83168|53.17276
 Yasuj|IR|30.66824|51.58796
 Ashkezar|IR|31.99679|54.20852
 Azadshahr|IR|37.08641|55.17222
@@ -17860,6 +18120,7 @@ Yazd|IR|31.89722|54.3675
 Veys|IR|31.48595|48.87515
 Varamin|IR|35.3242|51.6457
 Tuyserkan|IR|34.551|48.44353
+Torqabeh|IR|36.3104|59.3735
 Torbat-e Heydariyeh|IR|35.27401|59.21949
 Tonekabon|IR|36.81626|50.87376
 Tehran|IR|35.69439|51.42151
@@ -17924,12 +18185,13 @@ Qir|IR|28.4825|53.0346
 Qidar|IR|36.11472|48.59111
 Qeshm|IR|26.9492|56.2691
 Qazvin|IR|36.26877|50.0041
+Qasr-e Shirin|IR|34.5156|45.5791
 Qarah Zia' od Din|IR|38.8915|45.0255
 Qods|IR|35.7214|51.109
 Rudan|IR|27.44194|57.19198
 Farrokh Shahr|IR|32.27174|50.98008
 Qa'en|IR|33.72654|59.18439
-Qa'em Shahr|IR|36.46306|52.86007
+Qa'em Shahr|IR|36.46671|52.86762
 Sarpol-e Zahab|IR|34.46109|45.86264
 Poldokhtar|IR|33.15249|47.71014
 Poldasht|IR|39.348|45.071
@@ -17948,9 +18210,11 @@ Neyriz|IR|29.1988|54.3278
 Neka|IR|36.65079|53.29905
 Nazarabad|IR|35.95411|50.60607
 Natanz|IR|33.51118|51.91808
+Nasirshahr|IR|35.49209|51.13836
 Naqadeh|IR|36.9553|45.388
+Nakhl-e Taqi|IR|27.49752|52.58653
 Najafshahr|IR|29.38575|55.71758
-Na'in|IR|32.86006|53.08749
+Na'in|IR|32.86004|53.08693
 Nahavand|IR|34.19088|48.37446
 Meshkin Dasht|IR|35.74988|50.94376
 Minudasht|IR|37.23015|55.37211
@@ -17969,7 +18233,7 @@ Mahdasht|IR|35.7282|50.8134
 Marand|IR|38.4329|45.7749
 Maragheh|IR|37.39206|46.23909
 Maragheh|IR|35.82916|59.63324
-Manujan|IR|27.40698|57.50128
+Manujan|IR|27.39893|57.49722
 Manjil|IR|36.74445|49.40082
 Malekan|IR|37.14258|46.10345
 Malayer|IR|34.30158|48.82166
@@ -17977,9 +18241,11 @@ Malard|IR|35.6659|50.9767
 Maku|IR|39.28992|44.46035
 Maku|IR|27.8486|52.423
 Mahmudabad|IR|36.63191|52.26286
+Mahmudabad Nemuneh|IR|36.28967|49.9014
 Mahan|IR|30.05943|57.29198
 Mahallat|IR|33.91108|50.45317
 Mahabad|IR|36.7631|45.7222
+Madavan|IR|30.71525|51.54131
 Lordegan|IR|31.51338|50.82672
 Likak|IR|30.8949|50.0931
 Lar|IR|27.68336|54.34172
@@ -17991,21 +18257,24 @@ Kut-e 'Abdollah|IR|31.23917|48.65639
 Kuhdasht|IR|33.53335|47.60999
 Kord Kuy|IR|36.79307|54.11214
 Kish|IR|26.55778|54.01944
-Khowy|IR|38.5503|44.9521
+Khuy|IR|38.5503|44.9521
 Khurmuj|IR|28.6543|51.38
-Khvansar|IR|33.22052|50.31497
+Khansar|IR|33.22052|50.31497
 Khosrowshahr|IR|37.9497|46.0528
 Khorramshahr|IR|30.44079|48.18428
 Khorramabad|IR|33.48778|48.35583
 Khonj|IR|27.8913|53.4344
 Khomeyn|IR|33.63889|50.08003
 Khomam|IR|37.39016|49.65846
+Kherameh|IR|29.49896|53.31199
 Bandar-e Khamir|IR|26.9521|55.5851
 Khalkhal|IR|37.61837|48.52928
 Kermanshah|IR|34.31417|47.065
 Kerman|IR|30.28321|57.07879
 Kazerun|IR|29.61919|51.6535
+Simin Shahr|IR|37.01422|54.23004
 Kashmar|IR|35.23831|58.46558
+Kashan|IR|33.98237|51.42769
 Karaj|IR|35.83266|50.99155
 Karahrud|IR|34.06095|49.64462
 Kangavar|IR|34.5043|47.9653
@@ -18025,6 +18294,7 @@ Ilam|IR|33.6374|46.4227
 Hoveyzeh|IR|31.4619|48.074
 Hendijan|IR|30.2363|49.7119
 Hashtgerd|IR|35.962|50.6799
+Hasanabad|IR|35.36732|51.23498
 Harsin|IR|34.2721|47.5861
 Hamidiyeh|IR|31.48285|48.4332
 Hamadan|IR|34.79922|48.51456
@@ -18043,7 +18313,6 @@ Garmsar|IR|35.21824|52.34085
 Germi|IR|39.0215|48.0801
 Bandar-e Genaveh|IR|29.5791|50.517
 Galugah|IR|36.72734|53.80888
-Galugah|IR|36.31048|52.62621
 Galikesh|IR|37.27259|55.43394
 Fuman|IR|37.224|49.3125
 Firuzkuh|IR|35.75674|52.77062
@@ -18102,7 +18371,7 @@ Baravat|IR|29.0663|58.4046
 Baneh|IR|35.9975|45.8853
 Bandar-e Torkaman|IR|36.90124|54.07195
 Bandar-e Mahshahr|IR|30.55655|49.18852
-Bandar-e Lengeh|IR|26.55792|54.88067
+Bandar-e Lengeh|IR|26.56207|54.88382
 Bandar-e Kong|IR|26.59775|54.93694
 Bandar-e Gaz|IR|36.77409|53.94798
 Bandar-e Deylam|IR|30.0542|50.159
@@ -18135,9 +18404,9 @@ Anar|IR|30.87066|55.27025
 Amol|IR|36.46961|52.35072
 Amlash|IR|37.0966|50.18709
 Amir Kola|IR|36.59673|52.6658
-Alvand|IR|36.31885|49.16773
 Shahriar|IR|35.65884|51.05775
 Aligudarz|IR|33.404|49.69179
+'Ali Abad-e Katul|IR|36.91011|54.86737
 Aleshtar|IR|33.86419|48.26258
 Ajab Shir|IR|37.4776|45.8943
 Ahvaz|IR|31.31901|48.6842
@@ -18158,7 +18427,7 @@ Qiamdasht|IR|35.5237|51.6505
 Showt|IR|39.2192|44.77
 Pasargad|IR|30.20194|53.18
 Vahidiyeh|IR|35.71445|51.47086
-Nazarabad|IR|35.6102|51.1611
+Nasir Abaad|IR|35.6102|51.1611
 Shahedshahr|IR|35.5729|51.085
 Ovrin|IR|35.5477|51.1282
 Eqbaliyeh|IR|35.3022|51.5358
@@ -18199,7 +18468,7 @@ Pishin|IR|26.07937|61.75403
 Nikshahr|IR|26.2258|60.2143
 Nehbandan|IR|31.54185|60.03648
 Konarak|IR|25.3604|60.3995
-Khvaf|IR|34.5763|60.14093
+Khvaf|IR|34.57232|60.14404
 Khash|IR|28.22107|61.21582
 Jalq|IR|27.60287|62.71023
 Iranshahr|IR|27.20245|60.68476
@@ -18212,12 +18481,14 @@ Mamuniyeh|IR|35.30454|50.49934
 Parand|IR|35.47195|50.97547
 Bidestan|IR|36.23097|50.12362
 Mohammadiyeh|IR|36.22374|50.18247
+Shahrak-e Pardisan|IR|34.55734|50.80201
 Sabbashahr|IR|35.58026|51.11392
 Nasim Shahr|IR|35.56504|51.16332
 Pardis|IR|35.74687|51.81222
 Ilkhchi|IR|37.9373|45.979
 Azarshahr|IR|37.759|45.9783
 Mahajeran|IR|34.05042|49.43498
+Kashan|IR|34.00228|51.43879
 Jiroft|IR|28.67806|57.74056
 Kahnuj|IR|27.94034|57.69983
 Golbahar|IR|36.56976|59.1904
@@ -18226,17 +18497,20 @@ Aq Qala|IR|37.0139|54.45504
 Qa'emiyeh|IR|29.85176|51.5879
 Mojtame'-e Maskuni-ye Namju|IR|35.4723|51.724
 Shahrak-e 'Ala'in|IR|35.58231|51.45559
+Vahidiyeh|IR|35.60709|51.03457
 Khabarabad|IR|35.54263|51.14813
 Bandar-e Emam Khomeyni|IR|30.43698|49.10288
 'Ali Shahr|IR|28.93125|51.06571
-Shahr-e Jadid-e Mehestan|IR|35.98907|50.74512
+Mehestan|IR|35.98907|50.74512
 Pakdasht|IR|35.47854|51.6834
 Boshruyeh|IR|33.86845|57.42885
-Taft|IR|31.76056|54.22303
 Andisheh|IR|35.74708|51.27739
+Kahrizak|IR|35.51718|51.36052
 Nasimshahr|IR|35.56528|51.1583
 Baghestan|IR|35.64706|51.13378
 Sahand|IR|37.95104|46.1103
+Safadasht|IR|35.69244|50.84828
+Gorji-ye Sofla|IR|36.35636|59.66004
 Akureyri|IS|65.68353|-18.0878
 Reykjavik|IS|64.13548|-21.89541
 Kopavogur|IS|64.11234|-21.91298
@@ -18453,6 +18727,7 @@ Rozzano|IT|45.38193|9.1559
 Rovigo|IT|45.06982|11.79022
 Rovereto|IT|45.8904|11.04053
 Rosignano Solvay-Castiglioncello|IT|43.38946|10.43615
+Rosignano Marittimo|IT|43.40686|10.47231
 Roseto degli Abruzzi|IT|42.67164|14.01481
 Romano di Lombardia|IT|45.52081|9.7544
 Rome|IT|41.89193|12.51133
@@ -18742,7 +19017,8 @@ Carugate|IT|45.54983|9.34044
 Carrara|IT|44.07926|10.09789
 Carpi|IT|44.78237|10.8777
 Carmagnola|IT|44.84963|7.72032
-Cardito|IT|40.9459|14.29952
+Cardito|IT|40.94643|14.29533
+Carbonara di Bari|IT|41.06667|16.86667
 Carate Brianza|IT|45.67574|9.23723
 Capua|IT|41.10519|14.21269
 Capannori|IT|43.84171|10.57271
@@ -18838,6 +19114,7 @@ Torvaianica|IT|41.62112|12.46197
 Quartiere Otto|IT|45.48607|9.13917
 Infernetto|IT|41.73456|12.36159
 Casal Palocco|IT|41.74845|12.34726
+Lavinio|IT|41.5035|12.58973
 Bellaria-Igea Marina|IT|44.14255|12.47154
 Villanova|IT|41.96357|12.75633
 Marina di Ardea-Tor San Lorenzo|IT|41.55439|12.54115
@@ -18871,6 +19148,7 @@ Adriano|IT|45.51342|9.24871
 Chinatown|IT|45.48171|9.17522
 Barriera di Lanzo|IT|45.10981|7.65126
 Porta Palazzo|IT|45.07669|7.68371
+Malafede|IT|41.77451|12.37739
 Campo di Marte|IT|43.77693|11.27707
 Chiaia|IT|40.83255|14.22677
 Chiaiano|IT|40.88101|14.20759
@@ -18899,11 +19177,13 @@ Circoiscrizione VII|IT|45.07824|7.69718
 Circoiscrizione VIII|IT|45.03789|7.67174
 Polo Nord|IT|45.0548|7.64948
 Centro|IT|45.07119|7.68376
+Chieti Scalo|IT|42.35904|14.13867
 Saint Helier|JE|49.18804|-2.10491
 Spanish Town|JM|17.99107|-76.95742
 Savanna-la-Mar|JM|18.21895|-78.1332
 Portmore|JM|17.97102|-76.88691
 Old Harbour|JM|17.94144|-77.10898
+Ocho Rios|JM|18.4076|-77.10312
 New Kingston|JM|18.00747|-76.78319
 Montego Bay|JM|18.47116|-77.91883
 May Pen|JM|17.96454|-77.24515
@@ -18911,6 +19191,7 @@ Mandeville|JM|18.04168|-77.50714
 Linstead|JM|18.13683|-77.03171
 Kingston|JM|17.99702|-76.79358
 Half Way Tree|JM|18.01248|-76.79928
+Barrett Town|JM|18.51491|-77.80178
 Wadi as Sir|JO|31.9545|35.81831
 Umm as Summaq|JO|31.88542|35.8543
 Sahab|JO|31.87032|36.00479
@@ -19289,6 +19570,7 @@ Mishima|JP|35.11667|138.91667
 Minoh|JP|34.82691|135.47057
 Mino|JP|35.53333|136.91667
 Minamirinkan|JP|35.49527|139.44279
+Minami-aoyama|JP|35.66463|139.71547
 Minamata|JP|32.21667|130.4
 Minakuchicho-matoba|JP|34.96667|136.16667
 Mikuriya|JP|35.51242|133.49737
@@ -19838,6 +20120,7 @@ Omitama|JP|36.25449|140.37962
 Hitachiomiya|JP|36.56447|140.40269
 Kamisu|JP|35.89685|140.66666
 Namegata|JP|36.00705|140.49623
+Sakuragawa|JP|36.25052|140.11565
 Bando|JP|36.06997|139.86705
 Hitachi-ota|JP|36.5513|140.52821
 Inashiki|JP|35.95633|140.32356
@@ -20045,6 +20328,7 @@ Fushimi|JP|35.11426|138.89742
 Kamizawa|JP|35.10151|138.95398
 Nasu|JP|37.04209|140.09379
 Yomitan|JP|26.40167|127.74503
+Azamino|JP|35.5699|139.54482
 Minami-oi|JP|35.59283|139.73367
 Togoshi|JP|35.61143|139.71736
 Shimo'ochiai|JP|35.72018|139.702
@@ -20368,6 +20652,7 @@ Thomas Magena home|KE|-0.77024|34.75077
 Suluktu|KG|39.93652|69.56779
 Razzakov|KG|39.83895|69.5276
 Balykchy|KG|42.46017|76.18709
+Kojomkul|KG|42.87378|74.44058
 Tokmok|KG|42.84194|75.30149
 Tash-Kumyr|KG|41.34612|72.21707
 Talas|KG|42.52256|72.2417
@@ -20491,7 +20776,7 @@ Hoeyang|KP|38.71028|127.59833
 Hamhung|KP|39.91833|127.53639
 Haeju|KP|38.04056|125.71472
 Chunghwa|KP|38.86389|125.8
-Chongju|KP|39.69333|125.21028
+Chongju-si|KP|39.69252|125.21355
 Ch'ongdan-up|KP|37.97028|125.9375
 Changyon|KP|38.25083|125.09611
 Chaeryong-up|KP|38.39917|125.61556
@@ -20585,7 +20870,7 @@ Pyeongtaek|KR|36.99472|127.08889
 Buyeo|KR|36.27472|126.90906
 Busan|KR|35.10168|129.03004
 Bucheon-si|KR|37.49889|126.78306
-Puan|KR|35.72806|126.73194
+Buan|KR|35.72806|126.73194
 Beolgyo|KR|34.84897|127.34052
 Pohang|KR|36.02917|129.36481
 Osan|KR|37.15222|127.07056
@@ -20737,7 +21022,7 @@ Zaysan|KZ|47.46657|84.87144
 Zhangaqorghan|KZ|43.90652|67.24637
 Turar Ryskulov|KZ|42.5334|70.3496
 Ushtobe|KZ|45.25258|77.98284
-Turkestan|KZ|43.29458|68.25685
+Turkistan|KZ|43.29458|68.25685
 Temirtau|KZ|50.05197|72.95497
 Tekeli|KZ|44.8678|78.72807
 Tasbuget|KZ|44.77018|65.55461
@@ -20746,6 +21031,7 @@ Taldykorgan|KZ|45.01556|78.37389
 Shymkent|KZ|42.30988|69.60042
 Shu|KZ|43.60507|73.76221
 Shemonaikha|KZ|50.62899|81.91092
+Shelek|KZ|43.59623|78.25745
 Shchuchinsk|KZ|52.93592|70.18895
 Shakhtinsk|KZ|49.70713|72.59321
 Semey|KZ|50.42064|80.25025
@@ -20821,7 +21107,7 @@ Ra's Bayrut|LB|33.9|35.48333
 Jounieh|LB|33.98083|35.61778
 Byblos|LB|34.12111|35.64806
 Aarsal|LB|34.17944|36.42083
-Habbouch|LB|33.40729|35.48169
+Habbouch|LB|33.40753|35.48177
 Bsharri|LB|34.25083|36.01056
 Beirut|LB|33.89332|35.50157
 Baalbek|LB|34.00583|36.21806
@@ -21185,6 +21471,7 @@ Aguelmous|MA|33.16139|-5.84626
 Agourai|MA|33.63|-5.58
 Agadir|MA|30.42018|-9.59815
 Skhirate|MA|33.8527|-7.03171
+Azla|MA|35.55303|-5.24472
 Ribat Al Khayr|MA|33.81518|-4.40717
 Boujniba|MA|32.90046|-6.77464
 Errachidia|MA|31.9314|-4.42663
@@ -21415,7 +21702,7 @@ Koutiala|ML|12.38723|-5.46507
 Kouri|ML|12.18396|-4.80284
 Koulikoro|ML|12.86273|-7.55985
 Koro|ML|14.064|-3.07539
-Kolokani|ML|13.5728|-8.0339
+Kolokani|ML|13.57388|-8.03267
 Kita|ML|13.03885|-9.48817
 Kidal|ML|18.44345|1.40921
 Ke-Macina|ML|13.9641|-5.35791
@@ -21439,7 +21726,7 @@ Dioila|ML|12.48735|-6.80313
 Diema|ML|14.54|-9.1921
 Bourem|ML|16.955|-0.34861
 Bougouni|ML|11.41769|-7.48323
-Bla|ML|12.95007|-5.76024
+Bla|ML|12.95083|-5.75557
 Bankass|ML|14.0775|-3.51594
 Bandiagara|ML|14.35005|-3.61038
 Banamba|ML|13.54773|-7.44808
@@ -21492,6 +21779,7 @@ Shwe Lin Ban|MM|16.89659|96.06801
 Shwegyin|MM|17.92118|96.87676
 Shwegu|MM|24.22673|96.79085
 Shwebo|MM|22.56925|95.69818
+Thandwe|MM|18.46537|94.36563
 Sagaing|MM|21.8787|95.97965
 Yangon|MM|16.80528|96.15611
 Pyu|MM|18.4813|96.43742
@@ -21504,6 +21792,7 @@ Bago|MM|17.33521|96.48135
 Pazundaung|MM|16.79574|96.17493
 Paungde|MM|18.49167|95.50591
 Paung|MM|16.61753|97.45851
+Pangtara|MM|20.94318|96.66266
 Panglong|MM|24.10051|98.31264
 Pakokku|MM|21.33489|95.08438
 Hpa-An|MM|16.88953|97.63482
@@ -21572,6 +21861,7 @@ Kalemyo|MM|23.19014|94.06405
 Kalaw|MM|20.63459|96.56454
 Insein|MM|16.88874|96.10257
 Ingabu|MM|17.81192|95.27044
+Hsipaw|MM|22.61659|97.30033
 Hpakan|MM|25.6138|96.31482
 Hopin|MM|24.99146|96.52681
 Hmaw Bi|MM|16.63557|97.61526
@@ -21743,15 +22033,15 @@ Ciudad Valles|MX|21.99631|-99.01093
 Zumpango|MX|19.7967|-99.09946
 Zumpango del Rio|MX|17.65437|-99.52725
 Zaragoza|MX|19.77097|-97.55506
-Zacualtipan|MX|20.65002|-98.65628
+Zacualtipan|MX|20.64538|-98.654
 Zacatlan|MX|19.9355|-97.96125
-Zacatepec|MX|18.65409|-99.18981
+Zacatepec de Hidalgo|MX|18.65337|-99.19117
 Yecapixtla|MX|18.88333|-98.865
 Yautepec|MX|18.88188|-99.06715
 Yajalon|MX|17.17291|-92.33392
-Xoxocotla|MX|18.68415|-99.24577
+Xoxocotla|MX|18.6856|-99.24579
 Xonacatlan|MX|19.40513|-99.52807
-Xochitepec|MX|18.7808|-99.23049
+Xochitepec|MX|18.78161|-99.23091
 Xochimilco|MX|19.25465|-99.10356
 Xicotepec de Juarez|MX|20.27605|-97.96111
 Xico|MX|19.42178|-97.00819
@@ -21771,20 +22061,20 @@ Tuxpam de Rodriguez Cano|MX|20.95777|-97.40805
 Tulum|MX|20.21173|-87.46325
 Tultitlan de Mariano Escobedo|MX|19.64655|-99.16787
 Tultepec|MX|19.685|-99.12806
-Tulancingo|MX|20.08355|-98.36288
-Tula de Allende|MX|20.05161|-99.34397
-Santa Rosa Treinta|MX|18.70025|-99.18357
+Tulancingo|MX|20.08055|-98.36831
+Tula de Allende|MX|20.05561|-99.34398
+Santa Rosa Treinta|MX|18.70184|-99.18239
 San Miguel Topilejo|MX|19.20264|-99.14193
 Toluca|MX|19.28786|-99.65324
 San Bernardino Tlaxcalancingo|MX|19.02867|-98.27698
-Tlaquiltenango|MX|18.63429|-99.1632
-Tlapa de Comonfort|MX|17.54528|-98.57599
+Tlaquiltenango|MX|18.63315|-99.16282
+Tlapa de Comonfort|MX|17.54626|-98.58239
 Tlapacoyan|MX|19.96268|-97.21141
 Tlalpan|MX|19.29513|-99.16206
 Tlalnepantla|MX|19.54005|-99.19538
 Tlahuac|MX|19.28689|-99.00507
 Tizimin|MX|21.14304|-88.15188
-Tizayuca|MX|19.83721|-98.97607
+Tizayuca|MX|19.84191|-98.98098
 Tixtla de Guerrero|MX|17.56732|-99.39799
 Ticul|MX|20.39875|-89.53493
 Teziutlan|MX|19.8173|-97.35992
@@ -21793,21 +22083,21 @@ Tequixquiac|MX|19.90944|-99.14472
 Tequisquiapan|MX|20.5225|-99.89167
 Cuautitlan Izcalli|MX|19.64388|-99.21598
 Tepotzotlan|MX|19.72116|-99.22391
-Tepeji del Rio de Ocampo|MX|19.90481|-99.34379
-Tepeapulco|MX|19.7884|-98.55266
+Tepeji del Rio de Ocampo|MX|19.90546|-99.34229
+Tepeapulco|MX|19.78608|-98.55309
 Tepeaca|MX|18.96688|-97.8998
 Tepatlaxco de Hidalgo|MX|19.08067|-97.97338
 Teopisca|MX|16.54144|-92.47288
 Teoloyucan|MX|19.74423|-99.18113
 Tenosique|MX|17.4729|-91.4236
 Tenango de Arista|MX|19.10446|-99.5898
-Temixco|MX|18.85254|-99.22537
-Teloloapan|MX|18.36663|-99.87185
+Temixco|MX|18.84578|-99.22367
+Teloloapan|MX|18.36926|-99.87041
 Tecax|MX|20.2052|-89.28522
 Tehuacan|MX|18.46422|-97.39735
 Tecamachalco|MX|18.88352|-97.73344
 Teapa|MX|17.55602|-92.94788
-Taxco de Alarcon|MX|18.55462|-99.60592
+Taxco de Alarcon|MX|18.55708|-99.60512
 Tapachula|MX|14.90541|-92.25891
 Tantoyuca|MX|21.35064|-98.2257
 Tamuin|MX|22.00554|-98.77972
@@ -21818,7 +22108,7 @@ Santo Domingo Tehuantepec|MX|16.32463|-95.24104
 Santiago Tuxtla|MX|18.46576|-95.3006
 Tetla|MX|19.44204|-98.10325
 Pinotepa Nacional|MX|16.34014|-98.05297
-Santiago Tulantepec|MX|20.03618|-98.35563
+Santiago Tulantepec|MX|20.03636|-98.35653
 Moyotzingo|MX|19.24811|-98.40486
 Santa Maria Chimalhuacan|MX|19.42155|-98.95038
 Santa Maria Atzompa|MX|17.10165|-96.77686
@@ -21857,7 +22147,7 @@ Reforma|MX|17.85904|-93.15381
 Puerto Escondido|MX|15.86275|-97.06835
 Puente de Ixtla|MX|18.61472|-99.31806
 Puebla|MX|19.04778|-98.20723
-Progreso de Alvaro Obregon|MX|20.24929|-99.18988
+Progreso de Obregon|MX|20.24877|-99.18973
 Progreso|MX|21.28217|-89.66289
 Poza Rica de Hidalgo|MX|20.53315|-97.45946
 Polanco|MX|19.43332|-99.19919
@@ -21875,7 +22165,7 @@ Ozumba de Alzate|MX|19.03689|-98.79516
 San Pablo Oztotepec|MX|19.18652|-99.07361
 Oxkutzkab|MX|20.30734|-89.41809
 Orizaba|MX|18.85195|-97.09957
-Ometepec|MX|16.69008|-98.40797
+Ometepec|MX|16.68613|-98.40474
 Ocozocoautla de Espinosa|MX|16.7612|-93.37426
 Ocoyoacac|MX|19.27127|-99.45787
 Ocotlan de Morelos|MX|16.79183|-96.67504
@@ -21889,9 +22179,9 @@ Naranjos|MX|21.35087|-97.68656
 Nanchital de Lazaro Cardenas del Rio|MX|18.07117|-94.40756
 Motul|MX|21.09571|-89.28332
 Motozintla|MX|15.36615|-92.24673
-Montemorelos|MX|25.18909|-99.82865
+Montemorelos|MX|25.18897|-99.82933
 Santiago Momoxpan|MX|19.07361|-98.26694
-Mixquiahuala de Juarez|MX|20.23031|-99.21396
+Mixquiahuala de Juarez|MX|20.23|-99.2143
 Misantla|MX|19.92992|-96.85194
 Miramar|MX|22.36094|-97.89997
 Minatitlan|MX|18.00011|-94.5569
@@ -21936,12 +22226,12 @@ Ixtapaluca|MX|19.31556|-98.88284
 Iztapalapa|MX|19.35529|-99.06224
 Ixtaczoquitlan|MX|18.85364|-97.06229
 Iztacalco|MX|19.39528|-99.09778
-Ixmiquilpan|MX|20.47841|-99.21697
+Ixmiquilpan|MX|20.484|-99.21848
 Villa Independencia|MX|20.05523|-97.05214
-Iguala de la Independencia|MX|18.34536|-99.5413
+Iguala de la Independencia|MX|18.34479|-99.53768
 Hunucma|MX|21.0164|-89.87716
 Huixtla|MX|15.13924|-92.4634
-Ciudad de Huitzuco|MX|18.30334|-99.33376
+Ciudad de Huitzuco|MX|18.30589|-99.33388
 Huimanguillo|MX|17.83498|-93.38902
 Huejutla de Reyes|MX|21.14|-98.41944
 Huejotzingo|MX|19.15892|-98.40824
@@ -21953,7 +22243,7 @@ Frontera|MX|18.54326|-92.6453
 Fortin de las Flores|MX|18.90806|-97
 Felipe Carrillo Puerto|MX|19.5775|-88.04529
 Escarcega|MX|18.60891|-90.74544
-Emiliano Zapata|MX|18.84065|-99.18463
+Emiliano Zapata|MX|18.84103|-99.18373
 Emiliano Zapata|MX|17.74058|-91.76635
 Ciudad Mante|MX|22.74277|-98.97172
 Ecatepec de Morelos|MX|19.60492|-99.06064
@@ -21961,9 +22251,9 @@ Ebano|MX|22.21808|-98.37706
 Cunduacan|MX|18.06557|-93.17302
 Cuernavaca|MX|18.9261|-99.23075
 Cuautlancingo|MX|19.08995|-98.27319
-Cuautla|MX|18.8106|-98.93525
+Cuautla|MX|18.81302|-98.95513
 Cuautitlan|MX|19.67052|-99.17989
-Cuautepec de Hinojosa|MX|20.03557|-98.31015
+Cuautepec|MX|20.0356|-98.30982
 Delegacion Cuajimalpa de Morelos|MX|19.3692|-99.29089
 Cozumel|MX|20.50038|-86.94272
 Coyotepec|MX|19.77722|-99.21295
@@ -21981,7 +22271,7 @@ Coatepec|MX|19.45229|-96.96148
 Coacalco|MX|19.62923|-99.10689
 Ciudad Victoria|MX|23.74061|-99.14364
 Ciudad Serdan|MX|18.98856|-97.44643
-Ciudad Sahagun|MX|19.77557|-98.57471
+Fray Bernardino de Sahagun|MX|19.77268|-98.58227
 Ciudad Nezahualcoyotl|MX|19.40061|-99.01483
 Ciudad Miguel Aleman|MX|26.39823|-99.02857
 Ciudad Mendoza|MX|18.80645|-97.1787
@@ -21992,14 +22282,14 @@ Ciudad del Carmen|MX|18.64592|-91.82991
 Cintalapa de Figueroa|MX|16.68393|-93.71814
 Cholula|MX|19.06406|-98.30352
 Chilpancingo|MX|17.55228|-99.50124
-Chilapa de Alvarez|MX|17.59917|-99.17389
+Chilapa de Alvarez|MX|17.59444|-99.17719
 Chignahuapan|MX|19.83866|-98.03171
 Chiconcuac|MX|19.55939|-98.89884
 Chicoloapan|MX|19.41687|-98.90202
 Chichen-Itza|MX|20.66667|-88.56667
 Chiapa de Corzo|MX|16.7075|-93.01216
 Chetumal|MX|18.51957|-88.30397
-Champoton|MX|19.34745|-90.72039
+Champoton|MX|19.34241|-90.72272
 Chalco|MX|19.26174|-98.89775
 Cerro Azul|MX|21.192|-97.74088
 Catemaco|MX|18.42131|-95.11398
@@ -22010,19 +22300,19 @@ Capulhuac de Mirafuentes|MX|19.19354|-99.46585
 Cancun|MX|21.17429|-86.84656
 Campeche|MX|19.84073|-90.51676
 Calpulalpan|MX|19.58867|-98.56972
-Cadereyta Jimenez|MX|25.58896|-100.00156
+Cadereyta Jimenez|MX|25.59051|-100.00095
 Cadereyta|MX|25.58333|-99.98333
 Cacahoatan|MX|14.99199|-92.16417
 Berriozabal|MX|16.79944|-93.27219
 Banderilla|MX|19.58893|-96.93727
 Azcapotzalco|MX|19.48698|-99.18594
-Ayutla de los Libres|MX|16.96376|-99.09616
-Axochiapan|MX|18.50246|-98.75358
+Ayutla de los Libres|MX|16.96459|-99.09757
+Axochiapan|MX|18.50207|-98.75299
 Atlixco|MX|18.90815|-98.43613
 Atlacomulco de Fabela|MX|19.79919|-99.875
 Ciudad Lopez Mateos|MX|19.55793|-99.25675
 Apizaco|MX|19.41333|-98.14358
-Apan|MX|19.71128|-98.45086
+Apan|MX|19.71052|-98.45108
 Amozoc de Mota|MX|19.04611|-98.045
 Amecameca|MX|19.12384|-98.76649
 Alvarado|MX|18.77143|-95.76181
@@ -22033,7 +22323,7 @@ Allende|MX|18.15401|-94.39425
 Alamo|MX|20.91154|-97.67554
 Ajalpan|MX|18.37908|-97.25867
 Agua Dulce|MX|18.13909|-94.14527
-Actopan|MX|20.26961|-98.94377
+Actopan|MX|20.26896|-98.94216
 San Lorenzo Acopilco|MX|19.33002|-99.32721
 Acayucan|MX|17.94979|-94.91386
 Acatzingo|MX|18.98196|-97.78363
@@ -22100,7 +22390,7 @@ Villa Hidalgo|MX|21.67616|-102.58803
 Villagran|MX|20.51364|-100.99636
 Frontera|MX|26.92814|-101.45212
 El Pueblito|MX|20.54006|-100.44093
-Garcia|MX|25.81201|-100.59874
+Garcia|MX|25.80092|-100.58612
 Ciudad de Villa de Alvarez|MX|19.26722|-103.73778
 Valle de Santiago|MX|20.39148|-101.19103
 Valle de Bravo|MX|19.19501|-100.13132
@@ -22121,7 +22411,7 @@ Tepatitlan de Morelos|MX|20.81692|-102.76347
 Tepalcatepec|MX|19.18725|-102.84704
 Teocaltiche|MX|21.43434|-102.57427
 Tejupilco de Hidalgo|MX|18.90475|-100.15275
-Tecpan de Galeana|MX|17.21976|-100.63032
+Tecpan de Galeana|MX|17.22298|-100.63013
 Tecoman|MX|18.91614|-103.87713
 Tecate|MX|32.566|-116.63187
 Tangancicuaro de Arista|MX|19.88684|-102.20717
@@ -22134,7 +22424,7 @@ Silao de la Victoria|MX|20.94361|-101.42696
 Sayula|MX|19.88372|-103.60073
 Santiago Papasquiaro|MX|25.04389|-105.41917
 Santiago Ixcuintla|MX|21.81109|-105.20842
-Santiago|MX|25.42533|-100.15205
+Santiago|MX|25.42596|-100.15399
 Santa Rosa Jauregui|MX|20.7421|-100.44783
 Santa Catarina|MX|25.67325|-100.45813
 Santa Anita|MX|20.55005|-103.4435
@@ -22164,7 +22454,7 @@ Saltillo|MX|25.42595|-100.97963
 Salinas de Hidalgo|MX|22.62795|-101.71417
 Salamanca|MX|20.56979|-101.1977
 Sahuayo de Morelos|MX|20.057|-102.7164
-Ciudad Sabinas Hidalgo|MX|26.50358|-100.18187
+Ciudad Sabinas Hidalgo|MX|26.50193|-100.18121
 Sabinas|MX|27.85591|-101.11738
 Rosarito|MX|32.36044|-117.04645
 El Rosario|MX|22.99032|-105.85419
@@ -22180,7 +22470,7 @@ Purepero de Echaiz|MX|19.91025|-102.00691
 Puerto Vallarta|MX|20.617|-105.23018
 Puerto Penasco|MX|31.31716|-113.53799
 Piedras Negras|MX|28.70007|-100.52353
-Petatlan|MX|17.53768|-101.26798
+Petatlan|MX|17.53819|-101.26922
 Periban de Ramos|MX|19.52032|-102.41526
 Penjamo|MX|20.43134|-101.72403
 Patzcuaro|MX|19.5132|-101.60995
@@ -22229,7 +22519,7 @@ Lagos de Moreno|MX|21.35875|-101.93311
 La Cruz|MX|23.92126|-106.8925
 La Barca|MX|20.28988|-102.54198
 Juventino Rosas|MX|20.6435|-100.9952
-Ciudad Benito Juarez|MX|25.64724|-100.09582
+Ciudad Benito Juarez|MX|25.6466|-100.09142
 Juan Aldama|MX|24.29072|-103.39339
 Jocotepec|MX|20.28566|-103.42908
 Jiquilpan de Juarez|MX|19.99173|-102.71843
@@ -22255,14 +22545,14 @@ Guasave|MX|25.56792|-108.46949
 Guanajuato|MX|21.01858|-101.2591
 Guamuchil|MX|25.4587|-108.07732
 Guadalupe Victoria|MX|24.44676|-104.12336
-Guadalupe|MX|25.67678|-100.25646
+Guadalupe|MX|25.67663|-100.25907
 Guadalupe|MX|22.74678|-102.5188
 Guadalajara|MX|20.67738|-103.34749
 Gomez Palacio|MX|25.56871|-103.4996
 Vicente Guerrero|MX|23.73267|-103.98247
 Juan Jose Rios|MX|25.75714|-108.8242
-Ciudad General Escobedo|MX|25.79698|-100.31791
-San Pedro Garza Garcia|MX|25.6604|-100.40651
+Ciudad General Escobedo|MX|25.79663|-100.31767
+San Pedro Garza Garcia|MX|25.66158|-100.4034
 Fresnillo|MX|23.1749|-102.86785
 Francisco I. Madero|MX|25.773|-103.27127
 Escuinapa de Hidalgo|MX|22.83474|-105.77766
@@ -22297,10 +22587,10 @@ Ciudad Guzman|MX|19.70413|-103.46383
 Ciudad Delicias|MX|28.19013|-105.47012
 Ciudad Constitucion|MX|25.0321|-111.66256
 Santa Rosalia de Camargo|MX|27.67891|-105.17158
-Anahuac|MX|27.24457|-100.13229
-Ciudad Altamirano|MX|18.3582|-100.66965
+Anahuac|MX|27.24123|-100.13337
+Ciudad Altamirano|MX|18.35662|-100.66966
 Ciudad Acuna|MX|29.32322|-100.95217
-Cienega de Flores|MX|25.95467|-100.16695
+Cienega de Flores|MX|25.9545|-100.16617
 Chihuahua|MX|28.63528|-106.08889
 Chapala|MX|20.29246|-103.18963
 Celaya|MX|20.52181|-100.81399
@@ -22312,17 +22602,17 @@ Bucerias|MX|20.75821|-105.3362
 Autlan de Navarro|MX|19.77189|-104.36644
 Atoyac de Alvarez|MX|17.20667|-100.43306
 Atotonilco el Alto|MX|20.55084|-102.50822
-Ciudad de Armeria|MX|18.9378|-103.96417
+Ciudad de Armeria|MX|18.93695|-103.96482
 Ario de Rosales|MX|19.2083|-101.70904
-Arcelia|MX|18.31847|-100.28148
+Arcelia|MX|18.31765|-100.28201
 Arandas|MX|20.70551|-102.34514
-Ciudad Apodaca|MX|25.78195|-100.18839
+Ciudad Apodaca|MX|25.78143|-100.18911
 Apatzingan|MX|19.08864|-102.35704
 Apaseo el Grande|MX|20.54555|-100.68787
 Apaseo el Alto|MX|20.45632|-100.62125
 Ameca|MX|20.54783|-104.0461
 Allende|MX|28.34124|-100.85111
-Ciudad de Allende|MX|25.27673|-100.01442
+Ciudad de Allende|MX|25.28123|-100.01928
 Juan Aldama|MX|28.83778|-105.91232
 Ahualulco de Mercado|MX|20.70137|-103.97461
 Aguascalientes|MX|21.88262|-102.2843
@@ -22330,7 +22620,7 @@ Agua Prieta|MX|31.3224|-109.54251
 Acaponeta|MX|22.49046|-105.36074
 Acambaro|MX|20.03248|-100.72434
 Abasolo|MX|20.45031|-101.53011
-Hidalgo|MX|25.97205|-100.45029
+Hidalgo|MX|25.9724|-100.45221
 Dolores Hidalgo|MX|21.15611|-100.9325
 Las Guacamayas|MX|18.01913|-102.21011
 Ciudad Lazaro Cardenas|MX|17.96256|-102.19887
@@ -22908,6 +23198,7 @@ Oyan|NG|8.05|4.76667
 Owo|NG|7.1962|5.58681
 Owerri|NG|5.48363|7.03325
 Otukpa|NG|7.10168|7.65945
+Ota|NG|6.68867|3.23202
 Otan Ayegbaju|NG|7.94783|4.78836
 Osogbo|NG|7.77104|4.55698
 Oshodi|NG|6.55504|3.34363
@@ -22954,7 +23245,6 @@ Maiduguri|NG|11.84692|13.15712
 Magumeri|NG|12.11451|12.8262
 Lokoja|NG|7.79688|6.74048
 Lere|NG|10.38584|8.57286
-Lekki|NG|6.41222|4.0947
 Lapai|NG|9.04439|6.57089
 Lalupon|NG|7.46791|4.06594
 Lagos|NG|6.45407|3.39467
@@ -22986,6 +23276,7 @@ Jimeta|NG|9.27949|12.45819
 Jega|NG|12.22336|4.37971
 Jebba|NG|9.11972|4.8236
 Jalingo|NG|8.89367|11.3596
+Iyesi|NG|6.66056|3.1798
 Iwo|NG|7.63527|4.18156
 Itu|NG|5.20131|7.98373
 Isieke|NG|6.38186|8.03736
@@ -23009,6 +23300,8 @@ Ikire|NG|7.36983|4.1863
 Ikere-Ekiti|NG|7.49748|5.23041
 Ikeja|NG|6.59651|3.34205
 Ikare|NG|7.52591|5.75342
+River Atuwara|NG|6.68194|3.14306
+Ijoko|NG|6.74241|3.26217
 Ijero-Ekiti|NG|7.81514|5.06716
 Ijebu Ode|NG|6.81944|3.91731
 Ijebu-Jesa|NG|7.68287|4.81769
@@ -23111,11 +23404,13 @@ Apomu|NG|7.35156|4.18335
 Anchau|NG|10.96245|8.39233
 Amaigbo|NG|5.78917|7.83829
 Aliayabiagba|NG|6.45|3.33333
+Alasia|NG|6.47489|3.16914
 Akwanga|NG|8.91077|8.40655
 Akure|NG|7.25256|5.19312
 Aku|NG|6.70902|7.31826
 Ajaokuta|NG|7.56229|6.65497
 Agulu|NG|6.10045|7.061
+Agege|NG|6.61563|3.33337
 Agbor|NG|6.25375|6.1942
 Afikpo|NG|5.89258|7.93534
 Ado-Odo|NG|6.59546|2.94176
@@ -23129,6 +23424,7 @@ Ajegunle|NG|6.45197|3.33115
 Alimosho|NG|6.60656|3.30235
 Akowonjo|NG|6.61012|3.30968
 Degema Hulk|NG|4.76145|6.74957
+Lekki|NG|6.44632|3.47717
 Chakwama|NG|11.55965|9.66407
 Tipitapa|NI|12.19732|-86.09706
 Somoto|NI|13.4841|-86.58229
@@ -23288,12 +23584,14 @@ Leiden|NL|52.15833|4.49306
 Leeuwarden|NL|53.20271|5.80973
 Leerdam|NL|51.89333|5.09167
 Leek|NL|53.1625|6.37639
+Krommenie|NL|52.49917|4.7625
 Krimpen aan den IJssel|NL|51.91667|4.60278
 Korrewegwijk|NL|53.23235|6.56804
 Kerkrade|NL|50.86583|6.0625
 Katwijk aan Zee|NL|52.20333|4.39861
 Kampen|NL|52.555|5.91111
 Julianadorp|NL|52.89|4.74028
+Jordaan|NL|52.37439|4.88059
 IJsselstein|NL|52.02|5.04306
 IJmuiden|NL|52.4603|4.61048
 Huizen|NL|52.29917|5.24167
@@ -23348,6 +23646,7 @@ Eibergen|NL|52.1|6.64861
 Eersel|NL|51.3575|5.31806
 Ede|NL|52.03333|5.65833
 Duiven|NL|51.94667|6.01389
+Drunen|NL|51.68583|5.13333
 Dronten|NL|52.525|5.71806
 Driebergen-Rijsenburg|NL|52.05333|5.28056
 Drachten|NL|53.11254|6.0989
@@ -23408,7 +23707,14 @@ Amsterdam-Zuidoost|NL|52.3075|4.97222
 Berkel en Rodenrijs|NL|51.99313|4.47865
 Ypenburg|NL|52.04098|4.36981
 Velserbroek|NL|52.43283|4.66155
+Noord|NL|52.39079|4.90994
 Maaspoort|NL|51.72611|5.30194
+Leidsche Rijn|NL|52.09497|5.04613
+Amsterdam Nieuw-West|NL|52.3565|4.80636
+Amsterdam-Oost|NL|52.35206|4.93353
+Amsterdam-Centrum|NL|52.37406|4.89938
+Amsterdam-Zuid|NL|52.34691|4.87683
+Amsterdam-West|NL|52.37761|4.86601
 Alta|NO|69.96887|23.27165
 Trondheim|NO|63.43049|10.39506
 Tromso|NO|69.6489|18.95508
@@ -23447,6 +23753,7 @@ Drammen|NO|59.74389|10.20449
 Bodo|NO|67.28267|14.37513
 Bergen|NO|60.39299|5.32415
 Asker|NO|59.83333|10.43721
+Asane|NO|60.47444|5.325
 Arendal|NO|58.46151|8.77253
 Alesund|NO|62.47225|6.15492
 Ytrebygda|NO|60.30504|5.28236
@@ -23481,7 +23788,7 @@ Dailekh|NP|28.84434|81.71011
 Amargadhi|NP|29.29922|80.58333
 Chautara|NP|27.7763|85.7127
 Charikot|NP|27.66824|86.0519
-Butwal|NP|27.70055|83.44836
+Butwal|NP|27.69121|83.45251
 Birganj|NP|27.01736|84.88047
 Biratnagar|NP|26.45505|87.27007
 Bharatpur|NP|27.68027|84.43647
@@ -23583,6 +23890,7 @@ Al Khaburah|OM|23.97144|57.09313
 Al Buraymi|OM|24.25088|55.79312
 Adam|OM|22.37934|57.52718
 Yanqul|OM|23.58645|56.53969
+Masirah|OM|20.65063|58.87277
 Veracruz|PA|8.89319|-79.62338
 Tocumen|PA|9.08939|-79.3831
 Santiago de Veraguas|PA|8.1|-80.98333
@@ -23626,6 +23934,7 @@ San Pedro de Lloc|PE|-7.4289|-79.50416
 San Juan|PE|-3.77611|-73.28139
 Sana|PE|-6.91888|-79.582
 Rioja|PE|-6.05675|-77.16651
+Requena|PE|-5.06083|-73.85028
 Querecotillo|PE|-4.83778|-80.64556
 Pucallpa|PE|-8.37915|-74.55387
 Piura|PE|-5.18192|-80.65715
@@ -23651,6 +23960,7 @@ Huanuco|PE|-9.92882|-76.23989
 Huamachuco|PE|-7.8|-78.06667
 Guadalupe|PE|-7.25|-79.48333
 Ferrenafe|PE|-6.63889|-79.78889
+Contamana|PE|-7.33333|-75.01667
 Coishco|PE|-9.02306|-78.61556
 Chulucanas|PE|-5.0925|-80.1625
 Chongoyape|PE|-6.64056|-79.38917
@@ -23667,7 +23977,6 @@ Aguaytia|PE|-9.03778|-75.50906
 La Breita|PE|-4.25691|-80.88599
 Zarumilla|PE|-3.50306|-80.27306
 Belen|PE|-3.76016|-73.2497
-Yunguyo|PE|-16.25|-69.08333
 Yauri|PE|-14.79083|-71.40986
 Yanacancha|PE|-10.24111|-76.64556
 Tarma|PE|-11.41899|-75.68992
@@ -23680,6 +23989,7 @@ San Vicente de Canete|PE|-13.07556|-76.38528
 Santa Ana|PE|-12.86667|-72.71667
 San Isidro|PE|-12.09655|-77.04258
 San Clemente|PE|-13.66667|-76.15
+Quillabamba|PE|-12.86334|-72.69306
 Puno|PE|-15.84003|-70.02198
 Puerto Maldonado|PE|-12.58946|-69.19948
 Pisco|PE|-13.71029|-76.20538
@@ -23721,6 +24031,7 @@ Barranco|PE|-12.14297|-77.01862
 Barranca|PE|-10.75|-77.76667
 Ayaviri|PE|-14.88639|-70.58889
 Ayacucho|PE|-13.1638|-74.22345
+Atalaya|PE|-10.73067|-73.75867
 Arequipa|PE|-16.39899|-71.53747
 Andahuaylas|PE|-13.65556|-73.38722
 Abancay|PE|-13.63426|-72.8838
@@ -23746,6 +24057,7 @@ San Antonio|PE|-17.21718|-70.92593
 Selva Alegre|PE|-16.37057|-71.52724
 Santiago|PE|-13.52728|-71.9843
 Brena|PE|-12.05605|-77.05295
+San Miguel|PE|-15.47798|-70.12498
 Punaauia|PF|-17.63333|-149.6
 Papeete|PF|-17.5347|-149.56843
 Faaa|PF|-17.55933|-149.60352
@@ -23817,7 +24129,6 @@ Tagaytay|PH|14.09532|120.93355
 Tagas|PH|13.16667|123.71667
 Tacurong|PH|6.6925|124.67639
 Tacloban|PH|11.24333|125.00472
-Tabuk|PH|17.47378|121.46799
 Tabaco|PH|13.35861|123.73361
 Taal|PH|13.87992|120.92311
 Surigao|PH|9.789|125.495
@@ -24064,7 +24375,7 @@ Labo|PH|14.1532|122.8303
 Koronadal|PH|6.50306|124.84694
 Kidapawan|PH|7.00833|125.08944
 Kawit|PH|14.44426|120.90164
-Kalibo (poblacion)|PH|11.70611|122.36444
+Kalibo|PH|11.7086|122.3648
 Kalamansig|PH|6.55187|124.05111
 Kabankalan|PH|9.9839|122.81423
 Kabacan|PH|7.10667|124.82917
@@ -24241,6 +24552,7 @@ Banga|PH|6.42389|124.77833
 Banga|PH|6.42381|124.77603
 Bambang|PH|16.3865|121.1066
 Bamban|PH|15.27386|120.56683
+Balulang|PH|8.44528|124.63139
 Baliuag|PH|14.95472|120.89694
 Balayan|PH|13.93714|120.73224
 Balanga|PH|14.67611|120.53611
@@ -24283,7 +24595,7 @@ Commonwealth|PH|14.6969|121.08006
 Bagong Silangan|PH|14.706|121.108
 Pasig City|PH|14.58691|121.0614
 Poblacion|PH|14.3787|121.025
-Tabuk|PH|17.4084|121.2785
+Tabuk|PH|17.41456|121.44157
 Pandan|PH|11.74479|122.10027
 Ayala Alabang|PH|14.40599|121.02222
 Banco Filipino Homes|PH|14.43379|121.02231
@@ -24324,6 +24636,7 @@ Tank|PK|32.21707|70.38315
 Tangi|PK|34.3009|71.65238
 Tando Muhammad Khan|PK|25.12384|68.53677
 Tando Jam|PK|25.42813|68.52923
+Tando Bago|PK|24.78914|68.96535
 Tando Allahyar|PK|25.4605|68.71745
 Tando Adam|PK|25.76818|68.66196
 Tandlianwala|PK|31.03359|73.13268
@@ -24540,8 +24853,10 @@ Chak Thirty-one -Eleven Left|PK|30.42388|72.69737
 Harunabad|PK|29.61206|73.13802
 Harnoli|PK|32.27871|71.55429
 Haripur|PK|33.99783|72.93493
+Harappa|PK|30.63251|72.87032
 Hangu|PK|33.53198|71.0595
 Hala|PK|25.81459|68.42198
+Haji Shah|PK|33.87686|72.32763
 Hajira|PK|33.77389|73.89438
 Hafizabad|PK|32.07095|73.68802
 Hadali|PK|32.64043|74.56898
@@ -24556,6 +24871,7 @@ Ghauspur|PK|28.13882|69.08245
 Gharo|PK|24.74182|67.58534
 Garh Maharaja|PK|30.83383|71.90491
 Gambat|PK|27.3517|68.5215
+Gadani|PK|25.11879|66.73219
 Fort Abbas|PK|29.19344|72.85525
 Fazilpur|PK|32.17629|75.06583
 Fatehpur|PK|31.17772|71.2048
@@ -24568,12 +24884,14 @@ Dursh Khela|PK|35.00028|72.45217
 Dunyapur|PK|29.80275|71.74344
 Dunga Bunga|PK|29.74975|73.24294
 Dullewala|PK|31.83439|71.43639
+Dokri|PK|27.37421|68.09715
 Upper Dir|PK|35.2074|71.8768
 Dipalpur|PK|30.66984|73.65306
 Dinga|PK|32.64101|73.72039
 Dijkot|PK|31.21735|72.99621
 Digri|PK|25.15657|69.11098
 Dhoro Naro|PK|25.50484|69.5709
+Dhaunkal|PK|32.40613|74.13706
 Dhanot|PK|29.57991|71.75213
 Dera Ismail Khan|PK|31.83129|70.9017
 Dera Ghazi Khan|PK|30.04587|70.64029
@@ -24598,6 +24916,7 @@ Charsadda|PK|34.14822|71.7406
 Chaman|PK|30.91769|66.45259
 Chakwal|PK|32.93286|72.85394
 Chak Azam Sahu|PK|30.75202|73.02834
+Chak|PK|27.85838|68.83378
 Burewala|PK|30.16667|72.65
 Buni|PK|36.27333|72.25929
 Bhopalwala|PK|32.42968|74.3635
@@ -24619,6 +24938,7 @@ Karimabad|PK|36.32692|74.66141
 Bahawalpur|PK|29.39779|71.6752
 Bahawalnagar|PK|29.99835|73.25272
 Bagh|PK|33.98111|73.77608
+Baffa|PK|34.4377|73.22368
 Badin|PK|24.656|68.837
 Baddomalhi|PK|31.99042|74.6641
 Attock City|PK|33.76671|72.35977
@@ -24635,6 +24955,7 @@ Nowshera Cantonment|PK|33.99829|71.99834
 Pakistan Employees Cooperative Housing Society|PK|24.87417|67.06419
 Ahmadpur Sial|PK|30.67791|71.74344
 New Badah|PK|27.34167|68.03194
+Kurkali Sindh Pakistan|PK|25.94123|68.81765
 Musa Banda/Musa khan kallay|PK|34.03374|72.48176
 Khai Gala|PK|33.84589|73.82722
 Islamgarh|PK|33.18969|73.83834
@@ -25267,6 +25588,7 @@ Cidade Universitaria|PT|38.75199|-9.15917
 Campo De Ourique|PT|38.72134|-9.16738
 Ngerulmud|PW|7.50077|134.6238
 Yby Yau|PY|-22.96611|-56.54066
+Villeta|PY|-25.50691|-57.56633
 Villarrica|PY|-25.74946|-56.43518
 Villa Hayes|PY|-25.093|-57.52725
 Villa Elisa|PY|-25.3676|-57.59274
@@ -25280,6 +25602,7 @@ Nemby|PY|-25.3949|-57.53574
 Loma Plata|PY|-22.3829|-59.83549
 Limpio|PY|-25.16611|-57.48562
 Lambare|PY|-25.34682|-57.60647
+Doctor Juan Eulogio Estigarribia|PY|-25.37184|-55.70457
 Itaugua|PY|-25.39258|-57.35421
 Ita|PY|-25.50054|-57.36717
 Fernando de la Mora|PY|-25.3386|-57.52167
@@ -25485,6 +25808,7 @@ Pirot|RS|43.15306|22.58611
 Pancevo|RS|44.87177|20.64167
 Obrenovac|RS|44.65486|20.20017
 Novi Pazar|RS|43.13667|20.51222
+Novi Beograd|RS|44.80556|20.42417
 Nova Pazova|RS|44.94366|20.21931
 Nis|RS|43.32472|21.90333
 Negotin|RS|44.22639|22.53083
@@ -25720,7 +26044,7 @@ Sheksna|RU|59.20998|38.51066
 Shebekino|RU|50.41342|36.92537
 Shchukino|RU|55.8|37.45
 Shchigry|RU|51.87598|36.90535
-Shcherbinka|RU|55.49972|37.55972
+Shcherbinka|RU|55.498|37.5579
 Shchyolkovo|RU|55.92497|37.97218
 Shchekino|RU|54.00734|37.50647
 Shatura|RU|55.57259|39.53417
@@ -25880,7 +26204,7 @@ Novokuz'minki|RU|55.71667|37.78333
 Novokuybyshevsk|RU|53.09709|49.94001
 Novokubansk|RU|45.11326|41.0365
 Novokhovrino|RU|55.86667|37.5
-Novogireyevo|RU|55.75378|37.81885
+Novogireyevo|RU|55.75455|37.81834
 Novodvinsk|RU|64.41638|40.81674
 Novocherkassk|RU|47.4222|40.09373
 Novocheboksarsk|RU|56.11095|47.47755
@@ -25992,11 +26316,11 @@ Dugulubgey|RU|43.6625|43.53694
 Kuznetsk|RU|53.11675|46.60037
 Kuz'minki|RU|55.7|37.8
 Kuvandyk|RU|51.48481|57.35788
-Kuskovo|RU|55.73423|37.82616
+Kuskovo|RU|55.73796|37.79542
 Kushva|RU|58.28731|59.74751
 Kushchyovskaya|RU|46.5599|39.6321
 Kusa|RU|55.34503|59.44004
-Kur'yanovo|RU|55.65|37.7
+Kur'yanovo|RU|55.65581|37.70094
 Kursk|RU|51.72689|36.18457
 Kurovskoye|RU|55.58183|38.91994
 Kurganinsk|RU|44.88448|40.58893
@@ -26017,7 +26341,7 @@ Krymsk|RU|44.92625|37.99025
 Kropotkin|RU|45.43722|40.5704
 Kronstadt|RU|59.992|29.77616
 Krasnyy Sulin|RU|47.89246|40.07185
-Biryulevo Zapadnoye|RU|55.58766|37.64282
+Biryulevo Zapadnoye|RU|55.58726|37.64579
 Krasnoye Selo|RU|59.73833|30.08944
 Krasnovishersk|RU|60.40728|57.08286
 Krasnoufimsk|RU|56.61399|57.76897
@@ -26028,9 +26352,9 @@ Krasnodar|RU|45.04534|38.98178
 Krasnoarmeyskaya|RU|45.36551|38.21194
 Krasnoarmeysk|RU|56.1|38.13333
 Krasnoarmeysk|RU|51.02349|45.69665
-Presnenskiy|RU|55.75|37.55
+Presnenskiy|RU|55.75894|37.55816
 Koz'modem'yansk|RU|56.33209|46.5606
-Kozhukhovo|RU|55.7|37.66667
+Kozhukhovo|RU|55.70601|37.67563
 Kozeyevo|RU|55.86667|37.61667
 Kozel'sk|RU|54.0366|35.77088
 Kovylkino|RU|54.0372|43.91871
@@ -26116,7 +26440,7 @@ Kalach|RU|50.425|41.01595
 Kachkanar|RU|58.7002|59.4839
 Kabanovo|RU|55.74815|38.93511
 Izobil'nyy|RU|45.36653|41.7091
-Izmaylovo|RU|55.78677|37.80165
+Izmaylovo|RU|55.7966|37.78242
 Izhevsk|RU|56.85225|53.19862
 Izberbash|RU|42.56705|47.87546
 Ivanteyevka|RU|55.97111|37.92083
@@ -26132,7 +26456,7 @@ Igra|RU|57.5549|53.0544
 Gus'-Khrustal'nyy|RU|55.61171|40.65023
 Gusev|RU|54.59222|22.19972
 Gul'kevichi|RU|45.35383|40.69465
-Gukovo|RU|48.06212|39.9355
+Gukovo|RU|48.05133|39.93048
 Gudermes|RU|43.35082|46.10095
 Gubkin|RU|51.28375|37.5351
 Gubakha|RU|58.83862|57.55325
@@ -26161,7 +26485,7 @@ Furmanov|RU|57.25417|41.11122
 Fryazino|RU|55.96131|38.04643
 Fryazevo|RU|55.73321|38.46458
 Frolovo|RU|49.7688|43.65417
-Fili|RU|55.74819|37.47969
+Fili|RU|55.74543|37.48837
 Ezhva|RU|61.81281|50.72834
 Engels|RU|51.48389|46.10528
 Enem|RU|44.9264|38.90584
@@ -26176,10 +26500,10 @@ Dyurtyuli|RU|55.4873|54.86176
 Dyat'kovo|RU|53.59782|34.33825
 Dubovka|RU|49.05616|44.82913
 Dubna|RU|56.74049|37.18648
-Dorogomilovo|RU|55.75|37.56667
+Dorogomilovo|RU|55.7418|37.54706
 Donskoye|RU|45.45346|41.97244
 Donskoy|RU|53.96796|38.33151
-Donetsk|RU|48.33751|39.95416
+Donetsk|RU|48.33711|39.95229
 Domodedovo|RU|55.44223|37.75372
 Dolgoprudnyy|RU|55.94958|37.50183
 Dobryanka|RU|58.46484|56.41299
@@ -26231,7 +26555,7 @@ Bol'shaya Setun'|RU|55.71667|37.41667
 Bologoye|RU|57.88587|34.05324
 Boksitogorsk|RU|59.4778|33.85008
 Boguchar|RU|49.9346|40.55447
-Bogorodskoye|RU|55.81353|37.71617
+Bogorodskoye|RU|55.81396|37.72117
 Bogorodsk|RU|56.10149|43.5101
 Bogoroditsk|RU|53.77174|38.12305
 Bobrov|RU|51.09843|40.03008
@@ -26295,7 +26619,7 @@ Aleksandrovskoye|RU|44.71417|43.00083
 Aleksandrovsk|RU|59.15838|57.5705
 Aleksandrov|RU|56.39733|38.71404
 Alatyr'|RU|54.8421|46.5813
-Levoberezhnyy|RU|55.85|37.48333
+Levoberezhnyy|RU|55.86477|37.47342
 Aksay|RU|47.26331|39.869
 Akhtyrskiy|RU|44.8546|38.3031
 Akhtubinsk|RU|48.28339|46.16519
@@ -26310,8 +26634,8 @@ Ryl'sk|RU|51.57141|34.68324
 Neftekumsk|RU|44.75583|44.9925
 Alagir|RU|43.04252|44.2202
 Persianovka|RU|47.52729|39.4193
-Annino|RU|55.58316|37.26019
-Drozhzhino|RU|55.52806|37.59917
+Annino|RU|55.58264|37.26223
+Drozhzhino|RU|55.52376|37.58948
 Dagomys|RU|43.66974|39.66863
 Gorod Shebekino|RU|50.41667|36.91667
 Pavlovo|RU|55.9686|43.0912
@@ -26323,7 +26647,7 @@ Znamensk|RU|48.5842|45.7338
 Zarechnyy|RU|53.13333|46.58333
 Kochubeyevskoye|RU|44.64417|41.84528
 Vnukovo|RU|55.61194|37.29611
-Moskovskiy|RU|55.59911|37.35495
+Moskovskiy|RU|55.5991|37.3552
 Usinsk|RU|66.00866|57.53054
 Obukhovo|RU|59.84389|30.45111
 Staryy Malgobek|RU|43.54437|44.59592
@@ -26570,7 +26894,6 @@ Aginskoye|RU|51.10754|114.54173
 Dalnegorsk|RU|44.55745|135.6209
 Bratsk|RU|56.1325|101.61417
 Sayansk|RU|54.11287|102.17773
-Khabarovsk Vtoroy|RU|48.43787|135.12994
 Markova|RU|52.20667|104.2177
 Vilyuchinsk|RU|52.93196|158.40585
 Yuzhno-Sakhalinsk|RU|46.9543|142.73559
@@ -26693,11 +27016,12 @@ Rumah|SA|25.56395|47.16408
 Ras Tanura|SA|26.70742|50.06735
 Rahimah|SA|26.70791|50.06194
 Rabigh|SA|22.79856|39.03493
-Qal`at Bishah|SA|20.00054|42.6052
+Bishah|SA|20.00054|42.6052
 Najran|SA|17.49326|44.12766
 Makkah|SA|21.42664|39.82563
 Mahd adh Dhahab|SA|23.49966|40.88408
 Layla|SA|22.29206|46.72376
+King Faisal Military City|SA|28.45|45.96667
 Khulays|SA|22.15553|39.32015
 Khamis Mushait|SA|18.3|42.73333
 Jizan|SA|16.88917|42.55111
@@ -26761,6 +27085,7 @@ Turubah|SA|28.25849|42.92457
 Al Bada'i' al Wusta|SA|25.98546|43.73659
 Thuwal|SA|22.28272|39.11245
 Ash Shafa|SA|21.07268|40.31842
+King Khalid Military City|SA|27.90509|45.55326
 Sabt Alalayah|SA|19.5773|41.96357
 Riyad al Khabra'|SA|26.06672|43.55344
 Bariq|SA|18.92966|41.92953
@@ -26779,6 +27104,7 @@ Victoria|SC|-4.62001|55.45501
 Dongola|SD|19.18163|30.47689
 Zalinjay|SD|12.90918|23.47058
 Wad Medani|SD|14.40118|33.51989
+Wadi Halfa|SD|21.79577|31.37129
 Umm Shawkah|SD|13.31667|33.76667
 Umm Ruwaba|SD|12.9061|31.2158
 Omdurman|SD|15.64453|32.47773
@@ -26875,6 +27201,7 @@ Tumba|SE|59.19858|17.83317
 Tullinge|SE|59.2|17.9
 Trollhaettan|SE|58.28365|12.28864
 Trelleborg|SE|55.37514|13.15691
+Trangsund|SE|59.23333|18.13333
 Taby|SE|59.4439|18.06872
 Sundsvall|SE|62.39129|17.3063
 Sundbyberg|SE|59.36128|17.97114
@@ -26909,6 +27236,7 @@ Lund|SE|55.70584|13.19321
 Ludvika|SE|60.14959|15.18776
 Ljungby|SE|56.83324|13.94082
 Linkoeping|SE|58.41086|15.62157
+Limhamn|SE|55.58333|12.95
 Lidkoeping|SE|58.50517|13.15765
 Lidingoe|SE|59.36667|18.13333
 Lerum|SE|57.77051|12.26904
@@ -27113,6 +27441,7 @@ Goderich|SL|8.42756|-13.28598
 Mile 91|SL|8.46596|-12.21457
 San Marino|SM|43.93667|12.44639
 Ziguinchor|SN|12.56801|-16.27326
+Yoff|SN|14.74671|-17.49003
 Velingara|SN|13.15|-14.11667
 Touba|SN|14.86229|-15.87532
 Tivaouane|SN|14.95186|-16.8152
@@ -27210,6 +27539,7 @@ Cabudwaaq|SO|6.24585|46.2247
 Buurhakaba|SO|2.80257|44.07805
 Buulobarde|SO|3.85375|45.56744
 Burao|SO|9.52213|45.53363
+Bu'aale|SO|1.08333|42.58333
 Bosaso|SO|11.28421|49.18158
 Borama|SO|9.93611|43.18278
 Berbera|SO|10.43959|45.01432
@@ -27314,6 +27644,7 @@ Nubl|SY|36.37867|36.99294
 Nawa|SY|32.88646|36.03905
 al-Yarmuk|SY|33.4699|36.3018
 Maharda|SY|35.2479|36.5725
+Muadamiyat al-Sham|SY|33.46466|36.20175
 Masyaf|SY|35.0653|36.3406
 Manbij|SY|36.52815|37.95495
 Ma`arratmisrin|SY|36.01152|36.67183
@@ -27458,6 +27789,7 @@ Thoen|TH|17.61289|99.21612
 Thap Than|TH|15.46063|99.89166
 Tha Muang|TH|13.96118|99.64122
 Tha Maka|TH|13.9|99.76667
+Takua Pa|TH|8.8705|98.34383
 Tak|TH|16.86968|99.12898
 Surat Thani|TH|9.14011|99.33311
 Sukhothai|TH|17.00778|99.823
@@ -27506,6 +27838,7 @@ Ban Tak|TH|17.04325|99.08128
 Ko Samui|TH|9.53567|99.93567
 Ban Ko Sire|TH|7.88747|98.42575
 Ban Pong|TH|13.81629|99.87739
+Nong Prue|TH|14.60784|99.45783
 Ban Na San|TH|8.80036|99.36372
 Ban Na|TH|17.01717|99.73283
 Ban Kamala|TH|7.95508|98.28322
@@ -27706,6 +28039,7 @@ Ban Bang Bamru|TH|13.78333|100.48333
 Ban Ang Sila|TH|13.33956|100.92964
 Aranyaprathet|TH|13.69276|102.50128
 Amnat Charoen|TH|15.85851|104.62883
+Laem Chabang|TH|13.08775|100.88433
 Amphoe Sikhiu|TH|14.89944|101.70833
 Din Daeng|TH|13.7904|100.57014
 Wichit|TH|7.8894|98.38523
@@ -27819,12 +28153,14 @@ Venilale|TL|-8.64306|126.37833
 Balkanabat|TM|39.51075|54.36713
 Kaka|TM|37.34821|59.61431
 Gyzylarbat|TM|38.97644|56.27575
-Gumdag|TM|39.20611|54.59056
+Gaemi|TM|37.90735|58.47039
+Gumdag|TM|39.20237|54.58746
 Goekdepe|TM|38.15863|57.96072
 Bereket|TM|39.24463|55.51536
-Magtymguly|TM|38.43749|56.28081
-Jebel|TM|39.63415|54.23053
+Magtymguly|TM|38.43637|56.28401
+Jebel|TM|39.63101|54.23758
 Abadan|TM|38.05415|58.19721
+Ahal|TM|38.21978|58.01605
 Baeherden|TM|38.43624|57.43158
 Ashgabat|TM|37.95|58.38333
 AEnew|TM|37.88754|58.51596
@@ -27833,8 +28169,8 @@ Gubadag|TM|42.07948|59.94964
 Goerogly|TM|41.65041|59.9164
 Oyrat|TM|41.9458|59.90885
 Tuerkmenbasy|TM|40.02216|52.95517
-Koeneuergenc|TM|42.32773|59.15442
-Boldumsaz|TM|42.12824|59.67101
+Koeneuergenc|TM|42.32613|59.15307
+Boldumsaz|TM|42.12763|59.6723
 Dasoguz|TM|41.83625|59.96661
 Yoloeten|TM|37.29886|62.35975
 Tuerkmengala|TM|37.42469|62.33821
@@ -27843,13 +28179,13 @@ Seydi|TM|39.4816|62.91374
 Sayat|TM|38.78393|63.88035
 Sarahs|TM|36.52381|61.21477
 Mary|TM|37.59378|61.83031
-Hojambaz|TM|38.11635|65.00347
-Kerki|TM|37.83573|65.21058
+Halac|TM|38.07201|64.87938
+Kerki|TM|37.84079|65.20639
 Magdanly|TM|37.81244|66.04656
+Casgyn|TM|37.79729|61.54905
 Tuerkmenabat|TM|39.07328|63.57861
 Bayramaly|TM|37.61852|62.16715
 Gazojak|TM|41.18746|61.4036
-Arkadag|TM|38.07127|58.06562
 Zaouiet Sousse|TN|35.78553|10.62725
 Zaghouan|TN|36.40291|10.14292
 Oued Lill|TN|36.83408|10.04057
@@ -27861,6 +28197,7 @@ Tataouine|TN|32.92967|10.45177
 Thala|TN|35.57244|8.67031
 Takelsa|TN|36.78333|10.63333
 Tajerouine|TN|35.89174|8.55276
+Tabursuq|TN|36.45692|9.24751
 Tebourba|TN|36.82933|9.83935
 Teboulbou|TN|33.8455|10.11423
 Teboulba|TN|35.64018|10.96731
@@ -27896,6 +28233,7 @@ Midoun|TN|33.80813|10.99228
 Maatmeur|TN|35.75167|10.69083
 Mateur|TN|37.04045|9.66557
 Msaken|TN|35.72917|10.58082
+Mareth|TN|33.61794|10.28536
 Megrine|TN|36.76917|10.23639
 Menzel Temime|TN|36.78222|10.9875
 Menzel Jemil|TN|37.23618|9.91448
@@ -27919,7 +28257,7 @@ Feriana|TN|34.94529|8.56789
 Douz|TN|33.46632|9.0203
 Douar Tindja|TN|37.16667|9.75
 Dar Chabanne|TN|36.46798|10.75167
-Bou Salem|TN|36.60732|8.96981
+Dahmani|TN|35.94388|8.82778
 Ben Gardane|TN|33.13783|11.21965
 Ben Arous|TN|36.75452|10.22167
 Le Bardo|TN|36.81058|10.13481
@@ -27929,7 +28267,8 @@ Beni Khalled|TN|36.65038|10.59004
 Beja|TN|36.72564|9.18169
 Zouila|TN|35.50056|11.06056
 Zeramedine|TN|35.57525|10.73456
-Sejoumi|TN|36.75583|10.11833
+Sidi Husayn|TN|36.75583|10.11833
+Sahline|TN|35.75166|10.71109
 Chebba|TN|35.23722|11.115
 Aryanah|TN|36.86012|10.19337
 Ar Rudayyif|TN|34.3827|8.15549
@@ -27945,6 +28284,7 @@ Monastir|TN|35.77799|10.82617
 Moknine|TN|35.63333|10.9
 La Mohammedia|TN|36.67446|10.15633
 Metlaoui|TN|34.32081|8.40157
+Metouia|TN|33.95918|9.99619
 La Marsa|TN|36.87818|10.32466
 El Mgarsa|TN|33.81682|10.9923
 Mahires|TN|34.5275|10.50083
@@ -27966,7 +28306,7 @@ Dar el Haj Taieb|TN|34.78444|10.74389
 Ez Zahra|TN|36.74611|10.30833
 Borj Cedria|TN|36.69705|10.38654
 Ouerdanine|TN|35.69006|10.67598
-La Gazelle|TN|36.89479|10.18604
+Rawad|TN|36.89479|10.18604
 El Mourouj|TN|36.71364|10.2096
 Ezzouhour|TN|35.79014|10.58264
 Den Den|TN|36.80753|10.11061
@@ -27977,6 +28317,7 @@ Mnihla|TN|36.84774|10.11083
 Douar Hicher|TN|36.82657|10.08974
 Ettadhamen|TN|36.83246|10.10995
 Nuku'alofa|TO|-21.13683|-175.20114
+Yumurtalik|TR|36.76863|35.78938
 Yueksekova|TR|37.57362|44.28716
 Yozgat|TR|39.82|34.80444
 Yesilova|TR|38.15566|36.25758
@@ -28070,7 +28411,7 @@ Beykonak|TR|36.32573|30.30302
 Kulu|TR|39.09513|33.07989
 Kulp|TR|38.49754|41.00668
 Kula|TR|38.54726|28.64976
-Kuecuekcigli|TR|38.50801|27.0554
+Kuecuekcigli|TR|38.502|27.053
 Kozluk|TR|38.19118|41.47775
 Kozan|TR|37.45517|35.81573
 Kovancilar|TR|38.71882|39.86268
@@ -28176,6 +28517,7 @@ Bucak|TR|37.45917|30.595
 Bozyazi|TR|36.1082|32.96113
 Bozueyuek|TR|39.90778|30.03667
 Bozova|TR|37.3625|38.52667
+Bornova|TR|38.47921|27.2399
 Bor|TR|37.89056|34.55889
 Bolvadin|TR|38.71111|31.04861
 Bodrum|TR|37.03833|27.42917
@@ -28235,7 +28577,7 @@ Vakfikebir|TR|41.04583|39.27639
 Uzunkoeprue|TR|41.26914|26.68598
 UEskuedar|TR|41.02274|29.01366
 UEnye|TR|41.14049|37.28851
-Umraniye|TR|41.01643|29.12476
+UEmraniye|TR|41.01643|29.12476
 Turhal|TR|40.3875|36.08111
 Trabzon|TR|41.005|39.72694
 Tosya|TR|41.01545|34.04013
@@ -28255,6 +28597,7 @@ Suluova|TR|40.83129|35.64788
 Sisli|TR|41.06046|28.98717
 Sinop|TR|42.02683|35.16253
 Silivri|TR|41.07393|28.24644
+Sile|TR|41.17891|29.61085
 Sebin Karahisar|TR|40.28833|38.42361
 Sarikamis|TR|40.32769|42.58705
 Sapanca|TR|40.69141|30.26738
@@ -28277,6 +28620,7 @@ Maltepe|TR|40.93567|29.15507
 Malkara|TR|40.89105|26.90201
 Lueleburgaz|TR|41.40173|27.35746
 Kumru|TR|40.87444|37.26389
+Kuecuekcekmece|TR|40.99104|28.77123
 Korgan|TR|40.82472|37.34667
 Kocaali|TR|41.05336|30.85278
 Kizilcahamam|TR|40.46972|32.65056
@@ -28294,6 +28638,7 @@ Karasu Mahallesi|TR|41.07096|30.78543
 Karamuersel|TR|40.69129|29.61649
 Karacabey|TR|40.21323|28.3612
 Karabuek|TR|41.20488|32.62768
+Kandira|TR|41.07|30.15262
 Kagizman|TR|40.15669|43.13424
 Iznik|TR|40.42861|29.72111
 Izmit|TR|40.76499|29.92928
@@ -28307,7 +28652,7 @@ Hendek|TR|40.79944|30.74806
 Hayrabolu|TR|41.21311|27.10688
 Havza|TR|40.97056|35.66222
 Guersu|TR|40.21876|29.19487
-Guerpinar|TR|40.99256|28.61428
+Guerpinar|TR|40.992|28.603
 Guergentepe|TR|40.78995|37.60073
 Guemueshane|TR|40.46001|39.47176
 Goeruekle|TR|40.23114|28.84017
@@ -28322,6 +28667,7 @@ Gelibolu|TR|40.40836|26.67174
 Gebze|TR|40.80276|29.43068
 Ferizli|TR|40.94082|30.48583
 Fatsa|TR|41.02886|37.49977
+Fatih|TR|41.0225|28.94083
 Esenyurt|TR|41.02697|28.67732
 Esenler|TR|41.0435|28.87619
 Eregli|TR|41.28261|31.41806
@@ -28398,9 +28744,11 @@ Cubuklu|TR|41.10419|29.08331
 Atasehir|TR|38.48855|27.06132
 Bostanli|TR|38.45921|27.09732
 Semikler|TR|38.47497|27.09591
+Evka-UEc|TR|38.47071|27.25094
 Niluefer|TR|40.21401|28.91567
 Merkezefendi|TR|37.80544|29.04236
 Altinsehir|TR|37.74121|38.22897
+Baglar Mahallesi|TR|39.92775|44.04055
 Tunapuna|TT|10.65245|-61.38878
 Scarborough|TT|11.18229|-60.73525
 Sangre Grande|TT|10.58705|-61.13008
@@ -28469,6 +28817,7 @@ Xihu|TW|23.95683|120.47918
 Xizhi|TW|25.06615|121.65985
 Hengchun|TW|22.00417|120.74389
 Xizhou|TW|24.27667|120.68917
+Erlun|TW|23.77045|120.4134
 Erlin|TW|23.90054|120.3689
 Zhudong|TW|24.73167|121.09083
 Zhushan|TW|23.75551|120.68203
@@ -28575,6 +28924,7 @@ Masumbwe|TZ|-3.63333|32.18333
 Maramba|TZ|-5.05|38.61667
 Mapinga|TZ|-6.6|39.06667
 Manyoni|TZ|-5.75|34.83333
+Mambali|TZ|-4.55|32.68333
 Malinyi|TZ|-8.93333|36.13333
 Malampaka|TZ|-3.13333|33.53333
 Makuyuni|TZ|-4.73333|38.1
@@ -28621,6 +28971,7 @@ Katoro|TZ|-2.99983|31.93261
 Katesh|TZ|-4.52483|35.3849
 Katerero|TZ|-1.4|31.73333
 Kasulu|TZ|-4.57667|30.1025
+Kassambya|TZ|-1.2|31.45
 Kasamwa|TZ|-2.85|32.43333
 Kiratu|TZ|-3.33333|35.66667
 Kamachumu|TZ|-1.61861|31.62
@@ -28670,6 +29021,7 @@ Bariadi|TZ|-2.8|33.98333
 Bagamoyo|TZ|-6.44222|38.90422
 Babati|TZ|-4.21667|35.75
 Arusha|TZ|-3.36667|36.68333
+Kakunyu|TZ|-1.00611|30.94139
 Tunduru|TZ|-11.06667|37.35
 Tingi|TZ|-11.3|35.03333
 Tandahimba|TZ|-10.75|39.63333
@@ -28696,6 +29048,7 @@ Merelani|TZ|-3.56182|36.97895
 Nungwi|TZ|-5.72651|39.2987
 Magu|TZ|-2.59075|33.44619
 Mhalamba|TZ|-2.5812|32.00991
+Mutukula|TZ|-1.00111|31.415
 Tarakea|TZ|-3.00083|37.56416
 Diobahika|TZ|-3.33907|31.52344
 Dumila|TZ|-6.38395|37.34331
@@ -28706,7 +29059,7 @@ Matongo|TZ|-1.46771|34.52279
 Mwandege|TZ|-6.97558|39.2893
 Mwanhuzi|TZ|-3.52723|34.31513
 Ruaha|TZ|-7.65685|36.98299
-Lebedyn|UA|50.58518|34.4849
+Lebedyn|UA|50.58228|34.48258
 Druzhkivka|UA|48.61995|37.52537
 Zvenyhorodka|UA|49.07765|30.96074
 Zuhres|UA|48.01428|38.26599
@@ -28724,8 +29077,8 @@ Yevpatoriya|UA|45.20091|33.36655
 Yenakiyeve|UA|48.23857|38.20403
 Yasynuvata|UA|48.12678|37.85924
 Yalta|UA|44.50218|34.16624
-Yahotyn|UA|50.27975|31.76246
-Vyshhorod|UA|50.58476|30.4898
+Yahotyn|UA|50.27535|31.76343
+Vyshhorod|UA|50.58312|30.48566
 Vynohradiv|UA|48.14126|23.03623
 Vyhurivshchyna-Troyeshchyna|UA|50.51137|30.60251
 Voznesensk|UA|47.56218|31.33602
@@ -28734,14 +29087,13 @@ Volnovakha|UA|47.6008|37.49358
 Vilnohirsk|UA|48.48416|34.01708
 Vovchansk|UA|50.29078|36.94108
 Volodymyr-Volynskyi|UA|50.85033|24.32119
-Vyshneve|UA|50.38913|30.3705
+Vyshneve|UA|50.38834|30.36809
 Vinnytsya|UA|49.2322|28.46871
 Vynnyky|UA|49.81672|24.14417
 Vilnyansk|UA|47.94768|35.44034
 Verkhnodniprovsk|UA|48.65557|34.3262
-Velyka Kokhnivka|UA|49.11719|33.48033
 Bahacheve|UA|49.01198|31.04659
-Vasylkiv|UA|50.18693|30.31346
+Vasylkiv|UA|50.18023|30.31189
 Uzhhorod|UA|48.6242|22.2947
 Uman|UA|48.7501|30.21944
 Tulchyn|UA|48.67397|28.86848
@@ -28754,18 +29106,18 @@ Terny|UA|48.14512|33.55832
 Ternivka|UA|48.52656|36.07051
 Ternopil|UA|49.55404|25.59067
 Telychka|UA|50.4|30.56667
-Siverskodonetsk|UA|48.94628|38.48624
+Siverskodonetsk|UA|48.94414|38.48754
 Svitlovodsk|UA|49.06287|33.2458
-Dovzhansk|UA|48.08964|39.65243
-Svatove|UA|49.40719|38.15362
+Dovzhansk|UA|48.07615|39.64744
+Svatove|UA|49.40926|38.15534
 Svalyava|UA|48.54735|22.98673
 Sumy|UA|50.91741|34.79906
-Sukhodilsk|UA|48.35022|39.72698
+Sukhodilsk|UA|48.35083|39.72573
 Sudak|UA|44.84924|34.97471
 Stryi|UA|49.26103|23.84845
 Stebnyk|UA|49.30098|23.55197
 Starokostyantyniv|UA|49.75522|27.21229
-Starobilsk|UA|49.27719|38.91673
+Starobilsk|UA|49.27881|38.9075
 Stara Darnytsya|UA|50.43333|30.63333
 Kadiyivka|UA|48.56818|38.64352
 Sotsmisto|UA|48.73663|37.59075
@@ -28774,44 +29126,44 @@ Snizhne|UA|48.02328|38.76205
 Smila|UA|49.23295|31.88427
 Slovyansk|UA|48.84974|37.59739
 Slavuta|UA|50.29609|26.86613
-Skvyra|UA|49.73303|29.66426
+Skvyra|UA|49.73401|29.66353
 Skadovsk|UA|46.11313|32.90978
 Synelnykove|UA|48.32362|35.52612
 Simferopol|UA|44.95719|34.11079
 Sykhiv|UA|49.79427|24.06284
 Shpola|UA|49.01291|31.3926
-Shostka|UA|51.86296|33.4698
+Shostka|UA|51.86434|33.47283
 Shepetivka|UA|50.18118|27.06517
 Shakhtarsk|UA|48.05657|38.43826
 Sevastopol|UA|44.60795|33.52134
 Selydove|UA|48.1465|37.3022
 Sarny|UA|51.33898|26.60693
 Sambir|UA|49.51624|23.20133
-Saki|UA|45.13424|33.59996
-Rubizhne|UA|49.00606|38.38119
+Saky|UA|45.13424|33.59996
+Rubizhne|UA|49.00849|38.37972
 Rozdilna|UA|46.85479|30.07091
 Kurakhove|UA|47.9847|37.28069
-Rovenky|UA|48.08331|39.37764
-Romny|UA|50.75104|33.47471
+Rovenky|UA|48.08277|39.37696
+Romny|UA|50.74025|33.4952
 Rivne|UA|50.62036|26.23695
 Rakhiv|UA|48.05472|24.20314
 Radomyshl|UA|50.4962|29.23003
 Pyatykhatky|UA|48.40821|33.70919
 Pryluky|UA|50.59525|32.38382
-Popasna|UA|48.63328|38.37804
+Popasna|UA|48.63168|38.37104
 Poltava|UA|49.58925|34.55367
 Polonne|UA|50.11944|27.50856
 Polohy|UA|47.47865|36.25463
 Podil|UA|50.46936|30.51627
-Pidhorodne|UA|48.57422|35.09702
+Pidhorodnye|UA|48.57422|35.09702
 Voznesenskyi|UA|47.93161|37.62971
 Pisochyn|UA|49.9516|36.10262
 Zlatopil|UA|49.37646|36.21848
-Sokolohirsk|UA|48.62831|38.56205
+Sokolohirsk|UA|48.6279|38.52389
 Pervomaysk|UA|48.04478|30.84784
 Shakhtarske|UA|48.3479|36.39637
 Pereiaslav|UA|50.06739|31.44969
-Perevalsk|UA|48.43779|38.84384
+Perevalsk|UA|48.43921|38.82839
 Pelahiivka|UA|48.10752|38.61338
 Pavlohrad|UA|48.53214|35.86878
 Ovruch|UA|51.3274|28.80165
@@ -28819,7 +29171,7 @@ Pokrov|UA|47.65361|34.11488
 Oleksandriya|UA|48.67466|33.11761
 Ihren|UA|48.47614|35.15842
 Odesa|UA|46.48572|30.74383
-Obukhiv|UA|50.10689|30.61848
+Obukhiv|UA|50.11632|30.63329
 Novyi Rozdil|UA|49.47136|24.13352
 Novovolynsk|UA|50.72949|24.15976
 Novoukrayinka|UA|48.31661|31.52355
@@ -28836,7 +29188,7 @@ Nadvirna|UA|48.63659|24.5714
 Mykolayiv|UA|46.97625|31.99296
 Mukachevo|UA|48.44248|22.718
 Mostyska|UA|49.79467|23.15077
-Otamanivka|UA|48.34511|39.65244
+Otamanivka|UA|48.34586|39.65233
 Mohyliv-Podilskyy|UA|48.44278|27.79975
 Myrhorod|UA|49.96464|33.60861
 Merefa|UA|49.82107|36.0567
@@ -28848,26 +29200,26 @@ Malyn|UA|50.76756|29.24225
 Makiyivka|UA|48.04782|37.92576
 Liubotyn|UA|49.94691|35.92907
 Lviv|UA|49.83826|24.02324
-Lutuhyne|UA|48.40507|39.22675
+Lutuhyne|UA|48.40433|39.21302
 Lutsk|UA|50.75784|25.35024
 Luhansk|UA|48.56814|39.30553
 Lubny|UA|50.01413|32.99975
 Lozova|UA|48.89066|36.31412
-Lysychansk|UA|48.90421|38.44094
+Lysychansk|UA|48.91211|38.42088
 Ladyzhyn|UA|48.68437|29.23636
 Kyiv|UA|50.45466|30.5238
 Kupyansk|UA|49.71003|37.61581
 Kryvyy Rih|UA|47.90572|33.39404
 Kryukiv|UA|49.02894|33.43847
-Krolevets|UA|51.54775|33.38475
-Kreminna|UA|49.0495|38.21893
+Krolevets|UA|51.55181|33.38044
+Kreminna|UA|49.04811|38.21552
 Kremenets|UA|50.09864|25.72787
 Kremenchuk|UA|49.06253|33.40484
-Khrustalnyi|UA|48.13954|38.93715
+Khrustalnyi|UA|48.14241|38.92369
 Lyman|UA|48.99012|37.80843
 Yany Kapu|UA|45.95547|33.79261
 Berestyn|UA|49.3776|35.44485
-Sorokyne|UA|48.29235|39.73921
+Sorokyne|UA|48.29329|39.7332
 Pokrovsk|UA|48.28014|37.17706
 Krasyliv|UA|49.65376|26.97211
 Kramatorsk|UA|48.73106|37.56779
@@ -28876,17 +29228,19 @@ Kovel|UA|51.21548|24.70077
 Kotsyubynske|UA|50.48836|30.32957
 Podilsk|UA|47.74988|29.53074
 Kostopil|UA|50.87732|26.44797
-Korsun-Shevchenkivskyy|UA|49.41822|31.25174
+Korsun-Shevchenkivskyi|UA|49.41822|31.25174
 Korostyshiv|UA|50.31686|29.05774
 Korosten|UA|50.9512|28.63859
+Korabelna Storona|UA|44.60948|33.54348
 Kostyantynivka|UA|48.52728|37.70594
-Konotop|UA|51.24032|33.20263
+Konotop|UA|51.23251|33.2004
 Slobozhanske|UA|49.59054|36.52172
 Kolomyia|UA|48.52496|25.03712
 Khrestivka|UA|48.14969|38.35941
 Holubivka|UA|48.63751|38.6428
 Kropyvnytskyi|UA|48.50834|32.26618
 Kiliya|UA|45.44445|29.26396
+Trudivskyi|UA|47.94699|37.55806
 Khust|UA|48.17193|23.29791
 Khmelnytskyi|UA|49.41835|26.97936
 Khmilnyk|UA|49.5581|27.95682
@@ -28905,20 +29259,20 @@ Izyum|UA|49.20697|37.27679
 Iziaslav|UA|50.11978|26.82475
 Izmayil|UA|45.35058|28.83751
 Ivano-Frankivsk|UA|48.92312|24.71248
-Irpin|UA|50.52175|30.25055
+Irpin|UA|50.52201|30.24037
 Inhulets|UA|47.7301|33.25189
 Ilovays'k|UA|47.92498|38.20235
 Chornomors'k|UA|46.29914|30.65529
 Horodok|UA|49.17209|26.56357
 Horlivka|UA|48.29986|38.01709
-Hlukhiv|UA|51.67822|33.9162
+Hlukhiv|UA|51.67982|33.91682
 Hostomel|UA|50.56841|30.2651
 Horodok|UA|49.78476|23.6481
 Henichesk|UA|46.16824|34.80861
 Haysyn|UA|48.81294|29.37917
 Hadyach|UA|50.36912|33.997
 Feodosiya|UA|45.03199|35.38153
-Fastiv|UA|50.0767|29.9177
+Fastiv|UA|50.07796|29.91963
 Enerhodar|UA|47.49048|34.66199
 Dzhankoy|UA|45.7131|34.39273
 Toretsk|UA|48.39477|37.8478
@@ -28929,7 +29283,7 @@ Donetsk|UA|48.023|37.80224
 Dolyna|UA|48.97158|23.96558
 Dolynska|UA|48.11725|32.77691
 Dokuchayevsk|UA|47.7522|37.67761
-Dobropillia|UA|48.46674|37.08567
+Dobropillya|UA|48.46674|37.08567
 Dnipro|UA|48.46664|35.04066
 Kamyanske|UA|48.51716|34.60617
 Dniprorudne|UA|47.38993|35.00065
@@ -28938,33 +29292,33 @@ Derhachi|UA|50.10789|36.1209
 Debaltseve|UA|48.33592|38.40261
 Chuhuyiv|UA|49.83538|36.6865
 Chortkiv|UA|49.01701|25.79808
-Voznesenivka|UA|48.07613|39.79618
+Voznesenivka|UA|48.078|39.78705
 Sheptytskyi|UA|50.39403|24.23935
 Chernivtsi|UA|48.29045|25.93241
 Chernihiv|UA|51.50541|31.28656
 Cherkasy|UA|49.44452|32.05738
-Bucha|UA|50.54345|30.21201
+Bucha|UA|50.54741|30.20879
 Bryanka|UA|48.511|38.67222
-Brovary|UA|50.51809|30.80671
+Brovary|UA|50.51097|30.79106
 Brody|UA|50.08854|25.14606
 Boyarka|UA|50.31911|30.29728
 Bortnychi|UA|50.38489|30.69542
-Boryspil|UA|50.35269|30.95501
+Boryspil|UA|50.35051|30.95263
 Boryslav|UA|49.28998|23.42889
 Bolhrad|UA|45.67786|28.61811
 Bohuslav|UA|49.54637|30.87407
 Bohuniya|UA|50.27691|28.60962
 Bohodukhiv|UA|50.16147|35.52367
 Bilhorod-Dnistrovskyi|UA|46.19484|30.34827
-Bila Tserkva|UA|49.8004|30.12851
+Bila Tserkva|UA|49.7994|30.1165
 Berezhany|UA|49.44578|24.93686
-Berezan|UA|50.3112|31.46712
+Berezan|UA|50.31073|31.46768
 Berehove|UA|48.20514|22.64453
 Berdychiv|UA|49.89421|28.58236
 Berdyansk|UA|46.75578|36.78815
-Bilopillia|UA|51.15016|34.31287
+Bilopillia|UA|51.14747|34.31079
 Bilohirsk|UA|45.05679|34.60386
-Bilohorodka|UA|50.38969|30.22532
+Bilohorodka|UA|50.3898|30.22726
 Bilychi|UA|50.46544|30.34654
 Bar|UA|49.07362|27.67404
 Balta|UA|47.93596|29.62225
@@ -28974,13 +29328,14 @@ Bakhmach|UA|51.18144|32.83463
 Bakhchysaray|UA|44.75525|33.85782
 Avdiyivka|UA|48.14019|37.75008
 Bakhmut|UA|48.59419|37.99886
+Arshyntseve|UA|45.30109|36.42687
 Armyansk|UA|46.10919|33.69206
 Apostolove|UA|47.65983|33.71952
-Antratsyt|UA|48.11503|39.09128
-Amvrosiivka|UA|47.79062|38.47851
+Antratsyt|UA|48.11638|39.08863
+Amvrosiyivka|UA|47.79062|38.47851
 Alushta|UA|44.67728|34.4097
-Alchevsk|UA|48.46893|38.81669
-Okhtyrka|UA|50.31036|34.89879
+Alchevsk|UA|48.46906|38.79744
+Okhtyrka|UA|50.30852|34.89468
 Horishni Plavni|UA|49.00835|33.62926
 Saltivka|UA|50.02207|36.34901
 Zhuravlivka|UA|50.0125|36.27214
@@ -28992,7 +29347,8 @@ Svyatopetrivske|UA|50.38214|30.32278
 Novoyavorivs'k|UA|49.93023|23.57357
 Obolon|UA|50.5132|30.5055
 Cheremushky|UA|46.43251|30.71151
-Molodizhnyi|UA|49.1504|33.4305
+Molodizhne|UA|49.1504|33.4305
+Livyi Bereh|UA|48.59381|34.56034
 Demiyivka|UA|50.40206|30.51564
 Borshchahivka|UA|50.4316|30.3899
 Reni|UA|45.45421|28.27731
@@ -29000,14 +29356,16 @@ Avtozavodskyi|UA|49.09753|33.43206
 Oleksiyivka|UA|50.04516|36.19322
 Knyahynyn|UA|48.93561|24.71307
 Sofiivska Borschahivka|UA|50.40931|30.35908
+Darnytsya Car Repair Plant Microdistrict|UA|50.44953|30.67608
 Holosiyiv|UA|50.34433|30.55178
 Pechersk|UA|50.44441|30.52348
 Svyatoshyn|UA|50.46341|30.34612
+Rakivka|UA|49.02446|33.46398
+Nahirna Chastyna|UA|49.08899|33.42984
 Dniprovskyi|UA|50.45366|30.60146
 Desna|UA|50.52207|30.68228
-Solomyansk|UA|50.42838|30.45211
+Solomyanka|UA|50.42838|30.45211
 Shevchenkivskyi|UA|50.46408|30.46576
-Zhulyany|UA|50.39428|30.44057
 Fortechnyi|UA|48.49865|32.25365
 Podilskyi|UA|48.50357|32.28035
 Novyi Lviv|UA|49.81519|24.03171
@@ -29023,7 +29381,7 @@ Tekstylnyk|UA|47.94594|37.69848
 Podil|UA|49.6039|34.59443
 Kyivskyi|UA|49.60902|34.52933
 Shevchenko|UA|49.5645|34.53873
-Rayon KTZ|UA|49.94349|36.36959
+Rayon KhTZ|UA|49.94349|36.36959
 Pravyi Bereh|UA|47.11498|37.58519
 Nyvky|UA|50.46461|30.40593
 Pozniaky|UA|50.40259|30.62352
@@ -29033,24 +29391,27 @@ Voskresenka|UA|50.48481|30.6032
 Stare Misto|UA|50.44759|30.52635
 Lypky|UA|50.44296|30.53039
 Vynohradar|UA|50.51429|30.42452
+Teremky-II|UA|50.38067|30.45249
 Teremky|UA|50.37053|30.45881
 Vidradnyi|UA|50.43194|30.42231
+Oleksandrivska Slobidka|UA|50.41827|30.47807
 Chokolivka|UA|50.42444|30.44732
 Darnytskyi Masyv|UA|50.44311|30.62759
+Livoberezhnyi Masyv|UA|50.45544|30.58969
+Lisovyi Masyv|UA|50.4725|30.63113
 Rayduzhnyi Masyv|UA|50.48551|30.58571
 Vyshhorodskyi Masyv|UA|50.50978|30.45355
+Priorka|UA|50.50977|30.45773
 Mostytskyi Masyv|UA|50.50231|30.44121
 Syrets|UA|50.47955|30.44491
 Kurenivka|UA|50.49371|30.47104
 Tatarka|UA|50.46941|30.48649
 Shulyavka|UA|50.45356|30.4531
-Galagany|UA|50.45537|30.40233
 Lukyanivka|UA|50.46642|30.47591
 Mykilska Borshchahivka|UA|50.42638|30.37442
 Kharkivskyi Masyv|UA|50.40848|30.66006
 Pivnichni Osokorky|UA|50.3932|30.61304
 Klov|UA|50.4349|30.53807
-Zvirynets|UA|50.41626|30.5492
 Kybalchych|UA|50.49288|30.59756
 Pivnichno-Brovarskyi Masyv|UA|50.46304|30.61697
 Rusanivka|UA|50.43996|30.59682
@@ -29077,9 +29438,28 @@ Livoberezhnyi|UA|47.1093|37.64306
 Prymorskyi|UA|47.07098|37.49973
 Desnyanskyi|UA|51.50631|31.3168
 Novozavodskyi|UA|51.4893|31.25634
+Hladkivka|UA|48.03556|37.81009
 Korolyov|UA|50.24487|28.70013
 Rakove|UA|49.39556|27.06009
 Nyzhnya Telychka|UA|50.38809|30.57487
+Sonyachnyi|UA|48.72284|37.5981
+Skhidni Kvartaly|UA|48.56622|39.38256
+Vitryani Hory|UA|50.51138|30.43657
+Karavayevi Dachi|UA|50.43044|30.43659
+Pivdenna Borshchahivka|UA|50.41059|30.40396
+Novobilychi|UA|50.47611|30.34669
+Nova Zabudova|UA|50.42811|30.5153
+Industrialnyi|UA|49.95458|36.36915
+Kyivskyi|UA|50.04475|36.28883
+Nemyshlyanskyi|UA|49.96437|36.33385
+Novobavarskyi|UA|49.95143|36.16499
+Nova Bavariya|UA|49.94522|36.15006
+Osnovyanskyi|UA|49.93657|36.24128
+Saltivskyi|UA|49.99897|36.31605
+Slobidskyi|UA|49.94479|36.2813
+Kholodna Hora|UA|50.0042|36.1762
+Shevchenkivskyi|UA|50.02021|36.22468
+Kosmichnyi|UA|47.78413|35.21763
 Yumbe|UG|3.46506|31.24689
 Wobulenzi|UG|0.72833|32.51222
 Wakiso|UG|0.40444|32.45944
@@ -29295,7 +29675,7 @@ Foggy Bottom|US|38.9015|-77.0622
 Mount Pleasant|US|38.93067|-77.04081
 Park View|US|38.93206|-77.02359
 Petworth|US|38.94594|-77.02498
-Pleasant Plains|US|38.93067|-77.03025
+Pleasant Plains|US|38.927|-77.023
 Shaw|US|38.91206|-77.02137
 Washington|US|38.89511|-77.03637
 Bear|US|39.62928|-75.65826
@@ -29787,7 +30167,7 @@ Hanover|US|39.19289|-76.72414
 Hillcrest Heights|US|38.83289|-76.95942
 Hunt Valley|US|39.49983|-76.64108
 Hyattsville|US|38.95594|-76.94553
-Ilchester|US|39.25094|-76.76469
+Ilchester|US|39.226|-76.789
 Lake Shore|US|39.10705|-76.48496
 Landover|US|38.934|-76.89664
 Langley Park|US|38.98872|-76.98136
@@ -30200,6 +30580,7 @@ Canyon Lake|US|29.87522|-98.26251
 Carrollton|US|32.95373|-96.89028
 Cedar Hill|US|32.58847|-96.95612
 Cedar Park|US|30.5052|-97.82029
+Celina|US|33.32456|-96.78444
 Channelview|US|29.77606|-95.11465
 Cibolo|US|29.56162|-98.22696
 Cinco Ranch|US|29.73884|-95.758
@@ -31737,7 +32118,7 @@ Berkeley|US|37.87159|-122.27275
 Beverly Hills|US|34.07362|-118.40036
 Bloomington|US|34.07029|-117.39588
 Blythe|US|33.6103|-114.59635
-Bostonia|US|32.80755|-116.93642
+Bostonia|US|32.813|-116.944
 Boyle Heights|US|34.0339|-118.20535
 Brawley|US|32.97866|-115.53027
 Brea|US|33.91668|-117.90006
@@ -32208,7 +32589,7 @@ Saint George|US|37.10415|-113.58412
 Washington|US|37.13054|-113.50829
 Wasco|US|35.59412|-119.34095
 Alhambra|US|33.49838|-112.13432
-Anthem|US|33.86726|-112.14682
+Anthem|US|33.86|-112.112
 Apache Junction|US|33.41505|-111.54958
 Avondale|US|33.4356|-112.3496
 Ahwatukee Foothills|US|33.34171|-111.98403
@@ -32619,6 +33000,15 @@ The Trails of Frisco|US|33.16087|-96.87182
 Longfellow Community|US|44.94256|-93.22557
 Airport|US|21.3399|-157.92845
 Dakota Ridge|US|39.61638|-105.13934
+Waiau-Pacific Palisades|US|21.40022|-157.95445
+'Ewa Gentry-West Loch|US|21.35335|-158.02836
+'Ewa Beach-Iroquois Point|US|21.31532|-157.99133
+Kapolei Villages|US|21.33596|-158.067
+Makakilo-Makaiwa Hills-Kunia|US|21.36676|-158.07326
+Mililani Mauka|US|21.47793|-157.99452
+Wahiawa-Whitmore|US|21.50565|-158.03353
+Schofield-Wheeler|US|21.48394|-158.04681
+Eagle Foothills|US|43.74006|-116.38791
 Young|UY|-32.69844|-57.62693
 Trinidad|UY|-33.5165|-56.89957
 Treinta y Tres|UY|-33.231|-54.38577
@@ -33031,6 +33421,7 @@ Thanh Liet|VN|20.96667|105.81667
 Thanh Hoa|VN|19.8|105.76667
 Thai Nguyen|VN|21.59422|105.84817
 Thai Binh|VN|20.45|106.34002
+Tay Tuu|VN|21.073|105.73
 Tay Ninh|VN|11.31004|106.09828
 Tay Ho|VN|21.06895|105.81053
 Tan Chau|VN|10.79832|105.23887
@@ -33046,10 +33437,12 @@ Sam Son|VN|19.73333|105.9
 Sa Dec|VN|10.29085|105.75635
 Rach Gia|VN|10.01245|105.08091
 Qui Nhon|VN|13.77648|109.22367
+GJong Phu|VN|15.67356|108.2201
 Ba GJon|VN|17.75353|106.42355
 Quan Hau|VN|17.40438|106.64072
 Quang Ngai|VN|15.12047|108.79232
 Pleiku|VN|13.98333|108
+Tu Son|VN|21.1|105.96667
 Phu Tho|VN|21.39963|105.22221
 Phuoc Hoa|VN|12.1|107.11667
 Phuoc An|VN|12.71298|108.30148
@@ -33068,13 +33461,13 @@ Phan Rang-Thap Cham|VN|11.56432|108.98858
 O Mon|VN|10.10974|105.62318
 Thi Tran Nuoc Hai|VN|22.73738|106.15216
 Ninh Hoa|VN|12.49187|109.12495
-Ninh Binh|VN|20.25809|105.97965
+Hoa Lu|VN|20.25809|105.97965
 Nha Trang|VN|12.24507|109.19432
 Nha Be|VN|10.69672|106.74032
-Nghi Xuan|VN|18.658|105.752
 Nghi Son|VN|19.32746|105.82145
 Nghia Lo|VN|21.6|104.51667
 Nghia GJo|VN|21.05|105.8
+Nga Son|VN|20.00722|105.97044
 Thi Tran Ngai Giao|VN|10.6471|107.24577
 Nam GJinh|VN|20.43389|106.17729
 Nam Can|VN|8.75899|104.99285
@@ -33098,8 +33491,10 @@ Thi Tran Lam Son|VN|19.9047|105.40562
 La Gi|VN|10.65993|107.77206
 Ky Anh|VN|18.06243|106.29832
 Kon Tum|VN|14.35451|108.00759
+Kim Lien|VN|18.88333|105.31667
 Kien An|VN|20.80528|106.62556
 Kien An|VN|10.56667|105.36667
+Khanh Hoa|VN|10.68333|105.16667
 Huong Tra|VN|16.52539|107.4755
 Huong Thuy|VN|16.42184|107.63999
 Hung Yen|VN|20.64637|106.05112
@@ -33108,6 +33503,7 @@ Hue|VN|16.4619|107.59546
 Hong Ngu|VN|10.8|105.35
 Ha Long|VN|20.95045|107.07336
 Hoi An|VN|15.87944|108.335
+Hoang Cau|VN|21.01667|105.83333
 Hoa Binh|VN|20.81717|105.33759
 Ha Tinh|VN|18.34282|105.90569
 Ha Tien|VN|10.3831|104.48753
@@ -33149,8 +33545,9 @@ Co Loa|VN|21.11667|105.86667
 Co GJo|VN|21.27964|105.36404
 Chu|VN|21.37379|106.56649
 Chon Thanh|VN|11.42821|106.63536
-Cho Lon|VN|10.75|106.65
+Cho Lon|VN|10.753|106.659
 Chi Linh|VN|21.06667|106.31667
+Chieng Coi|VN|21.3|103.9
 Chau Phong|VN|10.71667|105.13333
 Chau GJoc|VN|10.7|105.11667
 Cat Ba|VN|20.72779|107.04819
@@ -33170,6 +33567,7 @@ Cai Lay|VN|10.4|106.11667
 Buon Trap|VN|12.48478|108.02982
 Buon Ma Thuot|VN|12.66747|108.03775
 Buon Ho|VN|12.95226|108.2962
+Ea Poc|VN|12.77795|108.07114
 Hoan Lao|VN|17.58436|106.53425
 Binh Thuy|VN|10.07431|105.73974
 Bim Son|VN|20.07806|105.86028
@@ -33207,6 +33605,8 @@ Lai Chau|VN|22.39644|103.45824
 Thi Tran Viet Quang|VN|22.41509|104.80682
 Phu Quoc|VN|10.22409|103.97156
 Binh Minh|VN|10.06821|105.82221
+Thi Tran Van Du|VN|20.15186|105.73097
+Thi Tran Sao Vang|VN|19.88862|105.46189
 Bo|VN|20.67264|105.53625
 Thanh Pho Ba Ria|VN|10.49626|107.1685
 Luong Bang|VN|20.74003|106.05998
@@ -33231,6 +33631,7 @@ Ly Son|VN|15.37198|109.11891
 A Yun Pa|VN|13.40025|108.43503
 Ea Drang|VN|13.2045|108.21029
 Quang Phu|VN|12.81965|108.07738
+Ea T'ling|VN|12.58904|107.89578
 GJinh Van|VN|11.78624|108.24282
 Khanh Hai|VN|11.59105|109.04052
 Phu Quy|VN|10.5166|108.93292
@@ -33274,6 +33675,18 @@ Linh GJam|VN|20.96441|105.83054
 Bo GJe|VN|21.05618|105.86675
 Hoang Mai|VN|19.26758|105.71594
 Pho Yen|VN|21.41978|105.8899
+Yen Nghia|VN|20.95414|105.73474
+Duong Noi|VN|20.97736|105.75383
+GJinh Cong|VN|20.98389|105.82694
+GJong Ngac|VN|21.08063|105.77397
+Giang Vo|VN|21.03066|105.81252
+Hoang Liet|VN|20.96403|105.84055
+Khuong GJinh|VN|20.98366|105.81537
+Kien Hung|VN|20.95833|105.78972
+Linh Nam|VN|20.97966|105.89044
+Phuc Loi|VN|21.04507|105.9294
+Phu Thuong|VN|21.08734|105.80671
+Tuong Mai|VN|20.9888|105.85525
 Port-Vila|VU|-17.73648|168.31366
 Mata-Utu|WF|-13.28163|-176.17453
 Apia|WS|-13.83333|-171.76666
@@ -33491,7 +33904,7 @@ Graaff Reinet|ZA|-32.25215|24.53075
 Gonubie|ZA|-32.94433|28.01496
 Glencoe|ZA|-28.17827|30.14702
 Giyani|ZA|-23.30246|30.71868
-Germiston|ZA|-26.23481|28.17665
+Germiston|ZA|-26.215|28.164
 George|ZA|-33.963|22.46173
 Ga-Rankuwa|ZA|-25.61692|27.99471
 Frankfort|ZA|-27.27888|28.49696
@@ -33603,7 +34016,7 @@ Diepsloot|ZA|-25.93312|28.01213
 Etwatwa|ZA|-26.12516|28.45472
 Marikana|ZA|-25.699|27.47475
 Ga-Malakhe|ZA|-30.8063|30.33484
-Ivory Park|ZA|-25.9957|28.1971
+Ivory Park|ZA|-26.002|28.19
 Lukwatini|ZA|-26.05501|30.82292
 Mankweng|ZA|-23.88384|29.70557
 Mkhuhlu|ZA|-24.98776|31.2385
@@ -33719,6 +34132,7 @@ Redcliff|ZW|-19.03333|29.78333
 Norton|ZW|-17.88333|30.7
 Mvurwi|ZW|-17.03333|30.85
 Mutare|ZW|-18.9707|32.67086
+Mount Hampden|ZW|-17.74167|30.93889
 Masvingo|ZW|-20.06373|30.82766
 Marondera|ZW|-18.18527|31.55193
 Kwekwe|ZW|-18.92809|29.81486
