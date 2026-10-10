@@ -23,7 +23,8 @@ else
   PYTHON     := python3
 endif
 
-LLVM_BIN     := /usr/lib/llvm-22/bin
+# Debian/Ubuntu ship LLVM under /usr/lib/llvm-N; Fedora puts it in /usr/bin.
+LLVM_BIN     := $(or $(wildcard /usr/lib/llvm-22/bin),/usr/bin)
 PUB_STAMP    := $(APP_DIR)/.dart_tool/package_config.json
 ANALYZE_DIRS := lib test
 ifneq ($(wildcard $(APP_DIR)/integration_test),)
@@ -121,7 +122,7 @@ build-macos: $(PUB_STAMP) ## Build macOS release bundle
 build-windows: $(PUB_STAMP) ## Build Windows release bundle
 	cd $(APP_DIR) && $(FLUTTER) build windows --release
 
-.PHONY: dist dist-linux dist-macos dist-macos-appstore dist-windows dist-windows-msix dist-proxy-linux
+.PHONY: dist dist-linux dist-flatpak dist-macos dist-macos-appstore dist-windows dist-windows-msix dist-proxy-linux
 dist: dist-linux ## Build distribution artifact (default Linux)
 	@echo "Done. Artifacts in $(DIST_DIR)/"
 
@@ -130,6 +131,23 @@ dist-linux: build-linux ## Create Linux tarball package
 	tar -czf $(DIST_DIR)/happening-$(VERSION)-linux-$(ARCH).tar.gz \
 	    -C $(APP_DIR)/build/linux/$(ARCH)/release bundle
 	@echo "Linux package: $(DIST_DIR)/happening-$(VERSION)-linux-$(ARCH).tar.gz"
+
+# Flatpak tooling runs on the host: bwrap can't nest inside a toolbox container.
+FLATPAK_ID      := works.gs.happening
+FLATPAK_HOST    := $(if $(wildcard /run/.containerenv),flatpak-spawn --host)
+FLATPAK_BUILD   := build/flatpak
+FLATPAK_BUNDLE  := $(DIST_DIR)/happening-$(VERSION)-linux-$(ARCH).flatpak
+
+dist-flatpak: ## Build Flatpak bundle (app only, no proxy)
+	@mkdir -p $(DIST_DIR) $(FLATPAK_BUILD)
+	$(FLATPAK_HOST) flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+	$(FLATPAK_HOST) flatpak install --user --noninteractive --or-update flathub org.flatpak.Builder
+	$(FLATPAK_HOST) flatpak run org.flatpak.Builder --user --install-deps-from=flathub --force-clean \
+	    --state-dir=$(CURDIR)/$(FLATPAK_BUILD)/state --repo=$(CURDIR)/$(FLATPAK_BUILD)/repo \
+	    $(CURDIR)/$(FLATPAK_BUILD)/app $(CURDIR)/flatpak/$(FLATPAK_ID).yml
+	$(FLATPAK_HOST) flatpak build-bundle --runtime-repo=https://dl.flathub.org/repo/flathub.flatpakrepo \
+	    $(CURDIR)/$(FLATPAK_BUILD)/repo $(CURDIR)/$(FLATPAK_BUNDLE) $(FLATPAK_ID)
+	@echo "Flatpak bundle: $(FLATPAK_BUNDLE)  (install: flatpak install --user $(FLATPAK_BUNDLE))"
 
 dist-macos: build-macos ## Create macOS DMG package
 	@mkdir -p $(DIST_DIR)

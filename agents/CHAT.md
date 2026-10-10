@@ -1252,3 +1252,94 @@ make: *** [Makefile:93: win-test] Error 1
 ---
 [<small>2026-10-06 19:52:19</small>] [**Morpheus**]->[**all**] *lead approve*:
  Review APPROVED: one re-apply path via StripController, guard at _request choke point, legacy _isExpanded removed, no duplicate state. Fix loop complete. Open: Impeller UAT, golden platform call, then F-33 @Neo *swe impl F33-A1.
+
+---
+[<small>2026-10-09 23:37:30</small>] [**User**]->[**all**] *request*:
+ /bob-protocol init
+
+---
+[<small>2026-10-09 23:37:42</small>] [**Bob**]->[**all**] *prompt init*:
+ Protocol init on Silverblue toolbox: agent links synced, .gitignore cp1252 byte fixed. Uncommitted session work: Linux setup/pubspec pin fixes, toolbox browser shim, NEW make dist-flatpak (works.gs.happening, no proxy; bundle built, Drew doing UAT). Details: agents/bob.docs/LINUX_FLATPAK_SESSION_Summary_2026-10-09T23:37.md. F-33 A1 still pending. No persona loaded; awaiting Drew.
+
+---
+[<small>2026-10-09 23:39:35</small>] [**User**]->[**all**] *request*:
+ *fix linux regression send to back isn't lowering the timestrip
+
+---
+[<small>2026-10-09 23:41:26</small>] [**Neo**]->[**User**] *swe fix*:
+ Linux send-to-back: root cause = xdotool missing in toolbox (sendToBack shells out to xdotool+python3; failure logged at fine, lower skipped). Per Drew fixed the dependency only: setup.sh now checks xdotool+python3. Native-lower rewrite reverted at Drew's request. Why: undeclared runtime dep. Waiting on Drew: sudo dnf install xdotool + retest. Open risk: DOCK type hint may still block lowering on GNOME.
+
+---
+[<small>2026-10-09 23:42:50</small>] [**User**]->[**all**] *request*:
+ Native approach was tried before and hit Wayland issues, that's why xdotool is used. Check with Oracle first.
+
+---
+[<small>2026-10-09 23:42:50</small>] [**Neo**]->[**Oracle**] *swe ask*:
+ @Oracle *ora ask Why does Linux sendToBack use xdotool+python instead of a native lower? Any recorded Wayland findings? Why: Neo proposed a native rewrite without checking history.
+
+---
+[<small>2026-10-09 23:43:28</small>] [**Oracle**]->[**Neo**] *ora answer*:
+ No prior record: xdotool+XLowerWindow landed in d6eb9c7 undocumented; docs still said blur-only. Recorded Drew's account as DEC-011 (native lower tried, failed on Wayland; xdotool+python3 are runtime deps; no native rewrite without Drew sign-off) + lesson, fixed ARCH.md. Why: the reason lived only in Drew's head, so Neo repeated a failed approach. @Neo keep the dependency fix; do not touch the lowering code.
+
+---
+[<small>2026-10-09 23:47:52</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /var/home/drusifer/Projects/happening/build/build.out
+00:00 +2: factory creates Reserved strategy for Linux
+00:00 +3: initialize is a no-op for all strategies
+00:01 +4: All tests passed!
+
+---
+[<small>2026-10-09 23:48:01</small>] [**Neo**]->[**User**] *swe fix*:
+ Drew's log: xdotool OK, but XLowerWindow helper exit=-11 (segfault). Cause: ctypes passed Display* as a bare int -> 32-bit truncation; reproduced standalone on Py3.14/x86_64. Fix: wrap in ctypes.c_void_p (1 line, same approach, DEC-011 respected). Strategy tests green. Why: the lower step crashed every time on this machine. Awaiting Drew retest; if it still fails -> stop, Oracle + Drew (attempt 3).
+
+---
+[<small>2026-10-09 23:50:15</small>] [**Neo**]->[**User**] *blocked*:
+ BLOCKED after 2 attempts on Linux send-to-back. Tried: (A) declare xdotool dep, (B) fix ctypes pointer segfault. Still not lowering. Evidence: strip is _NET_WM_WINDOW_TYPE_DOCK; Mutter keeps docks above normal windows, XLowerWindow only restacks within a layer. Recommend: (C) set _NET_WM_STATE_BELOW via xdotool windowstate (dock+BELOW -> bottom layer). Why: stays in xdotool approach per DEC-011. Awaiting Drew input.
+
+---
+[<small>2026-10-09 23:56:54</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make analyze | /var/home/drusifer/Projects/happening/build/build.out
+Try `flutter pub outdated` for more information.
+cd app && ulimit -n 31706 && flutter analyze lib test
+Analyzing 2 items...
+No issues found! (ran in 3.6s)
+
+---
+[<small>2026-10-09 23:57:04</small>] [**Neo**]->[**Trin**] *swe fix*:
+ Root cause confirmed with Drew watching: strip is a DOCK window, Mutter only lowers a dock when it has _NET_WM_STATE_BELOW. Fix: sendToBack adds BELOW via xdotool windowstate (XLowerWindow kept), restoreToFront removes it before setAlwaysOnTop(true). 4 new tests, strategy suite 8/8, analyze clean. Why: XLowerWindow cannot cross WM layers. Awaiting Drew's in-app retest, then @Trin *qa uat Linux send-to-back.
+
+---
+[<small>2026-10-10 00:01:34</small>] [**Neo**]->[**User**] *swe report*:
+ Send-to-back BELOW fix confirmed by Drew. New: Linux reservation too small on GNOME w/ top bar: strip at y=32 logical but strut=collapsedHeight*dpr (110px from screen top) -> windows overlap strip by 64px. Live xprop test: strut 174 fixes workarea. Formula unchanged since 05-25, so env-exposed not a regression. Title bar after display change NOT reproduced (window is DOCK, undecorated). Why: diagnosis only, no code changed; need Drew's call. @Morpheus FYI strut semantics.
+
+---
+[<small>2026-10-10 00:05:13</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /var/home/drusifer/Projects/happening/build/build.out
+00:00 +7: Linux send-to-back X11 helpers a failing helper does not break sendToBack or restoreToFront
+00:01 +8: All tests passed!
+
+---
+[<small>2026-10-10 00:05:24</small>] [**Neo**]->[**Trin**] *swe fix*:
+ Linux strut fix: strut now = (work-area top excluding our own strut + collapsed height) * dpr, so a desktop top bar above the strip is covered; applyReservation returns that base origin so a refreshed work area can't walk the strip down (mirrors Windows). 2 new tests, test/core/window 97/97, analyze clean. Why: struts are measured from the screen edge; old formula assumed strip at y=0. Awaiting Drew's in-app check. @Trin *qa uat Linux reservation + send-to-back
+
+---
+[<small>2026-10-10 00:11:55</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /var/home/drusifer/Projects/happening/build/build.out
+00:07 +98: All tests passed!
+
+---
+[<small>2026-10-10 00:12:19</small>] [**Neo**]->[**Morpheus**] *swe refactor*:
+ Cleanup per Drew: Linux X11 send-to-back moved from Base into new LinuxWindowInteractionStrategy (injected ProcessRunner); Base is plain setAlwaysOnTop/blur again. python3 XLowerWindow helper removed - BELOW state alone lowers the dock. xdotool failures log at warning. DEC-011/ARCH/LESSONS + setup.sh updated. test/core/window 98/98, analyze clean. Why: platform code did not belong in the base class. Awaiting Drew's in-app recheck. @Morpheus *lead review Linux strategy + strut fix
+
+---
+[<small>2026-10-10 00:15:44</small>] [**Neo**]->[**User**] *swe report*:
+ Drew confirms Linux reservation works. New: hide/show shows a gray band in two steps. Code: hide swaps to the mini pill in the full-width transparent window, waits 300ms anim, then shrinks + releases strut (committed order, unchanged). Hypothesis: with a correct strut the band behind is empty desktop, visible until windows slide up. Why: diagnosis only - sequence is shared across platforms, not reordering without Drew. Awaiting Drew.
+
+---
+[<small>2026-10-10 00:20:24</small>] [**Neo**]->[**User**] *blocked*:
+ Send-to-back still broken in app: state watch shows ABOVE removed but BELOW never set on the strip, no xdotool errors. Cause: xdotool getactivewindow returns a non-strip X11 window under Wayland+XWayland (4194307, no class/pid), so BELOW lands on the wrong window. Recommend: windowManager.setAlwaysOnBottom (gtk keep_below, same BELOW state, no window id, no xdotool). Why: needs Drew's sign-off per DEC-011. Awaiting Drew.
+
+---
+[<small>2026-10-10 00:24:21</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /var/home/drusifer/Projects/happening/build/build.out
+01:33 +96: All tests passed!

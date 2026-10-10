@@ -1,7 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:happening/core/settings/settings_service.dart';
+import 'package:happening/core/window/interaction_strategy/linux_window_interaction_strategy.dart';
 import 'package:happening/core/window/interaction_strategy/window_interaction_strategy.dart';
+
+import 'package:mockito/mockito.dart';
 
 import 'window_service_test.mocks.dart';
 
@@ -33,14 +36,13 @@ void main() {
     expect(strategy.availability.supportsReserved, isTrue);
   });
 
-  test('factory creates Reserved strategy for Linux', () {
+  test('factory creates Linux strategy for Linux', () {
     final strategy = WindowInteractionStrategy.createForPlatform(
       platform: TargetPlatform.linux,
       wm: mockWM,
     );
 
-    expect(
-        strategy.runtimeType.toString(), 'ReservedWindowInteractionStrategy');
+    expect(strategy, isA<LinuxWindowInteractionStrategy>());
     expect(strategy.availability.supportsReserved, isTrue);
   });
 
@@ -57,5 +59,54 @@ void main() {
       // No exception thrown.
       await strategy.initialize(WindowMode.reserved);
     }
+  });
+
+  group('LinuxWindowInteractionStrategy', () {
+    late LinuxWindowInteractionStrategy strategy;
+
+    setUp(() {
+      strategy = LinuxWindowInteractionStrategy(wm: mockWM);
+    });
+
+    test('sendToBack drops always-on-top, then pins the dock to the bottom',
+        () async {
+      await strategy.sendToBack();
+
+      verifyInOrder([
+        mockWM.setAlwaysOnTop(false),
+        mockWM.blur(),
+        mockWM.setAlwaysOnBottom(true),
+      ]);
+    });
+
+    test('restoreToFront clears always-on-bottom before always-on-top',
+        () async {
+      await strategy.sendToBack();
+      clearInteractions(mockWM);
+
+      await strategy.restoreToFront();
+
+      verifyInOrder([
+        mockWM.setAlwaysOnBottom(false),
+        mockWM.setAlwaysOnTop(true),
+      ]);
+    });
+  });
+
+  test('non-Linux send-to-back never sets always-on-bottom', () async {
+    final strategy = WindowInteractionStrategy.createForPlatform(
+      platform: TargetPlatform.windows,
+      wm: mockWM,
+    );
+
+    await strategy.sendToBack();
+    await strategy.restoreToFront();
+
+    verifyInOrder([
+      mockWM.setAlwaysOnTop(false),
+      mockWM.blur(),
+      mockWM.setAlwaysOnTop(true),
+    ]);
+    verifyNever(mockWM.setAlwaysOnBottom(any));
   });
 }

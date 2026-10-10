@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:window_manager/window_manager.dart';
 
+import 'linux_window_interaction_strategy.dart';
 import 'macos_window_interaction_strategy.dart';
 import 'reserved_window_interaction_strategy.dart';
 
@@ -24,6 +25,7 @@ abstract class WindowInteractionStrategy {
       return createForPlatform(platform: platformOverride, wm: wm);
     }
     if (Platform.isMacOS) return MacOsWindowInteractionStrategy(wm: wm);
+    if (Platform.isLinux) return LinuxWindowInteractionStrategy(wm: wm);
     return ReservedWindowInteractionStrategy(wm: wm);
   }
 
@@ -34,6 +36,8 @@ abstract class WindowInteractionStrategy {
     switch (platform) {
       case TargetPlatform.macOS:
         return MacOsWindowInteractionStrategy(wm: wm);
+      case TargetPlatform.linux:
+        return LinuxWindowInteractionStrategy(wm: wm);
       default:
         return ReservedWindowInteractionStrategy(wm: wm);
     }
