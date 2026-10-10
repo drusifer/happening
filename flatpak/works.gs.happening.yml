@@ -1,0 +1,68 @@
+# Flatpak manifest for What's Happening? — built with `make dist-flatpak`.
+# Builds the Flutter Linux app from source inside the GNOME SDK. The GNOME
+# runtime is required because desktop_webview_window links webkit2gtk-4.1.
+# The companion proxy is NOT packaged here.
+id: works.gs.happening
+runtime: org.gnome.Platform
+runtime-version: '51'
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.llvm22   # Flutter's Linux build requires clang + lld
+command: happening
+
+finish-args:
+  - --share=ipc
+  - --socket=x11                 # app forces GDK_BACKEND=x11 (always-on-top strip positioning)
+  - --device=dri
+  - --share=network              # calendar API + OAuth loopback redirect
+  - --socket=pulseaudio          # audio countdown
+  - --talk-name=org.freedesktop.secrets   # flutter_secure_storage (GNOME Keyring)
+  - --filesystem=xdg-config/happening:create   # settings/logs live in ~/.config/happening
+  - --env=GDK_BACKEND=x11
+  - --env=FLUTTER_ENGINE_SWITCH_IMPELLER=0
+
+modules:
+  - name: happening
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/llvm22/bin
+      prepend-ld-library-path: /usr/lib/sdk/llvm22/lib
+      env:
+        PUB_CACHE: /run/build/happening/.pub-cache
+        FLUTTER_SUPPRESS_ANALYTICS: 'true'
+      build-args:
+        - --share=network        # Flutter fetches engine artifacts + pub packages
+    build-commands:
+      # Sandbox needs its own GApplication/D-Bus name and keyring namespace.
+      - sed -i 's/"com\.example\.happening"/"works.gs.happening"/' app/linux/CMakeLists.txt
+      - git config --global --add safe.directory '*'
+      - cd app && ../flutter/bin/flutter --disable-analytics
+      - cd app && ../flutter/bin/flutter pub get
+      - cd app && ../flutter/bin/flutter build linux --release
+      - |
+        arch=$(uname -m | sed 's/x86_64/x64/;s/aarch64/arm64/')
+        mkdir -p /app/lib/happening /app/bin
+        cp -a app/build/linux/$arch/release/bundle/. /app/lib/happening/
+        ln -s ../lib/happening/happening /app/bin/happening
+      - install -Dm644 flatpak/works.gs.happening.desktop /app/share/applications/works.gs.happening.desktop
+      - install -Dm644 flatpak/works.gs.happening.metainfo.xml /app/share/metainfo/works.gs.happening.metainfo.xml
+      # Icons are pre-rendered: gdk-pixbuf's glycin loaders can't run inside the build sandbox.
+      - |
+        for s in 64 128 256 512; do
+          install -Dm644 flatpak/icons/works.gs.happening-$s.png /app/share/icons/hicolor/${s}x${s}/apps/works.gs.happening.png
+        done
+    sources:
+      - type: git
+        url: https://github.com/flutter/flutter.git
+        tag: 3.47.7                # keep in step with the Flutter used for other platforms
+        dest: flutter
+      - type: dir
+        path: ../app
+        dest: app
+        skip:
+          - build
+          - .dart_tool
+          - linux/flutter/ephemeral
+      - type: dir
+        path: .
+        dest: flatpak

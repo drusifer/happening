@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=What's Happening?
+GenericName=Calendar Timeline
+Comment=Always-on-top calendar timeline strip
+Exec=happening
+Icon=works.gs.happening
+Terminal=false
+Categories=Office;Calendar;Utility;
+Keywords=calendar;timeline;meeting;adhd;schedule;
+StartupWMClass=works.gs.happening
