@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>works.gs.happening</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-only</project_license>
+  <name>What's Happening?</name>
+  <summary>Always-on-top calendar timeline strip</summary>
+  <developer id="works.gs">
+    <name>Gutstein Security Works, LLC</name>
+  </developer>
+  <description>
+    <p>
+      An ADHD-friendly time awareness tool. What's Happening? keeps an always-visible
+      timeline of your calendar at the edge of your screen so you always know what is
+      happening now and what is coming next.
+    </p>
+  </description>
+  <launchable type="desktop-id">works.gs.happening.desktop</launchable>
+  <url type="homepage">https://gs.works/happening</url>
+  <url type="bugtracker">https://github.com/drusifer/happening/issues</url>
+  <url type="vcs-browser">https://github.com/drusifer/happening</url>
+  <url type="donation">https://chadd.org</url>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="1.6.0" date="2026-10-09"/>
+  </releases>
+</component>
