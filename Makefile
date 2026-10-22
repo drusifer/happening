@@ -256,3 +256,13 @@ tldr: ## Show TL;DR summaries from all project files (quick orientation)
 
 clean: ## Clean Flutter build artifacts
 	cd $(APP_DIR) && $(FLUTTER) clean
+
+# ── Publish to the pi-patch Forgejo registry (forge.pi-patch.lan) ──────────────
+# Credentials: make -C $(PI_PATCH)/cluster forgejo-token
+PI_PATCH        ?= $(HOME)/Projects/pi-patch
+FORGEJO_PUBLISH := $(PI_PATCH)/cluster/scripts/forgejo-publish.sh
+FORGEJO_VERSION ?= $(shell git describe --tags --always --dirty)
+
+.PHONY: deploy-forgejo
+deploy-forgejo: export-proxy-image ## Build and publish the happening-proxy image to pi-patch Forgejo
+	$(FORGEJO_PUBLISH) image $(PROXY_TAR) happening-proxy $(VERSION)
