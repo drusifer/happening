@@ -5,8 +5,8 @@ import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:happening/features/timeline/focus/timeline_focus_controller.dart';
 import 'package:mockito/mockito.dart';
-import 'package:screen_retriever/screen_retriever.dart';
-import 'package:window_manager/window_manager.dart';
+import 'package:screen_retriever/legacy.dart';
+import 'package:window_manager/legacy.dart';
 
 class _FakeWindowManager extends Mock implements WindowManager {}
 

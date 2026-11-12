@@ -15,8 +15,8 @@ import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/calendar/calendar_service.dart';
 import 'package:happening/features/timeline/timeline_strip.dart';
 import 'package:mockito/mockito.dart';
-import 'package:screen_retriever/screen_retriever.dart';
-import 'package:window_manager/window_manager.dart';
+import 'package:screen_retriever/legacy.dart';
+import 'package:window_manager/legacy.dart';
 
 class _FakeWindowManager extends Mock implements WindowManager {}
 
@@ -79,6 +79,8 @@ class _MockCalendarService extends Mock implements CalendarService {
 
 class _FakeAudioService extends CountdownAudioService {
   _FakeAudioService() : super(playerPool: []);
+  @override
+  Future<void> playStartupSound({bool enabled = true}) async {}
   @override
   void updateRemainingSeconds(int seconds, {bool enabled = true}) {}
   @override

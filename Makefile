@@ -104,7 +104,7 @@ integration-test: ## Run integration tests (specify platform)
 	@echo "Please specify a platform: make integration-test-linux, integration-test-macos, or integration-test-windows"
 
 integration-test-linux: $(PUB_STAMP) ## Run integration tests on Linux
-	cd $(APP_DIR) && PATH="$(FLUTTER_SDK)\bin:$(LLVM_BIN):$$PATH" GDK_BACKEND=x11 XAUTHORITY=$$(ls /run/user/$$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1) $(FLUTTER) test integration_test/ -d linux
+	cd $(APP_DIR) && PATH="$(LLVM_BIN):$$PATH" GDK_BACKEND=x11 XAUTHORITY=$$(ls /run/user/$$(id -u)/.mutter-Xwaylandauth.* 2>/dev/null | head -1) $(FLUTTER) test integration_test/ -d linux
 
 integration-test-macos: $(PUB_STAMP) ## Run integration tests on macOS
 	cd $(APP_DIR) && $(FLUTTER) test integration_test/ -d macos
@@ -114,7 +114,7 @@ integration-test-windows: $(PUB_STAMP) ## Run integration tests on Windows
 
 .PHONY: build-linux build-macos build-windows
 build-linux: $(PUB_STAMP) ## Build Linux release bundle
-	cd $(APP_DIR) && PATH="$(FLUTTER_SDK)\bin:$(LLVM_BIN):$$PATH" $(FLUTTER) build linux --release
+	cd $(APP_DIR) && PATH="$(LLVM_BIN):$$PATH" $(FLUTTER) build linux --release
 
 build-macos: $(PUB_STAMP) ## Build macOS release bundle
 	cd $(APP_DIR) && $(FLUTTER) build macos --release
@@ -210,7 +210,7 @@ lint-style: $(PUB_STAMP) ## Run analyzer style check
 	cd $(APP_DIR) && $(FLUTTER) analyze --fatal-warnings $(ANALYZE_DIRS)
 
 lint-metrics: $(PUB_STAMP) ## Run code metrics checks
-	cd $(APP_DIR) && $(DART) run dart_code_linter:metrics check-unusedfiles lib
+	cd $(APP_DIR) && $(DART) run dart_code_linter:metrics check-unused-files lib
 	cd $(APP_DIR) && $(DART) run dart_code_linter:metrics analyze lib --fatal-style --fatal-performance --fatal-warnings
 
 lint-format: $(PUB_STAMP) ## Check code formatting compliance

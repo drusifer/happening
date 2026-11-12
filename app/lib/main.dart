@@ -21,8 +21,8 @@ import 'package:happening/core/window/macos_window_service.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:happening/core/window/windows_window_service.dart';
 import 'package:logging/logging.dart';
-import 'package:screen_retriever/screen_retriever.dart';
-import 'package:window_manager/window_manager.dart';
+import 'package:screen_retriever/legacy.dart';
+import 'package:window_manager/legacy.dart';
 
 final _log = Logger('main');
 

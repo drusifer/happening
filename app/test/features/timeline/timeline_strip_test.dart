@@ -20,8 +20,8 @@ import 'package:happening/features/timeline/settings_panel.dart';
 import 'package:happening/features/timeline/timeline_painter.dart';
 import 'package:happening/features/timeline/timeline_strip.dart';
 import 'package:mockito/mockito.dart';
-import 'package:screen_retriever/screen_retriever.dart';
-import 'package:window_manager/window_manager.dart';
+import 'package:screen_retriever/legacy.dart';
+import 'package:window_manager/legacy.dart';
 
 class _FakeWindowManager extends Mock implements WindowManager {
   @override
@@ -1128,7 +1128,8 @@ void main() {
 
     expect(fakeAudio.lastRemainingSeconds, equals(45));
     expect(fakeAudio.lastEnabled, isTrue,
-        reason: 'Audio countdown must be enabled for back-to-back meeting B start');
+        reason:
+            'Audio countdown must be enabled for back-to-back meeting B start');
   });
 }
 

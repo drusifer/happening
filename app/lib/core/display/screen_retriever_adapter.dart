@@ -15,7 +15,7 @@
 
 import 'dart:ui';
 
-import 'package:screen_retriever/screen_retriever.dart' as sr;
+import 'package:screen_retriever/legacy.dart' as sr;
 
 import 'display_id.dart';
 import 'display_info.dart';

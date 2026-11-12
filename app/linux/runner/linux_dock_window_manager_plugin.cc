@@ -47,6 +47,15 @@ static void set_strut(Display* display, Window xid, GdkWindow* gdk_window,
   GdkDisplay* gdk_display = gdk_window_get_display(gdk_window);
   GdkMonitor* monitor =
       gdk_display_get_monitor_at_window(gdk_display, gdk_window);
+  if (monitor == nullptr) {
+    monitor = gdk_display_get_primary_monitor(gdk_display);
+  }
+  if (monitor == nullptr && gdk_display_get_n_monitors(gdk_display) > 0) {
+    monitor = gdk_display_get_monitor(gdk_display, 0);
+  }
+  if (monitor == nullptr) {
+    return;
+  }
 
   GdkRectangle geom;
   gdk_monitor_get_geometry(monitor, &geom);
@@ -86,6 +95,18 @@ static void clear_strut(Display* display, Window xid) {
   XFlush(display);
 }
 
+// Safely resolves the underlying Xlib Display* only when the active GDK
+// display is genuinely an X11 display. Calling gdk_x11_get_default_xdisplay()
+// on a Wayland GdkDisplay returns an invalid non-null pointer because GTK3's
+// gdk_x11_display_get_xdisplay only checks GDK_IS_DISPLAY.
+static Display* get_x11_display() {
+  GdkDisplay* gdk_display = gdk_display_get_default();
+  if (gdk_display == nullptr || !GDK_IS_X11_DISPLAY(gdk_display)) {
+    return nullptr;
+  }
+  return gdk_x11_display_get_xdisplay(gdk_display);
+}
+
 static void method_call_cb(FlMethodChannel* channel,
                            FlMethodCall* method_call,
                            gpointer user_data) {
@@ -94,14 +115,14 @@ static void method_call_cb(FlMethodChannel* channel,
   const gchar* method = fl_method_call_get_name(method_call);
 
   if (strcmp(method, "isDockable") == 0) {
-    Display* display = gdk_x11_get_default_xdisplay();
+    Display* display = get_x11_display();
     g_autoptr(FlValue) result = fl_value_new_bool(display != nullptr);
     fl_method_call_respond_success(method_call, result, nullptr);
     return;
   }
 
   if (strcmp(method, "dock") == 0) {
-    Display* display = gdk_x11_get_default_xdisplay();
+    Display* display = get_x11_display();
     if (display == nullptr) {
       // Wayland — no-op.
       fl_method_call_respond_success(method_call, nullptr, nullptr);
@@ -125,7 +146,7 @@ static void method_call_cb(FlMethodChannel* channel,
 
     GdkWindow* gdk_window =
         gtk_widget_get_window(GTK_WIDGET(self->window));
-    if (gdk_window == nullptr) {
+    if (gdk_window == nullptr || !GDK_IS_X11_WINDOW(gdk_window)) {
       fl_method_call_respond_success(method_call, nullptr, nullptr);
       return;
     }
@@ -137,7 +158,7 @@ static void method_call_cb(FlMethodChannel* channel,
   }
 
   if (strcmp(method, "undock") == 0) {
-    Display* display = gdk_x11_get_default_xdisplay();
+    Display* display = get_x11_display();
     if (display == nullptr) {
       // Wayland — no-op.
       fl_method_call_respond_success(method_call, nullptr, nullptr);
@@ -146,7 +167,7 @@ static void method_call_cb(FlMethodChannel* channel,
 
     GdkWindow* gdk_window =
         gtk_widget_get_window(GTK_WIDGET(self->window));
-    if (gdk_window == nullptr) {
+    if (gdk_window == nullptr || !GDK_IS_X11_WINDOW(gdk_window)) {
       fl_method_call_respond_success(method_call, nullptr, nullptr);
       return;
     }

@@ -15,8 +15,8 @@ import 'package:happening/core/window/strip_state.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:screen_retriever/screen_retriever.dart';
-import 'package:window_manager/window_manager.dart';
+import 'package:screen_retriever/legacy.dart';
+import 'package:window_manager/legacy.dart';
 
 @GenerateNiceMocks([MockSpec<WindowManager>(), MockSpec<ScreenRetriever>()])
 import 'window_service_test.mocks.dart';

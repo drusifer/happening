@@ -140,8 +140,7 @@ class AppSettings {
         idleTimelineOpacity: _clampIdleTimelineOpacity(
           (json['idleTimelineOpacity'] as num? ?? 1.0).toDouble(),
         ),
-        enableAudioCountdown:
-            json['enableAudioCountdown'] as bool? ?? true,
+        enableAudioCountdown: json['enableAudioCountdown'] as bool? ?? true,
         astroSettings: json['astroSettings'] is Map<String, dynamic>
             ? AstroSettings.fromJson(
                 json['astroSettings'] as Map<String, dynamic>)
