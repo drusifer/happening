@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:happening/core/settings/settings_service.dart';
-import 'package:window_manager/window_manager.dart';
+import 'package:window_manager/legacy.dart';
 
 import 'linux_window_interaction_strategy.dart';
 import 'macos_window_interaction_strategy.dart';

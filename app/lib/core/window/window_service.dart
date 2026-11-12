@@ -9,8 +9,8 @@ import 'package:happening/core/window/interaction_strategy/window_interaction_st
 import 'package:happening/core/window/resize_strategy/window_resize_strategy.dart';
 import 'package:happening/core/window/strip_state.dart';
 import 'package:logging/logging.dart';
-import 'package:screen_retriever/screen_retriever.dart';
-import 'package:window_manager/window_manager.dart';
+import 'package:screen_retriever/legacy.dart';
+import 'package:window_manager/legacy.dart';
 
 // ── WindowService ────────────────────────────────────────────────────────────
 //
@@ -81,7 +81,6 @@ class WindowService with WidgetsBindingObserver {
   double toLogicalWidth(double reportedWidth, double dpr) => reportedWidth;
 
   @protected
-
   @protected
   DisplayInfo? get activeDisplay => _activeDisplay;
 
@@ -211,8 +210,7 @@ class WindowService with WidgetsBindingObserver {
   Future<void> updateHeights(double fontSizePx) async {
     if (_fontSizePx == fontSizePx) return;
     _fontSizePx = fontSizePx;
-    _log.fine(
-        'WindowService.updateHeights: fontSizePx=$fontSizePx');
+    _log.fine('WindowService.updateHeights: fontSizePx=$fontSizePx');
     await reapplyCurrentState();
     _log.fine('WindowService.updateHeights: reapply complete');
   }
@@ -442,8 +440,7 @@ class WindowService with WidgetsBindingObserver {
 
     await onDisplayChangedExtra();
 
-    _log.fine(
-        'WindowService._onDisplayChangedInner: triggering resize');
+    _log.fine('WindowService._onDisplayChangedInner: triggering resize');
     await reapplyCurrentState();
   }
 
@@ -472,7 +469,8 @@ class WindowService with WidgetsBindingObserver {
   Future<void> reapplyCurrentState() async {
     final handler = reapplyHandler;
     if (handler == null) {
-      _log.warning('reapplyCurrentState: no StripController attached, skipping');
+      _log.warning(
+          'reapplyCurrentState: no StripController attached, skipping');
       return;
     }
     await handler();

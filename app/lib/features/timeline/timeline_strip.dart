@@ -878,11 +878,12 @@ class _TimelineStripState extends State<TimelineStrip>
                             : Duration.zero;
                         _updateAnimationTimer(countdown);
                         final isTargetingMeetingStart = tickTarget != null &&
-                            widget.events.any(
-                                (e) => e.startTime.isAtSameMomentAs(tickTarget));
-                        final isMutedForCurrentTarget = isTargetingMeetingStart &&
-                            _mutedMeetingStartTime != null &&
-                            _mutedMeetingStartTime == tickTarget;
+                            widget.events.any((e) =>
+                                e.startTime.isAtSameMomentAs(tickTarget));
+                        final isMutedForCurrentTarget =
+                            isTargetingMeetingStart &&
+                                _mutedMeetingStartTime != null &&
+                                _mutedMeetingStartTime == tickTarget;
                         _audioService.updateRemainingSeconds(
                           countdown.inSeconds,
                           enabled: settings.enableAudioCountdown &&
@@ -908,7 +909,8 @@ class _TimelineStripState extends State<TimelineStrip>
                               },
                               child: MouseRegion(
                                 cursor: SystemMouseCursors.click,
-                                child: _buildCountdownContent(_CountdownContentSpec(
+                                child: _buildCountdownContent(
+                                    _CountdownContentSpec(
                                   countdown: countdown,
                                   mode: tickMode,
                                   color: countdownColor,
@@ -1039,8 +1041,8 @@ class _TimelineStripState extends State<TimelineStrip>
               : Duration.zero;
           _updateAnimationTimer(countdown);
           final isTargetingMeetingStart = tickTarget != null &&
-              widget.events.any(
-                  (e) => e.startTime.isAtSameMomentAs(tickTarget));
+              widget.events
+                  .any((e) => e.startTime.isAtSameMomentAs(tickTarget));
           final isMutedForCurrentTarget = isTargetingMeetingStart &&
               _mutedMeetingStartTime != null &&
               _mutedMeetingStartTime == tickTarget;

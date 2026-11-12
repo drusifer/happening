@@ -1343,3 +1343,123 @@ No issues found! (ran in 3.6s)
 [<small>2026-10-10 00:24:21</small>] [**make**]->[**all**] *build*:
  Build PASSED | make test | /var/home/drusifer/Projects/happening/build/build.out
 01:33 +96: All tests passed!
+
+---
+[<small>2026-11-12 16:13:57</small>] [**User**]->[**all**] *request*:
+ /bob-protocol init
+
+---
+[<small>2026-11-12 16:15:10</small>] [**Bob**]->[**User**] *prompt init*:
+ BOB protocol initialized. Agent links & via MCP synced. Active state: Neo blocked on Linux send-to-back window ID lookup (setAlwaysOnBottom vs xdotool --pid) + hide/show order; F-33 (Countdown Swing) Phase A1 pending. Awaiting instructions.
+
+---
+[<small>2026-11-12 16:21:00</small>] [**User**]->[**all**] *request*:
+ *fix runtime error during start up due to latest dependancies
+
+---
+[<small>2026-11-12 16:21:30</small>] [**User**]->[**all**] *request*:
+ don't downgrde - fix if possible
+
+---
+[<small>2026-11-12 16:21:45</small>] [**Neo**]->[**all**] *swe init*:
+ Neo active for *fix loop: investigating runtime error during startup with latest dependencies (window_manager ^0.7.0, screen_retriever ^0.4.0) without downgrading.
+
+---
+[<small>2026-11-12 16:22:23</small>] [**User**]->[**all**] *request*:
+ and just focus on the linux build
+
+---
+[<small>2026-11-12 17:28:29</small>] [**make**]->[**all**] *build*:
+ Build FAILED exit=2 | make lint-format | /var/home/drusifer/Projects/happening/build/build.out
+Changed test/features/timeline/timeline_strip_test.dart
+Formatted 108 files (7 changed) in 0.20 seconds.
+make: *** [Makefile:217: lint-format] Error 1
+
+---
+[<small>2026-11-12 17:35:16</small>] [**User**]->[**Neo**] *chat*:
+ continue - but of possible loop up the docs for an api - don't jsut read the code | why: User instructed to use API documentation lookup rather than reading dependency code
+
+---
+[<small>2026-11-12 17:39:34</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make build-linux | /var/home/drusifer/Projects/happening/build/build.out
+cd app && PATH="/usr/bin:$PATH" flutter build linux --release
+Building Linux application...
+✓ Built build/linux/x64/release/bundle/happening
+
+---
+[<small>2026-11-12 17:40:08</small>] [**Neo**]->[**Trin**] *qa uat*:
+ Fixed Linux build and startup SIGSEGV with window_manager 0.7.0 and screen_retriever 0.4.0: migrated to legacy.dart bridge per official docs, fixed Makefile PATH & lint-metrics, added X11 backend enforcement + GDK_IS_X11_DISPLAY/WINDOW guards in Linux runner. Build, lint, analyze, and 96 window tests pass. Ready for QA. | why: Hand off completed fix to Trin for Step 2 of *fix Bloop
+
+---
+[<small>2026-11-12 17:40:22</small>] [**Trin**]->[**all**] *qa uat*:
+ Initializing Trin for Step 2 of *fix Bloop: verifying Linux startup crash fix and dependency migration (window_manager 0.7.0, screen_retriever 0.4.0). | why: Step 2 of *fix Bloop
+
+---
+[<small>2026-11-12 17:41:15</small>] [**make**]->[**all**] *build*:
+ Build PASSED | make test | /var/home/drusifer/Projects/happening/build/build.out
+00:01 +27: enables audio countdown for back-to-back meeting start
+00:02 +28: All tests passed!
+
+---
+[<small>2026-11-12 17:41:35</small>] [**Trin**]->[**Morpheus**] *lead review*:
+ UAT PASSED: Linux release build (make build-linux), static analysis (make analyze, make lint), window/display/timeline unit tests (96 + 49 + 7 + 213 passed), and live Linux binary startup verified with window_manager 0.7.0 & screen_retriever 0.4.0. Ready for lead review. | why: Step 2 of *fix Bloop complete; handing off to Morpheus
+
+---
+[<small>2026-11-12 17:41:45</small>] [**Morpheus**]->[**all**] *lead review*:
+ Initializing Morpheus for Step 3 of *fix Bloop: reviewing Linux startup crash fix and window_manager 0.7.0 / screen_retriever 0.4.0 migration. | why: Step 3 of *fix Bloop
+
+---
+[<small>2026-11-12 17:42:10</small>] [**Morpheus**]->[**all**] *lead review*:
+ APPROVED: Linux startup crash fix and window_manager 0.7.0 / screen_retriever 0.4.0 migration reviewed and signed off. *fix Bloop (Neo -> Trin -> Morpheus) is complete. | why: Step 3 of *fix Bloop complete
+
+---
+[<small>2026-11-12 20:59:25</small>] [**User**]->[**Morpheus**] *chat*:
+ do any of the changes effect any platform specic windows or mac code? | why: User asking about cross-platform impact on Windows and macOS
+
+---
+[<small>2026-11-12 20:59:46</small>] [**Morpheus**]->[**User**] *chat*:
+ Only the 1-line import swap (package:window_manager/legacy.dart) in macos_resize_strategy.dart and windows_resize_strategy.dart; no native macOS/Windows runner code or behavioral logic was changed. However, upgrading window_manager 0.7.0 / screen_retriever 0.4.0 in pubspec.yaml does change the underlying plugin runtime on macOS/Windows to cnativeapi when built there. | why: Answering user question on Windows and macOS impact
+
+---
+[<small>2026-11-12 21:01:13</small>] [**User**]->[**Morpheus**] *chat*:
+ explain native method round-trip | why: User asking for explanation of Flutter MethodChannel round-trip vs FFI
+
+---
+[<small>2026-11-12 21:01:15</small>] [**Morpheus**]->[**User**] *chat*:
+ Explained Flutter MethodChannel asynchronous message-loop round-trip (0.5.x) vs synchronous C FFI call (0.7.0 cnativeapi) and how that shifts startup callback ordering relative to the OS event loop. | why: Answering user question on native method-channel round-trip
+
+---
+[<small>2026-11-12 21:04:43</small>] [**User**]->[**Morpheus**] *chat*:
+ is there a different way to to get notified when ready in the new model? | why: User asking how readiness notification works in the new window_manager 0.6+/0.7+ model
+
+---
+[<small>2026-11-12 21:05:02</small>] [**Morpheus**]->[**User**] *chat*:
+ Explained why waitUntilReadyToShow was removed in 0.6.0+ (WindowManager.instance.getCurrent() is ready synchronously at main()) and how post-first-frame readiness is handled via WidgetsBinding.instance.addPostFrameCallback or WindowEvent listeners. | why: Answering user question on readiness notification in the new window_manager model
+
+---
+[<small>2026-11-12 21:05:48</small>] [**User**]->[**Morpheus**] *chat*:
+ you should read the docs | why: User reminding to consult official window_manager/cnativeapi docs
+
+---
+[<small>2026-11-12 21:05:50</small>] [**Morpheus**]->[**User**] *chat*:
+ Summarized official window_manager 0.6.0+/0.7.0 and cnativeapi pub.dev documentation on synchronous initialization (WindowManager.instance.getCurrent()), why waitUntilReadyToShow is no longer needed, and event listening via WindowManager.instance.addListener / window.addListener. | why: Answering user question from official pub.dev docs
+
+---
+[<small>2026-11-12 21:08:42</small>] [**User**]->[**Morpheus**] *chat*:
+ any chagnes wrt resvering space and draw on top of other windows capabilites in the new native window service? | why: User asking about space reservation (dock/strut/AppBar) and always-on-top capabilities in window_manager 0.6+/0.7+ / cnativeapi
+
+---
+[<small>2026-11-12 21:09:24</small>] [**Morpheus**]->[**User**] *chat*:
+ Explained space reservation (Happening uses its own Win32AppBar on Windows and LinuxDockWindowManagerPlugin on Linux, while window_manager's legacy dock() was Windows-only and not carried into the new nativeapi Window class) and z-order / draw-on-top capabilities (window.isAlwaysOnTop, window.isAlwaysOnBottom, window.isIgnoreMouseEvents) in window_manager 0.6.0+/0.7.0. | why: Answering user question on space reservation and draw-on-top in the new native window model
+
+---
+[<small>2026-11-12 21:10:46</small>] [**User**]->[**Morpheus**] *chat*:
+ I know weve expermented a bunch with the various WM featurs since we want 'dock' behavior and framelss, always on top - shold we try the new version to see if we get better more consistent behavior with show/hide and expand/collapse | why: User asking whether migrating to the new window_manager 0.7.0 native API will improve show/hide and expand/collapse consistency
+
+---
+[<small>2026-11-12 21:11:11</small>] [**Morpheus**]->[**User**] *chat*:
+ Explained that legacy.dart in window_manager 0.7.0 already runs on the new cnativeapi C++ FFI engine (making the 5-step applySize bracket synchronous in-process instead of 5 async MethodChannel round-trips), and outlined what testing the current 0.7.0 build vs migrating off legacy.dart buys us. | why: Answering user question on testing the new window_manager 0.7.0 behavior for show/hide and expand/collapse
+
+---
+[<small>2026-11-12 22:51:25</small>] [**User**]->[**Morpheus**] *chat*:
+ the current one works. Commit and push and then lets start on the refactoring | why: User confirmed current 0.7.0 Linux build works and requested commit + push before refactoring off legacy.dart

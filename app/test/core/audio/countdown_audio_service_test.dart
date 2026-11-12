@@ -73,7 +73,8 @@ void main() {
       verifyNever(mockPlayer.play(any));
     });
 
-    test('starts audio and alternates beats when remaining seconds <= 60', () async {
+    test('starts audio and alternates beats when remaining seconds <= 60',
+        () async {
       service.updateRemainingSeconds(30, enabled: true);
       expect(service.isPlaying, isTrue);
 
@@ -94,19 +95,24 @@ void main() {
     test('playStartupSound plays fire.wav when enabled', () async {
       await service.playStartupSound(enabled: true);
       expect(service.hasPlayedStartup, isTrue);
-      verify(mockPlayer.play(argThat(predicate<AssetSource>((s) => s.path == 'audio/fire.wav')))).called(1);
+      verify(mockPlayer.play(argThat(
+              predicate<AssetSource>((s) => s.path == 'audio/fire.wav'))))
+          .called(1);
     });
 
-    test('does not play bang sound at launch when not playing countdown', () async {
+    test('does not play bang sound at launch when not playing countdown',
+        () async {
       service.updateRemainingSeconds(0, enabled: true);
 
       await Future<void>.value();
 
       expect(service.hasPlayedBang, isFalse);
-      verifyNever(mockPlayer.play(argThat(predicate<AssetSource>((s) => s.path == 'audio/bangLarge.wav'))));
+      verifyNever(mockPlayer.play(argThat(
+          predicate<AssetSource>((s) => s.path == 'audio/bangLarge.wav'))));
     });
 
-    test('plays bangLarge sound when countdown reaches 0 seconds after playing', () async {
+    test('plays bangLarge sound when countdown reaches 0 seconds after playing',
+        () async {
       service.updateRemainingSeconds(30, enabled: true);
       service.updateRemainingSeconds(0, enabled: true);
 
@@ -114,7 +120,9 @@ void main() {
 
       expect(service.hasPlayedBang, isTrue);
       expect(service.isPlaying, isFalse);
-      verify(mockPlayer.play(argThat(predicate<AssetSource>((s) => s.path == 'audio/bangLarge.wav')))).called(1);
+      verify(mockPlayer.play(argThat(
+              predicate<AssetSource>((s) => s.path == 'audio/bangLarge.wav'))))
+          .called(1);
     });
   });
 }

@@ -9,14 +9,13 @@ import 'dart:ui' as _i2;
 import 'package:flutter/material.dart' as _i8;
 import 'package:mockito/mockito.dart' as _i1;
 import 'package:mockito/src/dummies.dart' as _i9;
-import 'package:screen_retriever/src/screen_retriever.dart' as _i12;
-import 'package:screen_retriever_platform_interface/screen_retriever_platform_interface.dart'
-    as _i3;
-import 'package:window_manager/src/resize_edge.dart' as _i11;
-import 'package:window_manager/src/title_bar_style.dart' as _i10;
-import 'package:window_manager/src/window_listener.dart' as _i5;
-import 'package:window_manager/src/window_manager.dart' as _i4;
-import 'package:window_manager/src/window_options.dart' as _i7;
+import 'package:screen_retriever/legacy.dart' as _i3;
+import 'package:screen_retriever/legacy.dart' as _i12;
+import 'package:window_manager/legacy.dart' as _i11;
+import 'package:window_manager/legacy.dart' as _i10;
+import 'package:window_manager/legacy.dart' as _i5;
+import 'package:window_manager/legacy.dart' as _i4;
+import 'package:window_manager/legacy.dart' as _i7;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values

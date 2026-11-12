@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:happening/core/settings/settings_service.dart';
-import 'package:window_manager/window_manager.dart';
+import 'package:window_manager/legacy.dart';
 
 import 'window_interaction_strategy.dart';
 

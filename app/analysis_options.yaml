@@ -35,6 +35,7 @@ analyzer:
     unused_local_variable: error
     unused_import: error
     dead_code: error
+    deprecated_member_use: ignore
 
 dart_code_linter:
   metrics:

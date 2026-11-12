@@ -251,7 +251,8 @@ class _SettingsPanelState extends State<SettingsPanel> {
               Text(
                 'Asteroid Beats',
                 style: TextStyle(
-                  color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
+                  color:
+                      theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
                   fontSize: baseSize * 0.65,
                 ),
               ),
