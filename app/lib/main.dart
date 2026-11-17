@@ -18,11 +18,11 @@ import 'package:happening/core/display/screen_retriever_adapter.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/window/linux_window_service.dart';
 import 'package:happening/core/window/macos_window_service.dart';
+import 'package:happening/core/window/window_adapter.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:happening/core/window/windows_window_service.dart';
 import 'package:logging/logging.dart';
-import 'package:screen_retriever/legacy.dart';
-import 'package:window_manager/legacy.dart';
+import 'package:screen_retriever/screen_retriever.dart';
 
 final _log = Logger('main');
 
@@ -41,9 +41,10 @@ void main() async {
   _log.fine('Settings loaded.');
 
   // 3. Initialize DisplayService (resolves which display the strip lives on).
+  final displayManager = DisplayManager.instance;
   final displayService = DisplayService(
-    probe: ScreenRetrieverDisplayProbe(screenRetriever),
-    events: ScreenRetrieverDisplayEvents(screenRetriever),
+    probe: ScreenRetrieverDisplayProbe(displayManager),
+    events: ScreenRetrieverDisplayEvents(displayManager),
     initialChoice: settingsSvc.current.chosenDisplay,
     onWeakMatch: (choice, display) {
       _log.warning(
@@ -56,23 +57,21 @@ void main() async {
       'DisplayService initialized: active=${displayService.activeDisplay}');
 
   // 4. Initialize window management.
+  final windowAdapter = NativeWindowAdapter();
   final WindowService windowService;
   if (Platform.isMacOS) {
     windowService = MacOSWindowService(
-      windowManager: windowManager,
-      screenRetriever: screenRetriever,
+      windowManager: windowAdapter,
       displayService: displayService,
     );
   } else if (Platform.isWindows) {
     windowService = WindowsWindowService(
-      windowManager: windowManager,
-      screenRetriever: screenRetriever,
+      windowManager: windowAdapter,
       displayService: displayService,
     );
   } else {
     windowService = LinuxWindowService(
-      windowManager: windowManager,
-      screenRetriever: screenRetriever,
+      windowManager: windowAdapter,
       displayService: displayService,
     );
   }
@@ -111,7 +110,7 @@ void _setupLogging(Directory dir) {
     final line =
         '[${r.time.toIso8601String()}] [$tag] [${r.loggerName}] ${r.message}';
     debugPrint(line);
-    if (r.level >= Level.INFO) {
+    if (kDebugMode || r.level >= Level.INFO) {
       logFile?.writeAsStringSync('$line\n', mode: FileMode.append, flush: true);
     }
   });

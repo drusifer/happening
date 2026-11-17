@@ -8,14 +8,13 @@ import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/window/interaction_strategy/window_interaction_strategy.dart';
 import 'package:happening/core/window/resize_strategy/window_resize_strategy.dart';
 import 'package:happening/core/window/strip_state.dart';
+import 'package:happening/core/window/window_adapter.dart';
 import 'package:logging/logging.dart';
-import 'package:screen_retriever/legacy.dart';
-import 'package:window_manager/legacy.dart';
 
 // ── WindowService ────────────────────────────────────────────────────────────
 //
 // TLDR:
-// Overview: Controls physical OS window dimensions via window_manager.
+// Overview: Controls physical OS window dimensions via WindowAdapter.
 // Problem: Platform-specific resize sequences differ across macOS/Windows/Linux.
 // Solution: [WindowResizeStrategy] isolates platform-specific resize sequences;
 //           [ExpansionController] serialises expand/collapse and confirms via GTK.
@@ -29,19 +28,16 @@ class WindowService with WidgetsBindingObserver {
   static final _log = Logger('WindowService');
 
   WindowService({
-    required WindowManager windowManager,
-    required ScreenRetriever screenRetriever,
+    required WindowAdapter windowManager,
     required DisplayService displayService,
     WindowInteractionStrategy? interactionStrategy,
   })  : _wm = windowManager,
-        _sr = screenRetriever,
         _displayService = displayService,
         _interactionStrategy = interactionStrategy ??
             WindowInteractionStrategy.create(wm: windowManager),
         _strategy = WindowResizeStrategy.create(wm: windowManager);
 
-  final WindowManager _wm;
-  final ScreenRetriever _sr;
+  final WindowAdapter _wm;
   final DisplayService _displayService;
   final WindowInteractionStrategy _interactionStrategy;
   final WindowResizeStrategy _strategy;
@@ -64,7 +60,7 @@ class WindowService with WidgetsBindingObserver {
   // ── Protected accessors for subclasses ────────────────────────────────────
 
   @protected
-  WindowManager get wm => _wm;
+  WindowAdapter get wm => _wm;
 
   @protected
   double get dpr => _dpr;
@@ -117,7 +113,6 @@ class WindowService with WidgetsBindingObserver {
     double initialFontSizePx = kDefaultFontSizePx,
     WindowMode initialWindowMode = WindowMode.reserved,
   }) async {
-    await _wm.ensureInitialized();
     _fontSizePx = initialFontSizePx;
     _windowMode = initialWindowMode;
 
@@ -132,47 +127,33 @@ class WindowService with WidgetsBindingObserver {
         'WindowService.initialize: dpr=$_dpr activeDisplay=$_activeDisplay '
         'size=$size collapsedHeight=$targetHeight expandedHeight=${getExpandedHeight()}');
 
-    final windowOptions = WindowOptions(
+    await _wm.configureInitialWindow(
       size: size,
-      alwaysOnTop: true,
       backgroundColor: Colors.transparent,
+      alwaysOnTop: true,
       skipTaskbar: true,
-      titleBarStyle: TitleBarStyle.hidden,
+      hideTitleBar: true,
     );
 
-    _log.fine('WindowService.initialize: calling waitUntilReadyToShow');
-    final readyToShow = _wm.waitUntilReadyToShow(windowOptions, () async {
+    _log.fine('WindowService.initialize: calling strategy.initialize');
+    await _strategy.initialize(size, _dpr);
+    if (_activeDisplay != null) {
       _log.fine(
-          'WindowService.initialize: readyToShow callback — calling strategy.initialize');
-      await _strategy.initialize(size, _dpr);
-      if (_activeDisplay != null) {
-        _log.fine(
-            'WindowService.initialize: readyToShow callback — calling strategy.moveToDisplay ${_activeDisplay!.id}');
-        await _strategy.moveToDisplay(_activeDisplay!);
-      }
-      _log.fine(
-          'WindowService.initialize: readyToShow callback — calling beforeShow');
-      await beforeShow(size, _dpr, _windowMode);
-      _log.fine(
-          'WindowService.initialize: readyToShow callback — calling setAsFrameless');
-      await _wm.setAsFrameless();
-      _log.fine(
-          'WindowService.initialize: readyToShow callback — calling performShow');
-      await performShow();
-      _log.fine(
-          'WindowService.initialize: readyToShow callback — calling afterWindowShown');
-      await afterWindowShown(_windowMode);
-      _log.fine(
-          'WindowService.initialize: readyToShow callback — calling interactionStrategy.initialize');
-      await _interactionStrategy.initialize(_windowMode);
-      _log.fine('WindowService.initialize: readyToShow callback — done');
-    });
-
-    _log.fine('WindowService.initialize: awaiting readyToShow');
-    await awaitReadyToShow(readyToShow);
+          'WindowService.initialize: calling strategy.moveToDisplay ${_activeDisplay!.id}');
+      await _strategy.moveToDisplay(_activeDisplay!);
+    }
+    _log.fine('WindowService.initialize: calling beforeShow');
+    await beforeShow(size, _dpr, _windowMode);
+    _log.fine('WindowService.initialize: calling setAsFrameless');
+    await _wm.setAsFrameless();
+    _log.fine('WindowService.initialize: calling performShow');
+    await performShow();
+    _log.fine('WindowService.initialize: calling afterWindowShown');
+    await afterWindowShown(_windowMode);
     _log.fine(
-        'WindowService.initialize: readyToShow complete, calling afterReadyToShow');
-
+        'WindowService.initialize: calling interactionStrategy.initialize');
+    await _interactionStrategy.initialize(_windowMode);
+    _log.fine('WindowService.initialize: calling afterReadyToShow');
     await afterReadyToShow(_windowMode);
     _log.fine('WindowService.initialize: afterReadyToShow complete');
 
@@ -231,6 +212,7 @@ class WindowService with WidgetsBindingObserver {
   /// from multiple unsynchronised paths.
   Future<void> applyState(StripState state) async {
     final size = _sizeFor(state);
+    await updateShadow(state);
     // Reserve FIRST, then place the window. On Windows ABM_SETPOS can move the
     // AppBar window and reports the reserved band top, so geometry must be
     // applied AFTER reservation, at the origin it returns — otherwise the strip
@@ -306,21 +288,15 @@ class WindowService with WidgetsBindingObserver {
     await _wm.focus();
   }
 
-  /// Controls whether the readyToShow future is awaited before returning
-  /// from [initialize]. Default: await (correct for Windows/Linux).
-  /// macOS overrides to [unawaited] so [runApp] fires first.
-  @protected
-  Future<void> awaitReadyToShow(Future<void> f) => f;
-
-  /// Called inside the readyToShow callback immediately after [performShow].
+  /// Called during [initialize] immediately after [performShow].
   /// Override for setup that requires the window to be visible (e.g. strut).
   @protected
   Future<void> afterWindowShown(WindowMode mode) async {
     return;
   }
 
-  /// Called after readyToShow completes (or is unawaited). Subclasses
-  /// override for post-show platform setup (e.g. Linux strut reservation).
+  /// Called at the end of [initialize] after window setup completes. Subclasses
+  /// override for post-show platform setup.
   @protected
   Future<void> afterReadyToShow(WindowMode mode) async {
     return;
@@ -349,6 +325,16 @@ class WindowService with WidgetsBindingObserver {
   /// override it — Dart private members are library-scoped.
   @protected
   Future<Offset?> applyReservation(StripState state) async => null;
+
+  /// Updates OS window shadow on platforms that support it (Linux).
+  /// Shown collapsed state keeps shadow under the dock bar; expanded states
+  /// disable the outer window shadow so transparent canvas doesn't cast a floating line.
+  @protected
+  Future<void> updateShadow(StripState state) async {
+    if (Platform.isLinux) {
+      await _wm.setHasShadow(state == StripState.collapsedShown);
+    }
+  }
 
   /// Forces a single OS-level present of the current window contents, with no
   /// geometry change. The last init step, to composite the first frame on
@@ -452,9 +438,8 @@ class WindowService with WidgetsBindingObserver {
     }
     _log.warning(
         'WindowService.initialize: DisplayService.activeDisplay is null; '
-        'falling back to screen_retriever.getPrimaryDisplay()');
-    final display = await _sr.getPrimaryDisplay();
-    return display.size.width;
+        'falling back to 1920.0');
+    return 1920.0;
   }
 
   /// Set by `StripController`, the sole owner of the logical [StripState].

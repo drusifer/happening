@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:window_manager/legacy.dart';
+import 'package:happening/core/window/window_adapter.dart';
 
 import '../../display/display_info.dart';
 import 'linux_resize_strategy.dart';
@@ -15,13 +15,13 @@ export 'windows_resize_strategy.dart';
 /// TLDR: Abstract strategy for platform-specific window expand/collapse sequences.
 /// Factory [create] selects the per-platform implementation at runtime.
 abstract class WindowResizeStrategy {
-  static WindowResizeStrategy create({required WindowManager wm}) {
+  static WindowResizeStrategy create({required WindowAdapter wm}) {
     if (Platform.isLinux) return LinuxResizeStrategy(wm: wm);
     if (Platform.isWindows) return WindowsResizeStrategy(wm: wm);
     return MacOsResizeStrategy(wm: wm);
   }
 
-  WindowManager get wm;
+  WindowAdapter get wm;
 
   /// Whether the OS window is left user-resizable. These windows are frameless
   /// (no resize handles), so this never lets the user drag-resize. Defaults to

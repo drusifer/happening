@@ -11,6 +11,7 @@ import 'package:happening/core/display/display_service.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/time/clock_service.dart';
 import 'package:happening/core/window/strip_state.dart';
+import 'package:happening/core/window/window_adapter.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:happening/features/auth/auth_service.dart';
 import 'package:happening/features/calendar/calendar_controller.dart';
@@ -18,12 +19,8 @@ import 'package:happening/features/calendar/calendar_event.dart';
 import 'package:happening/features/calendar/calendar_service.dart';
 import 'package:happening/features/timeline/timeline_strip.dart';
 import 'package:mockito/mockito.dart';
-import 'package:screen_retriever/legacy.dart';
-import 'package:window_manager/legacy.dart';
 
-class _FakeWindowManager extends Mock implements WindowManager {}
-
-class _FakeScreenRetriever extends Mock implements ScreenRetriever {}
+class _FakeWindowManager extends Mock implements WindowAdapter {}
 
 class _StubProbe implements DisplayProbe {
   _StubProbe(this._displays);
@@ -43,7 +40,6 @@ class _FakeWindowService extends WindowService {
   _FakeWindowService({required super.displayService})
       : super(
           windowManager: _FakeWindowManager(),
-          screenRetriever: _FakeScreenRetriever(),
         );
 
   @override

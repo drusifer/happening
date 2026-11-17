@@ -18,11 +18,6 @@ void main() {
     when(mockWM.setResizable(any)).thenAnswer((_) => Future.value());
     when(mockWM.setPosition(any, animate: anyNamed('animate')))
         .thenAnswer((_) => Future.value());
-    when(mockWM.setBounds(any,
-            position: anyNamed('position'),
-            size: anyNamed('size'),
-            animate: anyNamed('animate')))
-        .thenAnswer((_) => Future.value());
     when(mockWM.getSize()).thenAnswer((_) async => Size.zero);
   });
 
@@ -69,10 +64,6 @@ void main() {
       verify(mockWM.setPosition(const Offset(10, 20))).called(1);
       verify(mockWM.setSize(const Size(268, 72), animate: anyNamed('animate')))
           .called(1);
-      verifyNever(mockWM.setBounds(any,
-          position: anyNamed('position'),
-          size: anyNamed('size'),
-          animate: anyNamed('animate')));
     });
 
     // L-005: applySize must bracket setSize as min(0)→max(target)→size→min(target)
@@ -115,20 +106,12 @@ void main() {
       verify(mockWM.setPosition(const Offset(10, 20))).called(1);
       verify(mockWM.setSize(const Size(268, 72), animate: anyNamed('animate')))
           .called(1);
-      verifyNever(mockWM.setBounds(any,
-          position: anyNamed('position'),
-          size: anyNamed('size'),
-          animate: anyNamed('animate')));
     });
 
     test('in-place resize (no position) uses setSize', () async {
       await strategy.applySize(const Size(1920, 55));
       verify(mockWM.setSize(const Size(1920, 55), animate: anyNamed('animate')))
           .called(1);
-      verifyNever(mockWM.setBounds(any,
-          position: anyNamed('position'),
-          size: anyNamed('size'),
-          animate: anyNamed('animate')));
     });
 
     test('L-005 guard: caps max at target, never Size.infinite', () async {

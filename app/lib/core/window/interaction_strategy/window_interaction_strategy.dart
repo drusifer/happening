@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:happening/core/settings/settings_service.dart';
-import 'package:window_manager/legacy.dart';
+import 'package:happening/core/window/window_adapter.dart';
 
 import 'linux_window_interaction_strategy.dart';
 import 'macos_window_interaction_strategy.dart';
@@ -18,7 +18,7 @@ class WindowModeAvailability {
 
 abstract class WindowInteractionStrategy {
   static WindowInteractionStrategy create({
-    required WindowManager wm,
+    required WindowAdapter wm,
     TargetPlatform? platformOverride,
   }) {
     if (platformOverride != null) {
@@ -31,7 +31,7 @@ abstract class WindowInteractionStrategy {
 
   static WindowInteractionStrategy createForPlatform({
     required TargetPlatform platform,
-    required WindowManager wm,
+    required WindowAdapter wm,
   }) {
     switch (platform) {
       case TargetPlatform.macOS:

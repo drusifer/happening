@@ -26,7 +26,6 @@ class WindowsWindowService extends WindowService {
 
   WindowsWindowService({
     required super.windowManager,
-    required super.screenRetriever,
     required super.displayService,
     bool enableWindowsAppBar = true,
     WindowsAppBar? appBar,

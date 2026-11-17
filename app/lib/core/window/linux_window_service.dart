@@ -14,7 +14,6 @@ class LinuxWindowService extends WindowService {
 
   LinuxWindowService({
     required super.windowManager,
-    required super.screenRetriever,
     required super.displayService,
     LinuxDockWindowManager? linuxDockWindowManager,
   })  : _linuxDock = linuxDockWindowManager ?? LinuxDockWindowManager(),

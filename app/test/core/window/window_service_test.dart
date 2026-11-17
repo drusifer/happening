@@ -12,13 +12,12 @@ import 'package:happening/core/window/linux_dock_window_manager.dart';
 import 'package:happening/core/window/linux_window_service.dart';
 import 'package:happening/core/window/strip_controller.dart';
 import 'package:happening/core/window/strip_state.dart';
+import 'package:happening/core/window/window_adapter.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:screen_retriever/legacy.dart';
-import 'package:window_manager/legacy.dart';
 
-@GenerateNiceMocks([MockSpec<WindowManager>(), MockSpec<ScreenRetriever>()])
+@GenerateNiceMocks([MockSpec<WindowAdapter>()])
 import 'window_service_test.mocks.dart';
 
 DisplayInfo _display(String id, {bool primary = true, double width = 1920}) {
@@ -117,7 +116,6 @@ void main() {
 
   group('WindowService', () {
     late MockWindowManager mockWM;
-    late MockScreenRetriever mockSR;
     late WindowService service;
     late _FakeInteractionStrategy fakeInteractionStrategy;
     late _FakeLinuxDockWindowManager fakeLinuxDock;
@@ -127,7 +125,6 @@ void main() {
 
     setUp(() async {
       mockWM = MockWindowManager();
-      mockSR = MockScreenRetriever();
       fakeInteractionStrategy = _FakeInteractionStrategy();
       fakeLinuxDock = _FakeLinuxDockWindowManager();
 
@@ -137,25 +134,20 @@ void main() {
 
       service = WindowService(
         windowManager: mockWM,
-        screenRetriever: mockSR,
         displayService: displayService,
         interactionStrategy: fakeInteractionStrategy,
       );
       addTearDown(StripController(windowService: service).dispose);
 
-      // Default mock behavior for initialization
-      when(mockSR.getPrimaryDisplay()).thenAnswer((_) async => const Display(
-            id: '0',
-            name: 'primary',
-            size: Size(1920, 1080),
-            visiblePosition: Offset.zero,
-            visibleSize: Size(1920, 1080),
-            scaleFactor: 1.0,
-          ));
-
       // Mock WM methods to return Future.value()
-      when(mockWM.ensureInitialized()).thenAnswer((_) => Future.value());
       when(mockWM.getDevicePixelRatio()).thenReturn(1.0);
+      when(mockWM.configureInitialWindow(
+        size: anyNamed('size'),
+        backgroundColor: anyNamed('backgroundColor'),
+        alwaysOnTop: anyNamed('alwaysOnTop'),
+        skipTaskbar: anyNamed('skipTaskbar'),
+        hideTitleBar: anyNamed('hideTitleBar'),
+      )).thenAnswer((_) => Future.value());
       when(mockWM.setResizable(any)).thenAnswer((_) => Future.value());
       when(mockWM.setMinimumSize(any)).thenAnswer((_) => Future.value());
       when(mockWM.setMaximumSize(any)).thenAnswer((_) => Future.value());
@@ -166,26 +158,25 @@ void main() {
       when(mockWM.setPosition(any, animate: anyNamed('animate')))
           .thenAnswer((_) => Future.value());
       when(mockWM.setAlwaysOnTop(any)).thenAnswer((_) => Future.value());
+      when(mockWM.setHasShadow(any)).thenAnswer((_) => Future.value());
       when(mockWM.setAsFrameless()).thenAnswer((_) => Future.value());
       when(mockWM.setBackgroundColor(any)).thenAnswer((_) => Future.value());
       when(mockWM.show(inactive: anyNamed('inactive')))
           .thenAnswer((_) => Future.value());
       when(mockWM.focus()).thenAnswer((_) => Future.value());
-      when(mockWM.waitUntilReadyToShow(any, any))
-          .thenAnswer((invocation) async {
-        final callback = invocation.positionalArguments[1] as dynamic;
-        if (callback != null) {
-          await callback();
-        }
-      });
     });
 
     test('initialize sets up the window with logical pixels', () async {
       await service.initialize(initialFontSizePx: kDefaultFontSizePx);
 
-      verify(mockWM.ensureInitialized()).called(1);
       verify(mockWM.getDevicePixelRatio()).called(1);
-      verify(mockWM.waitUntilReadyToShow(any, any)).called(1);
+      verify(mockWM.configureInitialWindow(
+        size: anyNamed('size'),
+        backgroundColor: anyNamed('backgroundColor'),
+        alwaysOnTop: anyNamed('alwaysOnTop'),
+        skipTaskbar: anyNamed('skipTaskbar'),
+        hideTitleBar: anyNamed('hideTitleBar'),
+      )).called(1);
     });
 
     test('initialize positions window on the active display work area origin',
@@ -580,13 +571,29 @@ void main() {
         // No AppBar/strut machinery on the base service — just completes.
         await expectLater(service.applyState(StripState.hidden), completes);
       });
+
+      test(
+          'applyState toggles setHasShadow on Linux (collapsedShown=true, expanded/hidden=false)',
+          () async {
+        if (!Platform.isLinux) return;
+        await service.initialize(initialFontSizePx: kDefaultFontSizePx);
+        clearInteractions(mockWM);
+
+        await service.applyState(StripState.collapsedShown);
+        verify(mockWM.setHasShadow(true)).called(1);
+
+        await service.applyState(StripState.expandedShown);
+        verify(mockWM.setHasShadow(false)).called(1);
+
+        await service.applyState(StripState.hidden);
+        verify(mockWM.setHasShadow(false)).called(1);
+      });
     });
 
     group('Linux strut (F-28)', () {
       LinuxWindowService linuxService() {
         final svc = LinuxWindowService(
           windowManager: mockWM,
-          screenRetriever: mockSR,
           displayService: displayService,
           linuxDockWindowManager: fakeLinuxDock,
         );
@@ -749,7 +756,6 @@ void main() {
       LinuxWindowService linuxService() {
         final svc = LinuxWindowService(
           windowManager: mockWM,
-          screenRetriever: mockSR,
           displayService: displayService,
           linuxDockWindowManager: fakeLinuxDock,
         );

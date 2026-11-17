@@ -8,6 +8,7 @@ import 'package:happening/core/display/display_service.dart';
 import 'package:happening/core/settings/settings_service.dart';
 import 'package:happening/core/time/clock_service.dart';
 import 'package:happening/core/window/strip_state.dart';
+import 'package:happening/core/window/window_adapter.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:happening/features/calendar/calendar_controller.dart';
 import 'package:happening/features/calendar/calendar_event.dart';
@@ -16,17 +17,13 @@ import 'package:happening/features/timeline/countdown_display.dart';
 import 'package:happening/features/timeline/settings_panel.dart';
 import 'package:happening/features/timeline/timeline_strip.dart';
 import 'package:mockito/mockito.dart';
-import 'package:screen_retriever/legacy.dart';
-import 'package:window_manager/legacy.dart';
 
 // ── Fakes ────────────────────────────────────────────────────────────────────
 
-class _FakeWindowManager extends Mock implements WindowManager {
+class _FakeWindowManager extends Mock implements WindowAdapter {
   @override
   double getDevicePixelRatio() => 1.0;
 }
-
-class _FakeScreenRetriever extends Mock implements ScreenRetriever {}
 
 class _StubDisplayProbe implements DisplayProbe {
   @override
@@ -43,7 +40,6 @@ class _HideTrackingWindowService extends WindowService {
   _HideTrackingWindowService()
       : super(
           windowManager: _FakeWindowManager(),
-          screenRetriever: _FakeScreenRetriever(),
           displayService: DisplayService(
             probe: _StubDisplayProbe(),
             events: _StubDisplayEvents(),

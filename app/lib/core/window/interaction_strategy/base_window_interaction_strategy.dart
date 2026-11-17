@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:happening/core/settings/settings_service.dart';
-import 'package:window_manager/legacy.dart';
+import 'package:happening/core/window/window_adapter.dart';
 
 import 'window_interaction_strategy.dart';
 
@@ -8,7 +8,7 @@ abstract class BaseWindowInteractionStrategy extends WindowInteractionStrategy {
   BaseWindowInteractionStrategy({required this.wm});
 
   @protected
-  final WindowManager wm;
+  final WindowAdapter wm;
 
   @override
   Future<void> initialize(WindowMode mode) async {

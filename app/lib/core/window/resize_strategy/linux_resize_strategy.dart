@@ -1,4 +1,4 @@
-import 'package:window_manager/legacy.dart';
+import 'package:happening/core/window/window_adapter.dart';
 
 import 'window_resize_strategy.dart';
 
@@ -12,12 +12,12 @@ import 'window_resize_strategy.dart';
 //
 // ---------------------------------------------------------------------------
 class LinuxResizeStrategy extends WindowResizeStrategy {
-  LinuxResizeStrategy({required WindowManager wm}) : _wm = wm;
+  LinuxResizeStrategy({required WindowAdapter wm}) : _wm = wm;
 
-  final WindowManager _wm;
+  final WindowAdapter _wm;
 
   @override
-  WindowManager get wm => _wm;
+  WindowAdapter get wm => _wm;
 
   // GTK3 silently ignores gtk_window_resize on non-resizable windows (L-001),
   // so Linux must stay resizable; the frameless DOCK window has no handles.

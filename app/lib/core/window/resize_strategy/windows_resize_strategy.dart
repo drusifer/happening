@@ -1,4 +1,4 @@
-import 'package:window_manager/legacy.dart';
+import 'package:happening/core/window/window_adapter.dart';
 
 import 'window_resize_strategy.dart';
 
@@ -9,10 +9,10 @@ import 'window_resize_strategy.dart';
 /// the `applySize` max-cap reliably snaps the window to the target — including
 /// narrow widths (see LESSONS L-005).
 class WindowsResizeStrategy extends WindowResizeStrategy {
-  WindowsResizeStrategy({required WindowManager wm}) : _wm = wm;
+  WindowsResizeStrategy({required WindowAdapter wm}) : _wm = wm;
 
-  final WindowManager _wm;
+  final WindowAdapter _wm;
 
   @override
-  WindowManager get wm => _wm;
+  WindowAdapter get wm => _wm;
 }

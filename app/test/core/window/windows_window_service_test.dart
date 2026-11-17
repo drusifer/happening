@@ -148,7 +148,6 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   late MockWindowManager mockWM;
-  late MockScreenRetriever mockSR;
   late DisplayService displayService;
   late FakeWindowsAppBar appBar;
   late FakeWin32Desktop desktop;
@@ -156,7 +155,6 @@ void main() {
   WindowsWindowService makeService() {
     final service = WindowsWindowService(
       windowManager: mockWM,
-      screenRetriever: mockSR,
       displayService: displayService,
       appBar: appBar,
     );
@@ -166,7 +164,6 @@ void main() {
 
   setUp(() async {
     mockWM = MockWindowManager();
-    mockSR = MockScreenRetriever();
     desktop = FakeWin32Desktop();
     appBar = FakeWindowsAppBar(desktop);
 
@@ -177,8 +174,14 @@ void main() {
     );
     await displayService.initialize();
 
-    when(mockWM.ensureInitialized()).thenAnswer((_) => Future.value());
     when(mockWM.getDevicePixelRatio()).thenReturn(1.0);
+    when(mockWM.configureInitialWindow(
+      size: anyNamed('size'),
+      backgroundColor: anyNamed('backgroundColor'),
+      alwaysOnTop: anyNamed('alwaysOnTop'),
+      skipTaskbar: anyNamed('skipTaskbar'),
+      hideTitleBar: anyNamed('hideTitleBar'),
+    )).thenAnswer((_) => Future.value());
     when(mockWM.setResizable(any)).thenAnswer((_) => Future.value());
     when(mockWM.setMinimumSize(any)).thenAnswer((_) => Future.value());
     when(mockWM.setMaximumSize(any)).thenAnswer((_) => Future.value());
@@ -192,15 +195,12 @@ void main() {
         (inv) async =>
             desktop.setPosition(inv.positionalArguments[0] as Offset));
     when(mockWM.setAlwaysOnTop(any)).thenAnswer((_) => Future.value());
+    when(mockWM.setHasShadow(any)).thenAnswer((_) => Future.value());
     when(mockWM.setAsFrameless()).thenAnswer((_) => Future.value());
     when(mockWM.setBackgroundColor(any)).thenAnswer((_) => Future.value());
     when(mockWM.show(inactive: anyNamed('inactive')))
         .thenAnswer((_) => Future.value());
     when(mockWM.focus()).thenAnswer((_) => Future.value());
-    when(mockWM.waitUntilReadyToShow(any, any)).thenAnswer((invocation) async {
-      final callback = invocation.positionalArguments[1] as dynamic;
-      if (callback != null) await callback();
-    });
   });
 
   group('WindowsWindowService init (post-show apply)', () {
@@ -306,7 +306,6 @@ void main() {
       await ds.initialize();
       final service = WindowsWindowService(
         windowManager: mockWM,
-        screenRetriever: mockSR,
         displayService: ds,
         appBar: appBar,
       );

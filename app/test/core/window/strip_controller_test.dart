@@ -28,7 +28,6 @@ class _StubEvents implements DisplayEvents {
 class _FakeWindowService extends WindowService {
   _FakeWindowService({
     required super.windowManager,
-    required super.screenRetriever,
     required super.displayService,
   });
 
@@ -66,7 +65,6 @@ void main() {
 
     windowService = _FakeWindowService(
       windowManager: MockWindowManager(),
-      screenRetriever: MockScreenRetriever(),
       displayService: displayService,
     );
     controller = StripController(

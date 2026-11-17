@@ -2,15 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:happening/core/display/display_info.dart';
 import 'package:happening/core/display/display_service.dart';
 import 'package:happening/core/settings/settings_service.dart';
+import 'package:happening/core/window/window_adapter.dart';
 import 'package:happening/core/window/window_service.dart';
 import 'package:happening/features/timeline/focus/timeline_focus_controller.dart';
 import 'package:mockito/mockito.dart';
-import 'package:screen_retriever/legacy.dart';
-import 'package:window_manager/legacy.dart';
 
-class _FakeWindowManager extends Mock implements WindowManager {}
-
-class _FakeScreenRetriever extends Mock implements ScreenRetriever {}
+class _FakeWindowManager extends Mock implements WindowAdapter {}
 
 class _StubDisplayProbe implements DisplayProbe {
   @override
@@ -26,7 +23,6 @@ class _FakeWindowService extends WindowService {
   _FakeWindowService()
       : super(
           windowManager: _FakeWindowManager(),
-          screenRetriever: _FakeScreenRetriever(),
           displayService: DisplayService(
             probe: _StubDisplayProbe(),
             events: _StubDisplayEvents(),
