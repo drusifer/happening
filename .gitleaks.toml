@@ -8,6 +8,11 @@ description = "Google Calendar ID"
 regex = '''[a-z0-9._%+\-]+@group\.calendar\.google\.com'''
 tags = ["calendar", "google"]
 
+  [rules.allowlist]
+  regexes = [
+    '''@group\.calendar\.example\.com$''',
+  ]
+
 [[rules]]
 id = "email-address"
 description = "Email address in sensitive context"
@@ -16,11 +21,22 @@ tags = ["email", "pii"]
 
   [rules.allowlist]
   # Allow emails in pubspec.yaml (author fields), dart files (comments/docs), and test files
+  # Fake/anonymized addresses used in test fixtures and captured data
+  regexes = [
+    '''@(group\.calendar\.)?example\.com?$''',
+    # Vendor no-reply address in captured Calendly data
+    '''^noreply@calendly\.com$''',
+    # Public app contact address
+    '''^happening@gs\.works$''',
+    # Image asset names like Icon-App-20x20@2x.png
+    '''@[0-9]x\.png$''',
+  ]
   paths = [
     '''pubspec\.yaml''',
     '''.*\.dart''',
     '''.*_test\.dart''',
     '''README.*''',
+    '''USER_GUIDE\.md''',
     '''CLAUDE\.md''',
   ]
 
